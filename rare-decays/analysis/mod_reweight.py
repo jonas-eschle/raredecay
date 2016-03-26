@@ -5,7 +5,7 @@ Created on Mon Mar 21 21:31:19 2016
 @author: mayou
 """
 import config as cnf
-from tools.devtool import make_logger
+from tools.dev_tool import make_logger
 
 import ROOT
 from hep_ml import reweight
@@ -16,7 +16,7 @@ logger = make_logger(__name__)
 def mc_real_reweight(mcdata, realdata):
 
     import config as cnf
-    from tools.devtool import make_logger
+    from tools.dev_tool import make_logger
 
     import ROOT
     from hep_ml import reweight
