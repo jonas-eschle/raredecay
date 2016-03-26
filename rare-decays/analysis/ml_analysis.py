@@ -7,10 +7,14 @@ Created on Sat Mar 26 11:29:01 2016
 
 
 class MachineLearningAnalysis:
-    """Load datasets and use ML-algorithms on them
+    """Use ML-techniques on datasets to reweight, train and classify
 
 
     """
 
     def __init__(self):
+        pass
 
+
+    def gbreweight_mc_real(self):
+        pass
