@@ -23,6 +23,8 @@ class MachineLearningAnalysis:
         self.logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
     def reweight_mc_real(self, bin_or_gb='gb'):
+
+        # check for valid input of bin_or_gb
         if bin_or_gb not in self.__REWEIGHT_MODE:
             self.logger.warning(str(bin_or_gb) + " not a valid choice of " +
                                 str(self.__REWEIGHT_MODE.keys()) +
