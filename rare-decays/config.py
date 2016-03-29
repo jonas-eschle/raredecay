@@ -8,17 +8,26 @@ Created on Mon Mar 21 22:26:13 2016
 
 # general variables
 DATA_PATH = '~/Documents/uniphysik/Bachelor_thesis/analysis/data'
-DATA_PATH += '/' if DATA_PATH[-1] not in ('/') else None
+DATA_PATH += '/' if DATA_PATH[-1] not in ('/') else None  # Don't change!
 
 # reweighting
 reweight_cfg = dict(
-    reweight_file_mc=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-    reweight_file_real=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    reweighter='gb',
+    reweight_data_mc=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    reweight_data_real=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     branch_names=["B_PT", "nTracks"],
-    reweight_tree_mc=None,  # "DecayTree"
-    reweight_tree_real=None  # "DecayTree"
+    reweight_tree_mc="Bd2K1LL/DecayTree",  # "DecayTree"
+    reweight_tree_real="Bd2K1LL/DecayTree"  # "DecayTree"
 )
 
+reweight_meta_cfg = dict(
+    gb=dict(
+        n_estimators=50
+    ),
+    bins=dict(
+        n_bins=20
+    )
+).get(reweight_cfg.get('reweighter'))  # Don't change!
 
 
 

@@ -23,10 +23,10 @@ def to_pandas(data_in, tree=None, indices=None, columns=None, dtype=None):
     if (type(data_in) is str):
         is_root = data_in[-5:].upper() in ('.ROOT')
     if is_root:
-        data_in = root2array(data_in, treename=tree,branches=indices)
+        data_in = root2array(data_in, treename=tree,branches=columns)
     is_ndarray = type(data_in) is np.ndarray
     if is_ndarray:
-        data_in = pd.DataFrame(data_in, columns)
+        data_in = pd.DataFrame(data_in)
     elif type(data_in) is not pd.core.frame.DataFrame:
         raise TypeError("Could not convert data to pandas. Data: " + data_in)
 
@@ -36,10 +36,11 @@ def to_pandas(data_in, tree=None, indices=None, columns=None, dtype=None):
 
 
 if __name__ == '__main__':
-
-    dataset = '../data/DarkBoson/HIGGSsignal.rodot'
+    print "running selftest"
+    dataset = '../data/DarkBoson/HIGGSsignal.root'
     print type(dataset)
 #    dataset = root2array(dataset)
     t = to_pandas(dataset)
     print type(t)
     print (type(t) is pd.core.frame.DataFrame)
+    print "selftest completed!"

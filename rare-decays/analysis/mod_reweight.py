@@ -11,7 +11,7 @@ import ROOT
 from hep_ml import reweight
 from root_numpy import root2array, rec2array, tree2rec
 
-logger = make_logger(__name__, **cfg.logger)
+logger = make_logger(__name__, **cfg.logger_cfg)
 
 def mc_real_reweight(mcdata, realdata):
 
@@ -92,10 +92,10 @@ if __name__ == "__main__":
     import pandas
     import numpy
     import matplotlib.pyplot as plt
-    data_mc = root_numpy.root2array(cfg.reweight_file_mc,"Bd2K1LL/DecayTree",
-                                    cfg.branch_names)
-    data_real = root_numpy.root2array(cfg.reweight_file_real,"Bd2K1LL/DecayTree",
-                                    cfg.branch_names)
+    data_mc = root_numpy.root2array(cfg.reweight_cfg['reweight_data_mc'],"Bd2K1LL/DecayTree",
+                                    cfg.reweight_cfg['branch_names'])
+    data_real = root_numpy.root2array(cfg.reweight_cfg['reweight_data_real'],"Bd2K1LL/DecayTree",
+                                    cfg.reweight_cfg['branch_names'])
     #logger.debug(data_mc)
 
     original = pandas.DataFrame(data_mc)

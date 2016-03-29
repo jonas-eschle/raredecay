@@ -7,6 +7,7 @@ Created on Sat Mar 26 16:49:45 2016
 Contains the different run-modes for the machine-learning algorithms.
 """
 import ml_analysis
+import config as cfg
 
 def run(runmode):
     """select the right runmode from the parameter and run it"""
@@ -17,9 +18,9 @@ def run(runmode):
 
 
 def _test():
-    print "hello world"
+    print "starting physical module test"
     ml_ana = ml_analysis.MachineLearningAnalysis()
-    ml_ana.reweight_mc_real('gb')
+    ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
 
 
 

@@ -100,3 +100,17 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
 
     logger.info('Logger created succesfully')
     return logger
+
+
+    def check_var(variable, allowed_range, default=None, logger=None):
+        """Check if a given variable (string, number etc.) is ""allowed"
+        """
+
+        # Dictionary
+        if variable not in allowed_range:
+            logger.warning(str(variable) + " is not a valid choice of " +
+                                str(allowed_range.keys()) +
+                                ". Instead, the default value was used: " +
+                                default)
+            variable = default
+        return variable
