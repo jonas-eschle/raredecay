@@ -28,9 +28,9 @@ def syspath_append(verboise=False):
     if verboise: print sys.path
 
 
-def make_logger(module_name, logging_mode='both', log_lvl_file='debug',
-                log_lvl_console='debug', overwrite_file=True,
-                log_file_name='AAlast_run'):
+def make_logger(module_name, logging_mode='both', log_level_file='debug',
+                log_level_console='debug', overwrite_file=True,
+                log_file_name='AAlast_run',log_file_dir='.'):
     """Return a logger with a console-/filehandler or both.
 
     A useful tool to log the run of the program and debug or control it. With
@@ -44,17 +44,19 @@ def make_logger(module_name, logging_mode='both', log_lvl_file='debug',
         Name of the logger, shown in output. Best choose __name__
     logging_mode : {"both", "file", "console"}
         Which logger handler is used; where the log is printed to.
-    log_lvl_file : {"debug","info","warning","error","critical"}
+    log_level_file : {"debug","info","warning","error","critical"}
         Which level of messages are logged. A lower level (left) always also
         includes the higher (right) levels, but not the other way around.
         This level specifies the level for the file log (if enabled).
     log_level_console : {"debug","info","warning","error","critical"}
-        Level for console log (if enabled). See also log_lvl_file.
+        Level for console log (if enabled). See also log_level_file.
     overwrite_file : boolean
         If enabled, the logfiled gets overwritten at every run.
         Otherwise, a new logfile is created.
     log_file_name : string
         The name of the logfile
+    log_file_dir : string
+        The directory to save the logfile.
     Returns
     -------
     out : loggerObject
@@ -69,26 +71,30 @@ def make_logger(module_name, logging_mode='both', log_lvl_file='debug',
     import logging
     from time import strftime
 
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger(module_name)
     logger.setLevel(logging.DEBUG)
     # may be changed due to performance issues, does not have to log everything
     logger.propagate = False
     file_mode = 'w' if overwrite_file else None
     formatter = logging.Formatter("%(asctime)s - " + module_name +
                                   ": %(levelname)s - %(message)s")
+    print 2
     if logging_mode == 'both' or logging_mode == 'file':
         if not overwrite_file:
             timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
         else:
             timeStamp = 'temp'
-        fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_name,
+        if log_file_dir[-1] not in ('/'):
+            log_file_dir += '/'
+        log_file_fullname = log_file_dir + log_file_name
+        fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
                                                         timeStamp), file_mode)
-        fh.setLevel(getattr(logging, log_lvl_file.upper()))
+        fh.setLevel(getattr(logging, log_level_file.upper()))
         fh.setFormatter(formatter)
         logger.addHandler(fh)
     if logging_mode == 'both' or logging_mode == 'console':
         ch = logging.StreamHandler()
-        ch.setLevel(getattr(logging, log_lvl_console.upper()))
+        ch.setLevel(getattr(logging, log_level_console.upper()))
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 

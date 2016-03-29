@@ -4,18 +4,18 @@ Created on Mon Mar 21 21:31:19 2016
 
 @author: mayou
 """
-import config as cnf
+import config as cfg
 from tools.dev_tool import make_logger
 
 import ROOT
 from hep_ml import reweight
 from root_numpy import root2array, rec2array, tree2rec
 
-logger = make_logger(__name__)
+logger = make_logger(__name__, **cfg.logger)
 
 def mc_real_reweight(mcdata, realdata):
 
-    import config as cnf
+    import config as cfg
     from tools.dev_tool import make_logger
 
     import ROOT
@@ -88,14 +88,14 @@ def mc_real_reweight(mcdata, realdata):
 
 if __name__ == "__main__":
     import root_numpy
-    import config as cnf
+    import config as cfg
     import pandas
     import numpy
     import matplotlib.pyplot as plt
-    data_mc = root_numpy.root2array(cnf.path_mc_reweight,"Bd2K1LL/DecayTree",
-                                    cnf.branch_names)
-    data_real = root_numpy.root2array(cnf.path_real_reweight,"Bd2K1LL/DecayTree",
-                                    cnf.branch_names)
+    data_mc = root_numpy.root2array(cfg.reweight_file_mc,"Bd2K1LL/DecayTree",
+                                    cfg.branch_names)
+    data_real = root_numpy.root2array(cfg.reweight_file_real,"Bd2K1LL/DecayTree",
+                                    cfg.branch_names)
     #logger.debug(data_mc)
 
     original = pandas.DataFrame(data_mc)
@@ -123,21 +123,21 @@ if __name__ == "__main__":
 
 
 
-#    fileRef = ROOT.TFile(cnf.path_mc_reweight)
+#    fileRef = ROOT.TFile(cfg.path_mc_reweight)
 #    tree = fileRef.Get("Bd2K1LL/DecayTree")
-#    data_mc = tree2rec(tree, cnf.branch_names)
+#    data_mc = tree2rec(tree, cfg.branch_names)
 #
-#    fileRef = ROOT.TFile(cnf.path_real_reweight)
+#    fileRef = ROOT.TFile(cfg.path_real_reweight)
 #    tree = fileRef.Get("Bd2K1LL/DecayTree")
-#    data_real = tree2rec(tree, cnf.branch_names)
+#    data_real = tree2rec(tree, cfg.branch_names)
 #
 #    reweight(data_mc, data_real)
 
-"""  mc_data_reweight = root2array(cnf.path_mc_reweight, cnf.tree_real_reweight,
-                                  cnf.branch_names)
+"""  mc_data_reweight = root2array(cfg.path_mc_reweight, cfg.tree_real_reweight,
+                                  cfg.branch_names)
     mc_data_reweight = rec2array(mc_data_reweight)
-    real_data_reweight = root2array(cnf.path_real_reweight,
-                                    cnf.tree_mc_reweight, cnf.branch_names)
+    real_data_reweight = root2array(cfg.path_real_reweight,
+                                    cfg.tree_mc_reweight, cfg.branch_names)
     real_data_reweight = rec2array(real_data_reweight)
 """
 #    dirSample = "/disk/data3/lhcb/rsilvaco/RareDecays/Bd2KpiEE/Ntuples/MonteCarlo/"+str(year)+"/Stripping-MCTruth/Bd2Kstee/"
