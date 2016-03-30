@@ -4,11 +4,15 @@ Created on Mon Mar 21 22:26:13 2016
 
 @author: mayou
 """
-
+PICKLE_DATATYPE = "pickle"
 
 # general variables
-DATA_PATH = '~/Documents/uniphysik/Bachelor_thesis/analysis/data'
-DATA_PATH += '/' if DATA_PATH[-1] not in ('/') else None  # Don't change!
+DATA_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
+
+for path in [DATA_PATH, PICKLE_PATH]:
+    path += '/' if path[-1] not in ('/') else ""  # Don't change!
+print DATA_PATH + PICKLE_PATH
 
 # reweighting
 reweight_cfg = dict(
@@ -17,7 +21,8 @@ reweight_cfg = dict(
     reweight_data_real=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     branch_names=["B_PT", "nTracks"],
     reweight_tree_mc="Bd2K1LL/DecayTree",  # "DecayTree"
-    reweight_tree_real="Bd2K1LL/DecayTree"  # "DecayTree"
+    reweight_tree_real="Bd2K1LL/DecayTree",  # "DecayTree"
+    reweight_saveas=3
 )
 
 reweight_meta_cfg = dict(

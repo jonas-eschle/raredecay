@@ -20,7 +20,7 @@ def run(runmode):
 def _test():
     print "starting physical module test"
     ml_ana = ml_analysis.MachineLearningAnalysis()
-    ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
+    print ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
 
 
 

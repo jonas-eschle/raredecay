@@ -5,7 +5,7 @@ Created on Sat Mar 26 11:29:01 2016
 @author: mayou
 """
 
-import hep_ml
+import hep_ml.reweight
 from tools import dev_tool, data_tools
 import config as cfg
 
@@ -25,7 +25,8 @@ class MachineLearningAnalysis:
     def reweight_mc_real(self, reweight_data_mc, reweight_data_real,
                          reweighter='gb', weights_real=None,
                          reweight_tree_mc=None, reweight_tree_real=None,
-                         branch_names=None, meta_cfg=None):
+                         branch_names=None, reweight_saveas=None,
+                         meta_cfg=None):
         """Return weight from a mc/real comparison.
         """
         try:
@@ -49,6 +50,7 @@ class MachineLearningAnalysis:
         reweighter = getattr(hep_ml.reweight,
                              reweighter)(**meta_cfg)
         reweighter.fit(original, target)
-        return adv_return(reweighter, reweighter_saveas)
+        return data_tools.adv_return(reweighter, self.logger,
+                                     save_name=reweight_saveas)
 
         self.logger.info("module finished")

@@ -11,6 +11,7 @@ import cPickle as pickle
 from root_numpy import root2array,rec2array
 import pandas as pd
 import numpy as np
+import config as cfg
 
 
 def to_pandas(data_in, tree=None, indices=None, columns=None, dtype=None):
@@ -31,6 +32,25 @@ def to_pandas(data_in, tree=None, indices=None, columns=None, dtype=None):
         raise TypeError("Could not convert data to pandas. Data: " + data_in)
 
     return data_in
+
+def adv_return(return_value,logger, save_name=None, multithread=False):
+
+    if save_name not in (None, False):
+        if type(save_name) is (str):
+            save_name = cfg.PICKLE_PATH + save_name + "." +cfg.PICKLE_DATATYPE
+            with open(str(save_name),'wb') as f:
+                pickle.dump(return_value, f, pickle.HIGHEST_PROTOCOL)
+                logger.info("Data pickled to " + save_name)
+        else:
+            logger.error("Could not pickle data, name for file (" +
+                         str(save_name) + ") is not a string!" +
+                         "\n Therefore, the following data was only returned" +
+                         " but not saved! \n Data:" + str(return_value))
+    return return_value
+
+
+
+
 
 
 
