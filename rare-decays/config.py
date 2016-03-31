@@ -4,11 +4,17 @@ Created on Mon Mar 21 22:26:13 2016
 
 @author: mayou
 """
+import cPickle as pickle
+
 PICKLE_DATATYPE = "pickle"
+ROOT_DATATYPE = "root"
 
 # general variables
 DATA_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
+
+PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL
+
 
 def path_test():
     for path in [DATA_PATH, PICKLE_PATH]:
@@ -17,12 +23,18 @@ def path_test():
 # reweighting
 reweight_cfg = dict(
     reweighter='gb',
-    reweight_data_mc=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-    reweight_data_real=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-    branch_names=["B_PT", "nTracks"],
-    reweight_tree_mc="Bd2K1LL/DecayTree",  # "DecayTree"
-    reweight_tree_real="Bd2K1LL/DecayTree",  # "DecayTree"
-    reweight_saveas='reweighter1.pickle'
+    reweight_data_mc=dict(
+        filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        treename='Bd2K1LL/DecayTree',
+        branches=["B_PT", "nTracks"]
+    ),
+    reweight_data_real=dict(
+        filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        treename='Bd2K1LL/DecayTree',
+        branches=["B_PT", "nTracks"]
+
+    ),
+    reweight_saveas=None  # 'reweighter1.pickl'
 )
 
 reweight_meta_cfg = dict(

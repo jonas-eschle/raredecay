@@ -24,9 +24,7 @@ class MachineLearningAnalysis:
 
     def reweight_mc_real(self, reweight_data_mc, reweight_data_real,
                          reweighter='gb', weights_real=None,
-                         reweight_tree_mc=None, reweight_tree_real=None,
-                         branch_names=None, reweight_saveas=None,
-                         meta_cfg=None):
+                         reweight_saveas=None, meta_cfg=None):
         """Return weight from a mc/real comparison.
         """
         try:
@@ -38,21 +36,15 @@ class MachineLearningAnalysis:
         else:
             reweighter += 'Reweighter'
 
-
         self.logger.debug("starting data conversion")
-        original = data_tools.to_pandas(reweight_data_mc,
-                                        tree=reweight_tree_mc,
-                                        columns=branch_names)
-        target = data_tools.to_pandas(reweight_data_real,
-                                      tree=reweight_tree_real,
-                                      columns=branch_names)
+        original = data_tools.to_pandas(reweight_data_mc)
+        target = data_tools.to_pandas(reweight_data_real)
         self.logger.debug("data converted to pandas")
         reweighter = getattr(hep_ml.reweight,
                              reweighter)(**meta_cfg)
         reweighter.fit(original, target)
         return data_tools.adv_return(reweighter, self.logger,
                                      save_name=reweight_saveas)
-
 
     def reweight_weights(self, reweight_apply_data, reweighter_trained):
         """ Return the new weights by applying a given reweighter

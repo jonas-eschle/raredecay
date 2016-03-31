@@ -21,8 +21,9 @@ def _test():
     print "starting physical module test"
     ml_ana = ml_analysis.MachineLearningAnalysis()
     reweighter1 = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
-    ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), reweighter1)
-
+    #new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), reweighter1)
+    new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), "reweighter1.pickl.pickle")
+    print new_weights
 
 
 # temporary:
