@@ -13,7 +13,9 @@ ROOT_DATATYPE = "root"
 DATA_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 
-PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL
+#DEBUG options
+PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
+FAST_CONVERSION = True  # default: Truepyth
 
 
 def path_test():
@@ -32,7 +34,6 @@ reweight_cfg = dict(
         filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
         treename='Bd2K1LL/DecayTree',
         branches=["B_PT", "nTracks"]
-
     ),
     reweight_saveas=None  # 'reweighter1.pickl'
 )

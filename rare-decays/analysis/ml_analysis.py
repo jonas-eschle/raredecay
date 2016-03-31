@@ -15,6 +15,7 @@ class MachineLearningAnalysis:
 
 
     """
+    already_pandas = []
 
     __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins'}  # for GB/BinsReweighter
     __REWEIGHT_MODE_DEFAULT = 'gb'  # user-readable
@@ -23,9 +24,52 @@ class MachineLearningAnalysis:
         self.logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
     def reweight_mc_real(self, reweight_data_mc, reweight_data_real,
-                         reweighter='gb', weights_real=None,
+                         reweighter='gb', weights_mc=None, weights_real=None,
                          reweight_saveas=None, meta_cfg=None):
-        """Return weight from a mc/real comparison.
+        """Return a trained reweighter from a mc/real distribution comparison.
+
+        Reweighting a distribution is a "making them the same" by changing the
+        weights of the bins. Mostly, and therefore the naming, you want to
+        change the mc-distribution towards the real one.
+        There are two possibilities
+
+        * normal bins reweighting:  
+           divides the bins from one distribution by the bins of the other
+           distribution. Easy and fast, but unstable and inaccurat for higher
+           dimensions.
+        * Gradient Boosted reweighting:
+           uses several decision trees to reweight the bins. Slower, but more
+           accurat. Very useful in higher dimensions.
+
+        Parameters
+        ----------
+        reweight_data_mc : dict or numpy.ndarray or pandas.DataFrame
+            The Monte-Carlo data, which has to be "fitted" to the real data.
+            Can be a dictionary containing the rootfile, tree, branch etc. or
+            a numpy array or pandas DataFrame, which already hold the data.
+        reweight_data_real : dict or numpy.ndarray or pandas.DataFrame
+            Same as reweight_data_mc but for the real data
+        reweighter : {'gb', 'bins'}
+            Specify which reweighter to be used
+        weights_mc : numpy.array [n_samples]
+            Apply weights to the Monte-Carlo data
+        weights_real : numpy.array [n_samples]
+            Apply weights to the real data
+        reweight_saveas : string
+            To save a trained reweighter in addition to return it. The value
+            is the file(path +)name. The full name will be
+             PICKLE_PATH + reweight_saveas + .pickle
+            (.pickle is only added if not yet contained in "reweight_saveas")
+        meta_cfg : dict
+            Contains the parameters for the bins/gb-reweighter. See also
+            :func:`~hep_ml.reweight.BinsReweighter` and
+            :func:`~hep_ml.reweight.GBReweighter`.
+            
+        Returns
+        -------
+        out: object of type reweighter
+            Reweighter is trained to the data. Can, for example,
+            be used with :func:`~hep_ml.reweight.GBReweighter.predict_weights`
         """
         try:
             reweighter = self.__REWEIGHT_MODE.get(reweighter)
@@ -37,8 +81,8 @@ class MachineLearningAnalysis:
             reweighter += 'Reweighter'
 
         self.logger.debug("starting data conversion")
-        original = data_tools.to_pandas(reweight_data_mc)
-        target = data_tools.to_pandas(reweight_data_real)
+        original = self.fast_to_pandas(reweight_data_mc)
+        target = self.fast_to_pandas(reweight_data_real)
         self.logger.debug("data converted to pandas")
         reweighter = getattr(hep_ml.reweight,
                              reweighter)(**meta_cfg)
@@ -47,12 +91,52 @@ class MachineLearningAnalysis:
                                      save_name=reweight_saveas)
 
     def reweight_weights(self, reweight_apply_data, reweighter_trained):
-        """ Return the new weights by applying a given reweighter
+        """Return the new weights by applying a given reweighter on the data.
+        
+        Can be seen as a wrapper for the
+        :func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
+        Additional functionality:
+         * Takes a trained reweighter as argument, but can also unpickle one
+           from a file.
+         * Converts data implicitly to the right format or loads directly if 
+           already converted to the right format once.
+        
+        Parameters
+        ----------
+        reweight_apply_data : dict (*rootfile*) or numpy.array or \
+        pandas.DataFrame
+            The data for which the reweights are be predicted.
+        reweighter_trained : reweighter (*from hep_ml*) or pickle file
+            The trained reweighter, which predicts the new weights.
+            
+        Returns
+        ------
+        out : numpy.array
+            Return a numpy.array of shape [n_samples] containing the new
+            weights.
         """
         reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-        reweight_apply_data = data_tools.to_pandas(reweight_apply_data)
+        reweight_apply_data = self.fast_to_pandas(reweight_apply_data)
         new_weights = reweighter_trained.predict_weights(reweight_apply_data)
         return new_weights
 
+    def fast_to_pandas(self, data_in, **kwarg_to_pandas):
+        """ Check if data has already been converted and saved before calling
+        to_pandas. 
+        
+        "Better" version of :func:`~data_tools.to_pandas` and 
+        identical to it if :func:`~config.FAST_CONVERSION` is set to False.
+        """
+        add_to_already_pandas = False
+        if cfg.FAST_CONVERSION:
+            dic, data_in = next((c for c in self.already_pandas if
+                                data_in == c[0]), (None, data_in))
+            if dic is None:
+                dictionary = dict(data_in)
+                add_to_already_pandas = True
+        data_in = data_tools.to_pandas(data_in, self.logger, **kwarg_to_pandas)
+        if add_to_already_pandas:
+            self.already_pandas.append((dictionary, data_in))
+        return data_in
 
         self.logger.info("module finished")

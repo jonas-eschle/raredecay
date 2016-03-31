@@ -44,7 +44,7 @@ def is_pickle(data_to_check):
     return flag
 
 
-def to_pandas(data_in, indices=None, columns=None, dtype=None):
+def to_pandas(data_in, logger, indices=None, columns=None, dtype=None):
     """Convert data from numpy or root to pandas dataframe.
 
     Convert data safely to pandas, whatever the format is
@@ -54,7 +54,7 @@ def to_pandas(data_in, indices=None, columns=None, dtype=None):
         data_in = root2array(**data_in)
     if is_ndarray(data_in):
         data_in = pd.DataFrame(data_in)
-    elif type(data_in) is not pd.core.frame.DataFrame:
+    elif type(data_in) is pd.core.frame.DataFrame:
         pass
     else:
         raise TypeError("Could not convert data to pandas. Data: " + data_in)
@@ -86,12 +86,13 @@ def try_unpickle(file_to_unpickle):
     return file_to_unpickle
 
 
+def draw_distribution(new_weights):
+    """
+    """
+    pass
+
+
 if __name__ == '__main__':
     print "running selftest"
-    dataset = {'filenames': '../data/DarkBoson/HIGGSsignal.root'}
-    print type(dataset)
-#    dataset = root2array(dataset)
-    t = to_pandas(dataset)
-    print type(t)
-    print (type(t) is pd.core.frame.DataFrame)
+
     print "selftest completed!"

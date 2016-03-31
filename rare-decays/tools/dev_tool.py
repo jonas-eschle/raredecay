@@ -116,3 +116,10 @@ def check_var(variable, allowed_range, default=None, logger=None):
                             default)
         variable = default
     return variable
+
+
+def play_sound(duration = 0.3, frequency = 440):
+    """ Play a single frequency (Hertz) for a given time (seconds).
+    """
+    import os
+    os.system('play --no-show-progress --null --channels 1 synth %s sine %f' % (duration, frequency))
