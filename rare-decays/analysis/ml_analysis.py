@@ -53,4 +53,14 @@ class MachineLearningAnalysis:
         return data_tools.adv_return(reweighter, self.logger,
                                      save_name=reweight_saveas)
 
+
+    def reweight_weights(self, reweight_apply_data, reweighter_trained):
+        """ Return the new weights by applying a given reweighter
+        """
+        reweighter_trained = data_tools.try_unpickle(reweighter_trained)
+        reweight_apply_data = data_tools.to_pandas(reweight_apply_data)
+        new_weights = reweighter_trained.predict_weights(reweight_apply_data)
+        return new_weights
+
+
         self.logger.info("module finished")

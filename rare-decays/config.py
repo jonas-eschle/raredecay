@@ -10,9 +10,9 @@ PICKLE_DATATYPE = "pickle"
 DATA_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 
-for path in [DATA_PATH, PICKLE_PATH]:
-    path += '/' if path[-1] not in ('/') else ""  # Don't change!
-print DATA_PATH + PICKLE_PATH
+def path_test():
+    for path in [DATA_PATH, PICKLE_PATH]:
+        path += '/' if path[-1] not in ('/') else ""  # Don't change!
 
 # reweighting
 reweight_cfg = dict(
@@ -22,7 +22,7 @@ reweight_cfg = dict(
     branch_names=["B_PT", "nTracks"],
     reweight_tree_mc="Bd2K1LL/DecayTree",  # "DecayTree"
     reweight_tree_real="Bd2K1LL/DecayTree",  # "DecayTree"
-    reweight_saveas=3
+    reweight_saveas='reweighter1.pickle'
 )
 
 reweight_meta_cfg = dict(

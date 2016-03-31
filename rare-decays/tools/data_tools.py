@@ -37,7 +37,7 @@ def adv_return(return_value,logger, save_name=None, multithread=False):
 
     if save_name not in (None, False):
         if type(save_name) is (str):
-            save_name = cfg.PICKLE_PATH + save_name + "." +cfg.PICKLE_DATATYPE
+            save_name = cfg.PICKLE_PATH + save_name
             with open(str(save_name),'wb') as f:
                 pickle.dump(return_value, f, pickle.HIGHEST_PROTOCOL)
                 logger.info("Data pickled to " + save_name)
@@ -48,9 +48,12 @@ def adv_return(return_value,logger, save_name=None, multithread=False):
                          " but not saved! \n Data:" + str(return_value))
     return return_value
 
-
-
-
+def try_unpickle(file_to_unpickle):
+    if type(file_to_unpickle) is str:
+            if file_to_unpickle.endswith(cfg.PICKLE_DATATYPE):
+                with open(cfg.PICKLE_PATH + file_to_unpickle, 'rb') as f:
+                    file_to_unpickle = pickle.load(f)
+    return file_to_unpickle
 
 
 
