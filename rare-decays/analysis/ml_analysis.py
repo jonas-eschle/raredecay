@@ -5,6 +5,10 @@ Created on Sat Mar 26 11:29:01 2016
 @author: mayou
 """
 
+import math
+import numpy as np
+import matplotlib.pyplot as plt
+
 import hep_ml.reweight
 from tools import dev_tool, data_tools
 import config as cfg
@@ -16,7 +20,7 @@ class MachineLearningAnalysis:
 
     """
     already_pandas = []
-
+    __figure_number = 0
     __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins'}  # for GB/BinsReweighter
     __REWEIGHT_MODE_DEFAULT = 'gb'  # user-readable
 
@@ -33,7 +37,7 @@ class MachineLearningAnalysis:
         change the mc-distribution towards the real one.
         There are two possibilities
 
-        * normal bins reweighting:  
+        * normal bins reweighting:
            divides the bins from one distribution by the bins of the other
            distribution. Easy and fast, but unstable and inaccurat for higher
            dimensions.
@@ -64,7 +68,7 @@ class MachineLearningAnalysis:
             Contains the parameters for the bins/gb-reweighter. See also
             :func:`~hep_ml.reweight.BinsReweighter` and
             :func:`~hep_ml.reweight.GBReweighter`.
-            
+
         Returns
         -------
         out: object of type reweighter
@@ -92,15 +96,15 @@ class MachineLearningAnalysis:
 
     def reweight_weights(self, reweight_apply_data, reweighter_trained):
         """Return the new weights by applying a given reweighter on the data.
-        
+
         Can be seen as a wrapper for the
         :func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
         Additional functionality:
          * Takes a trained reweighter as argument, but can also unpickle one
            from a file.
-         * Converts data implicitly to the right format or loads directly if 
+         * Converts data implicitly to the right format or loads directly if
            already converted to the right format once.
-        
+
         Parameters
         ----------
         reweight_apply_data : dict (*rootfile*) or numpy.array or \
@@ -108,7 +112,7 @@ class MachineLearningAnalysis:
             The data for which the reweights are be predicted.
         reweighter_trained : reweighter (*from hep_ml*) or pickle file
             The trained reweighter, which predicts the new weights.
-            
+
         Returns
         ------
         out : numpy.array
@@ -120,11 +124,56 @@ class MachineLearningAnalysis:
         new_weights = reweighter_trained.predict_weights(reweight_apply_data)
         return new_weights
 
+    def draw_distributions(self, data_to_plot, labels=None, weights=None,
+                           columns=None, hist_cfg=cfg.hist_cfg_std, show=False,
+                           multithread=cfg.MULTITHREAD):
+        """Draw histograms of weighted distributions.
+
+
+        Parameters
+        ----------
+        data_to_plot : list with data [numpy.array or tree-dict or
+        pandas.DataFrame]
+            Distributions to plot.
+        weights : list (!) with weights
+        [[1-D list containing weights],[weights],[weights],...]
+            Specify the weights in the right order for the distributions.
+
+        """
+        data_to_plot = dev_tool.make_list_fill_none(data_to_plot)
+        labels = dev_tool.make_list_fill_none(labels, len(data_to_plot))
+        weights = dev_tool.make_list_fill_none(weights, len(data_to_plot))
+        self.logger.debug("data_to_plot: " + str(data_to_plot))
+        self.logger.debug("labels: " + str(labels))
+        self.logger.debug("weights: " + str(weights))
+        if multithread:
+            pass
+        else:
+            data_to_plot = map(self.fast_to_pandas, data_to_plot)
+        if columns is None:
+            columns = list(data_to_plot[0].columns.values)
+            self.logger.debug("columns: " + str(columns))
+        subplot_col = math.ceil(math.sqrt(len(data_to_plot)-0.001))
+        subplot_row = math.ceil(float(len(data_to_plot))/subplot_col)
+        self.__figure_number += 1
+        plt.figure(self.__figure_number)
+        for col_id, column in enumerate(columns, 1):
+            x_limits = np.percentile(np.hstack(data_to_plot[0][column]),
+                                     [0.01, 99.99])
+            plt.subplot(subplot_row, subplot_col, col_id)
+            for data_id, data in enumerate(data_to_plot):
+                plt.hist(data[column], weights=weights[data_id],
+                         range=x_limits, label=labels[data_id], **hist_cfg)
+            plt.title(column)
+            plt.legend()
+        if show:
+            plt.show()
+
     def fast_to_pandas(self, data_in, **kwarg_to_pandas):
         """ Check if data has already been converted and saved before calling
-        to_pandas. 
-        
-        "Better" version of :func:`~data_tools.to_pandas` and 
+        to_pandas.
+
+        "Better" version of :func:`~data_tools.to_pandas` and
         identical to it if :func:`~config.FAST_CONVERSION` is set to False.
         """
         add_to_already_pandas = False

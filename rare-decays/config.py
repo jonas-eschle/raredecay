@@ -6,8 +6,10 @@ Created on Mon Mar 21 22:26:13 2016
 """
 import cPickle as pickle
 
-PICKLE_DATATYPE = "pickle"
-ROOT_DATATYPE = "root"
+
+# Datatype ending variables
+PICKLE_DATATYPE = "pickle"  # default: 'pickle'
+ROOT_DATATYPE = "root"  # default 'root'
 
 # general variables
 DATA_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
@@ -15,7 +17,8 @@ PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 
 #DEBUG options
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
-FAST_CONVERSION = True  # default: Truepyth
+FAST_CONVERSION = True  # default: True
+MULTITHREAD = False  # not yet implemented
 
 
 def path_test():
@@ -23,6 +26,8 @@ def path_test():
         path += '/' if path[-1] not in ('/') else ""  # Don't change!
 
 # reweighting
+
+# start default config
 reweight_cfg = dict(
     reweighter='gb',
     reweight_data_mc=dict(
@@ -37,7 +42,6 @@ reweight_cfg = dict(
     ),
     reweight_saveas=None  # 'reweighter1.pickl'
 )
-
 reweight_meta_cfg = dict(
     gb=dict(
         n_estimators=50
@@ -46,9 +50,40 @@ reweight_meta_cfg = dict(
         n_bins=20
     )
 ).get(reweight_cfg.get('reweighter'))  # Don't change!
+# end default config
 
+# start config 1
+reweight_cfg_bins = dict(
+    reweighter='bins',
+    reweight_data_mc=dict(
+        filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        treename='Bd2K1LL/DecayTree',
+        branches=["B_PT", "nTracks"]
+    ),
+    reweight_data_real=dict(
+        filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        treename='Bd2K1LL/DecayTree',
+        branches=["B_PT", "nTracks"]
+    ),
+    reweight_saveas=None  # 'reweighter1.pickl'
+)
 
+reweight_meta_cfg_bins = dict(
+    gb=dict(
+        n_estimators=50
+    ),
+    bins=dict(
+        n_bins=100,
+        n_neighs=0
+    )
+).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
+# end config 1
 
+hist_cfg_std = dict(
+    bins=100,
+    normed=True,
+    alpha=0.5,  # transparency [0.0, 1.0]
+)
 
 
 
@@ -66,7 +101,7 @@ logger_cfg = dict(
     log_level_file='debug',
     # specifies the level to be logged to the file
     log_level_console='debug',
-    # specifies the level to be logged to the console
+    # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time
     # or instead make a new one each run

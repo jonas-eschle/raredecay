@@ -86,12 +86,6 @@ def try_unpickle(file_to_unpickle):
     return file_to_unpickle
 
 
-def draw_distribution(new_weights):
-    """
-    """
-    pass
-
-
 if __name__ == '__main__':
     print "running selftest"
 

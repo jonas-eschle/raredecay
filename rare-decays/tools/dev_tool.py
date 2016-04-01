@@ -118,6 +118,17 @@ def check_var(variable, allowed_range, default=None, logger=None):
     return variable
 
 
+def make_list_fill_none(to_check, length=0):
+    """Returns a list with the objects or a list filled with None.
+    """
+    if type(to_check) is not list:
+        to_check = [to_check]
+    difference = length - len(to_check)
+    if difference > 0:
+        to_check += [None]*difference
+    return to_check
+
+
 def play_sound(duration = 0.3, frequency = 440):
     """ Play a single frequency (Hertz) for a given time (seconds).
     """
