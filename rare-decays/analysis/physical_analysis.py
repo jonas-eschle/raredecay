@@ -6,18 +6,26 @@ Created on Sat Mar 26 16:49:45 2016
 
 Contains the different run-modes for the machine-learning algorithms.
 """
-import ml_analysis
-import config as cfg
+import meta_config
+
+#import config as cfg
+
 
 def run(runmode):
     """select the right runmode from the parameter and run it"""
-    print "1,2,3..."
+    #global run_config
+    #run_config = 'config'
     _test1()
 
 
 
 
 def _test1():
+    meta_config.run_config='test1_cfg'
+    import ml_analysis
+    import importlib
+    cfg = importlib.import_module(meta_config.run_config)
+
     print "starting physical module test"
     ml_ana = ml_analysis.MachineLearningAnalysis()
     gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)

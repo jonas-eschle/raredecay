@@ -5,13 +5,17 @@ Created on Sat Mar 26 11:29:01 2016
 @author: mayou
 """
 
+
 import math
 import numpy as np
 import matplotlib.pyplot as plt
 
 import hep_ml.reweight
 from tools import dev_tool, data_tools
-import config as cfg
+#import config as cfg
+import importlib
+import meta_config
+cfg = importlib.import_module(meta_config.run_config)
 
 
 class MachineLearningAnalysis:

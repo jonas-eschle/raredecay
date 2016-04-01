@@ -11,7 +11,10 @@ import cPickle as pickle
 from root_numpy import root2array, rec2array
 import pandas as pd
 import numpy as np
-import config as cfg
+#import config as cfg
+import importlib
+import meta_config
+cfg = importlib.import_module(meta_config.run_config)
 
 
 def is_root(data_to_check):

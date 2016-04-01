@@ -5,6 +5,7 @@ Created on Mon Mar 21 21:25:26 2016
 @author: mayou
 """
 
+
 def syspath_append(verboise=False):
     """Adds the relevant path to the sys.path variable.
     options:
