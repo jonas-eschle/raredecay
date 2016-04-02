@@ -12,8 +12,9 @@ PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
 # general variables
-DATA_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown/cut-data'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
+DATA_PATH += '/'
 
 #DEBUG options
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
@@ -39,17 +40,29 @@ Bu2K1Jpsi_mc = dict(
     treename='Bd2K1LL/DecayTree',
     branches=["B_PT", "nTracks"]
 )
+cut_Bu2K1Jpsi_mc = dict(
+    filenames=DATA_PATH+'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    treename='DecayTree',
+    branches=["B_PT", "nTracks"]
+)
+cut_B2KpiLL_real = dict(
+    filenames=DATA_PATH+'CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
+    treename='DecayTree',
+    branches=["B_PT", "nTracks"]
+)
 
 # start default config
 reweight_cfg = dict(
     reweighter='gb',
-    reweight_data_mc=Bu2K1ee_mc,
-    reweight_data_real=Bu2K1Jpsi_mc,
+    reweight_data_mc=cut_Bu2K1Jpsi_mc,
+    reweight_data_real=cut_B2KpiLL_real,
     reweight_saveas=None  # 'reweighter1.pickl'
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=50
+        n_estimators=400,
+        max_depth=10,
+        learning_rate=0.05
     ),
     bins=dict(
         n_bins=20
@@ -60,18 +73,17 @@ reweight_meta_cfg = dict(
 # start config 1
 reweight_cfg_bins = dict(
     reweighter='bins',
-    reweight_data_mc=Bu2K1ee_mc,
-    reweight_data_real=Bu2K1Jpsi_mc,
+    reweight_data_mc=cut_Bu2K1Jpsi_mc,
+    reweight_data_real=cut_B2KpiLL_real,
     reweight_saveas=None  # 'reweighter1.pickl'
 )
 
 reweight_meta_cfg_bins = dict(
     gb=dict(
-        n_estimators=50
+        n_estimators=80
     ),
     bins=dict(
-        n_bins=100,
-        n_neighs=0
+        n_bins=40,
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
 # end config 1
@@ -79,7 +91,7 @@ reweight_meta_cfg_bins = dict(
 
 # draw configuration
 hist_cfg_std = dict(
-    bins=100,
+    bins=40,
     normed=True,
     alpha=0.5,  # transparency [0.0, 1.0]
 )
@@ -99,7 +111,7 @@ logger_cfg = dict(
     # take 'both', 'file', 'console' or 'no'
     log_level_file='debug',
     # specifies the level to be logged to the file
-    log_level_console='debug',
+    log_level_console='info',
     # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time

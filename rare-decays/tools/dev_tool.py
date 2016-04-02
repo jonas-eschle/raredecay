@@ -119,6 +119,17 @@ def check_var(variable, allowed_range, default=None, logger=None):
     return variable
 
 
+def fill_list_var(to_check, length=0, var=1):
+    """Returns a list filled with the specified variable and the desired length
+    """
+    difference = length - len(to_check)
+    if difference > 0:
+        if isinstance(to_check, list):
+            to_check.extend([var] * difference)
+    return to_check
+
+
+
 def make_list_fill_none(to_check, length=0):
     """Returns a list with the objects or a list filled with None.
     """

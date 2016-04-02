@@ -7,8 +7,10 @@ Created on Sat Mar 26 11:29:01 2016
 
 
 import math
+import random
 import numpy as np
 import matplotlib.pyplot as plt
+import pandas as pd
 
 import hep_ml.reweight
 from tools import dev_tool, data_tools
@@ -172,6 +174,37 @@ class MachineLearningAnalysis:
             plt.legend()
         if show:
             plt.show()
+
+    def fast_ROC_AUC(self, original, target, weight_original=[],
+                     weight_target=[]):
+        """ Return the ROC AUC fast, useful to find out, how well they can be
+        distinguished.
+        """
+        from sklearn.ensemble import GradientBoostingClassifier
+        from sklearn.cross_validation import train_test_split
+        from sklearn.metrics import roc_auc_score
+
+        original = self.fast_to_pandas(original)
+        target = self.fast_to_pandas(target)
+        data = pd.concat([original, target])
+        label = np.array([0] * len(original) + [1] * len(target))
+        assert len(weight_original) in (0, len(original)), "weights and data have different lengts"
+        assert len(weight_target) in (0, len(target)), "weights and data have different lengts"
+        weight_original = dev_tool.fill_list_var(weight_original,
+                                                 len(original), 1)
+        weight_target = dev_tool.fill_list_var(weight_target,
+                                               len(target), 1)
+        self.logger.debug("weight_original: " + str(weight_original))
+        self.logger.debug("weight_target: " + str(weight_target))
+        weights = np.concatenate([weight_original, weight_target])
+        rand = random.randint(1,99)
+        X_train, X_test, y_train, y_test, weight_train, weight_test = (
+            train_test_split(data, label, weights, random_state=rand))
+        clf = GradientBoostingClassifier(n_estimators = 300)
+        clf.fit(X_train, y_train, weight_train)
+        ROC_AUC = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1],
+                                sample_weight=weight_test)
+        return ROC_AUC
 
     def fast_to_pandas(self, data_in, **kwarg_to_pandas):
         """ Check if data has already been converted and saved before calling

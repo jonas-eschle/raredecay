@@ -12,6 +12,7 @@ from physical_analysis import run
 from matplotlib.pyplot import show
 import cProfile as profile
 print "starting main"
+
 run(1)
 play_sound()
 show()
