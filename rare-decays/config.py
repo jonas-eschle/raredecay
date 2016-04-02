@@ -31,21 +31,13 @@ def path_test():
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=["B_PT", "nTracks"],
-    metadata=dict(
-        data_name='Bu2K1ee_mc',
-        name_addition=''
-    )
+    branches=["B_PT", "nTracks"]
 )
 
 Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=["B_PT", "nTracks"],
-    metadata=dict(
-        data_name='Bu2K1Jpsi_mc',
-        name_addition='"real"'
-    )
+    branches=["B_PT", "nTracks"]
 )
 
 # start default config

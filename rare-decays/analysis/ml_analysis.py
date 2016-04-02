@@ -166,11 +166,6 @@ class MachineLearningAnalysis:
                                      [0.01, 99.99])
             plt.subplot(subplot_row, subplot_col, col_id)
             for data_id, data in enumerate(data_to_plot):
-                self.logger.debug("data.metadata: " + str(data.metadata))
-                if data.metadata.has_key('data_name'):
-                    if labels[data_id] is None:
-                        labels[data_id] = ''
-                    labels[data_id] += ' - ' + data.metadata.get('data_name')
                 plt.hist(data[column], weights=weights[data_id],
                          range=x_limits, label=labels[data_id], **hist_cfg)
             plt.title(column)
@@ -192,8 +187,6 @@ class MachineLearningAnalysis:
             if dic is None:
                 dictionary = dict(data_in)
                 add_to_already_pandas = True
-            else:
-                data_in.metadata = dic.get('metadata')
         data_in = data_tools.to_pandas(data_in, self.logger, **kwarg_to_pandas)
         if add_to_already_pandas:
             self.already_pandas.append((dictionary, data_in))
