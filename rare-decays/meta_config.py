@@ -6,7 +6,7 @@ Created on Fri Apr  1 15:32:17 2016
 """
 
 global run_config
-run_config = None
+run_config = 'config'
 
 
 def init_config(new_config):

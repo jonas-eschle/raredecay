@@ -52,15 +52,18 @@ def to_pandas(data_in, logger, indices=None, columns=None, dtype=None):
 
     Convert data safely to pandas, whatever the format is
     """
-
+    temp_metadata = {}
     if is_root(data_in):
+        temp_metadata = data_in.pop('metadata', {})
         data_in = root2array(**data_in)
     if is_ndarray(data_in):
         data_in = pd.DataFrame(data_in)
+        data_in.metadata = temp_metadata
     elif type(data_in) is pd.core.frame.DataFrame:
-        pass
+        logger.debug("IS PANDAS! to_pandas: metadata = " + str(data_in.metadata))
     else:
         raise TypeError("Could not convert data to pandas. Data: " + data_in)
+    logger.debug("to_pandas: metadata = " + str(data_in.metadata))
     return data_in
 
 
