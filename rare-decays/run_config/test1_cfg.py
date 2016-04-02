@@ -1,12 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Fri Apr  1 15:36:20 2016
-
-@author: mayou
-"""
-
-# -*- coding: utf-8 -*-
-"""
 Created on Mon Mar 21 22:26:13 2016
 
 @author: mayou
@@ -34,19 +27,32 @@ def path_test():
 
 # reweighting
 
+# data files
+Bu2K1ee_mc = dict(
+    filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=["B_PT", "nTracks"],
+    metadata=dict(
+        data_name='Bu2K1ee_mc',
+        name_addition=''
+    )
+)
+
+Bu2K1Jpsi_mc = dict(
+    filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=["B_PT", "nTracks"],
+    metadata=dict(
+        data_name='Bu2K1Jpsi_mc',
+        name_addition='"real"'
+    )
+)
+
 # start default config
 reweight_cfg = dict(
     reweighter='gb',
-    reweight_data_mc=dict(
-        filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-        treename='Bd2K1LL/DecayTree',
-        branches=["B_PT", "nTracks"]
-    ),
-    reweight_data_real=dict(
-        filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-        treename='Bd2K1LL/DecayTree',
-        branches=["B_PT", "nTracks"]
-    ),
+    reweight_data_mc=Bu2K1ee_mc,
+    reweight_data_real=Bu2K1Jpsi_mc,
     reweight_saveas=None  # 'reweighter1.pickl'
 )
 reweight_meta_cfg = dict(
@@ -62,16 +68,8 @@ reweight_meta_cfg = dict(
 # start config 1
 reweight_cfg_bins = dict(
     reweighter='bins',
-    reweight_data_mc=dict(
-        filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-        treename='Bd2K1LL/DecayTree',
-        branches=["B_PT", "nTracks"]
-    ),
-    reweight_data_real=dict(
-        filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-        treename='Bd2K1LL/DecayTree',
-        branches=["B_PT", "nTracks"]
-    ),
+    reweight_data_mc=Bu2K1ee_mc,
+    reweight_data_real=Bu2K1Jpsi_mc,
     reweight_saveas=None  # 'reweighter1.pickl'
 )
 
@@ -86,6 +84,8 @@ reweight_meta_cfg_bins = dict(
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
 # end config 1
 
+
+# draw configuration
 hist_cfg_std = dict(
     bins=100,
     normed=True,
