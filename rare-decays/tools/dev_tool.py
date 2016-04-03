@@ -86,7 +86,7 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
             timeStamp = 'temp'
         if log_file_dir[-1] not in ('/'):
             log_file_dir += '/'
-        log_file_fullname = log_file_dir + log_file_name
+        log_file_fullname = log_file_dir + log_file_name + module_name
         fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
                                                         timeStamp), file_mode)
         fh.setLevel(getattr(logging, log_level_file.upper()))
@@ -100,9 +100,6 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
 
     logger.info('Logger created succesfully')
     return logger
-
-
-
 
 
 def check_var(variable, allowed_range, default=None, logger=None):
@@ -141,7 +138,7 @@ def make_list_fill_none(to_check, length=0):
     return to_check
 
 
-def play_sound(duration = 0.3, frequency = 440):
+def play_sound(duration = 0.3, frequency = 440, change=False):
     """ Play a single frequency (Hertz) for a given time (seconds).
     """
     import os

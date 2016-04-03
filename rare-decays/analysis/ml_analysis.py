@@ -183,6 +183,7 @@ class MachineLearningAnalysis:
         from sklearn.ensemble import GradientBoostingClassifier
         from sklearn.cross_validation import train_test_split
         from sklearn.metrics import roc_auc_score
+        from sklearn.cross_validation import KFold, cross_val_score
 
         original = self.fast_to_pandas(original)
         target = self.fast_to_pandas(target)
@@ -197,11 +198,19 @@ class MachineLearningAnalysis:
         self.logger.debug("weight_original: " + str(weight_original))
         self.logger.debug("weight_target: " + str(weight_target))
         weights = np.concatenate([weight_original, weight_target])
-        rand = random.randint(1,99)
+        rand = random.randint(1, 99)
         X_train, X_test, y_train, y_test, weight_train, weight_test = (
             train_test_split(data, label, weights, random_state=rand))
-        clf = GradientBoostingClassifier(n_estimators = 300)
+        clf = GradientBoostingClassifier(n_estimators=10)
+        # test begin
+        self.logger.debug("start scores")
+        scores = cross_val_score(clf, data.multiply(weights, axis=0), label,
+                                 cv=KFold(len(data), n_folds=3, shuffle=True),
+                                 n_jobs=6)
+        print("CV error = %f +-%f" % (1. - np.mean(scores), np.std(scores)))
+        # test end
         clf.fit(X_train, y_train, weight_train)
+
         ROC_AUC = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1],
                                 sample_weight=weight_test)
         return ROC_AUC

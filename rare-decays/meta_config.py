@@ -12,3 +12,6 @@ run_config = 'config'
 def init_config(new_config):
     global run_config
     run_config = new_config
+
+SUPPRESS_WRONG_SKLEARN_VERSION = False
+# DON'T CHANGE. Except you know what you do

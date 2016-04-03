@@ -60,8 +60,8 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=400,
-        max_depth=10,
+        n_estimators=200,
+        max_depth=5,
         learning_rate=0.05
     ),
     bins=dict(
