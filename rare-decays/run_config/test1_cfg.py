@@ -18,7 +18,7 @@ DATA_PATH += '/'
 
 #DEBUG options
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
-FAST_CONVERSION = True  # default: True
+FAST_CONVERSION = False  # default: True
 MULTITHREAD = False  # not yet implemented
 
 
@@ -56,11 +56,11 @@ reweight_cfg = dict(
     reweighter='gb',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
     reweight_data_real=cut_B2KpiLL_real,
-    reweight_saveas=None  # 'reweighter1.pickl'
+    reweight_saveas='gb_reweighter1'  # 'reweighter1.pickl'
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=200,
+        n_estimators=300,
         max_depth=5,
         learning_rate=0.05
     ),
@@ -75,7 +75,7 @@ reweight_cfg_bins = dict(
     reweighter='bins',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
     reweight_data_real=cut_B2KpiLL_real,
-    reweight_saveas=None  # 'reweighter1.pickl'
+    reweight_saveas='bins_reweighter1'  # 'reweighter1.pickl'
 )
 
 reweight_meta_cfg_bins = dict(
@@ -111,7 +111,7 @@ logger_cfg = dict(
     # take 'both', 'file', 'console' or 'no'
     log_level_file='debug',
     # specifies the level to be logged to the file
-    log_level_console='info',
+    log_level_console='debug',
     # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time

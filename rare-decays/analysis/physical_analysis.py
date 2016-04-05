@@ -33,10 +33,12 @@ def _test1():
     ml_ana = ml_analysis.MachineLearningAnalysis()
 
     for i in range(1):
-        print "starting run number ", i
-        gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
+        print "starting run number ", i+1
+        #gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
+        gb_reweighter = 'gb_reweighter1.pickle'
         gb_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), gb_reweighter)
-        bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
+        #bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
+        bins_reweighter = 'bins_reweighter1.pickle'
         bins_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), bins_reweighter)
         #new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), "reweighter1.pickl.pickle")
         gb_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
@@ -52,11 +54,11 @@ def _test1():
                               labels=['mc', 'real'])
     ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
                               cfg.reweight_cfg.get('reweight_data_real')],
-                              weights=gb_weights,
+                              weights=[gb_weights, None],
                               labels=['mc gb_reweighter', 'real'])
     ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
                               cfg.reweight_cfg.get('reweight_data_real')],
-                              weights=bins_weights,
+                              weights=[bins_weights, None],
                               labels=['mc bins_reweighter', 'real'])
     names_list = ['gb', 'original', 'bins']
     for i, lists in enumerate([gb_list, original_list, bins_list]):
