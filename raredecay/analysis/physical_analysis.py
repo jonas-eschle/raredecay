@@ -6,7 +6,7 @@ Created on Sat Mar 26 16:49:45 2016
 
 Contains the different run-modes for the machine-learning algorithms.
 """
-import meta_config
+import raredecay.meta_config
 
 #import config as cfg
 
@@ -21,10 +21,10 @@ def run(runmode):
 
 
 def _reweight1():
-    meta_config.run_config = 'reweight1_cfg'
-    import ml_analysis
+    raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_cfg'  # 'run_config.reweight1_cfg'
+    from raredecay.analysis import ml_analysis
     import importlib
-    cfg = importlib.import_module(meta_config.run_config)
+    cfg = importlib.import_module(raredecay.meta_config.run_config)
 
     print "starting physical module test"
     gb_list = []

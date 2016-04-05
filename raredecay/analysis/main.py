@@ -7,8 +7,8 @@ Created on Mon Mar 21 21:27:14 2016
 Main routine to run the analysis
 """
 
-from dev_tool import play_sound
-from physical_analysis import run
+from raredecay.tools.dev_tool import play_sound
+from raredecay.analysis.physical_analysis import run
 from matplotlib.pyplot import show
 import cProfile as profile
 print "starting main"

@@ -8,15 +8,15 @@ Contains several tools to convert, load, save and plot data
 """
 
 import cPickle as pickle
-from root_numpy import root2array, rec2array
+from root_numpy import root2array
 import pandas as pd
 import numpy as np
 #import config as cfg
 import importlib
-import meta_config
+from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
 
-import dev_tool
+from raredecay.tools import dev_tool
 
 module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 

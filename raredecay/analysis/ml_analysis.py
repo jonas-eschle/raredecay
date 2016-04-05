@@ -13,10 +13,10 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 import hep_ml.reweight
-from tools import dev_tool, data_tools
+from raredecay.tools import dev_tool, data_tools
 #import config as cfg
 import importlib
-import meta_config
+from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
 
 
