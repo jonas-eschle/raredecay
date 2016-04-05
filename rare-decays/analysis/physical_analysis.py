@@ -15,13 +15,13 @@ def run(runmode):
     """select the right runmode from the parameter and run it"""
     #global run_config
     #run_config = 'config'
-    _test1()
+    _reweight1()
 
 
 
 
-def _test1():
-    meta_config.run_config='test1_cfg'
+def _reweight1():
+    meta_config.run_config = 'reweight1_cfg'
     import ml_analysis
     import importlib
     cfg = importlib.import_module(meta_config.run_config)
