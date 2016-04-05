@@ -20,62 +20,61 @@ import dev_tool
 
 module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
-def apply_weights(data_to_apply, weights, logger=None,
+def format_data_weights(data_to_shape, weights, logger=None,
                   ml_analysis_object=None):
-    """Reweight the data with given weights.
+    """Format the data and the weights perfectly. Same length and more.
 
-    Applies the weights on the data. Formats can nearly be arbitrary chosen.
+    Change the data to pandas.DataFrame and fill the weights with ones where
+    nothing or None is specified. Returns both in lists.
+    Very useful to loop over several data and weights.
 
     Parameters
     ----------
-    data_to_apply : (root_dict, numpy.array, pandas.DataFrame)
+    data_to_shape : (root_dict, numpy.array, pandas.DataFrame)
         The data for which we apply the weights. Usual 2-D shape.
     weights : (list, numpy.array, pandas.DataFrame, None)
-        The weights to be applied.
+        The weights to be reshaped
 
         *Best format* :
 
         [array(weights),array(weights), None, array(weights),...]
 
         *None* can be used if no special weights are specified.
-        If weights contains less weight-containing array-like objects then
-        data_to_apply does, the difference will be filled with *None*
+        If weights contains less "weight-containing array-like objects" then
+        data_to_shape does, the difference will be filled with *1*
 
     Return
     ------
     out : list(pandas.DataFrame(data), pandas.DataFrame(data),...)
-        Return a list containing data with the new weights applied
-    out : list(pandas.DataFrame(weight), pandas.DataFrame(weight),...)
+        Return a list containing data
+    out : list(numpy.array(weight), numpy.array(weight),...)
         Return a list with the weights, converted and filled.
     """
     if logger is None:
         logger = module_logger
     # conver the data
-    if not isinstance(data_to_apply, list):
-        data_to_apply = [data_to_apply]
-    logger.debug("data_to_apply: " + str(data_to_apply))
-    if (hasattr(ml_analysis_object, '__getitem__') and  # could also be 'None'
+    if not isinstance(data_to_shape, list):
+        data_to_shape = [data_to_shape]
+    if (ml_analysis_object is not None and  # could also be 'None'
             hasattr(ml_analysis_object, 'fast_to_pandas')):
-        data_to_apply = map(ml_analysis_object.fast_to_pandas, data_to_apply)
+        data_to_shape = map(ml_analysis_object.fast_to_pandas, data_to_shape)
     else:
-        data_to_apply = map(to_pandas, data_to_apply)
+        data_to_shape = map(to_pandas, data_to_shape)
     # convert the weights
     if not isinstance(weights, list):
         weights = [weights]
-    logger.debug("weights: " + str(weights))
     if weights[0] is not None:
         if len(weights[0]) == 1:
             weights = [weights]
-    # convert to pandas and multiply all data with the weights
+    # convert to pandas
     assert isinstance(weights, list), "weights could not be converted to list"
-    for data_id, data in enumerate(data_to_apply):
+    for data_id, data in enumerate(data_to_shape):
         if data_id >= len(weights):
             weights.append(None)
         if weights[data_id] is None:
             weights[data_id] = np.array([1] * len(data))
         weights[data_id] = to_pandas(weights[data_id]).squeeze().values
-        data_to_apply[data_id].multiply(weights[data_id], axis=0)
-    return data_to_apply, weights
+    return data_to_shape, weights
 
 
 def is_root(data_to_check):

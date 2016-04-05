@@ -89,11 +89,8 @@ class MachineLearningAnalysis:
             raise ValueError
         else:
             reweighter += 'Reweighter'
-
-        self.logger.debug("starting data conversion")
         original = self.fast_to_pandas(reweight_data_mc)
         target = self.fast_to_pandas(reweight_data_real)
-        self.logger.debug("data converted to pandas")
         reweighter = getattr(hep_ml.reweight,
                              reweighter)(**meta_cfg)
         reweighter.fit(original, target)
@@ -128,15 +125,11 @@ class MachineLearningAnalysis:
         reweighter_trained = data_tools.try_unpickle(reweighter_trained)
         reweight_apply_data = self.fast_to_pandas(reweight_apply_data)
         new_weights = reweighter_trained.predict_weights(reweight_apply_data)
-        self.logger.debug("shape of new_weights: " + str(len(new_weights)))
-        self.logger.debug("shape of data: " + str(len(reweight_apply_data)))
-        self.logger.debug("type of new_weights: " + str(type(new_weights)))
-        self.logger.debug("new_weights: " + str(new_weights))
         return new_weights
 
     def draw_distributions(self, data_to_plot, labels=None, weights=None,
-                           columns=None, hist_cfg=cfg.hist_cfg_std, show=False,
-                           **kwargs):
+                           columns=None, hist_cfg=cfg.hist_cfg_std,
+                           show=False):
         """Draw histograms of weighted distributions.
 
 
@@ -150,13 +143,8 @@ class MachineLearningAnalysis:
             Specify the weights in the right order for the distributions.
 
         """
-        if kwargs.get('debug_weights_manually', False):
-            data_to_plot, weights = data_tools.apply_weights(data_to_plot,
-                                                             weights)
-        else:
-            data_to_plot, dummy = data_tools.apply_weights(data_to_plot, None)
-            dummy, weights = data_tools.apply_weights(data_to_plot, weights)
-            del dummy
+        data_to_plot, weights = data_tools.format_data_weights(data_to_shape=data_to_plot, weights=weights,
+                                                         ml_analysis_object=self)
         labels = dev_tool.make_list_fill_var(labels, len(data_to_plot),
                                              var=None)
         if columns is None:
@@ -171,19 +159,21 @@ class MachineLearningAnalysis:
             plt.subplot(subplot_row, subplot_col, col_id)
             for data_id, data in enumerate(data_to_plot):
                 plt.hist(data[column], weights=weights[data_id],
-                         range=x_limits,
-                         label=labels[data_id],
-                         **hist_cfg)
+                         range=x_limits, label=labels[data_id], **hist_cfg)
             plt.title(column)
             plt.legend()
         if show:
             plt.show()
 
-    def fast_ROC_AUC(self, original, target, weight_original=[],
-                     weight_target=[]):
+    def fast_ROC_AUC(self, original, target, weight_original=None,
+                     weight_target=None):
         """ Return the ROC AUC fast, useful to find out, how well they can be
         distinguished.
         """
+        if weight_original is None:
+            weight_original = []
+        if weight_target is None:
+            weight_target = []
         from sklearn.ensemble import GradientBoostingClassifier
         from sklearn.cross_validation import train_test_split
         from sklearn.metrics import roc_auc_score
@@ -199,25 +189,21 @@ class MachineLearningAnalysis:
                                                  len(original), 1))
         weight_target = np.array(dev_tool.fill_list_var(weight_target,
                                                len(target), 1))
-        self.logger.debug("weight_original: " + str(weight_original))
-        self.logger.debug("weight_original type: " + str(type(weight_original)))
-        self.logger.debug("weight_original shape: " + str(len(weight_original)))
         weights = np.concatenate([weight_original, weight_target])
         X_train, X_test, y_train, y_test, weight_train, weight_test = (
             train_test_split(data, label, weights, random_state=42))
         clf = GradientBoostingClassifier(n_estimators=10)
-        # test begin
-        self.logger.debug("start scores")
-#        scores = cross_val_score(clf, data.multiply(weights, axis=0), label,
-#                                 cv=KFold(len(data), n_folds=2, shuffle=True),
-#                                 n_jobs=6)
-#        print("CV error = %f +-%f" % (1. - np.mean(scores), np.std(scores)))
-#        # test end
+        #scores = cross_val_score(clf, data, label,
+        #                         cv=KFold(len(data), n_folds=3, shuffle=True),
+        #                         n_jobs=6, scoring = 'roc_auc')
+        #roc_auc_kfold = ("roc_auc_score KFold = %f +-%f" % (np.mean(scores), np.std(scores)))
+        roc_auc_kfold = 'not implemented'
+        # test end
         clf.fit(X_train, y_train, weight_train)
 
         ROC_AUC = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1],
                                 sample_weight=weight_test)
-        return ROC_AUC
+        return ROC_AUC, roc_auc_kfold
 
     def fast_to_pandas(self, data_in, **kwarg_to_pandas):
         """ Check if data has already been converted and saved before calling
@@ -234,7 +220,6 @@ class MachineLearningAnalysis:
                 dictionary = dict(data_in)
                 add_to_already_pandas = True
         data_in = data_tools.to_pandas(data_in, self.logger, **kwarg_to_pandas)
-        self.logger.debug("converted data shape: " + str(len(data_in)))
         if add_to_already_pandas:
             self.already_pandas.append((dictionary, data_in))
         return data_in

@@ -133,7 +133,6 @@ def make_list_fill_var(to_check, length=0, var=None):
     if type(to_check) is not list:
         to_check = [to_check]
     difference = length - len(to_check)
-    print "difference = ", difference
     if difference > 0:
         to_check += [None]*difference
     return to_check

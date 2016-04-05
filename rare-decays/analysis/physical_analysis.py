@@ -32,23 +32,22 @@ def _test1():
     bins_list = []
     ml_ana = ml_analysis.MachineLearningAnalysis()
 
-    for i in range(1):
-        print "starting run number ", i+1
-        #gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
-        gb_reweighter = 'gb_reweighter1.pickle'
-        gb_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), gb_reweighter)
-        #bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
-        bins_reweighter = 'bins_reweighter1.pickle'
-        bins_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), bins_reweighter)
-        #new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), "reweighter1.pickl.pickle")
-        gb_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
-                            cfg.reweight_cfg.get('reweight_data_real'),
-                            weight_original =  gb_weights))
-        original_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
-                            cfg.reweight_cfg.get('reweight_data_real')))
-        bins_list.append(ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
-                            cfg.reweight_cfg.get('reweight_data_real'),
-                            weight_original =  bins_weights))
+
+    #gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
+    gb_reweighter = 'gb_reweighter1.pickle'
+    gb_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), gb_reweighter)
+    #bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
+    bins_reweighter = 'bins_reweighter1.pickle'
+    bins_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), bins_reweighter)
+    #new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), "reweighter1.pickl.pickle")
+    gb_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
+                        cfg.reweight_cfg.get('reweight_data_real'),
+                        weight_original =  gb_weights))
+    original_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
+                        cfg.reweight_cfg.get('reweight_data_real')))
+    bins_list.append(ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
+                        cfg.reweight_cfg.get('reweight_data_real'),
+                        weight_original =  bins_weights))
     ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
                               cfg.reweight_cfg.get('reweight_data_real')],
                               labels=['mc', 'real'])
@@ -61,8 +60,10 @@ def _test1():
                               weights=[bins_weights, None],
                               labels=['mc bins_reweighter', 'real'])
     names_list = ['gb', 'original', 'bins']
+    print
     for i, lists in enumerate([gb_list, original_list, bins_list]):
-        print "ROC AUC mean " + names_list[i] + ": ", (sum(lists)/1), lists
+        print "ROC AUC mean " + names_list[i] + ": ", lists[0][0]
+        print  lists[0][1]
 
 
 def _test2():

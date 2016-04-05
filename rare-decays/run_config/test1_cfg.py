@@ -18,7 +18,7 @@ DATA_PATH += '/'
 
 #DEBUG options
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
-FAST_CONVERSION = False  # default: True
+FAST_CONVERSION = True  # default: True
 MULTITHREAD = False  # not yet implemented
 
 
@@ -62,7 +62,7 @@ reweight_meta_cfg = dict(
     gb=dict(
         n_estimators=300,
         max_depth=5,
-        learning_rate=0.05
+        learning_rate=0.2
     ),
     bins=dict(
         n_bins=20
@@ -93,7 +93,7 @@ reweight_meta_cfg_bins = dict(
 hist_cfg_std = dict(
     bins=40,
     normed=True,
-    alpha=0.5,  # transparency [0.0, 1.0]
+    alpha=0.5  # transparency [0.0, 1.0]
 )
 
 
