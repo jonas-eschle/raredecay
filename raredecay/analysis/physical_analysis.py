@@ -19,11 +19,19 @@ def run(runmode):
 
 
 
-def reweight():
+def reweight(data_to_reweight):
     raredecay.meta_config.run_config = 'raredecay.run_config.reweight_cfg'  # 'run_config.reweight1_cfg'
     from raredecay.analysis import ml_analysis
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)
+    from raredecay.tools import data_tools
+
+    ml_ana = ml_analysis.MachineLearningAnalysis()
+    reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
+                                         **cfg.reweight_cfg)
+    # reweighter = ''  # load from pickle file
+    new_weights = ml_ana.reweight_weights(data_to_reweight, reweighter)
+    return data_tools.adv_return(new_weights)
 
 
 def _reweight1_comparison():
@@ -31,6 +39,8 @@ def _reweight1_comparison():
     from raredecay.analysis import ml_analysis
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)
+
+
 
     print "starting physical module reweight1"
     gb_list = []
@@ -69,11 +79,21 @@ def _reweight1_comparison():
     print
     for i, lists in enumerate([gb_list, original_list, bins_list]):
         print "ROC AUC mean " + names_list[i] + ": ", lists[0][0]
-        print  lists[0][1]
+        print lists[0][1]
+
+
+
 
 
 def _test2():
     pass
+
+
+def finalize():
+    """Finalize the run: print to console and save output_string to file
+    """
+    print "function finalize not yet implemented"
+
 # temporary:
 if __name__ == '__main__':
     run(1)
