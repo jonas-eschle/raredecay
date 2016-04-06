@@ -149,8 +149,8 @@ class MachineLearningAnalysis:
                                              var=None)
         if columns is None:
             columns = list(data_to_plot[0].columns.values)
-        subplot_col = math.ceil(math.sqrt(len(data_to_plot)))
-        subplot_row = math.ceil(float(len(data_to_plot))/subplot_col)
+        subplot_col = math.ceil(math.sqrt(len(columns)))
+        subplot_row = math.ceil(float(len(columns))/subplot_col)
         self.__figure_number += 1
         plt.figure(self.__figure_number)
         for col_id, column in enumerate(columns, 1):
@@ -192,7 +192,7 @@ class MachineLearningAnalysis:
         weights = np.concatenate([weight_original, weight_target])
         X_train, X_test, y_train, y_test, weight_train, weight_test = (
             train_test_split(data, label, weights, random_state=42))
-        clf = GradientBoostingClassifier(n_estimators=10)
+        clf = GradientBoostingClassifier(n_estimators=100)
         #scores = cross_val_score(clf, data, label,
         #                         cv=KFold(len(data), n_folds=3, shuffle=True),
         #                         n_jobs=6, scoring = 'roc_auc')

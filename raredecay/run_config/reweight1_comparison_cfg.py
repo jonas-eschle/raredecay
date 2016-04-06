@@ -12,7 +12,7 @@ PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
 # general variables
-DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown/cut-data'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 DATA_PATH += '/'
 
@@ -41,28 +41,33 @@ Bu2K1Jpsi_mc = dict(
     branches=["B_PT", "nTracks"]
 )
 cut_Bu2K1Jpsi_mc = dict(
-    filenames=DATA_PATH+'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    treename='DecayTree',
+    branches=["B_PT", "nTracks", 'Jpsi_P', 'B_TAU']
+)
+cut_B2KpiLL_real = dict(
+    filenames=DATA_PATH+'cut-data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='DecayTree',
     branches=["B_PT", "nTracks"]
 )
-cut_B2KpiLL_real = dict(
-    filenames=DATA_PATH+'CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
+cut_sWeight_B2KpiLL_real = dict(
+    filenames=DATA_PATH+'sweighted-data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=["B_PT", "nTracks"]
+    branches=["B_PT", "nTracks", 'Jpsi_P', 'B_TAU']
 )
 
 # start default config
 reweight_cfg = dict(
     reweighter='gb',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
-    reweight_data_real=cut_B2KpiLL_real,
+    reweight_data_real=cut_sWeight_B2KpiLL_real,
     reweight_saveas='gb_reweighter1'  # 'reweighter1.pickl'
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=300,
+        n_estimators=400,
         max_depth=5,
-        learning_rate=0.2
+        learning_rate=0.02
     ),
     bins=dict(
         n_bins=20
@@ -74,7 +79,7 @@ reweight_meta_cfg = dict(
 reweight_cfg_bins = dict(
     reweighter='bins',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
-    reweight_data_real=cut_B2KpiLL_real,
+    reweight_data_real=cut_sWeight_B2KpiLL_real,
     reweight_saveas='bins_reweighter1'  # 'reweighter1.pickl'
 )
 
@@ -83,7 +88,8 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=40,
+        n_bins=50,
+        n_neighs=1
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
 # end config 1

@@ -15,29 +15,35 @@ def run(runmode):
     """select the right runmode from the parameter and run it"""
     #global run_config
     #run_config = 'config'
-    _reweight1()
+    _reweight1_comparison()
 
 
 
+def reweight():
+    raredecay.meta_config.run_config = 'raredecay.run_config.reweight_cfg'  # 'run_config.reweight1_cfg'
+    from raredecay.analysis import ml_analysis
+    import importlib
+    cfg = importlib.import_module(raredecay.meta_config.run_config)
 
-def _reweight1():
+
+def _reweight1_comparison():
     raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_cfg'  # 'run_config.reweight1_cfg'
     from raredecay.analysis import ml_analysis
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)
 
-    print "starting physical module test"
+    print "starting physical module reweight1"
     gb_list = []
     original_list = []
     bins_list = []
     ml_ana = ml_analysis.MachineLearningAnalysis()
 
 
-    #gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
-    gb_reweighter = 'gb_reweighter1.pickle'
+    gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
+    #gb_reweighter = 'gb_reweighter1.pickle'
     gb_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), gb_reweighter)
-    #bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
-    bins_reweighter = 'bins_reweighter1.pickle'
+    bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
+    #bins_reweighter = 'bins_reweighter1.pickle'
     bins_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), bins_reweighter)
     #new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), "reweighter1.pickl.pickle")
     gb_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
