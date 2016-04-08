@@ -126,7 +126,7 @@ def to_ndarray(data_in, logger=None, dtype=None):
         data_in = root2array(**data_in)  # why **? it's a root dict
     if is_list(data_in):
         data_in = np.array(data_in)
-    assert is_ndarray(), "Error, could not convert data to numpy array"
+    assert is_ndarray(data_in), "Error, could not convert data to numpy array"
     return data_in
 
 
