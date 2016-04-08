@@ -94,7 +94,7 @@ class MachineLearningAnalysis:
         reweighter = getattr(hep_ml.reweight,
                              reweighter)(**meta_cfg)
         reweighter.fit(original, target)
-        return data_tools.adv_return(reweighter, self.logger,
+        return data_tools.adv_return(reweighter, logger=self.logger,
                                      save_name=reweight_saveas)
 
     def reweight_weights(self, reweight_apply_data, reweighter_trained):

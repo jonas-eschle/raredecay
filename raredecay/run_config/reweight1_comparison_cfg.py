@@ -43,7 +43,7 @@ Bu2K1Jpsi_mc = dict(
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=["B_PT", "nTracks", 'Jpsi_P', 'B_TAU']
+    branches=["B_PT", "nTracks", 'Jpsi_P']#, 'B_TAU']
 )
 cut_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut-data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
@@ -53,7 +53,7 @@ cut_B2KpiLL_real = dict(
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'sweighted-data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=["B_PT", "nTracks", 'Jpsi_P', 'B_TAU']
+    branches=["B_PT", "nTracks", 'Jpsi_P']#, 'B_TAU']
 )
 
 # start default config
@@ -65,7 +65,7 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=500,
+        n_estimators=400,
         max_depth=5,
         learning_rate=0.03
     ),
@@ -88,8 +88,8 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=30,
-        n_neighs=1
+        n_bins=500,
+        n_neighs=3
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
 # end config 1

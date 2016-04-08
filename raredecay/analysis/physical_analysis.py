@@ -35,10 +35,15 @@ def reweight(data_to_reweight):
 
 
 def _reweight1_comparison():
-    raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_cfg'  # 'run_config.reweight1_cfg'
+    raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_cfg'
     from raredecay.analysis import ml_analysis
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)
+
+    from raredecay.tools import dev_tool
+    logger = dev_tool.make_logger(__name__)
+    logger.debug("config file used: " +
+                 str(raredecay.meta_config.run_config))
 
 
 
@@ -55,7 +60,7 @@ def _reweight1_comparison():
     bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
     #bins_reweighter = 'bins_reweighter1.pickle'
     bins_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), bins_reweighter)
-    #new_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), "reweighter1.pickl.pickle")
+    print bins_weights
     gb_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
                         cfg.reweight_cfg.get('reweight_data_real'),
                         weight_original =  gb_weights))
@@ -64,6 +69,8 @@ def _reweight1_comparison():
     bins_list.append(ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
                         cfg.reweight_cfg.get('reweight_data_real'),
                         weight_original =  bins_weights))
+    print gb_weights
+    print bins_weights
     ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
                               cfg.reweight_cfg.get('reweight_data_real')],
                               labels=['mc', 'real'])

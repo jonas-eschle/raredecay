@@ -16,4 +16,5 @@ print "starting main"
 run(1)
 finalize()
 play_sound()
+a = raw_input(["Run finished, press Enter to show the plots"])
 show()
