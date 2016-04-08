@@ -84,7 +84,7 @@ def is_root(data_to_check):
     if type(data_to_check) is dict:
         path_name = data_to_check.get('filenames')
         assert type(path_name) is str, ("'filenames' of the dictionary " +
-                                        data_to_check + "is not a string")
+                                        str(data_to_check) + "is not a string")
         if path_name.endswith(cfg.ROOT_DATATYPE):
             flag = True
     return flag
@@ -103,7 +103,7 @@ def is_ndarray(data_to_check):
     """Check whether a given data is an ndarray.
     """
     flag = False
-    if type(data_to_check) is np.ndarray:
+    if isinstance(data_to_check, np.ndarray):
         flag = True
     return flag
 
@@ -114,6 +114,21 @@ def is_pickle(data_to_check):
         if data_to_check.endswith(cfg.PICKLE_DATATYPE):
             flag = True
     return flag
+
+
+def to_ndarray(data_in, logger=None, dtype=None):
+    """Convert data to numpy array
+
+    """
+    if logger is None:
+        logger = module_logger
+    if is_root(data_in):
+        data_in = root2array(**data_in)  # why **? it's a root dict
+    if is_list(data_in):
+        data_in = np.array(data_in)
+    assert is_ndarray(), "Error, could not convert data to numpy array"
+    return data_in
+
 
 
 def to_pandas(data_in, logger=None, indices=None, columns=None, dtype=None):
