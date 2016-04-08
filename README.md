@@ -13,31 +13,10 @@ The basic ideas and assumption for the creations are:
 * We should not care to much about the data type as the conversion is basically straight forward
 * Data is read much more often than changed. And if it is changed, it should be saved to a [root tree](rootTree)
 * We have a lot of other data that belongs to our actual root data
-  - meta-data like name of the data, name of the columns used, plot-color...
-  - additional data like labels, weights...
+    * meta-data like name of the data, name of the columns used, plot-color...
+    * additional data like labels, weights...
 * Conversion of data takes neglectable cpu-time compared to the time used by the training, whereas the memory used to store several copies ( a [numpy array][numpy.array] and a [pandas Data Frame][pandas.DataFrame] ) of actually the same data is significant. At least on an average notebook.
 
-
-
-### How do I get set up? ###
-
-* Summary of set up
-* Configuration
-* Dependencies
-* Database configuration
-* How to run tests
-* Deployment instructions
-
-### Contribution guidelines ###
-
-* Writing tests
-* Code review
-* Other guidelines
-
-### Who do I talk to? ###
-
-* Repo owner or admin
-* Other community or team contact
 
 [pandas.DataFrame]: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
 [LabeledDataStorage]: http://yandex.github.io/rep/data.html#module-rep.data.storage
