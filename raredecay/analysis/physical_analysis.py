@@ -13,8 +13,10 @@ import raredecay.meta_config
 
 def run(runmode):
     """select the right runmode from the parameter and run it"""
-    #global run_config
+
+
     #run_config = 'config'
+
     _reweight1_comparison()
 
 
@@ -34,8 +36,9 @@ def reweight(data_to_reweight):
     return data_tools.adv_return(new_weights)
 
 
-def _reweight1_comparison():
-    raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_cfg'
+def _reweight1_comparison(config_file=None):
+    if config_file is None:
+        raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_cfg'
     from raredecay.analysis import ml_analysis
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)

@@ -4,7 +4,8 @@ Created on Mon Mar 21 21:25:26 2016
 
 @author: mayou
 """
-
+import numpy as np
+import collections
 
 def syspath_append(verboise=False):
     """Adds the relevant path to the sys.path variable.
@@ -136,6 +137,25 @@ def make_list_fill_var(to_check, length=0, var=None):
     if difference > 0:
         to_check += [var]*difference
     return to_check
+
+
+def is_in_primitive(test_object, allowed_primitives):
+    """Fixes the numpy/python "bug/stupidity" that ("==" can be replaced by
+    "is"): "array([1,4,5]) == None" is not defined (it is clearly False)
+    This way you can test safely for a primitive type. If the object is a list
+    , array or similar, it returns 'False'.
+    """
+    flag = False
+    if isinstance(test_object, (list, np.ndarray)):
+        flag = False
+    elif (isinstance(allowed_primitives, collections.Iterable) and
+            (not isinstance(allowed_primitives, basestring))):
+        if test_object in allowed_primitives:
+            flag = True
+    elif test_object is allowed_primitives:
+        flag = True
+    return flag
+
 
 
 def play_sound(duration = 0.3, frequency = 440, change=False):
