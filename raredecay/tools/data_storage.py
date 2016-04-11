@@ -23,8 +23,10 @@ from raredecay.tools import dev_tool
 
 
 class HEPDataStorage():
-    """ A wrapper around pandas.DataFrame and an extension to the \
-    LabeledDataStorage
+    """ A wrapper around pandas.DataFrame and an extension to the
+    LabeledDataStorage.
+
+
 
     """
     __HIST_SETTINGS_DEFAULT = dict(
@@ -36,33 +38,69 @@ class HEPDataStorage():
     __figure_dic = {}
 
     def __init__(self, data, target=None, sample_weights=None, data_name=None,
-                 data_name_addition=None, data_labels=None, add_label=True,
+                 data_name_addition=None, data_labels=None, add_label=False,
                  hist_settings=None, supertitle_fontsize=18):
-        """Load data
+        """Initialize instance and load data
 
+        Parameters
+        ----------
+        data : root-tree dict
+            Dictionary which specifies all the information to convert a root-
+            tree to an array. Directly given to :func:`~root_numpy.root2rec`
+        .. note:: Will be also arrays or pandas DataFrame in the future
+        target : list or 1-D array or int {0, 1}
+            Labels the data for the machine learning. Usually the y.
+        sample_weights : 1-D array
+            Contains the weights of the samples
+        .. note:: If None specified, 1 will be assumed for all.
+        data_name : str
+            | Name of the data, human-readable. Displayed in the title of \
+            plots.
+            | *Example: 'Bu2K1piee_mc', 'beta-decay_realData' etc.*
+        data_name_addition : str
+            | Additional remarks to the data, human readable. Displayed in \
+            the title of plots.
+            | *Example: 'reweighted', 'shuffled', '5 GeV cut applied' etc.*
+        data_labels : dict with strings {column name: human readable name}
+            | Human-readable names for the columns, displayed in the plot.
+            | Dictionary has to contain the exact column (=branch) name of \
+            the data
+            | All not specified labels will be auto-labeled by the branch \
+            name itself.
+        add_label : boolean
+            If true, the human-readable labels will be added to the branch name
+            shows in the plot instead of replaced.
+        hist_settings : dict
+            Dictionary with the settings for the histogram plot function
+            :func:`~matplotlip.pyplot.hist`
+        supertitle_fontsize : int
+            The size of the title of several subplots (data_name, _addition)
         """
         self._name = (data_name, data_name_addition)
         if data_labels is None:
             data_labels = {}
-        self.add_label = add_label
         if dev_tool.is_in_primitive(hist_settings, None):
             hist_settings = self.__HIST_SETTINGS_DEFAULT
         self.hist_settings = hist_settings
         self.target_label = target
-        self.data_name = data_name
         self._data_pandas = None
         self.root_dict = data
-        self.label_dic = {}
-        for branch in self.root_dict.get('branches'):
-            self.label_dic[branch] = data_labels.get(branch, branch)
-        for key, val in data_labels.iteritems():
-            self.label_dic[key] = val
-        self.weights = sample_weights
+        # data-labels human readable:
+        self.add_label = add_label
+        self.label_dic = {col: col for col in self.root_dict.get('branches')}
+        self.label_dic.update(data_labels)
+        self.data_name = data_name
+        # define length for __len__
         temp_root_dict = copy.deepcopy(self.root_dict)
         temp_branch = temp_root_dict.pop('branches')
         temp_branch = dev_tool.make_list_fill_var(temp_branch)
         self.length = len(root2rec(branches=temp_branch[0],
                                    **temp_root_dict))
+        # define weights and check length
+        if not dev_tool.is_in_primitive(sample_weights, None):
+            assert len(sample_weights) == self.length
+        self.weights = sample_weights
+        # initialise logger
         self.logger = dev_tool.make_logger(__name__)
         self.supertitle_fontsize = supertitle_fontsize
 
@@ -82,6 +120,14 @@ class HEPDataStorage():
     def get_weights(self, index=None):
         """Return the weights of the specified indeces or, if None, return all.
 
+        Parameters
+        ----------
+        index: NotImplemented
+            not yet implemented
+        Return
+        ------
+        out: 1-D numpy array
+            Return the weights in an array
         """
         if dev_tool.is_in_primitive(self.weights, (None, 1)):
             weights_out = np.array(dev_tool.fill_list_var([], len(self), 1),
@@ -95,6 +141,10 @@ class HEPDataStorage():
     def set_weights(self, sample_weights):
         """Set the weights of the sample
 
+        Parameters
+        ----------
+        sample_weights : 1-D array or list or int {1}
+            The new weights for the dataset
         """
         assert len(sample_weights) == len(self), "Wrong length of weights"
         self.weights = sample_weights
@@ -110,6 +160,7 @@ class HEPDataStorage():
         """Convert the data to pandas or cut an already existing data frame and
         return
 
+        Return a pandas DataFrame
         """
         if isinstance(branches, str):
             branches = [branches]
@@ -123,14 +174,27 @@ class HEPDataStorage():
             data_out.columns = temp_root_dict['branches']
         return data_out
 
-    def get_labels(self, branches=None):
+    def get_labels(self, branches=None, no_dict=False):
         """Return the labels of the data
 
+        Parameters
+        ----------
+        branches : list with str or str
+            The labels of the branches to return
+        no_dict : boolean
+            If true, the labels will be returned as a list instead of a dict.
+        Return
+        ------
+        out : list or dict
+            Return a list or dict containing the labels.
         """
         if branches is None:
             branches = self.root_dict.get('branches')
         branches = dev_tool.make_list_fill_var(branches)
-        labels_out = [self.label_dic.get(col, col) for col in branches]
+        if no_dict:
+            labels_out = {key: self.label_dic.get(key) for key in branches}
+        else:
+            labels_out = [self.label_dic.get(col, col) for col in branches]
         return dev_tool.make_list_fill_var(labels_out)
 
     def get_targets(self):
@@ -176,6 +240,10 @@ class HEPDataStorage():
         """Create and return an instance of class "LabeledDataStorage" from
         the REP repository
 
+        Return
+        ------
+        out: LabeledDataStorage instance
+            Return a Labeled Data Storage instance created with the data
         """
         new_lds = LabeledDataStorage(self.pandasDF(),
                                      target=self.get_targets(),
@@ -187,13 +255,23 @@ class HEPDataStorage():
     def plot(self, figure=None, branches=None, index=None, sample_weights=None,
              hist_settings=None, data_labels=None, log_y_axes=False,
              plots_name=None):
-        """Draw histograms of the data
+        """Draw histograms of the data.
 
 
-        Parameters:
+        Parameters
         ----------
-        data_labels: dict
+        figure : str or int
+            The name of the figure. If the figure already exists, the plots
+            will be plotted in the same window (can be intentional, for
+            example to compare data)
+        log_y_axes : boolean
+            If True, the y-axes will be scaled logarithmically.
+        plots_name:
+            Additional, (to the *data_name* and *data_name_addition*), human-
+            readable name for the plot.
+        data_labels : dict
             Contain the column as key and the value as label
+
         """
         if dev_tool.is_in_primitive(data_labels, None):
             data_labels = {}
