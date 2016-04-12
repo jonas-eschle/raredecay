@@ -5,6 +5,7 @@ Created on Mon Mar 21 22:26:13 2016
 @author: mayou
 """
 import cPickle as pickle
+from root_numpy import root2array
 
 
 # Datatype ending variables
@@ -28,7 +29,7 @@ def path_test():
 
 # reweighting
 
-# data files
+# root-dicts
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
@@ -55,6 +56,35 @@ cut_sWeight_B2KpiLL_real = dict(
     treename='DecayTree',
     branches=["B_PT", "nTracks", 'Jpsi_P']#, 'B_TAU']
 )
+
+# data for HEPDataStorage
+B2KpiLL_real_cut = dict(
+    data=cut_sWeight_B2KpiLL_real,
+    target=1,
+    data_name="B->KpiLL real data",
+    data_name_addition="cut & sweighted",
+)
+B2KpiLL_real_cut_sweighted = dict(
+    data=cut_sWeight_B2KpiLL_real,
+    target=1,
+    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
+    data_name="B->KpiLL real data",
+    data_name_addition="cut & sweighted",
+)
+B2K1Jpsi_mc_cut = dict(
+    data=cut_Bu2K1Jpsi_mc,
+    target=0,
+    sample_weights=None,
+    data_name="B->K1 J/Psi monte-carlo",
+    data_name_addition="cut"
+)
+# collection of all data
+data = dict(
+        reweight_mc=B2K1Jpsi_mc_cut,
+        reweight_real_no_sweights=B2KpiLL_real_cut,
+        reweight_real=B2KpiLL_real_cut_sweighted
+)
+
 
 # start default config
 reweight_cfg = dict(

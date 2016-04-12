@@ -124,6 +124,8 @@ def to_ndarray(data_in, logger=None, dtype=None):
         logger = module_logger
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
+    if isinstance(data_in, (np.recarray, np.ndarray)):
+        data_in = data_in.tolist()
     if is_list(data_in):
         data_in = np.array(data_in)
     assert is_ndarray(data_in), "Error, could not convert data to numpy array"

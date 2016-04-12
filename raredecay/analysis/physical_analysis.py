@@ -21,14 +21,22 @@ def run(runmode):
 
 
 
-def reweight(data_to_reweight):
-    raredecay.meta_config.run_config = 'raredecay.run_config.reweight_cfg'  # 'run_config.reweight1_cfg'
-    from raredecay.analysis import ml_analysis
+def reweight(data_to_reweight, config_file=None):
+    # specify configuration file
+    if config_file is None:
+        raredecay.meta_config.run_config = 'raredecay.run_config.reweight_cfg'
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)
+    # create logger
+    from raredecay.tools import dev_tool
+    logger = dev_tool.make_logger(__name__)
+    logger.debug("config file used: " +
+                 str(raredecay.meta_config.run_config))
+
+    # actual program start
+    import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_tools
 
-    ml_ana = ml_analysis.MachineLearningAnalysis()
     reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
                                          **cfg.reweight_cfg)
     # reweighter = ''  # load from pickle file
@@ -37,59 +45,57 @@ def reweight(data_to_reweight):
 
 
 def _reweight1_comparison(config_file=None):
+    # specifiy configuration file
     if config_file is None:
-        raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_cfg'
-    from raredecay.analysis import ml_analysis
+        raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_comparison_cfg'
     import importlib
     cfg = importlib.import_module(raredecay.meta_config.run_config)
-
+    # create logger
     from raredecay.tools import dev_tool
     logger = dev_tool.make_logger(__name__)
     logger.debug("config file used: " +
                  str(raredecay.meta_config.run_config))
+    # actual program start
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.tools import data_storage
 
+    # make data
+    logger.info("Start with gb reweighter")
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
 
-
-    print "starting physical module reweight1"
-    gb_list = []
-    original_list = []
-    bins_list = []
-    ml_ana = ml_analysis.MachineLearningAnalysis()
-
-
-    gb_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg, **cfg.reweight_cfg)
+    gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
+                                            reweight_data_real=reweight_real,
+                                            reweighter='gb',
+                                            meta_cfg=cfg.reweight_meta_cfg)
     #gb_reweighter = 'gb_reweighter1.pickle'
-    gb_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), gb_reweighter)
-    bins_reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg_bins, **cfg.reweight_cfg_bins)
+    ml_ana.reweight_weights(reweight_mc, gb_reweighter)
+    gb_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc, target=reweight_real)
+
+    logger.info("Start with bins reweighter")
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
+
+    bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
+                                            reweight_data_real=reweight_real,
+                                            reweighter='bins',
+                                            meta_cfg=cfg.reweight_meta_cfg_bins)
     #bins_reweighter = 'bins_reweighter1.pickle'
-    bins_weights = ml_ana.reweight_weights(cfg.reweight_cfg.get('reweight_data_mc'), bins_reweighter)
-    print bins_weights
-    gb_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
-                        cfg.reweight_cfg.get('reweight_data_real'),
-                        weight_original =  gb_weights))
-    original_list.append( ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
-                        cfg.reweight_cfg.get('reweight_data_real')))
-    bins_list.append(ml_ana.fast_ROC_AUC(cfg.reweight_cfg.get('reweight_data_mc'),
-                        cfg.reweight_cfg.get('reweight_data_real'),
-                        weight_original =  bins_weights))
-    print gb_weights
-    print bins_weights
-    ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
-                              cfg.reweight_cfg.get('reweight_data_real')],
-                              labels=['mc', 'real'])
-    ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
-                              cfg.reweight_cfg.get('reweight_data_real')],
-                              weights=[gb_weights, None],
-                              labels=['mc gb_reweighter', 'real'])
-    ml_ana.draw_distributions([cfg.reweight_cfg.get('reweight_data_mc'),
-                              cfg.reweight_cfg.get('reweight_data_real')],
-                              weights=[bins_weights, None],
-                              labels=['mc bins_reweighter', 'real'])
-    names_list = ['gb', 'original', 'bins']
-    print
-    for i, lists in enumerate([gb_list, original_list, bins_list]):
-        print "ROC AUC mean " + names_list[i] + ": ", lists[0][0]
-        print lists[0][1]
+    ml_ana.reweight_weights(reweight_mc, bins_reweighter)
+
+
+
+    bins_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
+                                        target=reweight_real)
+    logger.debug("starting with original")
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
+    original_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
+                                           target=reweight_real)
+    print "original_roc_auc = ", original_roc_auc
+    print "gb_roc_auc = ", gb_roc_auc
+    print "bins_roc_auc = ", bins_roc_auc
+
 
 
 

@@ -72,21 +72,20 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
     """
     REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
     try:
-        reweighter = __REWEIGHT_MODE.get(reweighter.lower)
+        reweighter = REWEIGHT_MODE.get(reweighter.lower())
     except KeyError:
         logger.critical("Reweighter invalid: " + reweighter +
                         ". Probably wrong defined in config.")
         raise ValueError
-    else:
-        reweighter += 'Reweighter'
+    reweighter += 'Reweighter'
     # compatibility only!
     if isinstance(reweight_data_mc, dict):
-        original = to_pandas(reweight_data_mc)
+        original = data_tools.to_pandas(reweight_data_mc)
         warnings.warn("Strongly depreceated! Use HEPDataStorage instead")
     else:
         original = reweight_data_mc.pandasDF()
     if isinstance(reweight_data_real, dict):
-        target = to_pandas(reweight_data_real)
+        target = data_tools.to_pandas(reweight_data_real)
         warnings.warn("Strongly depreceated! Use HEPDataStorage instead")
     else:
         target = reweight_data_mc.pandasDF()
@@ -97,7 +96,7 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
                                  save_name=reweight_saveas)
 
 
-def reweight_weights(reweight_apply_data, reweighter_trained,
+def reweight_weights(reweight_data, reweighter_trained,
                      add_weights_to_data=True):
     """Adds (or only returns) new weights to the data by applying a given
     reweighter on the data.
@@ -112,7 +111,7 @@ def reweight_weights(reweight_apply_data, reweighter_trained,
 
     Parameters
     ----------
-    reweight_apply_data : :class:`HEPDataStorage` (depreceated: root-dict)
+    reweight_data : :class:`HEPDataStorage` (depreceated: root-dict)
         The data for which the reweights are to be predicted.
     reweighter_trained : reweighter (*from hep_ml*) or pickle file
         The trained reweighter, which predicts the new weights.
@@ -127,10 +126,9 @@ def reweight_weights(reweight_apply_data, reweighter_trained,
         weights.
     """
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-    reweight_apply_data = fast_to_pandas(reweight_apply_data)
-    new_weights = reweighter_trained.predict_weights(reweight_apply_data)
+    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF())
     if add_weights_to_data:
-        reweight_apply_data.set_weights(new_weights)
+        reweight_data.set_weights(new_weights)
     return new_weights
 
 
@@ -186,6 +184,8 @@ def fast_ROC_AUC(original, target, weight_original=None,
         learning_rate=0.1,
         max_depth=4
         )
+    if config_clf is None:
+        config_clf = {}
     config_clf = dict(DEFAULT_CONFIG_CLF, **config_clf)
     if weight_original is None:
         weight_original = []
@@ -198,9 +198,9 @@ def fast_ROC_AUC(original, target, weight_original=None,
 
     original_data = original.pandasDF()
     target_data = target.pandasDF()
-    data = pd.concat([original, target])
-    weights = np.concatenate(original.get_weights() + target.get_weights())
-    label = np.concatenate(original.get_targets() + target.get_targets())
+    data = pd.concat([original_data, target_data])
+    weights = np.concatenate((original.get_weights(), target.get_weights()))
+    label = np.concatenate((original.get_targets(), target.get_targets()))
     # maybe useful? I don't think
     if False:
         warnings.warn("Functionality strongly depreceated and may be broken")
@@ -229,8 +229,8 @@ def fast_to_pandas(data_in, **kwarg_to_pandas):
     raise RuntimeError("This function is not implemented, as it is obsolet")
     add_to_already_pandas = False
     if cfg.FAST_CONVERSION:
-     @todo   dic, data_in = next((c for c in already_pandas if
-                            data_in == c[0]), (None, data_in))
+#     @todo   dic, data_in = next((c for c in already_pandas if
+ #                           data_in == c[0]), (None, data_in))
         if dic is None:
             dictionary = dict(data_in)
             add_to_already_pandas = True

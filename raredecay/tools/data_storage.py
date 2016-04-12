@@ -21,6 +21,7 @@ except ImportError:
 from raredecay.tools import data_tools
 from raredecay.tools import dev_tool
 
+modul_logger = dev_tool.make_logger(__name__)
 
 class HEPDataStorage():
     """ A wrapper around pandas.DataFrame and an extension to the
@@ -39,7 +40,7 @@ class HEPDataStorage():
 
     def __init__(self, data, target=None, sample_weights=None, data_name=None,
                  data_name_addition=None, data_labels=None, add_label=False,
-                 hist_settings=None, supertitle_fontsize=18):
+                 hist_settings=None, supertitle_fontsize=18, logger=None):
         """Initialize instance and load data
 
         Parameters
@@ -76,6 +77,8 @@ class HEPDataStorage():
         supertitle_fontsize : int
             The size of the title of several subplots (data_name, _addition)
         """
+        if logger is None:
+            self.logger = modul_logger
         self._name = (data_name, data_name_addition)
         if data_labels is None:
             data_labels = {}
@@ -101,7 +104,6 @@ class HEPDataStorage():
             assert len(sample_weights) == self.length
         self.weights = sample_weights
         # initialise logger
-        self.logger = dev_tool.make_logger(__name__)
         self.supertitle_fontsize = supertitle_fontsize
 
     def __len__(self):
@@ -146,6 +148,8 @@ class HEPDataStorage():
         sample_weights : 1-D array or list or int {1}
             The new weights for the dataset
         """
+        if dev_tool.is_in_primitive(sample_weights, (None, 1)):
+            sample_weights = np.array([1] * len(self))
         assert len(sample_weights) == len(self), "Wrong length of weights"
         self.weights = sample_weights
 
