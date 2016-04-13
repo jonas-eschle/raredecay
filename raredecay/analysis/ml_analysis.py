@@ -4,6 +4,7 @@ Created on Sat Mar 26 11:29:01 2016
 
 @author: mayou
 """
+# debug
 
 import warnings
 
@@ -21,7 +22,6 @@ from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
-
 
 def reweight_mc_real(reweight_data_mc, reweight_data_real,
                      reweighter='gb', weights_mc=None, weights_real=None,
@@ -79,19 +79,13 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
         raise ValueError
     reweighter += 'Reweighter'
     # compatibility only!
-    if isinstance(reweight_data_mc, dict):
-        original = data_tools.to_pandas(reweight_data_mc)
-        warnings.warn("Strongly depreceated! Use HEPDataStorage instead")
-    else:
-        original = reweight_data_mc.pandasDF()
-    if isinstance(reweight_data_real, dict):
-        target = data_tools.to_pandas(reweight_data_real)
-        warnings.warn("Strongly depreceated! Use HEPDataStorage instead")
-    else:
-        target = reweight_data_real.pandasDF()
+    original = reweight_data_mc
+    target = reweight_data_real
     reweighter = getattr(hep_ml.reweight,
                          reweighter)(**meta_cfg)
-    reweighter.fit(original, target)
+    reweighter.fit(original=original.pandasDF(), target=target.pandasDF(),
+                   original_weight=original.get_weights(),
+                   target_weight=target.get_weights())
     return data_tools.adv_return(reweighter, logger=logger,
                                  save_name=reweight_saveas)
 
@@ -126,13 +120,14 @@ def reweight_weights(reweight_data, reweighter_trained,
         weights.
     """
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF())
+    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
+                                  original_weight=reweight_data.get_weights())
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
 
 
-def draw_distributions(data_to_plot, labels=None, weights=None,
+def draw_distributions(data_to_plot, figure_number, labels=None, weights=None,
                        columns=None, hist_cfg=cfg.hist_cfg_std,
                        show=False):
     """Draw histograms of weighted distributions.
@@ -156,8 +151,7 @@ def draw_distributions(data_to_plot, labels=None, weights=None,
         columns = list(data_to_plot[0].columns.values)
     subplot_col = math.ceil(math.sqrt(len(columns)))
     subplot_row = math.ceil(float(len(columns))/subplot_col)
-    __figure_number += 1
-    plt.figure(__figure_number)
+    plt.figure(figure_number)
     for col_id, column in enumerate(columns, 1):
         x_limits = np.percentile(np.hstack(data_to_plot[0][column]),
                                  [0.01, 99.99])

@@ -124,6 +124,9 @@ def to_ndarray(data_in, logger=None, dtype=None):
         logger = module_logger
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
+    # change numpy.void to normal floats
+    if isinstance(data_in[0], np.void):
+        data_in = np.array([val[0] for val in data_in])
     if isinstance(data_in, (np.recarray, np.ndarray)):
         data_in = data_in.tolist()
     if is_list(data_in):

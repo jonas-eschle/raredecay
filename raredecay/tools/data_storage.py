@@ -4,6 +4,9 @@ Created on Thu Apr  7 22:10:29 2016
 
 @author: mayou
 """
+# debug
+
+
 import copy
 import math
 import warnings
@@ -323,6 +326,7 @@ class HEPDataStorage():
             temp_name += " - " if temp_first else ""
             temp_name += str(self._name[1])
             temp_second = True
+            label_name = temp_name
         if plots_name is not None:
             temp_name += " - " if temp_first or temp_second else ""
             temp_name += str(plots_name)
@@ -337,7 +341,7 @@ class HEPDataStorage():
                 self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
-                     range=x_limits, label=data_labels.get(column),
+                     range=x_limits, label=label_name,#data_labels.get(column),
                      **hist_settings)
             plt.title(column)
             plt.legend()

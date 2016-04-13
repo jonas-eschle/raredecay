@@ -7,7 +7,7 @@ Created on Sat Mar 26 16:49:45 2016
 Contains the different run-modes for the machine-learning algorithms.
 """
 import raredecay.meta_config
-
+# debug
 #import config as cfg
 
 
@@ -62,7 +62,7 @@ def _reweight1_comparison(config_file=None):
     # make data
     logger.info("Start with gb reweighter")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
 
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
@@ -77,7 +77,7 @@ def _reweight1_comparison(config_file=None):
 
     logger.info("Start with bins reweighter")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
 
     bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
@@ -94,7 +94,7 @@ def _reweight1_comparison(config_file=None):
                                         target=reweight_real)
     logger.debug("starting with original")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     original_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
                                            target=reweight_real)
     reweight_mc.plot(figure="no reweighting",

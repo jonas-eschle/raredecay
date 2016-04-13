@@ -118,7 +118,7 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=500,
+        n_bins=15,
         n_neighs=3
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
