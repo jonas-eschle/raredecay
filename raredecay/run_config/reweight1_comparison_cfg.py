@@ -62,7 +62,7 @@ B2KpiLL_real_cut = dict(
     data=cut_sWeight_B2KpiLL_real,
     target=1,
     data_name="B->KpiLL real data",
-    data_name_addition="cut & sweighted",
+    data_name_addition="cut",
 )
 B2KpiLL_real_cut_sweighted = dict(
     data=cut_sWeight_B2KpiLL_real,

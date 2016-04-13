@@ -88,7 +88,7 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
         target = data_tools.to_pandas(reweight_data_real)
         warnings.warn("Strongly depreceated! Use HEPDataStorage instead")
     else:
-        target = reweight_data_mc.pandasDF()
+        target = reweight_data_real.pandasDF()
     reweighter = getattr(hep_ml.reweight,
                          reweighter)(**meta_cfg)
     reweighter.fit(original, target)

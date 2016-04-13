@@ -71,6 +71,9 @@ def _reweight1_comparison(config_file=None):
     #gb_reweighter = 'gb_reweighter1.pickle'
     ml_ana.reweight_weights(reweight_mc, gb_reweighter)
     gb_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc, target=reweight_real)
+    reweight_mc.plot(figure="gradient boosted reweighting",
+                     plots_name="comparison real-target")
+    reweight_real.plot(figure="gradient boosted reweighting")
 
     logger.info("Start with bins reweighter")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
@@ -82,7 +85,9 @@ def _reweight1_comparison(config_file=None):
                                             meta_cfg=cfg.reweight_meta_cfg_bins)
     #bins_reweighter = 'bins_reweighter1.pickle'
     ml_ana.reweight_weights(reweight_mc, bins_reweighter)
-
+    reweight_mc.plot(figure="binned reweighting",
+                     plots_name="comparison real-target")
+    reweight_real.plot(figure="binned reweighting")
 
 
     bins_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
@@ -92,6 +97,9 @@ def _reweight1_comparison(config_file=None):
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
     original_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
                                            target=reweight_real)
+    reweight_mc.plot(figure="no reweighting",
+                     plots_name="comparison real-target")
+    reweight_real.plot(figure="no reweighting")
     print "original_roc_auc = ", original_roc_auc
     print "gb_roc_auc = ", gb_roc_auc
     print "bins_roc_auc = ", bins_roc_auc

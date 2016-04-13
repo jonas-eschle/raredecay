@@ -277,13 +277,16 @@ class HEPDataStorage():
             Contain the column as key and the value as label
 
         """
+        # update labels
         if dev_tool.is_in_primitive(data_labels, None):
             data_labels = {}
         data_labels = dict(self.label_dic, **data_labels)
+        # update weights
         if dev_tool.is_in_primitive(sample_weights, None):
             sample_weights = self.get_weights()
         assert len(sample_weights) == len(self.get_weights()), str(
                 "sample_weights is not the right lengths")
+        # update hist_settings
         if dev_tool.is_in_primitive(hist_settings, None):
             hist_settings = {}
         if isinstance(hist_settings, dict):
@@ -300,11 +303,14 @@ class HEPDataStorage():
                 safety = 0
                 figure = self.__figure_number + 1
                 self.__figure_number += 1
-                assert safety < 300, "stuck in an endless while loop"
+                assert safety < 5000, "stuck in an endless while loop"
                 if figure not in self.__figure_dic.keys():
+                    x_limits_col = {}
+                    self.__figure_dic.update({figure: x_limits_col})
                     break
-        self.__figure_dic.update({figure: (subplot_col * subplot_row,
-                                           len(columns))})
+        elif figure not in self.__figure_dic.keys():
+            x_limits_col = {}
+            self.__figure_dic.update({figure: x_limits_col})
         plt.figure(figure)
         # naming the plot. Ugly!
         temp_name = ""
@@ -324,8 +330,11 @@ class HEPDataStorage():
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
             # only plot in range x_limits, otherwise the plot is too big
-            x_limits = np.percentile(np.hstack(data_plot[column]),
-                                     [0.01, 99.99])
+            x_limits = self.__figure_dic.get(figure).get(column, None)
+            if dev_tool.is_in_primitive(x_limits, None):
+                x_limits = np.percentile(np.hstack(data_plot[column]),
+                                         [0.01, 99.99])
+                self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
                      range=x_limits, label=data_labels.get(column),
