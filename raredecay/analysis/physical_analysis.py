@@ -62,9 +62,14 @@ def _simple_plot(config_file=None):
     from raredecay.tools import data_storage
     real_no_sweights = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+
+
 
     reweight_real.plot(figure='sweights_vs_no_sweights')
     real_no_sweights.plot(figure='sweights_vs_no_sweights', plots_name='sweights versus no sweights')
+    reweight_mc.plot(figure='mc_vs_real_no_sweights', plots_name='monte-carlo versus real no sweights')
+    real_no_sweights.plot(figure='mc_vs_real_no_sweights', plots_name='monte-carlo versus real no sweights')
 
 
 def _reweight1_comparison(i, config_file=None):
@@ -129,9 +134,9 @@ def _reweight1_comparison(i, config_file=None):
 
     # temp plot
     import matplotlib.pyplot as plt
-    orilabel="ROC curve original, AUC: " + str(original_roc_auc[0]) + " or " + str(original_roc_auc[1])
-    gblabel="ROC curve gb, AUC: " + str(gb_roc_auc[0]) + " or " + str(gb_roc_auc[1])
-    binslabel="ROC curve bin, AUC: " + str(bins_roc_auc[0]) + " or " + str(bins_roc_auc[1])
+    orilabel="ROC curve original, AUC: " + str(round(original_roc_auc[0], 3)) + " or " + str(round(original_roc_auc[1], 3))
+    gblabel="ROC curve gb, AUC: " + str(round(gb_roc_auc[0], 3)) + " or " + str(round(gb_roc_auc[1], 3))
+    binslabel="ROC curve bin, AUC: " + str(round(bins_roc_auc[0], 3)) + " or " + str(round(bins_roc_auc[1], 3))
     columns=reweight_mc.get_labels(no_dict=True)
     plt.figure("roc auc different reweighter", figsize=(30, 40))
     plt.plot(original_roc_auc[2], original_roc_auc[3], label=orilabel)

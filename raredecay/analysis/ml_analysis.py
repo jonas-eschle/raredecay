@@ -16,6 +16,7 @@ import pandas as pd
 
 import hep_ml.reweight
 from raredecay.tools import dev_tool, data_tools
+from raredecay import globals_
 #import config as cfg
 import importlib
 from raredecay import meta_config
@@ -207,7 +208,7 @@ def fast_ROC_AUC(original, target, weight_original=None,
     # first way of getting roc auc score
     X_train, X_test, y_train, y_test, weight_train, weight_test = (
         train_test_split(data, label, weights, test_size=0.5,
-                         random_state=random.randint(52,125012)))
+                         random_state=globals_.randint))
     clf = GradientBoostingClassifier(**config_clf)
     # test end
     clf.fit(X_train, y_train, weight_train)
@@ -216,7 +217,7 @@ def fast_ROC_AUC(original, target, weight_original=None,
     # second way of getting roc
     X_train, X_test, y_train, y_test, weight_train, weight_test = (
         train_test_split(data, label, weights,
-                         random_state=random.randint(57, 918352)))
+                         random_state=globals_.randint))
     clf = GradientBoostingClassifier(**config_clf)
     clf.fit(X_train, y_train, weight_train)
     y_score = clf.predict_proba(X_test)[:, 1]
