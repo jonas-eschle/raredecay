@@ -17,7 +17,8 @@ def run(runmode):
 
     #run_config = 'config'
 
-    _reweight1_comparison()
+    _reweight1_comparison(runmode)
+    #_simple_plot()
 
 
 
@@ -44,7 +45,7 @@ def reweight(data_to_reweight, config_file=None):
     return data_tools.adv_return(new_weights)
 
 
-def _reweight1_comparison(config_file=None):
+def _simple_plot(config_file=None):
     # specifiy configuration file
     if config_file is None:
         raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_comparison_cfg'
@@ -52,7 +53,29 @@ def _reweight1_comparison(config_file=None):
     cfg = importlib.import_module(raredecay.meta_config.run_config)
     # create logger
     from raredecay.tools import dev_tool
-    logger = dev_tool.make_logger(__name__)
+    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+    logger.debug("config file used: " +
+                 str(raredecay.meta_config.run_config))
+
+    # actual program start
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.tools import data_storage
+    real_no_sweights = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+
+    reweight_real.plot(figure='sweights_vs_no_sweights')
+    real_no_sweights.plot(figure='sweights_vs_no_sweights', plots_name='sweights versus no sweights')
+
+
+def _reweight1_comparison(i, config_file=None):
+    # specifiy configuration file
+    if config_file is None:
+        raredecay.meta_config.run_config = 'raredecay.run_config.reweight1_comparison_cfg'  # 'run_config.reweight1_comparison_cfg'
+    import importlib
+    cfg = importlib.import_module(raredecay.meta_config.run_config)
+    # create logger
+    from raredecay.tools import dev_tool
+    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
     logger.debug("config file used: " +
                  str(raredecay.meta_config.run_config))
     # actual program start
@@ -100,10 +123,38 @@ def _reweight1_comparison(config_file=None):
     reweight_mc.plot(figure="no reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="no reweighting")
-    print "original_roc_auc = ", original_roc_auc
-    print "gb_roc_auc = ", gb_roc_auc
-    print "bins_roc_auc = ", bins_roc_auc
+    print "original_roc_auc = ", original_roc_auc[0], " = ", original_roc_auc[1]
+    print "gb_roc_auc = ", gb_roc_auc[0], " = ", gb_roc_auc[1]
+    print "bins_roc_auc = ", bins_roc_auc[0], " = ", bins_roc_auc[1]
 
+    # temp plot
+    import matplotlib.pyplot as plt
+    orilabel="ROC curve original, AUC: " + str(original_roc_auc[0]) + " or " + str(original_roc_auc[1])
+    gblabel="ROC curve gb, AUC: " + str(gb_roc_auc[0]) + " or " + str(gb_roc_auc[1])
+    binslabel="ROC curve bin, AUC: " + str(bins_roc_auc[0]) + " or " + str(bins_roc_auc[1])
+    columns=reweight_mc.get_labels(no_dict=True)
+    plt.figure("roc auc different reweighter", figsize=(30, 40))
+    plt.plot(original_roc_auc[2], original_roc_auc[3], label=orilabel)
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.title('Receiver operating characteristic of the branches: ' + str(columns))
+    plt.legend(loc="lower right")
+
+    plt.plot(gb_roc_auc[2], gb_roc_auc[3], label= gblabel )
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.legend(loc="lower right")
+
+    plt.plot(bins_roc_auc[2], bins_roc_auc[3], label= binslabel )
+    plt.plot([0, 1], [0, 1], 'k--')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    plt.axis([0, 1, 0, 1])
+    plt.legend(loc="lower right")
+
+    plt.savefig((str(i) + '-different_reweighters.png'), bbox_inches='tight')
 
 
 

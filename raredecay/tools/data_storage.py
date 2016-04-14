@@ -24,7 +24,7 @@ except ImportError:
 from raredecay.tools import data_tools
 from raredecay.tools import dev_tool
 
-modul_logger = dev_tool.make_logger(__name__)
+modul_logger = dev_tool.make_logger(__name__, log_level_console='warning')
 
 class HEPDataStorage():
     """ A wrapper around pandas.DataFrame and an extension to the
@@ -199,9 +199,9 @@ class HEPDataStorage():
             branches = self.root_dict.get('branches')
         branches = dev_tool.make_list_fill_var(branches)
         if no_dict:
-            labels_out = {key: self.label_dic.get(key) for key in branches}
-        else:
             labels_out = [self.label_dic.get(col, col) for col in branches]
+        else:
+            labels_out = {key: self.label_dic.get(key) for key in branches}
         return dev_tool.make_list_fill_var(labels_out)
 
     def get_targets(self):
@@ -314,7 +314,7 @@ class HEPDataStorage():
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
             self.__figure_dic.update({figure: x_limits_col})
-        plt.figure(figure)
+        plt.figure(figure, figsize=(20, 30))
         # naming the plot. Ugly!
         temp_name = ""
         temp_first = False

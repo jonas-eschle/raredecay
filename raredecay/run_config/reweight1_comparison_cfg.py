@@ -44,7 +44,12 @@ Bu2K1Jpsi_mc = dict(
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=["B_PT", "nTracks", 'Jpsi_P']#, 'B_TAU']
+    branches=["B_PT", "nTracks", 'nSPDHits'
+              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV',
+              'B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF']#, 'B_TAU']
+
 )
 cut_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut-data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
@@ -54,7 +59,11 @@ cut_B2KpiLL_real = dict(
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'sweighted-data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=["B_PT", "nTracks", 'Jpsi_P']#, 'B_TAU']
+    branches=["B_PT", "nTracks", 'nSPDHits'
+              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV',
+              'B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF']#, 'B_TAU']
 )
 
 # data for HEPDataStorage
@@ -95,9 +104,9 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=400,
+        n_estimators=300,
         max_depth=5,
-        learning_rate=0.03
+        learning_rate=0.05
     ),
     bins=dict(
         n_bins=20
@@ -118,8 +127,8 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=15,
-        n_neighs=3
+        n_bins=3,
+        n_neighs=1
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
 # end config 1
@@ -147,7 +156,7 @@ logger_cfg = dict(
     # take 'both', 'file', 'console' or 'no'
     log_level_file='debug',
     # specifies the level to be logged to the file
-    log_level_console='debug',
+    log_level_console='warning',
     # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time

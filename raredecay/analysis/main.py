@@ -12,8 +12,10 @@ from raredecay.analysis.physical_analysis import run, finalize
 from matplotlib.pyplot import show
 import cProfile as profile
 print "starting main"
-
-run(1)
+for i in range(1):
+    print "run number ", i+1, " started"
+    run(i)
+    #show()
 finalize()
 try:
     play_sound()

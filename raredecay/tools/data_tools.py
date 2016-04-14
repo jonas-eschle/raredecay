@@ -110,7 +110,7 @@ def is_ndarray(data_to_check):
 
 def is_pickle(data_to_check):
     flag = False
-    if type(data_to_check) is str:
+    if isinstance(data_to_check, str):
         if data_to_check.endswith(cfg.PICKLE_DATATYPE):
             flag = True
     return flag

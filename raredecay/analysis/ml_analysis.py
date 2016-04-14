@@ -173,10 +173,14 @@ def fast_ROC_AUC(original, target, weight_original=None,
     Learn to distinguish between monte-carl data (original) and real data
     (target)
     """
+    from sklearn.ensemble import GradientBoostingClassifier
+    from sklearn.cross_validation import train_test_split
+    from sklearn.metrics import roc_auc_score, roc_curve, auc
+    from sklearn.cross_validation import KFold, cross_val_score
     DEFAULT_CONFIG_CLF= dict(
-        n_estimators=100,
-        learning_rate=0.1,
-        max_depth=4
+        n_estimators=200,
+        learning_rate=0.05,
+        max_depth=5
         )
     if config_clf is None:
         config_clf = {}
@@ -185,10 +189,7 @@ def fast_ROC_AUC(original, target, weight_original=None,
         weight_original = []
     if weight_target is None:
         weight_target = []
-    from sklearn.ensemble import GradientBoostingClassifier
-    from sklearn.cross_validation import train_test_split
-    from sklearn.metrics import roc_auc_score
-    from sklearn.cross_validation import KFold, cross_val_score
+
 
     original_data = original.pandasDF()
     target_data = target.pandasDF()
@@ -203,14 +204,25 @@ def fast_ROC_AUC(original, target, weight_original=None,
     assert len(weight_original) in (0, len(original)), "weights and data have different lengts"
     assert len(weight_target) in (0, len(target)), "weights and data have different lengts"
 
+    # first way of getting roc auc score
     X_train, X_test, y_train, y_test, weight_train, weight_test = (
-        train_test_split(data, label, weights, random_state=42))
+        train_test_split(data, label, weights, test_size=0.5,
+                         random_state=random.randint(52,125012)))
     clf = GradientBoostingClassifier(**config_clf)
     # test end
     clf.fit(X_train, y_train, weight_train)
     ROC_AUC = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1],
                             sample_weight=weight_test)
-    return ROC_AUC
+    # second way of getting roc
+    X_train, X_test, y_train, y_test, weight_train, weight_test = (
+        train_test_split(data, label, weights,
+                         random_state=random.randint(57, 918352)))
+    clf = GradientBoostingClassifier(**config_clf)
+    clf.fit(X_train, y_train, weight_train)
+    y_score = clf.predict_proba(X_test)[:, 1]
+    fpr, tpr, temp = roc_curve(y_test, y_score, sample_weight=weight_test)
+    roc_auc = auc(fpr, tpr, reorder=True)
+    return [ROC_AUC, roc_auc, fpr, tpr]
 
 
 def fast_to_pandas(data_in, **kwarg_to_pandas):
