@@ -18,7 +18,7 @@ for i in range(1):
     #show()
 finalize()
 try:
-    play_sound()
+    aasdf=5#play_sound()
 except:
     print "BEEEEEP"
 a = raw_input(["Run finished, press Enter to show the plots"])

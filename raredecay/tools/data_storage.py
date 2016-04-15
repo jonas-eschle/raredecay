@@ -18,8 +18,8 @@ from root_numpy import root2rec
 try:
     from rep.data.storage import LabeledDataStorage
 except ImportError:
-    print "Could not import parts of the REP repository. Some functions will\
-            be unavailable and raise errors"
+    warnings.warn("Could not import parts of the REP repository. \
+                  Some functions will be unavailable and raise errors")
 
 from raredecay.tools import data_tools
 from raredecay.tools import dev_tool
@@ -346,6 +346,25 @@ class HEPDataStorage():
             plt.title(column)
         plt.legend()
         #plt.figlegend(patches, [label_name], 2)
+
+    def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
+        """Plots two branches against each other to see the distribution.
+
+        """
+        plt.figure(figure)
+        if isinstance(weights, (int, long, float)):
+            weights = dev_tool.make_list_fill_var(weights, length=len(self),
+                                                  var=weights)
+        else:
+            weights = self.get_weights()
+        assert len(weights) == len(self), "Wrong length of weigths"
+        size = [dot_size*weight for weight in weights]
+        plt.scatter(self.pandasDF(branches=x_branch),
+                    self.pandasDF(branches=y_branch), s=size, c=color,
+                    alpha=0.5, label=self._name[0])
+        plt.xlabel(self.get_labels(branches=x_branch, no_dict=True))
+        plt.ylabel(self.get_labels(branches=y_branch, no_dict=True))
+        plt.legend()
 
 
 

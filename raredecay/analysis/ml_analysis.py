@@ -167,7 +167,8 @@ def draw_distributions(data_to_plot, figure_number, labels=None, weights=None,
 
 
 def fast_ROC_AUC(original, target, weight_original=None,
-                 weight_target=None, config_clf=None):
+                 weight_target=None, config_clf=None,
+                 take_label_from_data=False):
     """ Return the ROC AUC fast, useful to find out, how well they can be
     distinguished.
 
@@ -196,12 +197,12 @@ def fast_ROC_AUC(original, target, weight_original=None,
     target_data = target.pandasDF()
     data = pd.concat([original_data, target_data])
     weights = np.concatenate((original.get_weights(), target.get_weights()))
-    label = np.concatenate((original.get_targets(), target.get_targets()))
     # maybe useful? I don't think
-    if False:
-        warnings.warn("Functionality strongly depreceated and may be broken")
+    if take_label_from_data:
+        label = np.concatenate((original.get_targets(), target.get_targets()))
+    else:
         label = np.array([0] * len(original) + [1] * len(target))
-        weights = np.concatenate([weight_original, weight_target])
+    # assertions no more required?
     assert len(weight_original) in (0, len(original)), "weights and data have different lengts"
     assert len(weight_target) in (0, len(target)), "weights and data have different lengts"
 
@@ -210,18 +211,33 @@ def fast_ROC_AUC(original, target, weight_original=None,
         train_test_split(data, label, weights, test_size=0.5,
                          random_state=globals_.randint))
     clf = GradientBoostingClassifier(**config_clf)
+    plt.figure('training1 dataset')
+    plt.scatter(X_train['B_PT'], X_train['nTracks'], label='training', alpha=0.3)
+    plt.scatter(X_test['B_PT'], X_test['nTracks'], color='r', label='test', alpha=0.3)
+    plt.legend()
     # test end
     clf.fit(X_train, y_train, weight_train)
     ROC_AUC = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1],
                             sample_weight=weight_test)
+
     # second way of getting roc
     X_train, X_test, y_train, y_test, weight_train, weight_test = (
         train_test_split(data, label, weights,
                          random_state=globals_.randint))
+
+    plt.figure('training2 dataset')
+    plt.scatter(X_train['B_PT'], X_train['nTracks'], label='training', alpha=0.3)
+    plt.scatter(X_test['B_PT'], X_test['nTracks'], color='r', label='test', alpha=0.3)
+    plt.legend()
+
     clf = GradientBoostingClassifier(**config_clf)
     clf.fit(X_train, y_train, weight_train)
     y_score = clf.predict_proba(X_test)[:, 1]
+    logger.debug("predict_proba: " + str(y_score))
+    plt.figure(('prediction probabilities' + str(sum(weight_train))))
+    plt.hist(y_score, bins=50)
     fpr, tpr, temp = roc_curve(y_test, y_score, sample_weight=weight_test)
+    logger.debug("fpr: " + str(fpr) + "\n\ntpr: " + str(tpr))
     roc_auc = auc(fpr, tpr, reorder=True)
     return [ROC_AUC, roc_auc, fpr, tpr]
 

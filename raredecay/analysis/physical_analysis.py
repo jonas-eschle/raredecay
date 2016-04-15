@@ -7,6 +7,7 @@ Created on Sat Mar 26 16:49:45 2016
 Contains the different run-modes for the machine-learning algorithms.
 """
 import raredecay.meta_config
+import globals_
 # debug
 #import config as cfg
 
@@ -92,21 +93,31 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
 
+    # test begin
+    import matplotlib.pyplot as plt
+    #reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=1)
+    #reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=1, color='r')
+    logger.debug("plotted figure 1")
+    # test end
+
+
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
                                             reweighter='gb',
                                             meta_cfg=cfg.reweight_meta_cfg)
     #gb_reweighter = 'gb_reweighter1.pickle'
     ml_ana.reweight_weights(reweight_mc, gb_reweighter)
+    reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
+    reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
     gb_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc, target=reweight_real)
     reweight_mc.plot(figure="gradient boosted reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="gradient boosted reweighting")
-
+    #plt.show()
     logger.info("Start with bins reweighter")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-
+    logger.debug("plotted figure 2")
     bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
                                             reweighter='bins',
@@ -120,6 +131,7 @@ def _reweight1_comparison(i, config_file=None):
 
     bins_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
                                         target=reweight_real)
+    #plt.show()
     logger.debug("starting with original")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
@@ -172,7 +184,7 @@ def _test2():
 def finalize():
     """Finalize the run: print to console and save output_string to file
     """
-    print "function finalize not yet implemented"
+    print "randint: ", globals_.randint
 
 # temporary:
 if __name__ == '__main__':
