@@ -3,6 +3,8 @@
 Created on Mon Mar 21 21:25:26 2016
 
 @author: mayou
+
+Contains several useful tools for all kind of programs
 """
 import numpy as np
 import collections
@@ -18,7 +20,7 @@ def syspath_append(verboise=False):
     if verboise == 'v': verboise = True
     if verboise: print sys.path
     # n_to_remove = 0 #number of elements to remove from sys.path from behind
-    # ys.path = sys.path[:len(sys.path)-n_to_remove]
+    # sys.path = sys.path[:len(sys.path)-n_to_remove]
     # used to remove unnecessary bindings
     for path in config.pathes_to_add:
         """get the sys.path and add pahtes if they are not already contained"""
@@ -44,13 +46,13 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     ----------
     module_name : string
         Name of the logger, shown in output. Best choose __name__
-    logging_mode : {"both", "file", "console"}
+    logging_mode : {'both', 'file', 'console'}
         Which logger handler is used; where the log is printed to.
-    log_level_file : {"debug","info","warning","error","critical"}
+    log_level_file : {'debug','info','warning','error','critical'}
         Which level of messages are logged. A lower level (left) always also
         includes the higher (right) levels, but not the other way around.
         This level specifies the level for the file log (if enabled).
-    log_level_console : {"debug","info","warning","error","critical"}
+    log_level_console : {'debug','info','warning','error','critical'}
         Level for console log (if enabled). See also log_level_file.
     overwrite_file : boolean
         If enabled, the logfiled gets overwritten at every run.
@@ -125,7 +127,6 @@ def fill_list_var(to_check, length=0, var=1):
         if isinstance(to_check, list):
             to_check.extend([var] * difference)
     return to_check
-
 
 
 def make_list_fill_var(to_check, length=0, var=None):

@@ -3,13 +3,18 @@
 Created on Sat Mar 26 11:29:01 2016
 
 @author: mayou
+
+Module which consist of machine-learning methods to bring useful methods
+together into one and use the HEPDataStorage.
+
+It is integrated into the analysis package and depends on the tools.
 """
 # debug
 
 import warnings
+import memory_profiler
 
 import math
-import random
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -17,16 +22,19 @@ import pandas as pd
 import hep_ml.reweight
 from raredecay.tools import dev_tool, data_tools
 from raredecay import globals_
-#import config as cfg
+
+# import the specified config file
+# TODO: is this import really necessary? Best would be without config...
 import importlib
 from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
+
 def reweight_mc_real(reweight_data_mc, reweight_data_real,
-                     reweighter='gb', weights_mc=None, weights_real=None,
-                     reweight_saveas=None, meta_cfg=None):
+                     reweighter='gb', reweight_saveas=None, meta_cfg=None,
+                     weights_mc=None, weights_real=None):
     """Return a trained reweighter from a mc/real distribution comparison.
 
     | Reweighting a distribution is a "making them the same" by changing the \
@@ -180,9 +188,9 @@ def fast_ROC_AUC(original, target, weight_original=None,
     from sklearn.metrics import roc_auc_score, roc_curve, auc
     from sklearn.cross_validation import KFold, cross_val_score
     DEFAULT_CONFIG_CLF= dict(
-        n_estimators=200,
+        n_estimators=50,
         learning_rate=0.05,
-        max_depth=5
+        max_depth=7
         )
     if config_clf is None:
         config_clf = {}
@@ -210,7 +218,7 @@ def fast_ROC_AUC(original, target, weight_original=None,
     X_train, X_test, y_train, y_test, weight_train, weight_test = (
         train_test_split(data, label, weights, test_size=0.5,
                          random_state=globals_.randint))
-    clf = GradientBoostingClassifier(**config_clf)
+    clf = GradientBoostingClassifier(random_state=globals_.randint+1, **config_clf)
     plt.figure('training1 dataset')
     plt.scatter(X_train['B_PT'], X_train['nTracks'], label='training', alpha=0.3)
     plt.scatter(X_test['B_PT'], X_test['nTracks'], color='r', label='test', alpha=0.3)
@@ -230,8 +238,9 @@ def fast_ROC_AUC(original, target, weight_original=None,
     plt.scatter(X_test['B_PT'], X_test['nTracks'], color='r', label='test', alpha=0.3)
     plt.legend()
 
-    clf = GradientBoostingClassifier(**config_clf)
+    clf = GradientBoostingClassifier(random_state=globals_.randint+1, **config_clf)
     clf.fit(X_train, y_train, weight_train)
+#    y_score = clf.predict_proba(X_test)[:, 1]
     y_score = clf.predict_proba(X_test)[:, 1]
     logger.debug("predict_proba: " + str(y_score))
     plt.figure(('prediction probabilities' + str(sum(weight_train))))

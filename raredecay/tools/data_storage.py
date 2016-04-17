@@ -319,6 +319,8 @@ class HEPDataStorage():
         temp_name = ""
         temp_first = False
         temp_second = False
+
+    # TODO: change the ugly part to a nice method which takes all the strings
         if self._name[0] is not None:
             temp_name = str(self._name[0])
             temp_first = True
