@@ -10,12 +10,14 @@ Main routine to start the analysis. It contains as few statements as possible.
 
 import matplotlib.pyplot as plt
 import cProfile as profile
+import seaborn as sns
 
 from raredecay.tools.dev_tool import play_sound
 from raredecay.analysis.physical_analysis import run, finalize
 
 
 print "starting main"
+sns.set_context("talk")
 
 # possible loop over method
 for i in range(1):

@@ -18,6 +18,7 @@ import math
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
+import seaborn as sns
 
 import hep_ml.reweight
 from raredecay.tools import dev_tool, data_tools
@@ -35,7 +36,7 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 def reweight_mc_real(reweight_data_mc, reweight_data_real,
                      reweighter='gb', reweight_saveas=None, meta_cfg=None,
                      weights_mc=None, weights_real=None):
-    """Return a trained reweighter from a mc/real distribution comparison.
+    """Return a trained reweighter from a (mc/real) distribution comparison.
 
     | Reweighting a distribution is a "making them the same" by changing the \
     weights of the bins (instead of 1) for each event. Mostly, and therefore \
@@ -52,11 +53,10 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
 
     Parameters
     ----------
-    reweight_data_mc : :class:`HEPDataStorage` (depreceated: root-dict)
+    reweight_data_mc : :class:`HEPDataStorage`
         The Monte-Carlo data, which has to be "fitted" to the real data.
-        Should be a HEPDataStorage, for compatibility a root-dict is allowed
     reweight_data_real : :class:`HEPDataStorage` (depreceated: root-dict)
-        Same as reweight_data_mc but for the real data
+        Same as *reweight_data_mc* but for the real data
     reweighter : {'gb', 'bins'}
         Specify which reweighter to be used
     reweight_saveas : string
@@ -69,9 +69,11 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
         :func:`~hep_ml.reweight.BinsReweighter` and
         :func:`~hep_ml.reweight.GBReweighter`.
     weights_mc : numpy.array [n_samples]
-        Apply weights to the Monte-Carlo data
+        Explicit weights for the Monte-Carlo data. Only specify if you don't
+        want to use the weights in the *HEPDataStorage*.
     weights_real : numpy.array [n_samples]
-        Apply weights to the real data.
+        Explicit weights for the real data. Only specify if you don't
+        want to use the weights in the *HEPDataStorage*.
 
     Returns
     -------
@@ -79,22 +81,22 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
         Reweighter is trained to the data. Can, for example,
         be used with :func:`~hep_ml.reweight.GBReweighter.predict_weights`
     """
-    REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
+    __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
+
+    # check for valid user input
     try:
-        reweighter = REWEIGHT_MODE.get(reweighter.lower())
+        reweighter = __REWEIGHT_MODE.get(reweighter.lower())
     except KeyError:
-        logger.critical("Reweighter invalid: " + reweighter +
-                        ". Probably wrong defined in config.")
-        raise ValueError
+        raise ValueError("Reweighter invalid: " + reweighter)
     reweighter += 'Reweighter'
-    # compatibility only!
-    original = reweight_data_mc
-    target = reweight_data_real
-    reweighter = getattr(hep_ml.reweight,
-                         reweighter)(**meta_cfg)
-    reweighter.fit(original=original.pandasDF(), target=target.pandasDF(),
-                   original_weight=original.get_weights(),
-                   target_weight=target.get_weights())
+    logger.info("Reweighter: " + str(reweighter) + " with config: " + str(meta_cfg))
+    reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
+
+    # do the reweighting
+    reweighter.fit(original=reweight_data_mc.pandasDF(),
+                   target=reweight_data_real.pandasDF(),
+                   original_weight=reweight_data_mc.get_weights(),
+                   target_weight=reweight_data_real.get_weights())
     return data_tools.adv_return(reweighter, logger=logger,
                                  save_name=reweight_saveas)
 
@@ -109,18 +111,16 @@ def reweight_weights(reweight_data, reweighter_trained,
     Additional functionality:
      * Takes a trained reweighter as argument, but can also unpickle one
        from a file.
-     * Converts data implicitly to the right format or loads directly if
-       already converted to the right format once.
 
     Parameters
     ----------
-    reweight_data : :class:`HEPDataStorage` (depreceated: root-dict)
+    reweight_data : :class:`HEPDataStorage`
         The data for which the reweights are to be predicted.
-    reweighter_trained : reweighter (*from hep_ml*) or pickle file
+    reweighter_trained : (pickled) reweighter (*from hep_ml*)
         The trained reweighter, which predicts the new weights.
     add_weights_to_data : boolean
-        If set to False, the weights will only be returned and not added to
-        the data.
+        If set to False, the weights will only be returned and not updated in
+        the data (*HEPDataStorage*).
 
     Returns
     ------
@@ -136,139 +136,69 @@ def reweight_weights(reweight_data, reweighter_trained,
     return new_weights
 
 
-def draw_distributions(data_to_plot, figure_number, labels=None, weights=None,
-                       columns=None, hist_cfg=cfg.hist_cfg_std,
-                       show=False):
-    """Draw histograms of weighted distributions.
-
-
-    Parameters
-    ----------
-    data_to_plot : list with data [numpy.array or tree-dict or
-    pandas.DataFrame]
-        Distributions to plot.
-    weights : list (!) with weights
-    [[1-D list containing weights],[weights],[weights],...]
-        Specify the weights in the right order for the distributions.
-
-    """
-    data_to_plot, weights = data_tools.format_data_weights(
-            data_to_shape=data_to_plot, weights=weights)
-    labels = dev_tool.make_list_fill_var(labels, len(data_to_plot),
-                                         var=None)
-    if columns is None:
-        columns = list(data_to_plot[0].columns.values)
-    subplot_col = math.ceil(math.sqrt(len(columns)))
-    subplot_row = math.ceil(float(len(columns))/subplot_col)
-    plt.figure(figure_number)
-    for col_id, column in enumerate(columns, 1):
-        x_limits = np.percentile(np.hstack(data_to_plot[0][column]),
-                                 [0.01, 99.99])
-        plt.subplot(subplot_row, subplot_col, col_id)
-        for data_id, data in enumerate(data_to_plot):
-            plt.hist(data[column], weights=weights[data_id],
-                     range=x_limits, label=labels[data_id], **hist_cfg)
-        plt.title(column)
-        plt.legend()
-    if show:
-        plt.show()
-
-
-def fast_ROC_AUC(original, target, weight_original=None,
-                 weight_target=None, config_clf=None,
-                 take_label_from_data=False):
+def data_ROC(original_data, target_data, plot=True, n_folds=1,
+                 weight_original=None, weight_target=None, config_clf=None,
+                 take_target_from_data=False):
     """ Return the ROC AUC fast, useful to find out, how well they can be
     distinguished.
 
     Learn to distinguish between monte-carl data (original) and real data
     (target)
     """
-    from sklearn.ensemble import GradientBoostingClassifier
-    from sklearn.cross_validation import train_test_split
-    from sklearn.metrics import roc_auc_score, roc_curve, auc
-    from sklearn.cross_validation import KFold, cross_val_score
-    DEFAULT_CONFIG_CLF= dict(
+    __DEFAULT_CONFIG_CLF= dict(
         n_estimators=50,
-        learning_rate=0.05,
-        max_depth=7
-        )
+        learning_rate=0.1,
+        max_depth=5
+    )
+
+    from sklearn.ensemble import GradientBoostingClassifier
+    from rep.estimators import SklearnClassifier
+    from rep.utils import train_test_split
+    from rep.report.metrics import RocAuc
+
     if config_clf is None:
         config_clf = {}
-    config_clf = dict(DEFAULT_CONFIG_CLF, **config_clf)
-    if weight_original is None:
-        weight_original = []
-    if weight_target is None:
-        weight_target = []
+    config_clf = dict(__DEFAULT_CONFIG_CLF, **config_clf)
 
-
-    original_data = original.pandasDF()
-    target_data = target.pandasDF()
-    data = pd.concat([original_data, target_data])
-    weights = np.concatenate((original.get_weights(), target.get_weights()))
-    # maybe useful? I don't think
-    if take_label_from_data:
-        label = np.concatenate((original.get_targets(), target.get_targets()))
+    # concatenate the original and target data
+    data = pd.concat([original_data.pandasDF(), target_data.pandasDF()])
+    # take weights from data if not explicitly specified
+    if dev_tool.is_in_primitive(weight_original, None):
+        weight_original = original_data.get_weights()
+    if dev_tool.is_in_primitive(weight_target, None):
+        weight_target = target_data.get_weights()
+    assert len(weight_original) == len(original_data), "Original weights have wrong length"
+    assert len(weight_target) == len(target_data), "Target weights have wrong length"
+    weights = np.concatenate((weight_original,
+                              weight_target))
+    if take_target_from_data:  # if "original" and "target" are "mixed"
+        label = np.concatenate((original_data.get_targets(),
+                                target_data.get_targets()))
     else:
-        label = np.array([0] * len(original) + [1] * len(target))
-    # assertions no more required?
-    assert len(weight_original) in (0, len(original)), "weights and data have different lengts"
-    assert len(weight_target) in (0, len(target)), "weights and data have different lengts"
+        label = np.array([0] * len(original_data) + [1] * len(target_data))
 
-    # first way of getting roc auc score
-    X_train, X_test, y_train, y_test, weight_train, weight_test = (
-        train_test_split(data, label, weights, test_size=0.5,
-                         random_state=globals_.randint))
-    clf = GradientBoostingClassifier(random_state=globals_.randint+1, **config_clf)
-    plt.figure('training1 dataset')
-    plt.scatter(X_train['B_PT'], X_train['nTracks'], label='training', alpha=0.3)
-    plt.scatter(X_test['B_PT'], X_test['nTracks'], color='r', label='test', alpha=0.3)
-    plt.legend()
-    # test end
-    clf.fit(X_train, y_train, weight_train)
-    ROC_AUC = roc_auc_score(y_test, clf.predict_proba(X_test)[:, 1],
-                            sample_weight=weight_test)
-
-    # second way of getting roc
-    X_train, X_test, y_train, y_test, weight_train, weight_test = (
-        train_test_split(data, label, weights,
-                         random_state=globals_.randint))
-
-    plt.figure('training2 dataset')
-    plt.scatter(X_train['B_PT'], X_train['nTracks'], label='training', alpha=0.3)
-    plt.scatter(X_test['B_PT'], X_test['nTracks'], color='r', label='test', alpha=0.3)
-    plt.legend()
-
-    clf = GradientBoostingClassifier(random_state=globals_.randint+1, **config_clf)
-    clf.fit(X_train, y_train, weight_train)
-#    y_score = clf.predict_proba(X_test)[:, 1]
-    y_score = clf.predict_proba(X_test)[:, 1]
-    logger.debug("predict_proba: " + str(y_score))
-    plt.figure(('prediction probabilities' + str(sum(weight_train))))
-    plt.hist(y_score, bins=50)
-    fpr, tpr, temp = roc_curve(y_test, y_score, sample_weight=weight_test)
-    logger.debug("fpr: " + str(fpr) + "\n\ntpr: " + str(tpr))
-    roc_auc = auc(fpr, tpr, reorder=True)
-    return [ROC_AUC, roc_auc, fpr, tpr]
-
-
-def fast_to_pandas(data_in, **kwarg_to_pandas):
-    """ Check if data has already been converted and saved before calling
-    to_pandas.
-
-    "Better" version of :func:`~data_tools.to_pandas` and
-    identical to it if :func:`~config.FAST_CONVERSION` is set to False.
-    """
-    raise RuntimeError("This function is not implemented, as it is obsolet")
-    add_to_already_pandas = False
-    if cfg.FAST_CONVERSION:
-#     @todo   dic, data_in = next((c for c in already_pandas if
- #                           data_in == c[0]), (None, data_in))
-        if dic is None:
-            dictionary = dict(data_in)
-            add_to_already_pandas = True
-    data_in = data_tools.to_pandas(data_in, logger, **kwarg_to_pandas)
-    if add_to_already_pandas:
-        already_pandas.append((dictionary, data_in))
-    return data_in
-
-    logger.info("module finished")
+    clf = SklearnClassifier(GradientBoostingClassifier(
+                                random_state=globals_.randint+5, **config_clf))
+    # getting roc (auc score) for 1 fold
+    if n_folds == 1:
+        X_train, X_test, y_train, y_test, weight_train, weight_test = (
+            train_test_split(data, label, weights, test_size=0.66,
+                             random_state=globals_.randint))
+        clf.fit(X_train, y_train, weight_train)
+        report = clf.test_on(X_test, y_test, weight_test)
+        # TODO: remove the next lines if ROC AUC is the same from rep
+        proba = clf.predict_proba(X_test)[:, 1]
+        from sklearn.metrics import roc_auc_score, roc_curve, auc
+        ROC_AUC = roc_auc_score(y_test, proba, sample_weight=weight_test)
+    else:
+        # TODO: maybe implement for more then 1 fold
+        raise NotImplementedError("n_folds >1 not yet implemented. Sorry!")
+    ROC_AUC = report.compute_metric(RocAuc())['clf']
+    if plot:
+        # TODO: change title because it plots now only one ROC, use labels
+        title = ("ROC curve for comparison of " + original_data.get_name() +
+                 " and " + target_data.get_name() + "\nAUC = " + str(ROC_AUC))
+        plt.figure("Data reweighter comparison")
+        report.roc(physical_notion=False).plot(new_plot=False, title=title)
+        plt.plot([0, 1], [0, 1], 'k--')
+    return ROC_AUC

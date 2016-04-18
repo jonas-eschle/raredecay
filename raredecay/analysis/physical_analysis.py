@@ -59,6 +59,7 @@ def _simple_plot(config_file=None):
                  str(raredecay.meta_config.run_config))
 
     # actual program start
+
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_storage
     real_no_sweights = data_storage.HEPDataStorage(**cfg.data.get('reweight_real_no_sweights'))
@@ -85,6 +86,9 @@ def _reweight1_comparison(i, config_file=None):
     logger.debug("config file used: " +
                  str(raredecay.meta_config.run_config))
     # actual program start
+    # TODO: remove import of matplotlib.pyplot after testing
+    import matplotlib.pyplot as plt
+
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_storage
 
@@ -92,14 +96,6 @@ def _reweight1_comparison(i, config_file=None):
     logger.info("Start with gb reweighter")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-
-    # test begin
-    import matplotlib.pyplot as plt
-    #reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=1)
-    #reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=1, color='r')
-    logger.debug("plotted figure 1")
-    # test end
-
 
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
@@ -109,11 +105,14 @@ def _reweight1_comparison(i, config_file=None):
     ml_ana.reweight_weights(reweight_mc, gb_reweighter)
     reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
     reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
-    gb_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc, target=reweight_real)
+    gb_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
+                                 target_data=reweight_real)
     reweight_mc.plot(figure="gradient boosted reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="gradient boosted reweighting")
-    #plt.show()
+    # plt.show()
+
+
     logger.info("Start with bins reweighter")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
@@ -127,54 +126,19 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc.plot(figure="binned reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="binned reweighting")
+    bins_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
+                                   target_data=reweight_real)
+    # plt.show()
 
 
-    bins_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
-                                        target=reweight_real)
-    #plt.show()
     logger.debug("starting with original")
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-    original_roc_auc = ml_ana.fast_ROC_AUC(original=reweight_mc,
-                                           target=reweight_real)
+    original_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
+                                           target_data=reweight_real)
     reweight_mc.plot(figure="no reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="no reweighting")
-    print "original_roc_auc = ", original_roc_auc[0], " = ", original_roc_auc[1]
-    print "gb_roc_auc = ", gb_roc_auc[0], " = ", gb_roc_auc[1]
-    print "bins_roc_auc = ", bins_roc_auc[0], " = ", bins_roc_auc[1]
-
-    # temp plot
-    import matplotlib.pyplot as plt
-    orilabel="ROC curve original, AUC: " + str(round(original_roc_auc[0], 3)) + " or " + str(round(original_roc_auc[1], 3))
-    gblabel="ROC curve gb, AUC: " + str(round(gb_roc_auc[0], 3)) + " or " + str(round(gb_roc_auc[1], 3))
-    binslabel="ROC curve bin, AUC: " + str(round(bins_roc_auc[0], 3)) + " or " + str(round(bins_roc_auc[1], 3))
-    columns=reweight_mc.get_labels(no_dict=True)
-    plt.figure("roc auc different reweighter", figsize=(30, 40))
-    plt.plot(original_roc_auc[2], original_roc_auc[3], label=orilabel)
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.title('Receiver operating characteristic of the branches: ' + str(columns))
-    plt.legend(loc="lower right")
-
-    plt.plot(gb_roc_auc[2], gb_roc_auc[3], label= gblabel )
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.legend(loc="lower right")
-
-    plt.plot(bins_roc_auc[2], bins_roc_auc[3], label= binslabel )
-    plt.plot([0, 1], [0, 1], 'k--')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    plt.axis([0, 1, 0, 1])
-    plt.legend(loc="lower right")
-
-    plt.savefig((str(i) + '-different_reweighters.png'), bbox_inches='tight')
-
-
-
 
 
 def _test2():

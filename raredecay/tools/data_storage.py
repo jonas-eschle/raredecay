@@ -204,6 +204,11 @@ class HEPDataStorage():
             labels_out = {key: self.label_dic.get(key) for key in branches}
         return dev_tool.make_list_fill_var(labels_out)
 
+    def get_name(self):
+        """Return the human-readable name of the data as a string"""
+        # TODO: change into real name
+        return "only test-string"
+
     def get_targets(self):
 
         if dev_tool.is_in_primitive(self.target_label, (0, 1, None)):
@@ -370,7 +375,7 @@ class HEPDataStorage():
 
 
 
-
+# TODO: add correlation matrix
 
 
 
