@@ -12,8 +12,9 @@ randint: int
     Many methods need random integers for their pseudo-random generator.
     To keep them all the same (or intentionally not), use the randint.
 """
-
+import warnings
 import random
 
 
 randint = random.randint(123, 1512412)  # 357422
+

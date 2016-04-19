@@ -17,7 +17,6 @@ from raredecay.analysis.physical_analysis import run, finalize
 
 
 print "starting main"
-sns.set_context("talk")
 
 # possible loop over method
 for i in range(1):

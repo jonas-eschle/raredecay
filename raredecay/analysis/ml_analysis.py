@@ -143,9 +143,39 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
     distinguished.
 
     Learn to distinguish between monte-carl data (original) and real data
-    (target)
+    (target) and report (plot) the ROC and the AUC.
+
+    Parameters
+    ----------
+    original_data : instance of :class:`HEPDataStorage`
+        The original or monte-carlo data
+    target_data : instance of :class:`HEPDataStorage`
+        The target or real data
+    plot : boolean
+        If true, ROC is plotted. Otherwise, only the ROC AUC is calculated.
+    n_folds : int
+        Specify how many folds and checks should be made for the training/test.
+        If it is 1, a normal trait-test-split with 2/3 - 1/3 ratio is done.
+    weight_original : numpy array 1-D [n_samples]
+        The weights for the original data. Only use if you don't want to use
+        the weights contained in the original_data.
+    weight_target : numpy array 1-D [n_samples]
+        The weights for the target data. Only use if you don't want to use
+        the weights contained in the target_data.
+    config_clf : dict
+        The configuration for the classifier. If None, a default config is
+        taken.
+    take_target_from_data : boolean
+        If true, the target labeling (say what is original resp. target) is
+        taken from data instead of assigned.
+        So the name "original_data" and "target_data" has "no meaning" anymore.
+
+    Returns
+    -------
+    out : float
+        The ROC AUC from the classifier on the test samples.
     """
-    __DEFAULT_CONFIG_CLF= dict(
+    __DEFAULT_CONFIG_CLF = dict(
         n_estimators=50,
         learning_rate=0.1,
         max_depth=5
@@ -177,6 +207,7 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
     else:
         label = np.array([0] * len(original_data) + [1] * len(target_data))
 
+    # start ml-part
     clf = SklearnClassifier(GradientBoostingClassifier(
                                 random_state=globals_.randint+5, **config_clf))
     # getting roc (auc score) for 1 fold
@@ -186,10 +217,6 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
                              random_state=globals_.randint))
         clf.fit(X_train, y_train, weight_train)
         report = clf.test_on(X_test, y_test, weight_test)
-        # TODO: remove the next lines if ROC AUC is the same from rep
-        proba = clf.predict_proba(X_test)[:, 1]
-        from sklearn.metrics import roc_auc_score, roc_curve, auc
-        ROC_AUC = roc_auc_score(y_test, proba, sample_weight=weight_test)
     else:
         # TODO: maybe implement for more then 1 fold
         raise NotImplementedError("n_folds >1 not yet implemented. Sorry!")
@@ -198,6 +225,7 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
         # TODO: change title because it plots now only one ROC, use labels
         title = ("ROC curve for comparison of " + original_data.get_name() +
                  " and " + target_data.get_name() + "\nAUC = " + str(ROC_AUC))
+        sns.set_context("talk")
         plt.figure("Data reweighter comparison")
         report.roc(physical_notion=False).plot(new_plot=False, title=title)
         plt.plot([0, 1], [0, 1], 'k--')
