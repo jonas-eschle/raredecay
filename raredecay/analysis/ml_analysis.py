@@ -213,7 +213,7 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
     # getting roc (auc score) for 1 fold
     if n_folds == 1:
         X_train, X_test, y_train, y_test, weight_train, weight_test = (
-            train_test_split(data, label, weights, test_size=0.66,
+            train_test_split(data, label, weights, test_size=0.33,
                              random_state=globals_.randint))
         clf.fit(X_train, y_train, weight_train)
         report = clf.test_on(X_test, y_test, weight_test)
