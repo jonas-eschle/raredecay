@@ -8,23 +8,25 @@ Created on Thu Apr  7 22:10:29 2016
 
 
 import copy
-import math
 import warnings
 
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import math
+
 from root_numpy import root2rec
+
 try:
     from rep.data.storage import LabeledDataStorage
 except ImportError:
-    warnings.warn("Could not import parts of the REP repository. \
+    warnings.warn("Could not import parts from the REP repository. \
                   Some functions will be unavailable and raise errors")
 
-from raredecay.tools import data_tools
-from raredecay.tools import dev_tool
+from raredecay.tools import data_tools, dev_tool
 
 modul_logger = dev_tool.make_logger(__name__, log_level_console='warning')
+
 
 class HEPDataStorage():
     """ A wrapper around pandas.DataFrame and an extension to the
@@ -80,47 +82,46 @@ class HEPDataStorage():
         supertitle_fontsize : int
             The size of the title of several subplots (data_name, _addition)
         """
-        if logger is None:
-            self.logger = modul_logger
+        self.logger = modul_logger if logger is None else logger
         self._name = (data_name, data_name_addition)
-        if data_labels is None:
-            data_labels = {}
+        data_labels = {} if data_labels is None else data_labels
         if dev_tool.is_in_primitive(hist_settings, None):
             hist_settings = self.__HIST_SETTINGS_DEFAULT
         self.hist_settings = hist_settings
-        self.target_label = target
+        self._target_label = target
         self._data_pandas = None
-        self.root_dict = data
+        self._root_dict = data
         # data-labels human readable:
         self.add_label = add_label
-        self.label_dic = {col: col for col in self.root_dict.get('branches')}
-        self.label_dic.update(data_labels)
-        self.data_name = data_name
+        self._label_dic = {col: col for col in self._root_dict.get('branches')}
+        self._label_dic.update(data_labels)
+        # TODO: removeLine: self.data_name = data_name
         # define length for __len__
-        temp_root_dict = copy.deepcopy(self.root_dict)
-        temp_branch = temp_root_dict.pop('branches')
+        temp_root_dict = copy.deepcopy(self._root_dict)
+        temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
         temp_branch = dev_tool.make_list_fill_var(temp_branch)
-        self.length = len(root2rec(branches=temp_branch[0],
+        self._length = len(root2rec(branches=temp_branch[0],
                                    **temp_root_dict))
         # define weights and check length
         if not dev_tool.is_in_primitive(sample_weights, None):
-            assert len(sample_weights) == self.length
+            assert len(sample_weights) == self._length
         self.weights = sample_weights
         # initialise logger
         self.supertitle_fontsize = supertitle_fontsize
 
     def __len__(self):
-        return self.length
+        return self._length
 
-    @property
-    def data(self):
-        raise IOError("Don't access data with my_data = HEPDataStorageInstance\
-                      .data. Use one of the built-in methods.")
-
-    @data.setter
-    def data(self):
-        raise IOError("You cannot set the data atribute manualy. Use a method\
-                      or the constructor")
+# TODO: required to have them? data should not be an available attribute...
+#    @property
+#    def data(self):
+#        raise IOError("Don't access data with my_data = HEPDataStorageInstance\
+#                      .data. Use one of the built-in methods.")
+#
+#    @data.setter
+#    def data(self):
+#        raise IOError("You cannot set the data atribute manualy. Use a method\
+#                      or the constructor")
 
     def get_weights(self, index=None):
         """Return the weights of the specified indeces or, if None, return all.
@@ -135,25 +136,21 @@ class HEPDataStorage():
             Return the weights in an array
         """
         if dev_tool.is_in_primitive(self.weights, (None, 1)):
-            weights_out = np.array(dev_tool.fill_list_var([], len(self), 1),
-                                   copy=False)
-        else:
-            weights_out = data_tools.to_ndarray(self.weights)
-        assert len(weights_out) == len(self), str(
-                "data and weights differ in lenght")
+            self.weights = dev_tool.fill_list_var([], len(self), 1)
+        weights_out = data_tools.to_ndarray(self.weights)
+        assert len(weights_out) == len(self), str("data and weights differ in lenght")
         return weights_out
 
     def set_weights(self, sample_weights):
-        """Set the weights of the sample
+        """Set the weights of the sample.
 
         Parameters
         ----------
         sample_weights : 1-D array or list or int {1}
-            The new weights for the dataset
+            The new weights for the dataset.
         """
-        if dev_tool.is_in_primitive(sample_weights, (None, 1)):
-            sample_weights = np.array([1] * len(self))
-        assert len(sample_weights) == len(self), "Wrong length of weights"
+        assert (len(sample_weights) == len(self) or dev_tool.is_in_primitive(
+                sample_weights, (None, 1)), "Invalid weights")
         self.weights = sample_weights
 
     def extend(self, branches, treename=None, filenames=None, selection=None):
@@ -175,7 +172,7 @@ class HEPDataStorage():
                           'filenames': filenames, 'selection': selection}
         for key, val in temp_root_dict.iteritems():
             if dev_tool.is_in_primitive(val, None):
-                temp_root_dict[key] = self.root_dict.get(key)
+                temp_root_dict[key] = self._root_dict.get(key)
         data_out = data_tools.to_pandas(temp_root_dict)
         if len(temp_root_dict['branches']) == 1:
             data_out.columns = temp_root_dict['branches']
@@ -196,12 +193,12 @@ class HEPDataStorage():
             Return a list or dict containing the labels.
         """
         if branches is None:
-            branches = self.root_dict.get('branches')
+            branches = self._root_dict.get('branches')
         branches = dev_tool.make_list_fill_var(branches)
         if no_dict:
-            labels_out = [self.label_dic.get(col, col) for col in branches]
+            labels_out = [self._label_dic.get(col, col) for col in branches]
         else:
-            labels_out = {key: self.label_dic.get(key) for key in branches}
+            labels_out = {key: self._label_dic.get(key) for key in branches}
         return dev_tool.make_list_fill_var(labels_out)
 
     def get_name(self):
@@ -211,16 +208,16 @@ class HEPDataStorage():
 
     def get_targets(self):
 
-        if dev_tool.is_in_primitive(self.target_label, (0, 1, None)):
+        if dev_tool.is_in_primitive(self._target_label, (0, 1, None)):
             # complicated? No! target_label could be array -> use any, all etc.
-            if self.target_label is None:
+            if self._target_label is None:
                 self.logger.warning("Target list consists of None")
-            self.target_label = dev_tool.make_list_fill_var([], len(self),
-                                                            self.target_label)
-        if isinstance(self.target_label, list):
-            self.target_label = np.array(self.target_label)
-        assert len(self.target_label) == len(self), "Target has wrong lengths"
-        return self.target_label
+            self._target_label = dev_tool.make_list_fill_var([], len(self),
+                                                            self._target_label)
+        if isinstance(self._target_label, list):
+            self._target_label = np.array(self._target_label)
+        assert len(self._target_label) == len(self), "Target has wrong lengths"
+        return self._target_label
 
     def remove_data(self):
         """Remove data (columns, indices, labels etc.) from itself. Use only \
@@ -238,10 +235,10 @@ class HEPDataStorage():
         if self._data_pandas is not None:
             return None
         else:
-            new_root_dic = copy.deepcopy(self.root_dict)
+            new_root_dic = copy.deepcopy(self._root_dict)
             new_root_dic['branches'] = branches
             for column in branches:
-                new_labels[column] = self.label_dic.get(column)
+                new_labels[column] = self._label_dic.get(column)
             new_storage = HEPDataStorage(new_root_dic, target=self.get_targets,
                                          sample_weights=self.get_weights(),
                                          data_labels=new_labels,
@@ -288,7 +285,7 @@ class HEPDataStorage():
         # update labels
         if dev_tool.is_in_primitive(data_labels, None):
             data_labels = {}
-        data_labels = dict(self.label_dic, **data_labels)
+        data_labels = dict(self._label_dic, **data_labels)
         # update weights
         if dev_tool.is_in_primitive(sample_weights, None):
             sample_weights = self.get_weights()

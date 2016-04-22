@@ -136,10 +136,10 @@ def reweight_weights(reweight_data, reweighter_trained,
     return new_weights
 
 
-def data_ROC(original_data, target_data, plot=True, n_folds=1,
+def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
                  weight_original=None, weight_target=None, config_clf=None,
-                 take_target_from_data=False):
-    """ Return the ROC AUC fast, useful to find out, how well they can be
+                 take_target_from_data=False, use_factory=False):
+    """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
 
     Learn to distinguish between monte-carl data (original) and real data
@@ -153,6 +153,8 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
         The target or real data
     plot : boolean
         If true, ROC is plotted. Otherwise, only the ROC AUC is calculated.
+    curve_name : str
+        Name to label the plottet ROC curve.
     n_folds : int
         Specify how many folds and checks should be made for the training/test.
         If it is 1, a normal trait-test-split with 2/3 - 1/3 ratio is done.
@@ -176,19 +178,22 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
         The ROC AUC from the classifier on the test samples.
     """
     __DEFAULT_CONFIG_CLF = dict(
-        n_estimators=50,
-        learning_rate=0.1,
-        max_depth=5
+        n_estimators=200,
+        learning_rate=0.05,
+        max_depth=6
     )
 
-    from sklearn.ensemble import GradientBoostingClassifier
-    from rep.estimators import SklearnClassifier
+    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
+    from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
     from rep.utils import train_test_split
     from rep.report.metrics import RocAuc
+    from sklearn import tree
+    from rep.metaml import ClassifiersFactory
 
-    if config_clf is None:
-        config_clf = {}
+
+    config_clf = {} if config_clf is None else config_clf
     config_clf = dict(__DEFAULT_CONFIG_CLF, **config_clf)
+    curve_name = 'data' if curve_name is None else curve_name
 
     # concatenate the original and target data
     data = pd.concat([original_data.pandasDF(), target_data.pandasDF()])
@@ -199,8 +204,8 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
         weight_target = target_data.get_weights()
     assert len(weight_original) == len(original_data), "Original weights have wrong length"
     assert len(weight_target) == len(target_data), "Target weights have wrong length"
-    weights = np.concatenate((weight_original,
-                              weight_target))
+    weights = np.concatenate((weight_original, weight_target))
+
     if take_target_from_data:  # if "original" and "target" are "mixed"
         label = np.concatenate((original_data.get_targets(),
                                 target_data.get_targets()))
@@ -215,18 +220,61 @@ def data_ROC(original_data, target_data, plot=True, n_folds=1,
         X_train, X_test, y_train, y_test, weight_train, weight_test = (
             train_test_split(data, label, weights, test_size=0.33,
                              random_state=globals_.randint))
+        if use_factory:
+            clf_xgb = XGBoostClassifier(n_estimators=800, eta=0.15, nthreads=8, max_depth=8)
+            clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=200, n_jobs=-1))
+            clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=40, eta=0.1), n_estimators=30 ,learning_rate=0.7))
+            clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=3000, learning_rate=0.02))
+            clf_tmva = TMVAClassifier(NTrees=1000, Shrinkage=0.1, AdaBoostBeta=0.2)
+            clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
+            factory = ClassifiersFactory()
+            factory.add_classifier('Gradient Boosting', clf_gb)
+            factory.add_classifier('tmva', clf_tmva)
+            factory.add_classifier('XGBoost', clf_xgb)
+            factory.add_classifier('random forest', clf_rnd_forest)
+            factory.add_classifier('AdaBoost over XGBoost', clf_ada_xgb)
+            factory.add_classifier('AdaBoost over random forest', clf_ada_forest)
+            clf = factory
+        else:
+            #clf = XGBoostClassifier(n_estimators=200, eta=0.1, nthreads=8, max_depth=8)
+            clf = TMVAClassifier(NTrees=150, Shrinkage=0.8, AdaBoostBeta=0.3)
+            #clf = SklearnClassifier(RandomForestClassifier(n_estimators=50, n_jobs=-1))
+            #clf = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.2), n_estimators=70 ,learning_rate=0.7))
+            #clf = SklearnClassifier(AdaBoostClassifier(n_estimators=300, learning_rate=0.05))
+            #clf = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
         clf.fit(X_train, y_train, weight_train)
+# FIXME:
+        #plt.figure()
+
+
+
         report = clf.test_on(X_test, y_test, weight_test)
     else:
         # TODO: maybe implement for more then 1 fold
         raise NotImplementedError("n_folds >1 not yet implemented. Sorry!")
-    ROC_AUC = report.compute_metric(RocAuc())['clf']
-    if plot:
+
+    plt.figure("Learning curve of classifier")
+    report.learning_curve(RocAuc(), steps=1).plot(new_plot=True, title="Learning curve of classifiers")
+    if plot and use_factory:
+        ROC_AUC = 0
         # TODO: change title because it plots now only one ROC, use labels
         title = ("ROC curve for comparison of " + original_data.get_name() +
-                 " and " + target_data.get_name() + "\nAUC = " + str(ROC_AUC))
-        sns.set_context("talk")
+                 " and " + target_data.get_name())
+        # curve_name += "AUC = " + str(round(ROC_AUC, 3))
         plt.figure("Data reweighter comparison")
+        #report.prediction[curve_name] = report.prediction.pop('clf')
+        report.roc(physical_notion=False).plot(new_plot=True, title=title)
+        plt.plot([0, 1], [0, 1], 'k--')
+    elif plot:
+        ROC_AUC = report.compute_metric(RocAuc())['clf']
+        title = ("ROC curve for comparison of " + original_data.get_name() +
+                 " and " + target_data.get_name())
+        curve_name += "AUC = " + str(round(ROC_AUC, 3))
+        plt.figure("Data reweighter comparison")
+        report.prediction[curve_name] = report.prediction.pop('clf')
         report.roc(physical_notion=False).plot(new_plot=False, title=title)
         plt.plot([0, 1], [0, 1], 'k--')
+        plt.figure()
+        proba = clf.predict_proba(X_test)[:, 1]
+        plt.hist(proba, bins=20, histtype='bar')
     return ROC_AUC

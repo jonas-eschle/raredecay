@@ -39,10 +39,10 @@ Bu2K1Jpsi_mc = dict(
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=['B_PT', 'nTracks'
-#              , 'nSPDHits', 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-#              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-#              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+    branches=['B_PT', 'nTracks', 'nSPDHits'
+              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]#, 'B_TAU']
 
 )
@@ -54,10 +54,10 @@ cut_B2KpiLL_real = dict(
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'sweighted-data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=['B_PT', 'nTracks'
-#              , 'nSPDHits', 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-#              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-#              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+    branches=['B_PT', 'nTracks', 'nSPDHits'
+              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]#, 'B_TAU']
 
 )
@@ -101,8 +101,8 @@ reweight_cfg = dict(
 reweight_meta_cfg = dict(
     gb=dict(
         n_estimators=200,
-        max_depth=5,
-        learning_rate=0.01
+        max_depth=3,
+        learning_rate=0.1
     ),
     bins=dict(
         n_bins=20

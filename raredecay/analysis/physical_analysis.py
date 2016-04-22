@@ -106,7 +106,7 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
     reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
     gb_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-                                 target_data=reweight_real)
+                                 target_data=reweight_real, curve_name="GB reweighted")
     reweight_mc.plot(figure="gradient boosted reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="gradient boosted reweighting")
@@ -127,7 +127,7 @@ def _reweight1_comparison(i, config_file=None):
                      plots_name="comparison real-target")
     reweight_real.plot(figure="binned reweighting")
     bins_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-                                   target_data=reweight_real)
+                                   target_data=reweight_real, curve_name="Bins reweighted")
     # plt.show()
 
 
@@ -135,7 +135,7 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     original_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-                                           target_data=reweight_real)
+                                       target_data=reweight_real, curve_name="Original weights")
     reweight_mc.plot(figure="no reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="no reweighting")

@@ -15,6 +15,7 @@ import seaborn as sns
 from raredecay.tools.dev_tool import play_sound
 from raredecay.analysis.physical_analysis import run, finalize
 
+sns.set_context("poster")
 
 print "starting main"
 
@@ -32,3 +33,4 @@ except:
     print "BEEEEEP"
 a = raw_input(["Run finished, press Enter to show the plots"])
 plt.show()
+
