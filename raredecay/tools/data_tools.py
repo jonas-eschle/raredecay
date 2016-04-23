@@ -6,6 +6,7 @@ Created on Tue Mar 29 17:53:18 2016
 
 Contains several tools to convert, load, save and plot data
 """
+from __future__ import division
 
 import pandas as pd
 import numpy as np
@@ -24,8 +25,13 @@ cfg = importlib.import_module(meta_config.run_config)
 # TODO: implement use cfg.logger if available, otherwise use meta_config
 module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
-def format_data_weights(data_to_shape, weights, logger=None,
-                  ml_analysis_object=None):
+
+def add_to_rootfile(rootfile):
+    """
+    """
+
+
+def format_data_weights(data_to_shape, weights, logger=None):
     """Format the data and the weights perfectly. Same length and more.
 
     Change the data to pandas.DataFrame and fill the weights with ones where

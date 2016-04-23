@@ -4,6 +4,8 @@ Created on Mon Mar 21 22:26:13 2016
 
 @author: mayou
 """
+from __future__ import division
+
 import cPickle as pickle
 from root_numpy import root2array
 
@@ -40,9 +42,9 @@ cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
     branches=['B_PT', 'nTracks', 'nSPDHits'
-              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]#, 'B_TAU']
 
 )
@@ -55,9 +57,9 @@ cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'sweighted-data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
     branches=['B_PT', 'nTracks', 'nSPDHits'
-              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]#, 'B_TAU']
 
 )
@@ -100,9 +102,9 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=200,
+        n_estimators=400,
         max_depth=3,
-        learning_rate=0.1
+        learning_rate=0.01
     ),
     bins=dict(
         n_bins=20
@@ -123,7 +125,7 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=3,
+        n_bins=80,
         n_neighs=1
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!

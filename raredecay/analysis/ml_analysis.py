@@ -9,7 +9,7 @@ together into one and use the HEPDataStorage.
 
 It is integrated into the analysis package and depends on the tools.
 """
-# debug
+from __future__ import division
 
 import warnings
 import memory_profiler
@@ -33,7 +33,7 @@ cfg = importlib.import_module(meta_config.run_config)
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
-def reweight_mc_real(reweight_data_mc, reweight_data_real,
+def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
                      reweighter='gb', reweight_saveas=None, meta_cfg=None,
                      weights_mc=None, weights_real=None):
     """Return a trained reweighter from a (mc/real) distribution comparison.
@@ -56,7 +56,9 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
     reweight_data_mc : :class:`HEPDataStorage`
         The Monte-Carlo data, which has to be "fitted" to the real data.
     reweight_data_real : :class:`HEPDataStorage` (depreceated: root-dict)
-        Same as *reweight_data_mc* but for the real data
+        Same as *reweight_data_mc* but for the real data.
+    branches : list of strings
+        The columns/features/branches you want to use for the reweighting.
     reweighter : {'gb', 'bins'}
         Specify which reweighter to be used
     reweight_saveas : string
@@ -93,15 +95,15 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real,
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
 
     # do the reweighting
-    reweighter.fit(original=reweight_data_mc.pandasDF(),
-                   target=reweight_data_real.pandasDF(),
+    reweighter.fit(original=reweight_data_mc.pandasDF(branches=branches),
+                   target=reweight_data_real.pandasDF(branches=branches),
                    original_weight=reweight_data_mc.get_weights(),
                    target_weight=reweight_data_real.get_weights())
     return data_tools.adv_return(reweighter, logger=logger,
                                  save_name=reweight_saveas)
 
 
-def reweight_weights(reweight_data, reweighter_trained,
+def reweight_weights(reweight_data, reweighter_trained, branches=None,
                      add_weights_to_data=True):
     """Adds (or only returns) new weights to the data by applying a given
     reweighter on the data.
@@ -129,7 +131,7 @@ def reweight_weights(reweight_data, reweighter_trained,
         weights.
     """
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
+    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
                                   original_weight=reweight_data.get_weights())
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
@@ -138,7 +140,7 @@ def reweight_weights(reweight_data, reweighter_trained,
 
 def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
                  weight_original=None, weight_target=None, config_clf=None,
-                 take_target_from_data=False, use_factory=False):
+                 take_target_from_data=False, use_factory=True):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
 
@@ -221,23 +223,23 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
             train_test_split(data, label, weights, test_size=0.33,
                              random_state=globals_.randint))
         if use_factory:
-            clf_xgb = XGBoostClassifier(n_estimators=800, eta=0.15, nthreads=8, max_depth=8)
-            clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=200, n_jobs=-1))
-            clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=40, eta=0.1), n_estimators=30 ,learning_rate=0.7))
-            clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=3000, learning_rate=0.02))
-            clf_tmva = TMVAClassifier(NTrees=1000, Shrinkage=0.1, AdaBoostBeta=0.2)
-            clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
+            clf_xgb = XGBoostClassifier(n_estimators=1000, eta=0.1, nthreads=8, max_depth=8)
+            clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=100, n_jobs=-1))
+            clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.1), n_estimators=20 ,learning_rate=0.7))
+            clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=1000, learning_rate=0.01))
+            #clf_tmva = TMVAClassifier(NTrees=100, Shrinkage=1, AdaBoostBeta=0.7)
+            #clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
             factory = ClassifiersFactory()
-            factory.add_classifier('Gradient Boosting', clf_gb)
-            factory.add_classifier('tmva', clf_tmva)
+            #factory.add_classifier('Gradient Boosting', clf_gb)
+            #factory.add_classifier('tmva', clf_tmva)
             factory.add_classifier('XGBoost', clf_xgb)
             factory.add_classifier('random forest', clf_rnd_forest)
             factory.add_classifier('AdaBoost over XGBoost', clf_ada_xgb)
             factory.add_classifier('AdaBoost over random forest', clf_ada_forest)
             clf = factory
         else:
-            #clf = XGBoostClassifier(n_estimators=200, eta=0.1, nthreads=8, max_depth=8)
-            clf = TMVAClassifier(NTrees=150, Shrinkage=0.8, AdaBoostBeta=0.3)
+            clf = XGBoostClassifier(n_estimators=200, eta=0.1, nthreads=8, max_depth=8)
+            #clf = TMVAClassifier(NTrees=150, Shrinkage=0.8, AdaBoostBeta=0.3)
             #clf = SklearnClassifier(RandomForestClassifier(n_estimators=50, n_jobs=-1))
             #clf = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.2), n_estimators=70 ,learning_rate=0.7))
             #clf = SklearnClassifier(AdaBoostClassifier(n_estimators=300, learning_rate=0.05))
@@ -245,7 +247,6 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
         clf.fit(X_train, y_train, weight_train)
 # FIXME:
         #plt.figure()
-
 
 
         report = clf.test_on(X_test, y_test, weight_test)
@@ -257,6 +258,8 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
     report.learning_curve(RocAuc(), steps=1).plot(new_plot=True, title="Learning curve of classifiers")
     if plot and use_factory:
         ROC_AUC = 0
+        report.feature_importance().plot(new_plot=True)
+        report.features_correlation_matrix_by_class().plot(new_plot=True)
         # TODO: change title because it plots now only one ROC, use labels
         title = ("ROC curve for comparison of " + original_data.get_name() +
                  " and " + target_data.get_name())

@@ -5,7 +5,7 @@ Created on Thu Apr  7 22:10:29 2016
 @author: mayou
 """
 # debug
-
+from __future__ import division
 
 import copy
 import warnings
@@ -91,7 +91,7 @@ class HEPDataStorage():
         self._target_label = target
         self._data_pandas = None
         self._root_dict = data
-        # data-labels human readable:
+        # data-labels human readable
         self.add_label = add_label
         self._label_dic = {col: col for col in self._root_dict.get('branches')}
         self._label_dic.update(data_labels)
@@ -100,8 +100,7 @@ class HEPDataStorage():
         temp_root_dict = copy.deepcopy(self._root_dict)
         temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
         temp_branch = dev_tool.make_list_fill_var(temp_branch)
-        self._length = len(root2rec(branches=temp_branch[0],
-                                   **temp_root_dict))
+        self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
         # define weights and check length
         if not dev_tool.is_in_primitive(sample_weights, None):
             assert len(sample_weights) == self._length

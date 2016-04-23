@@ -6,6 +6,8 @@ Created on Sat Mar 26 16:49:45 2016
 
 Contains the different run-modes for the machine-learning algorithms.
 """
+from __future__ import division
+
 import raredecay.meta_config
 import globals_
 # debug
@@ -99,10 +101,12 @@ def _reweight1_comparison(i, config_file=None):
 
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
+                                            branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'],
                                             reweighter='gb',
                                             meta_cfg=cfg.reweight_meta_cfg)
     #gb_reweighter = 'gb_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, gb_reweighter)
+    ml_ana.reweight_weights(reweight_mc, branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'],
+                            reweighter_trained=gb_reweighter)
     reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
     reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
     gb_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
@@ -120,9 +124,10 @@ def _reweight1_comparison(i, config_file=None):
     bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
                                             reweighter='bins',
+                                            branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'],
                                             meta_cfg=cfg.reweight_meta_cfg_bins)
     #bins_reweighter = 'bins_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, bins_reweighter)
+    ml_ana.reweight_weights(reweight_mc, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'])
     reweight_mc.plot(figure="binned reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="binned reweighting")
