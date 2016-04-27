@@ -101,11 +101,15 @@ def _reweight1_comparison(i, config_file=None):
 
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
-                                            branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'],
+                                            #branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            # , 'h1_TRACK_TCHI2NDOF'
+                                            #],
                                             reweighter='gb',
                                             meta_cfg=cfg.reweight_meta_cfg)
     #gb_reweighter = 'gb_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'],
+    ml_ana.reweight_weights(reweight_mc, #branches=['B_PT', 'nTracks', 'nSPDHits'
+                                         #, 'h1_TRACK_TCHI2NDOF'
+                                         #],
                             reweighter_trained=gb_reweighter)
     reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
     reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
@@ -114,6 +118,7 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc.plot(figure="gradient boosted reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="gradient boosted reweighting")
+    plt.hist(reweight_mc.get_weights(), bins=40)
     # plt.show()
 
 
@@ -124,10 +129,14 @@ def _reweight1_comparison(i, config_file=None):
     bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
                                             reweighter='bins',
-                                            branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'],
+                                            branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            #, 'h1_TRACK_TCHI2NDOF'
+                                            ],
                                             meta_cfg=cfg.reweight_meta_cfg_bins)
     #bins_reweighter = 'bins_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits', 'h1_TRACK_TCHI2NDOF'])
+    ml_ana.reweight_weights(reweight_mc, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            #, 'h1_TRACK_TCHI2NDOF'
+                                            ],)
     reweight_mc.plot(figure="binned reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="binned reweighting")

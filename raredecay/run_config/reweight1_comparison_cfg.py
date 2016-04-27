@@ -102,9 +102,16 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=400,
-        max_depth=3,
-        learning_rate=0.01
+        n_estimators=2000,
+        max_depth=4,
+        learning_rate=0.05,
+        min_samples_leaf=100,  # 200
+        loss_regularization=5.0,  # 5.0
+        gb_args=dict(
+            subsample=0.9,
+            #random_state=43,
+            min_samples_split=3
+        )
     ),
     bins=dict(
         n_bins=20
@@ -125,7 +132,7 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=80,
+        n_bins=30,
         n_neighs=1
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!

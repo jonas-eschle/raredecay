@@ -25,8 +25,7 @@ from __future__ import division
 import cPickle as pickle
 
 
-global run_config
-run_config = 'config'
+run_config = None  # 'config'
 
 # Datatype ending variables
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'

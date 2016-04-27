@@ -132,15 +132,15 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     """
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
-                                  original_weight=reweight_data.get_weights())
+                                        original_weight=reweight_data.get_weights())
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
 
 
 def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
-                 weight_original=None, weight_target=None, config_clf=None,
-                 take_target_from_data=False, use_factory=True):
+             weight_original=None, weight_target=None, config_clf=None,
+             take_target_from_data=False, use_factory=True):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
 
@@ -180,9 +180,11 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
         The ROC AUC from the classifier on the test samples.
     """
     __DEFAULT_CONFIG_CLF = dict(
-        n_estimators=200,
-        learning_rate=0.05,
-        max_depth=6
+        n_estimators=400,
+        learning_rate=0.07,
+        max_depth=6,
+        subsample=0.9,
+        max_features=None
     )
 
     from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
@@ -191,6 +193,7 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
     from rep.report.metrics import RocAuc
     from sklearn import tree
     from rep.metaml import ClassifiersFactory
+    import rep
 
 
     config_clf = {} if config_clf is None else config_clf
@@ -223,20 +226,22 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
             train_test_split(data, label, weights, test_size=0.33,
                              random_state=globals_.randint))
         if use_factory:
-            clf_xgb = XGBoostClassifier(n_estimators=1000, eta=0.1, nthreads=8, max_depth=8)
-            clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=100, n_jobs=-1))
+            clf_xgb = XGBoostClassifier(n_estimators=2000, eta=0.07, nthreads=8, max_depth=8)
+            clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=1000, n_jobs=-1))
             clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.1), n_estimators=20 ,learning_rate=0.7))
-            clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=1000, learning_rate=0.01))
-            #clf_tmva = TMVAClassifier(NTrees=100, Shrinkage=1, AdaBoostBeta=0.7)
-            #clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
+            clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=1000, learning_rate=0.05))
+            clf_tmva = TMVAClassifier()
+            clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
             factory = ClassifiersFactory()
-            #factory.add_classifier('Gradient Boosting', clf_gb)
+            factory.add_classifier('Gradient Boosting', clf_gb)
             #factory.add_classifier('tmva', clf_tmva)
             factory.add_classifier('XGBoost', clf_xgb)
             factory.add_classifier('random forest', clf_rnd_forest)
-            factory.add_classifier('AdaBoost over XGBoost', clf_ada_xgb)
+            #factory.add_classifier('AdaBoost over XGBoost', clf_ada_xgb)
             factory.add_classifier('AdaBoost over random forest', clf_ada_forest)
             clf = factory
+            clf.fit(X_train, y_train, weight_train, parallel_profile='threads-4')
+
         else:
             clf = XGBoostClassifier(n_estimators=200, eta=0.1, nthreads=8, max_depth=8)
             #clf = TMVAClassifier(NTrees=150, Shrinkage=0.8, AdaBoostBeta=0.3)
@@ -244,7 +249,7 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
             #clf = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.2), n_estimators=70 ,learning_rate=0.7))
             #clf = SklearnClassifier(AdaBoostClassifier(n_estimators=300, learning_rate=0.05))
             #clf = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
-        clf.fit(X_train, y_train, weight_train)
+            clf.fit(X_train, y_train, weight_train)
 # FIXME:
         #plt.figure()
 
@@ -257,12 +262,21 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
     plt.figure("Learning curve of classifier")
     report.learning_curve(RocAuc(), steps=1).plot(new_plot=True, title="Learning curve of classifiers")
     if plot and use_factory:
-        ROC_AUC = 0
-        report.feature_importance().plot(new_plot=True)
+        ROC_AUC = report.compute_metric(RocAuc())
+        print "Roc auc = ", ROC_AUC
+        try:
+            report.feature_importance().plot(new_plot=True)
+        except:
+            warnings.warn("feature importance not calculated due to (most probably) runtime error", RuntimeWarning)
+        report.feature_importance_shuffling().plot(new_plot=True)
         report.features_correlation_matrix_by_class().plot(new_plot=True)
+        report.features_pdf().plot(new_plot=True)
+        #report.metrics_vs_cut(rep.report.metrics.RocAuc).plot(new_plot=True)  # , metric_label="ROC AUC"
+        report.prediction_pdf().plot(new_plot=True)
+
         # TODO: change title because it plots now only one ROC, use labels
         title = ("ROC curve for comparison of " + original_data.get_name() +
-                 " and " + target_data.get_name())
+                 " and " + target_data.get_name() + "\nROC AUC: " + str(ROC_AUC))
         # curve_name += "AUC = " + str(round(ROC_AUC, 3))
         plt.figure("Data reweighter comparison")
         #report.prediction[curve_name] = report.prediction.pop('clf')
