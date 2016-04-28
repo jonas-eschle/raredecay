@@ -204,10 +204,7 @@ logger_cfg = dict(
 def _selftest_system():
     """Test the configuration regarding the system-relevant parameters"""
 
-    # test pathes_to_add
-    if not all(type(i) == str for i in pathes_to_add):
-        raise TypeError(str(filter(lambda i: type(i) != str, pathes_to_add)) +
-                        " not of type string")
+
     # test logging_mode
     if logger_cfg['logging_mode'] not in ('both', 'file', 'console'):
         raise ValueError(str(logger_cfg['logging_mode']) +

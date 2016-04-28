@@ -126,8 +126,8 @@ def is_pickle(data_to_check):
     return flag
 
 
-def to_ndarray(data_in, logger=None, dtype=None):
-    """Convert data to numpy array
+def to_ndarray(data_in, logger=None, dtype=None, float_array=True):
+    """Convert data to numpy array (containing only floats)
 
     """
     if logger is None:
@@ -141,6 +141,8 @@ def to_ndarray(data_in, logger=None, dtype=None):
         data_in = data_in.tolist()
     if is_list(data_in):
         data_in = np.array(data_in)
+    if float_array:
+        data_in = np.asfarray(data_in)
     assert is_ndarray(data_in), "Error, could not convert data to numpy array"
     return data_in
 

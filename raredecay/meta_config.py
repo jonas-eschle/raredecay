@@ -27,6 +27,8 @@ import cPickle as pickle
 
 run_config = None  # 'config'
 
+pathes_to_add = []
+
 # Datatype ending variables
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
@@ -36,3 +38,12 @@ PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
 MULTITHREAD = False  # not yet implemented
 SUPPRESS_WRONG_SKLEARN_VERSION = False
 # DON'T CHANGE. Except you know what you do
+
+
+
+
+if __name__ == '__main__':
+        # test pathes_to_add
+    if not all(type(i) == str for i in pathes_to_add):
+        raise TypeError(str(filter(lambda i: type(i) != str, pathes_to_add)) +
+                        " not of type string")
