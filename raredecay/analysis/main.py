@@ -6,7 +6,7 @@ Created on Mon Mar 21 21:27:14 2016
 
 Main routine to start the analysis. It contains as few statements as possible.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import matplotlib.pyplot as plt
 import cProfile as profile

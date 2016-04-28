@@ -6,10 +6,10 @@ Created on Sat Mar 26 16:49:45 2016
 
 Contains the different run-modes for the machine-learning algorithms.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import raredecay.meta_config
-import globals_
+from raredecay import globals_
 # debug
 #import config as cfg
 

@@ -5,7 +5,7 @@ Created on Thu Apr  7 22:10:29 2016
 @author: mayou
 """
 # debug
-from __future__ import division
+from __future__ import division, absolute_import
 
 import copy
 import warnings
@@ -23,7 +23,7 @@ except ImportError:
     warnings.warn("Could not import parts from the REP repository. \
                   Some functions will be unavailable and raise errors")
 
-from raredecay.tools import data_tools, dev_tool
+from ..tools import data_tools, dev_tool
 
 modul_logger = dev_tool.make_logger(__name__, log_level_console='warning')
 

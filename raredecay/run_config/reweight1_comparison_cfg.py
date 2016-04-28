@@ -4,7 +4,7 @@ Created on Mon Mar 21 22:26:13 2016
 
 @author: mayou
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import cPickle as pickle
 from root_numpy import root2array

@@ -20,7 +20,7 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
     This package was built for sklearn 0.17. With 0.18 there are some
     module-name changes, which can crash the program.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import cPickle as pickle
 

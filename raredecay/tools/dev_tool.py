@@ -6,7 +6,7 @@ Created on Mon Mar 21 21:25:26 2016
 
 Contains several useful tools for all kind of programs
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import numpy as np
 import collections

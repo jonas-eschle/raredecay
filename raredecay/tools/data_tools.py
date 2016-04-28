@@ -6,7 +6,7 @@ Created on Tue Mar 29 17:53:18 2016
 
 Contains several tools to convert, load, save and plot data
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import pandas as pd
 import numpy as np

@@ -1,9 +1,9 @@
 # init of package analysis
 
-
+from __future__ import division, absolute_import
 
 import imp
-import meta_config
+from raredecay import meta_config
 
 
 if not meta_config.SUPPRESS_WRONG_SKLEARN_VERSION:

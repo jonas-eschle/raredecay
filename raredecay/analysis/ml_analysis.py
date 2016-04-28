@@ -9,7 +9,7 @@ together into one and use the HEPDataStorage.
 
 It is integrated into the analysis package and depends on the tools.
 """
-from __future__ import division
+from __future__ import division, absolute_import
 
 import warnings
 import memory_profiler

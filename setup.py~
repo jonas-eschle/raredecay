@@ -9,7 +9,7 @@ from setuptools import setup
 
 
 def readme():
-    with open('README.md') as f:
+    with open('README.rst') as f:
         return f.read()
 
 
@@ -28,13 +28,8 @@ setup(name='raredecay',
       license='None',
       #packages=['funniest'],
       install_requires=[
-          #'hep_ml',
-          #'rep',
-      ],
-      packages=['raredecay',
-                'raredecay.analysis',
-                'raredecay.run_config',
-                'raredecay.tools',
+          'hep_ml',
+          'rep',
       ],
       include_package_data=True,
       zip_safe=False)
