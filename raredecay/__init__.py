@@ -1,1 +1,2 @@
-#
+"""Initialization of rare-decay
+"""

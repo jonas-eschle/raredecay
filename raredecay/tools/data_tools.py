@@ -6,22 +6,32 @@ Created on Tue Mar 29 17:53:18 2016
 
 Contains several tools to convert, load, save and plot data
 """
+from __future__ import division
 
-import cPickle as pickle
-from root_numpy import root2array
 import pandas as pd
 import numpy as np
-#import config as cfg
-import importlib
-from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
+import cPickle as pickle
+
+from root_numpy import root2array
 
 from raredecay.tools import dev_tool
+from raredecay import meta_config
 
+# TODO: should be removable in the end
+#import config as cfg
+import importlib
+# meta_config imported above already
+cfg = importlib.import_module(meta_config.run_config)
+# TODO: implement use cfg.logger if available, otherwise use meta_config
 module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
-def format_data_weights(data_to_shape, weights, logger=None,
-                  ml_analysis_object=None):
+
+def add_to_rootfile(rootfile):
+    """
+    """
+
+
+def format_data_weights(data_to_shape, weights, logger=None):
     """Format the data and the weights perfectly. Same length and more.
 
     Change the data to pandas.DataFrame and fill the weights with ones where
@@ -84,8 +94,8 @@ def is_root(data_to_check):
     if type(data_to_check) is dict:
         path_name = data_to_check.get('filenames')
         assert type(path_name) is str, ("'filenames' of the dictionary " +
-                                        data_to_check + "is not a string")
-        if path_name.endswith(cfg.ROOT_DATATYPE):
+                                        str(data_to_check) + "is not a string")
+        if path_name.endswith(meta_config.ROOT_DATATYPE):
             flag = True
     return flag
 
@@ -103,17 +113,38 @@ def is_ndarray(data_to_check):
     """Check whether a given data is an ndarray.
     """
     flag = False
-    if type(data_to_check) is np.ndarray:
+    if isinstance(data_to_check, np.ndarray):
         flag = True
     return flag
 
 
 def is_pickle(data_to_check):
     flag = False
-    if type(data_to_check) is str:
+    if isinstance(data_to_check, str):
         if data_to_check.endswith(cfg.PICKLE_DATATYPE):
             flag = True
     return flag
+
+
+def to_ndarray(data_in, logger=None, dtype=None, float_array=True):
+    """Convert data to numpy array (containing only floats)
+
+    """
+    if logger is None:
+        logger = module_logger
+    if is_root(data_in):
+        data_in = root2array(**data_in)  # why **? it's a root dict
+    # change numpy.void to normal floats
+    if isinstance(data_in[0], np.void):
+        data_in = np.array([val[0] for val in data_in])
+    if isinstance(data_in, (np.recarray, np.ndarray)):
+        data_in = data_in.tolist()
+    if is_list(data_in):
+        data_in = np.array(data_in)
+    if float_array:
+        data_in = np.asfarray(data_in)
+    assert is_ndarray(data_in), "Error, could not convert data to numpy array"
+    return data_in
 
 
 def to_pandas(data_in, logger=None, indices=None, columns=None, dtype=None):
@@ -136,12 +167,28 @@ def to_pandas(data_in, logger=None, indices=None, columns=None, dtype=None):
     return data_in
 
 
-def adv_return(return_value, logger=None, save_name=None, multithread=False):
+def adv_return(return_value, save_name=None, logger=None):
     """Save the value if save_name specified, otherwise just return input
 
     Can be wrapped around the return value. Without any arguments, the return
     of your function will be exactly the same. With arguments, the value can
     be saved (**pickled**) before it is returned.
+
+    Parameters
+    ----------
+    return_value : any python object
+        The python object which should be pickled.
+    save_name : str, None
+        | The (file-)name for the pickled file. File-extension will be added
+        automatically if specified in *raredecay.meta_config*.
+        | If *None* is passed, the object won't be pickled.
+    logger : python-logger
+        Can be passed to avoid using the module_logger but to use another one.
+
+    Return
+    ------
+    out : python object
+        Return return_value without changes.
 
     **Usage**:
      Instead of a simple return statement
@@ -162,13 +209,13 @@ def adv_return(return_value, logger=None, save_name=None, multithread=False):
     if logger is None:
         logger = module_logger
     if save_name not in (None, False):
-        if type(save_name) is str:
+        if isinstance(save_name, str):
             save_name = cfg.PICKLE_PATH + save_name
             if not is_pickle(save_name):
-                save_name += "." + cfg.PICKLE_DATATYPE
+                save_name += "." + meta_config.PICKLE_DATATYPE
             with open(str(save_name), 'wb') as f:
-                pickle.dump(return_value, f, cfg.PICKLE_PROTOCOL)
-                logger.info("Data pickled to " + save_name)
+                pickle.dump(return_value, f, meta_config.PICKLE_PROTOCOL)
+                logger.info(str(return_value) + " pickled to " + save_name)
         else:
             logger.error("Could not pickle data, name for file (" +
                          str(save_name) + ") is not a string!" +
@@ -178,6 +225,7 @@ def adv_return(return_value, logger=None, save_name=None, multithread=False):
 
 
 def try_unpickle(file_to_unpickle):
+    """Try to unpickle a file and return, otherwise just return input"""
     if is_pickle(file_to_unpickle):
         with open(cfg.PICKLE_PATH + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)

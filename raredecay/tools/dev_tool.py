@@ -3,8 +3,13 @@
 Created on Mon Mar 21 21:25:26 2016
 
 @author: mayou
-"""
 
+Contains several useful tools for all kind of programs
+"""
+from __future__ import division
+
+import numpy as np
+import collections
 
 def syspath_append(verboise=False):
     """Adds the relevant path to the sys.path variable.
@@ -17,7 +22,7 @@ def syspath_append(verboise=False):
     if verboise == 'v': verboise = True
     if verboise: print sys.path
     # n_to_remove = 0 #number of elements to remove from sys.path from behind
-    # ys.path = sys.path[:len(sys.path)-n_to_remove]
+    # sys.path = sys.path[:len(sys.path)-n_to_remove]
     # used to remove unnecessary bindings
     for path in config.pathes_to_add:
         """get the sys.path and add pahtes if they are not already contained"""
@@ -43,13 +48,13 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     ----------
     module_name : string
         Name of the logger, shown in output. Best choose __name__
-    logging_mode : {"both", "file", "console"}
+    logging_mode : {'both', 'file', 'console'}
         Which logger handler is used; where the log is printed to.
-    log_level_file : {"debug","info","warning","error","critical"}
+    log_level_file : {'debug','info','warning','error','critical'}
         Which level of messages are logged. A lower level (left) always also
         includes the higher (right) levels, but not the other way around.
         This level specifies the level for the file log (if enabled).
-    log_level_console : {"debug","info","warning","error","critical"}
+    log_level_console : {'debug','info','warning','error','critical'}
         Level for console log (if enabled). See also log_level_file.
     overwrite_file : boolean
         If enabled, the logfiled gets overwritten at every run.
@@ -126,7 +131,6 @@ def fill_list_var(to_check, length=0, var=1):
     return to_check
 
 
-
 def make_list_fill_var(to_check, length=0, var=None):
     """Returns a list with the objects or a list filled with None.
     """
@@ -134,8 +138,27 @@ def make_list_fill_var(to_check, length=0, var=None):
         to_check = [to_check]
     difference = length - len(to_check)
     if difference > 0:
-        to_check += [None]*difference
+        to_check += [var]*difference
     return to_check
+
+
+def is_in_primitive(test_object, allowed_primitives):
+    """Fixes the numpy/python "bug/stupidity" that ("==" can be replaced by
+    "is"): "array([1,4,5]) == None" is not defined (it is clearly False)
+    This way you can test safely for a primitive type. If the object is a list
+    , array or similar, it returns 'False'.
+    """
+    flag = False
+    if isinstance(test_object, (list, np.ndarray)):
+        flag = False
+    elif (isinstance(allowed_primitives, collections.Iterable) and
+            (not isinstance(allowed_primitives, basestring))):
+        if test_object in allowed_primitives:
+            flag = True
+    elif test_object is allowed_primitives:
+        flag = True
+    return flag
+
 
 
 def play_sound(duration = 0.3, frequency = 440, change=False):
