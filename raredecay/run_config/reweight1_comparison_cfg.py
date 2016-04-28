@@ -26,6 +26,9 @@ def path_test():
 
 # reweighting
 
+#==============================================================================
+# DATA BEGIN
+#==============================================================================
 # root-dicts
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
@@ -63,8 +66,9 @@ cut_sWeight_B2KpiLL_real = dict(
               ]#, 'B_TAU']
 
 )
-
+#------------------------------------------------------------------------------
 # data for HEPDataStorage
+#------------------------------------------------------------------------------
 B2KpiLL_real_cut = dict(
     data=cut_sWeight_B2KpiLL_real,
     target=1,
@@ -85,15 +89,25 @@ B2K1Jpsi_mc_cut = dict(
     data_name="B->K1 J/Psi monte-carlo",
     data_name_addition="cut"
 )
+
+#------------------------------------------------------------------------------
 # collection of all data
+#------------------------------------------------------------------------------
 data = dict(
         reweight_mc=B2K1Jpsi_mc_cut,
         reweight_real_no_sweights=B2KpiLL_real_cut,
         reweight_real=B2KpiLL_real_cut_sweighted
 )
 
+#==============================================================================
+# DATA END
+#==============================================================================
 
-# start default config
+
+#==============================================================================
+# REWEIGHTING BEGIN
+#==============================================================================
+
 reweight_cfg = dict(
     reweighter='gb',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
@@ -102,11 +116,11 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=2000,
+        n_estimators=1000,
         max_depth=4,
-        learning_rate=0.05,
-        min_samples_leaf=100,  # 200
-        loss_regularization=5.0,  # 5.0
+        learning_rate=0.1,
+        min_samples_leaf=300,  # 200
+        loss_regularization=100.0,  # 5.0
         gb_args=dict(
             subsample=0.9,
             #random_state=43,
@@ -138,8 +152,14 @@ reweight_meta_cfg_bins = dict(
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
 # end config 1
 
+#==============================================================================
+# REWEIGHTER END
+#==============================================================================
 
-# draw configuration
+
+#==============================================================================
+# PLOT CONFIGURATIONS BEGIN
+#==============================================================================
 hist_cfg_std = dict(
     bins=40,
     normed=True,
@@ -148,14 +168,14 @@ hist_cfg_std = dict(
 
 
 
+#==============================================================================
+# PLOT CONFIGURATIONS END
+#==============================================================================
 
 
-
-
-pathes_to_add = []
-
-# configure LOGGER
-# -----------------------------------------------------------
+#==============================================================================
+# LOGGER CONFIGURATION BEGIN
+#==============================================================================
 logger_cfg = dict(
     logging_mode='both',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'
@@ -172,8 +192,15 @@ logger_cfg = dict(
 )
 
 
+#==============================================================================
+# LOGGER CONFIGURATION END
+#==============================================================================
 
 
+
+#==============================================================================
+# SELFTEST BEGIN
+#==============================================================================
 def _selftest_system():
     """Test the configuration regarding the system-relevant parameters"""
 

@@ -122,7 +122,7 @@ class HEPDataStorage():
 #        raise IOError("You cannot set the data atribute manualy. Use a method\
 #                      or the constructor")
 
-    def get_weights(self, index=None):
+    def get_weights(self, index=None, normalize=True):
         """Return the weights of the specified indeces or, if None, return all.
 
         Parameters
@@ -138,6 +138,8 @@ class HEPDataStorage():
             self.weights = dev_tool.fill_list_var([], len(self), 1)
         weights_out = data_tools.to_ndarray(self.weights)
         assert len(weights_out) == len(self), str("data and weights differ in lenght")
+        if normalize:
+            weights_out *= weights_out.size/weights_out.sum()
         return weights_out
 
     def set_weights(self, sample_weights):

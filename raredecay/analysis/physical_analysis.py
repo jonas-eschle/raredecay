@@ -22,6 +22,7 @@ def run(runmode):
 
     _reweight1_comparison(runmode)
     #_simple_plot()
+    finalize()  # finish the analysis, write output etc
 
 
 
@@ -99,6 +100,8 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
 
+    reweight_real.get_weights().sum()
+
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
                                             #branches=['B_PT', 'nTracks', 'nSPDHits'
@@ -118,8 +121,13 @@ def _reweight1_comparison(i, config_file=None):
     reweight_mc.plot(figure="gradient boosted reweighting",
                      plots_name="comparison real-target")
     reweight_real.plot(figure="gradient boosted reweighting")
-    plt.hist(reweight_mc.get_weights(), bins=40)
-    # plt.show()
+    plt.figure("Weights bg reweighter")
+    plt.hist(reweight_mc.get_weights(), bins=20)
+    plt.figure("Big weights (>4) bg reweighter")
+    plt.hist([i for i in reweight_mc.get_weights() if i > 4], bins=200)
+    print "mc weights sum", str(reweight_mc.get_weights().sum())
+    print "real weights sum", str(reweight_real.get_weights().sum())
+    plt.show()
 
 
     logger.info("Start with bins reweighter")

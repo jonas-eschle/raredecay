@@ -104,7 +104,7 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
 
 
 def reweight_weights(reweight_data, reweighter_trained, branches=None,
-                     add_weights_to_data=True):
+                     normalize=True, add_weights_to_data=True):
     """Adds (or only returns) new weights to the data by applying a given
     reweighter on the data.
 
@@ -120,6 +120,8 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
         The data for which the reweights are to be predicted.
     reweighter_trained : (pickled) reweighter (*from hep_ml*)
         The trained reweighter, which predicts the new weights.
+    normalize : boolean
+        If True, the weights will be normalized to one.
     add_weights_to_data : boolean
         If set to False, the weights will only be returned and not updated in
         the data (*HEPDataStorage*).
@@ -133,6 +135,8 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
                                         original_weight=reweight_data.get_weights())
+    if normalize:
+        new_weights *= new_weights.size/new_weights.sum()
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights

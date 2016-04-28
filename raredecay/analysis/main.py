@@ -24,7 +24,6 @@ for i in range(1):
     print "run number ", i+1, " started"
     run(i)
     # show()
-finalize()  # finish the analysis, write output etc
 
 # to hear/see whether the analysis has finished
 try:
