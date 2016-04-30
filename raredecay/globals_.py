@@ -33,6 +33,20 @@ _output_folders = None
 _del_existing_dir = False
 _path_to_be_overriden = None
 output = ""
+logger_path = None
+
+def get_logger_path():
+    """Return the path for the log folder"""
+
+    global _output_path
+    print _output_path
+    global _output_folders
+    print _output_folders
+    path_out = _output_path + _output_folders.get('log')
+    path_out += '' if path_out.endswith('/') else '/'
+    return path_out
+
+
 def add_output(data_out, title=None, obj_separator=None, data_separator=None,
                do_print=True, force_newline=True):
     """Method to collect the output and format
@@ -135,7 +149,6 @@ def initialize(output_path, run_name=None, output_folders=None,
             _path_to_be_overriden += '' if _path_to_be_overriden.endswith('/') else '/'
         _output_path = output_path + "_" + str(temp_i)
         temp_i += 1
-        print _output_path
         assert temp_i < meta_config.MAX_AUTO_FOLDERS, "possible endless loop when trying to create a non-existing folder"
     _output_path += '' if output_path.endswith('/') else '/'
 

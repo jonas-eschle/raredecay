@@ -41,7 +41,7 @@ def reweight(data_to_reweight, config_file=None):
     cfg = importlib.import_module(raredecay.meta_config.run_config)     #
     # create logger                                                     #C
     from raredecay.tools import dev_tool                                #H
-    logger = dev_tool.make_logger(__name__)                             #A
+    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)           #A
     logger.debug("config file used: " +                                 #N
                  str(raredecay.meta_config.run_config))                 #G
     globals_.initialize(**cfg)                                          #E
@@ -74,7 +74,7 @@ def _simple_plot(config_file=None):
     cfg = importlib.import_module(raredecay.meta_config.run_config)     #
     # create logger                                                     #C
     from raredecay.tools import dev_tool                                #H
-    logger = dev_tool.make_logger(__name__)                             #A
+    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)           #A
     logger.debug("config file used: " +                                 #N
                  str(raredecay.meta_config.run_config))                 #G
     globals_.initialize(**cfg)                                          #E
@@ -110,12 +110,12 @@ def _reweight1_comparison(i, config_file=None):
         raredecay.meta_config.run_config = _DEFAULT_CONFIG_FILE             #N
     import importlib                                                        #T
     cfg = importlib.import_module(raredecay.meta_config.run_config)         #
-    # create logger                                                         #C
-    from raredecay.tools import dev_tool                                    #H
-    logger = dev_tool.make_logger(__name__)                                 #A
-    logger.debug("config file used: " +                                     #N
-                 str(raredecay.meta_config.run_config))                     #G
-    globals_.initialize(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)        #!
+    globals_.initialize(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)        #C
+    # create logger                                                         #H
+    from raredecay.tools import dev_tool                                    #A
+    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)               #N
+    logger.debug("config file used: " +                                     #G
+                 str(raredecay.meta_config.run_config))                     #E
 ##############################################################################
 #PROTECTED, ALWAYS AT THE BEGINNING - PROTECTED, ALWAYS AT THE BEGINNING##
 

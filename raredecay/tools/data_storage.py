@@ -25,7 +25,11 @@ except ImportError:
 
 from raredecay.tools import data_tools, dev_tool
 
-modul_logger = dev_tool.make_logger(__name__, log_level_console='warning')
+import importlib
+from raredecay import meta_config
+cfg = importlib.import_module(meta_config.run_config)
+modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+
 
 
 class HEPDataStorage():

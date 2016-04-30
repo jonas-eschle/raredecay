@@ -254,7 +254,7 @@ logger_cfg = dict(
     # or instead make a new one each run
     log_file_name='AAlastRun',
     # the beginning ofthe name of the logfile, like 'project1'
-    log_file_dir='../log'
+    log_file_dir=None  # will be set automatically
 )
 
 

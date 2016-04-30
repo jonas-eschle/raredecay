@@ -17,13 +17,11 @@ from root_numpy import root2array
 from raredecay.tools import dev_tool
 from raredecay import meta_config
 
-# TODO: should be removable in the end
-#import config as cfg
+
 import importlib
-# meta_config imported above already
+from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
-# TODO: implement use cfg.logger if available, otherwise use meta_config
-module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def add_to_rootfile(rootfile):

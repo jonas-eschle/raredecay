@@ -36,7 +36,7 @@ def syspath_append(verboise=False):
 
 def make_logger(module_name, logging_mode='both', log_level_file='debug',
                 log_level_console='debug', overwrite_file=True,
-                log_file_name='AAlast_run',log_file_dir='.'):
+                log_file_name='AAlast_run',log_file_dir=None):
     """Return a logger with a console-/filehandler or both.
 
     A useful tool to log the run of the program and debug or control it. With
@@ -77,6 +77,9 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     import logging
     from time import strftime
 
+    if log_file_dir is None:
+        import raredecay.globals_
+        log_file_dir = raredecay.globals_.get_logger_path()
     logger = logging.getLogger(module_name)
     logger.setLevel(logging.DEBUG)
     # may be changed due to performance issues, does not have to log everything
@@ -85,12 +88,11 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     formatter = logging.Formatter("%(asctime)s - " + module_name +
                                   ": %(levelname)s - %(message)s")
     if logging_mode == 'both' or logging_mode == 'file':
-        if not overwrite_file:
-            timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
-        else:
+        if overwrite_file:
             timeStamp = 'temp'
-        if log_file_dir[-1] not in ('/'):
-            log_file_dir += '/'
+        else:
+            timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
+        log_file_dir += '' if log_file_dir.endswith('/') else '/'
         log_file_fullname = log_file_dir + log_file_name + module_name
         fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
                                                         timeStamp), file_mode)
