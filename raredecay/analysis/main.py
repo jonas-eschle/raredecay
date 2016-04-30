@@ -13,7 +13,7 @@ import cProfile as profile
 import seaborn as sns
 
 from raredecay.tools.dev_tool import play_sound
-from raredecay.analysis.physical_analysis import run, finalize
+from raredecay.analysis.physical_analysis import run
 
 sns.set_context("poster")
 

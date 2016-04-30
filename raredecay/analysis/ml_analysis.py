@@ -230,7 +230,7 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
             train_test_split(data, label, weights, test_size=0.33,
                              random_state=globals_.randint))
         if use_factory:
-            clf_xgb = XGBoostClassifier(n_estimators=2000, eta=0.07, nthreads=8, max_depth=8)
+            clf_xgb = XGBoostClassifier(n_estimators=1000, eta=0.1, nthreads=8, max_depth=8)
             clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=1000, n_jobs=-1))
             clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.1), n_estimators=20 ,learning_rate=0.7))
             clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=1000, learning_rate=0.05))

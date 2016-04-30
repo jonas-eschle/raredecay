@@ -23,7 +23,7 @@ except ImportError:
     warnings.warn("Could not import parts from the REP repository. \
                   Some functions will be unavailable and raise errors")
 
-from ..tools import data_tools, dev_tool
+from raredecay.tools import data_tools, dev_tool
 
 modul_logger = dev_tool.make_logger(__name__, log_level_console='warning')
 
@@ -82,30 +82,41 @@ class HEPDataStorage():
         supertitle_fontsize : int
             The size of the title of several subplots (data_name, _addition)
         """
+        # initialize logger
         self.logger = modul_logger if logger is None else logger
-        self._name = (data_name, data_name_addition)
-        data_labels = {} if data_labels is None else data_labels
-        if dev_tool.is_in_primitive(hist_settings, None):
-            hist_settings = self.__HIST_SETTINGS_DEFAULT
-        self.hist_settings = hist_settings
-        self._target_label = target
+
+        # initialize data
         self._data_pandas = None
         self._root_dict = data
+
+        # data name
+        self._name = (data_name, data_name_addition)
+
+        # initialize targets
+        self._target_label = target
+
         # data-labels human readable
+        data_labels = {} if data_labels is None else data_labels
         self.add_label = add_label
         self._label_dic = {col: col for col in self._root_dict.get('branches')}
         self._label_dic.update(data_labels)
+
         # TODO: removeLine: self.data_name = data_name
-        # define length for __len__
+        # define length of object
         temp_root_dict = copy.deepcopy(self._root_dict)
         temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
         temp_branch = dev_tool.make_list_fill_var(temp_branch)
         self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
-        # define weights and check length
+
+        # initialize weights
         if not dev_tool.is_in_primitive(sample_weights, None):
             assert len(sample_weights) == self._length
         self.weights = sample_weights
-        # initialise logger
+
+        # plot settings
+        if dev_tool.is_in_primitive(hist_settings, None):
+            hist_settings = self.__HIST_SETTINGS_DEFAULT
+        self.hist_settings = hist_settings
         self.supertitle_fontsize = supertitle_fontsize
 
     def __len__(self):
@@ -179,14 +190,14 @@ class HEPDataStorage():
             data_out.columns = temp_root_dict['branches']
         return data_out
 
-    def get_labels(self, branches=None, no_dict=False):
+    def get_labels(self, branches=None, as_list=False):
         """Return the labels of the data
 
         Parameters
         ----------
         branches : list with str or str
             The labels of the branches to return
-        no_dict : boolean
+        as_list : boolean
             If true, the labels will be returned as a list instead of a dict.
         Return
         ------
@@ -196,7 +207,7 @@ class HEPDataStorage():
         if branches is None:
             branches = self._root_dict.get('branches')
         branches = dev_tool.make_list_fill_var(branches)
-        if no_dict:
+        if as_list:
             labels_out = [self._label_dic.get(col, col) for col in branches]
         else:
             labels_out = {key: self._label_dic.get(key) for key in branches}
@@ -214,7 +225,7 @@ class HEPDataStorage():
             if self._target_label is None:
                 self.logger.warning("Target list consists of None")
             self._target_label = dev_tool.make_list_fill_var([], len(self),
-                                                            self._target_label)
+                                                             self._target_label)
         if isinstance(self._target_label, list):
             self._target_label = np.array(self._target_label)
         assert len(self._target_label) == len(self), "Target has wrong lengths"
@@ -255,11 +266,9 @@ class HEPDataStorage():
         out: LabeledDataStorage instance
             Return a Labeled Data Storage instance created with the data
         """
-        new_lds = LabeledDataStorage(self.pandasDF(),
-                                     target=self.get_targets(),
+        new_lds = LabeledDataStorage(self.pandasDF(), target=self.get_targets(),
                                      sample_weight=self.get_weights(),
-                                     random_state=random_state,
-                                     shuffle=shuffle)
+                                     random_state=random_state, shuffle=shuffle)
         return new_lds
 
     def plot(self, figure=None, branches=None, index=None, sample_weights=None,
@@ -367,8 +376,8 @@ class HEPDataStorage():
         plt.scatter(self.pandasDF(branches=x_branch),
                     self.pandasDF(branches=y_branch), s=size, c=color,
                     alpha=0.5, label=self._name[0])
-        plt.xlabel(self.get_labels(branches=x_branch, no_dict=True))
-        plt.ylabel(self.get_labels(branches=y_branch, no_dict=True))
+        plt.xlabel(self.get_labels(branches=x_branch, as_list=True))
+        plt.ylabel(self.get_labels(branches=y_branch, as_list=True))
         plt.legend()
 
 

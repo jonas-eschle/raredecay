@@ -11,25 +11,58 @@ from root_numpy import root2array
 
 
 
+# the name of the run and the output folder
+RUN_NAME = 'my_run'
 
-# general variables
-DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+#==============================================================================
+# PATHES BEGIN
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# SHARED OBJECT PATHES INPUT & OUTPUT
+#------------------------------------------------------------------------------
+
+# folder where the pickled objects are stored
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
-DATA_PATH += '/'
+
+#------------------------------------------------------------------------------
+# INPUT PATH
+#------------------------------------------------------------------------------
+
+#path where the data are stored  (folder)
+DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown/'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+
+#------------------------------------------------------------------------------
+# OUTPUT PATHES
+#------------------------------------------------------------------------------
+
+# OUTPUT_PATH where the run will be stored
+OUTPUT_CFG = dict(
+    run_name=RUN_NAME,
+    output_path='/home/mayou/Documents/uniphysik/Bachelor_thesis/output/',
+    del_existing_folders=False,
+    output_folders=dict(
+        log="log",
+        plots="plots",
+        results="results",
+        config="config"
+    )
+)
+#==============================================================================
+# PATHES END
+#==============================================================================
 
 
 
-
-def path_test():
-    for path in [DATA_PATH, PICKLE_PATH]:
-        path += '/' if path[-1] not in ('/') else ""  # Don't change!
-
-# reweighting
+# REWEGIHTING
 
 #==============================================================================
 # DATA BEGIN
 #==============================================================================
-# root-dicts
+
+#------------------------------------------------------------------------------
+# root data (dictionaries with parameters for root2array)
+#------------------------------------------------------------------------------
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'DarkBoson/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
@@ -67,7 +100,7 @@ cut_sWeight_B2KpiLL_real = dict(
 
 )
 #------------------------------------------------------------------------------
-# data for HEPDataStorage
+# data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------
 B2KpiLL_real_cut = dict(
     data=cut_sWeight_B2KpiLL_real,
@@ -75,28 +108,59 @@ B2KpiLL_real_cut = dict(
     data_name="B->KpiLL real data",
     data_name_addition="cut",
 )
+
+# gradient boosted reweighting
 B2KpiLL_real_cut_sweighted = dict(
     data=cut_sWeight_B2KpiLL_real,
-    target=1,
     sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
     data_name="B->KpiLL real data",
     data_name_addition="cut & sweighted",
 )
 B2K1Jpsi_mc_cut = dict(
     data=cut_Bu2K1Jpsi_mc,
-    target=0,
     sample_weights=None,
     data_name="B->K1 J/Psi monte-carlo",
     data_name_addition="cut"
 )
 
+# train-test splitted data for reweighting
+B2KpiLL_real_train = dict(
+    data=dict(cut_sWeight_B2KpiLL_real, selection='B_M0234_Subst3_pi2p>4100'),
+    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'], selection='B_M0234_Subst3_pi2p>4100')),
+    data_name="B->KpiLL real data",
+    data_name_addition="train set",
+)
+B2KpiLL_real_test = dict(
+    data=dict(cut_sWeight_B2KpiLL_real, selection='B_M0234_Subst3_pi2p<4100'),
+    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'], selection='B_M0234_Subst3_pi2p<4100')),
+    data_name="B->KpiLL real data",
+    data_name_addition="test set",
+)
+B2K1Jpsi_mc_train = dict(
+    data=dict(cut_Bu2K1Jpsi_mc, selection='B_M0234_Subst3_pi2p>4200'),
+    sample_weights=None,
+    data_name="B->K1 J/Psi monte-carlo",
+)
+B2K1Jpsi_mc_test = dict(
+    data=dict(cut_Bu2K1Jpsi_mc, selection='B_M0234_Subst3_pi2p<4200'),
+    sample_weights=None,
+    data_name="B->K1 J/Psi monte-carlo",
+    data_name_addition="test set",
+)
+
+
 #------------------------------------------------------------------------------
 # collection of all data
 #------------------------------------------------------------------------------
+# this dictionary will finaly be used in the code
 data = dict(
-        reweight_mc=B2K1Jpsi_mc_cut,
-        reweight_real_no_sweights=B2KpiLL_real_cut,
-        reweight_real=B2KpiLL_real_cut_sweighted
+    reweight_mc_train=B2K1Jpsi_mc_train,
+    reweight_mc_test=B2K1Jpsi_mc_test,
+    reweight_real_train=B2KpiLL_real_train,
+    reweight_real_test=B2KpiLL_real_test,
+    reweight_mc=B2K1Jpsi_mc_cut,
+    reweight_real_no_sweights=B2KpiLL_real_cut,
+    reweight_real=B2KpiLL_real_cut_sweighted
 )
 
 #==============================================================================
@@ -108,6 +172,7 @@ data = dict(
 # REWEIGHTING BEGIN
 #==============================================================================
 
+# start configuration for gradient boosted reweighter
 reweight_cfg = dict(
     reweighter='gb',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
@@ -116,10 +181,10 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=1000,
+        n_estimators=100,
         max_depth=4,
         learning_rate=0.1,
-        min_samples_leaf=300,  # 200
+        min_samples_leaf=100,  # 200
         loss_regularization=100.0,  # 5.0
         gb_args=dict(
             subsample=0.9,
@@ -131,9 +196,9 @@ reweight_meta_cfg = dict(
         n_bins=20
     )
 ).get(reweight_cfg.get('reweighter'))  # Don't change!
-# end default config
 
-# start config 1
+
+
 reweight_cfg_bins = dict(
     reweighter='bins',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,
@@ -160,6 +225,7 @@ reweight_meta_cfg_bins = dict(
 #==============================================================================
 # PLOT CONFIGURATIONS BEGIN
 #==============================================================================
+
 hist_cfg_std = dict(
     bins=40,
     normed=True,
@@ -203,6 +269,10 @@ logger_cfg = dict(
 #==============================================================================
 def _selftest_system():
     """Test the configuration regarding the system-relevant parameters"""
+
+    def path_test():
+        for path in [DATA_PATH, PICKLE_PATH]:
+            path += '/' if path[-1] not in ('/') else ""  # Don't change!
 
 
     # test logging_mode

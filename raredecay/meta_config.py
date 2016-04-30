@@ -5,8 +5,9 @@ Created on Fri Apr  1 15:32:17 2016
 @author: mayou
 
 | This module provides the meta-configuration.
+| Mostly, you do not need to change this file.
 | It contains:
- - (package-)global variables for all modules
+ - (package-)global default variables for all modules
  - Debug-options which change some implementation on a basic level
  - Global configurations like the endings of specific files etc.
 
@@ -27,23 +28,49 @@ import cPickle as pickle
 
 run_config = None  # 'config'
 
-pathes_to_add = []
 
-# Datatype ending variables
+#==============================================================================
+#  Datatype ending variables
+#==============================================================================
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
-# DEBUG options
+#==============================================================================
+#  DEBUG options
+#==============================================================================
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
 MULTITHREAD = False  # not yet implemented
-SUPPRESS_WRONG_SKLEARN_VERSION = False
-# DON'T CHANGE. Except you know what you do
+SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
+MAX_AUTO_FOLDERS = 10000  # max number of auto-generated folders by initialize
+NO_PROMPT_ASSUME_YES = False  # no userinput required, assumes yes (e.g. when overwritting files)
 
+#==============================================================================
+# DEFAULT SETTINGS
+#==============================================================================
 
+# available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
+# You may add additional key-value pairs or just change some values
+__DEFAULT_OUTPUT_FOLDERS = dict(
+    log="log",
+    plots="plots",
+    results="results",
+    config="config"
+)
+__DEFAULT_LOGGER_CFG = dict(
+    logging_mode='both',   # define where the logger is written to
+    # take 'both', 'file', 'console' or 'no'
+    log_level_file='debug',
+    # specifies the level to be logged to the file
+    log_level_console='debug', #'warning',
+    # specify the level to be logged to the console
+    overwrite_file=True,
+    # specifies whether it should overwrite the log file each time
+    # or instead make a new one each run
+    log_file_name='AAlastRun',
+    # the beginning ofthe name of the logfile, like 'project1'
+    log_file_dir=__DEFAULT_OUTPUT_FOLDERS.get('log')
+)
 
 
 if __name__ == '__main__':
-        # test pathes_to_add
-    if not all(type(i) == str for i in pathes_to_add):
-        raise TypeError(str(filter(lambda i: type(i) != str, pathes_to_add)) +
-                        " not of type string")
+    pass
