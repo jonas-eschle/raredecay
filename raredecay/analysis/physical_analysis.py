@@ -163,7 +163,6 @@ def _reweight1_comparison(cfg, logger):
                      plots_name="comparison real-target", hist_settings={'bins':20})
     reweight_real.plot(figure="gradient boosted reweighting", hist_settings={'bins':20})
     out.save_fig(plot1, file_format=['png', 'svg'], to_pickle=False)
-    out.save_fig(plot2, to_pickle=True, plot=False)
     out.save_fig(plt.figure("Weights bg reweighter"))
     plt.hist(reweight_mc.get_weights(), bins=20)
     plt.figure("Big weights (>4) bg reweighter")
