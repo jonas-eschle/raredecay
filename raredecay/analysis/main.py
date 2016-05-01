@@ -22,7 +22,7 @@ print "starting main"
 # possible loop over method
 for i in range(1):
     print "run number ", i+1, " started"
-    run("reweight_comparison")
+    run("test")
     # show()
 
 # to hear/see whether the analysis has finished

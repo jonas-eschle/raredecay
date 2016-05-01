@@ -16,6 +16,7 @@ import raredecay.meta_config
 DEFAULT_CFG_FILE = dict(
     reweight='raredecay.run_config.reweight_cfg',
     simple_plot=None,
+    test='raredecay.run_config.reweight1_comparison_cfg',
     reweight_comparison='raredecay.run_config.reweight1_comparison_cfg'
 )
 
@@ -48,7 +49,8 @@ def run(run_mode, cfg_file=None):
 #==============================================================================
 # Run initialized, start physical analysis
 #==============================================================================
-    _reweight1_comparison(cfg, logger)
+    test(cfg)
+    #_reweight1_comparison(cfg, logger)
     #_simple_plot()
 
 #==============================================================================
@@ -56,6 +58,19 @@ def run(run_mode, cfg_file=None):
 #==============================================================================
     out.finalize()
 
+def test(cfg):
+    """just a test-function"""
+    import numpy as np
+    from raredecay.tools import data_tools
+    DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/testing/'
+    data = dict(
+        filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        treename='DecayTree',
+        branches=["B_PT",
+                  "nTracks", 'Jpsi_P',
+                  'B_TAU', 'nSPDHits']
+)
+    data_tools.add_to_rootfile(data, new_branch=np.ones(6631), branch_name= "yyyyeeeeeoooooooooooooooo")
 
 def reweight(data_to_reweight, config_file=None):
     # specify the default configuration file. Can be changed.

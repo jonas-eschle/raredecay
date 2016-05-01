@@ -12,7 +12,9 @@ import pandas as pd
 import numpy as np
 import cPickle as pickle
 
-from root_numpy import root2array
+from root_numpy import root2array, array2tree
+from ROOT import TObject
+from rootpy.io import root_open
 
 from raredecay.tools import dev_tool
 from raredecay import meta_config
@@ -24,9 +26,28 @@ cfg = importlib.import_module(meta_config.run_config)
 module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
-def add_to_rootfile(rootfile):
+def add_to_rootfile(rootfile, new_branch, branch_name=None):
+    """Adds a new branch to a given root file, overwrites.
+
+
+    Parameters
+    ----------
+    rootfile : root-dict
+        The ROOT-file where the data should be added
+    new_branch : numpy.array 1-D, list, root-dict
+        A one-dimensional numpy array that contains the data.
     """
-    """
+    # get the right parameters
+    if isinstance(rootfile, dict):
+        filename = rootfile.get('filenames')
+    treename = rootfile.get('treename')
+    new_branch = to_ndarray(new_branch)
+    new_branch.dtype =[(branch_name, 'f8')]
+
+    # write to ROOT-file
+    with root_open(filename, mode='a') as f:
+        array2tree(new_branch, tree=getattr(f, treename))
+        f.write("", TObject.kOverwrite)  # overwrite, does not create friends
 
 
 def format_data_weights(data_to_shape, weights, logger=None):

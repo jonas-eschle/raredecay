@@ -264,9 +264,12 @@ class OutputHandler(object):
         self.add_output("\n\n", title="END OF RUN", do_print=False)
         self.output += self.end_output
         # TODO: get git informations
-        # commit_nr
-        self.add_output(["Git commit number"], section="Git information",
-                        do_print=False)
+        git_version = subprocess.call(["git", "-C",
+            "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
+            "describe"])
+
+        self.add_output(["Git version", git_version], section="Git information",
+                        do_print=False, obj_separator=" : ")
 #==============================================================================
 #   write output to file
 #==============================================================================
@@ -288,7 +291,12 @@ class OutputHandler(object):
             self._figure_to_file()
         except:
             self.logger.error("Could not save plots to file")
-            raise
+
+#==============================================================================
+#   copy the config file and save
+#==============================================================================
+       # TODO: copy config file. Necessary?
+
 
 #==============================================================================
 #    if a folder to overwrite exists, delete it and move the temp folder
