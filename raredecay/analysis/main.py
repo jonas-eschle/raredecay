@@ -12,7 +12,7 @@ import matplotlib.pyplot as plt
 import cProfile as profile
 import seaborn as sns
 
-from raredecay.tools.dev_tool import play_sound
+
 from raredecay.analysis.physical_analysis import run
 
 sns.set_context("poster")
@@ -22,11 +22,12 @@ print "starting main"
 # possible loop over method
 for i in range(1):
     print "run number ", i+1, " started"
-    run(i)
+    run("reweight_comparison")
     # show()
 
 # to hear/see whether the analysis has finished
 try:
+    from raredecay.tools.dev_tool import play_sound
     play_sound()
 except:
     print "BEEEEEP"

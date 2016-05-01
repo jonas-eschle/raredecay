@@ -21,6 +21,10 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
     This package was built for sklearn 0.17. With 0.18 there are some
     module-name changes, which can crash the program.
 """
+
+#==============================================================================
+# DO NOT IMPORT ANY PACKAGE (run configuration) DEPENDENCY!
+#==============================================================================
 from __future__ import division, absolute_import
 
 import cPickle as pickle
@@ -50,14 +54,14 @@ NO_PROMPT_ASSUME_YES = False  # no userinput required, assumes yes (e.g. when ov
 
 # available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
 # You may add additional key-value pairs or just change some values
-__DEFAULT_OUTPUT_FOLDERS = dict(
+DEFAULT_OUTPUT_FOLDERS = dict(
     log="log",
     plots="plots",
     results="results",
     config="config"
 )
-__DEFAULT_LOGGER_CFG = dict(
-    logging_mode='both',   # define where the logger is written to
+DEFAULT_LOGGER_CFG = dict(
+    logging_mode='console',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'
     log_level_file='debug',
     # specifies the level to be logged to the file
@@ -68,7 +72,7 @@ __DEFAULT_LOGGER_CFG = dict(
     # or instead make a new one each run
     log_file_name='AAlastRun',
     # the beginning ofthe name of the logfile, like 'project1'
-    log_file_dir=__DEFAULT_OUTPUT_FOLDERS.get('log')
+    log_file_dir=DEFAULT_OUTPUT_FOLDERS.get('log')
 )
 
 

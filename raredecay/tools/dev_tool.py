@@ -79,7 +79,7 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
 
     if log_file_dir is None:
         import raredecay.globals_
-        log_file_dir = raredecay.globals_.get_logger_path()
+        log_file_dir = raredecay.globals_.out.get_logger_path()
     logger = logging.getLogger(module_name)
     logger.setLevel(logging.DEBUG)
     # may be changed due to performance issues, does not have to log everything

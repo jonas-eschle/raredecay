@@ -13,7 +13,8 @@ from root_numpy import root2array
 
 # the name of the run and the output folder
 RUN_NAME = 'my_run'
-
+run_message = str("here, you can write any string to comment what your thoughts" +
+                " and more are. This script, for example, is for test-purposesn")
 #==============================================================================
 # PATHES BEGIN
 #==============================================================================
@@ -173,6 +174,7 @@ data = dict(
 #==============================================================================
 
 # start configuration for gradient boosted reweighter
+# TODO: remove the reweight_cfg?
 reweight_cfg = dict(
     reweighter='gb',
     reweight_data_mc=cut_Bu2K1Jpsi_mc,

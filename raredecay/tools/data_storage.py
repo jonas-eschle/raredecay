@@ -32,7 +32,7 @@ modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 
-class HEPDataStorage():
+class HEPDataStorage(object):
     """ A wrapper around pandas.DataFrame and an extension to the
     LabeledDataStorage.
 
@@ -330,7 +330,7 @@ class HEPDataStorage():
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
             self.__figure_dic.update({figure: x_limits_col})
-        plt.figure(figure, figsize=(20, 30))
+        out_figure = plt.figure(figure, figsize=(20, 30))
         # naming the plot. Ugly!
         temp_name = ""
         temp_first = False
@@ -363,13 +363,14 @@ class HEPDataStorage():
                      **hist_settings)
             plt.title(column)
         plt.legend()
-        #plt.figlegend(patches, [label_name], 2)
+
+        return out_figure
 
     def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
         """Plots two branches against each other to see the distribution.
 
         """
-        plt.figure(figure)
+        out_figure = plt.figure(figure)
         if isinstance(weights, (int, long, float)):
             weights = dev_tool.make_list_fill_var(weights, length=len(self),
                                                   var=weights)
@@ -384,7 +385,7 @@ class HEPDataStorage():
         plt.ylabel(self.get_labels(branches=y_branch, as_list=True))
         plt.legend()
 
-
+        return out_figure
 
 # TODO: add correlation matrix
 

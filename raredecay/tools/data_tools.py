@@ -21,7 +21,7 @@ from raredecay import meta_config
 import importlib
 from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
-logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def add_to_rootfile(rootfile):
