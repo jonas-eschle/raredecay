@@ -31,7 +31,6 @@ cfg = importlib.import_module(meta_config.run_config)
 modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
-
 class HEPDataStorage(object):
     """ A wrapper around pandas.DataFrame and an extension to the
     LabeledDataStorage.
@@ -136,6 +135,10 @@ class HEPDataStorage(object):
 #    def data(self):
 #        raise IOError("You cannot set the data atribute manualy. Use a method\
 #                      or the constructor")
+
+    def get_rootdict(self):
+        """Return the root-dictionary if available, else None"""
+        return self._root_dict
 
     def get_weights(self, index=None, normalize=True):
         """Return the weights of the specified indeces or, if None, return all.

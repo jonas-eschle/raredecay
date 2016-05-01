@@ -16,6 +16,7 @@ import raredecay.meta_config
 DEFAULT_CFG_FILE = dict(
     reweight='raredecay.run_config.reweight_cfg',
     simple_plot=None,
+    test='raredecay.run_config.reweight1_comparison_cfg',
     reweight_comparison='raredecay.run_config.reweight1_comparison_cfg'
 )
 
@@ -48,7 +49,11 @@ def run(run_mode, cfg_file=None):
 #==============================================================================
 # Run initialized, start physical analysis
 #==============================================================================
-    _reweight1_comparison(cfg, logger)
+
+    if run_mode == "test":
+        test(cfg)
+    if run_mode == "reweight_comparison":
+        reweight_comparison(cfg, logger)
     #_simple_plot()
 
 #==============================================================================
@@ -56,30 +61,22 @@ def run(run_mode, cfg_file=None):
 #==============================================================================
     out.finalize()
 
+def test(cfg):
+    """just a test-function"""
+    import numpy as np
+    from raredecay.tools import data_tools
+    DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/testing/'
+    data = dict(
+        filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        treename='DecayTree',
+        branches=["B_PT",
+                  "nTracks", 'Jpsi_P',
+                  'B_TAU', 'nSPDHits']
+)
+    data_tools.add_to_rootfile(data, new_branch=np.ones(6631), branch_name= "yyyyeeeeeoooooooooooooooo")
 
-def reweight(data_to_reweight, config_file=None):
-    # specify the default configuration file. Can be changed.
-    _DEFAULT_CONFIG_FILE = 'raredecay.run_config.reweight_cfg'
-    # default: 'raredecay.run_config.reweight_cfg'
+def reweight(cfg, logger, data_to_reweight=None):
 
-#PROTECTED, ALWAYS AT THE BEGINNING - PROTECTED, ALWAYS AT THE BEGINNING##
-#########################################################################D
-    if config_file is None:                                             #O
-        raredecay.meta_config.run_config = _DEFAULT_CONFIG_FILE         #N
-    import importlib                                                    #T
-    cfg = importlib.import_module(raredecay.meta_config.run_config)     #
-    # create logger                                                     #C
-    from raredecay.tools import dev_tool                                #H
-    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)           #A
-    logger.debug("config file used: " +                                 #N
-                 str(raredecay.meta_config.run_config))                 #G
-    globals_.out.initialize(**cfg)                                          #E
-#########################################################################!
-#PROTECTED, ALWAYS AT THE BEGINNING - PROTECTED, ALWAYS AT THE BEGINNING##
-
-#==============================================================================
-#     actual program start
-#==============================================================================
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_tools
 
@@ -90,29 +87,7 @@ def reweight(data_to_reweight, config_file=None):
     return data_tools.adv_return(new_weights)
 
 
-def _simple_plot(config_file=None):
-    # specify the default configuration file. Can be changed.
-    _DEFAULT_CONFIG_FILE = 'raredecay.run_config.reweight1_comparison_cfg'
-    # default 'run_config.reweight1_comparison_cfg'
-
-#PROTECTED, ALWAYS AT THE BEGINNING - PROTECTED, ALWAYS AT THE BEGINNING##
-#########################################################################D
-    if config_file is None:                                             #O
-        raredecay.meta_config.run_config = _DEFAULT_CONFIG_FILE         #N
-    import importlib                                                    #T
-    cfg = importlib.import_module(raredecay.meta_config.run_config)     #
-    # create logger                                                     #C
-    from raredecay.tools import dev_tool                                #H
-    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)           #A
-    logger.debug("config file used: " +                                 #N
-                 str(raredecay.meta_config.run_config))                 #G
-    globals_.out.initialize(**cfg)                                          #E
-#########################################################################!
-#PROTECTED, ALWAYS AT THE BEGINNING - PROTECTED, ALWAYS AT THE BEGINNING##
-
-#==============================================================================
-#     actual program start
-#==============================================================================
+def _simple_plot(cfg, logger):
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_storage
@@ -128,7 +103,7 @@ def _simple_plot(config_file=None):
     real_no_sweights.plot(figure='mc_vs_real_no_sweights', plots_name='monte-carlo versus real no sweights')
 
 
-def _reweight1_comparison(cfg, logger):
+def reweight_comparison(cfg, logger):
     """
 
     """

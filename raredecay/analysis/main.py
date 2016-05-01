@@ -15,6 +15,7 @@ import seaborn as sns
 
 from raredecay.analysis.physical_analysis import run
 
+# set plotting style
 sns.set_context("poster")
 
 print "starting main"
@@ -33,4 +34,3 @@ except:
     print "BEEEEEP"
 a = raw_input(["Run finished, press Enter to show the plots"])
 plt.show()
-

@@ -60,12 +60,13 @@ DEFAULT_OUTPUT_FOLDERS = dict(
     results="results",
     config="config"
 )
+
 DEFAULT_LOGGER_CFG = dict(
     logging_mode='console',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'
-    log_level_file='debug',
+    log_level_file='debug',  # 'debug', 'info', warning', 'error', 'critical'
     # specifies the level to be logged to the file
-    log_level_console='debug', #'warning',
+    log_level_console='debug',  # 'debug', 'info', warning', 'error', 'critical'
     # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time

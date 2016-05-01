@@ -14,7 +14,7 @@ PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
 # general variables
-DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/B2KpiLL-Collision12-MagDown'
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 DATA_PATH += '/'
 PICKLE_PATH += '/'

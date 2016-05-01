@@ -4,7 +4,7 @@ Created on Sun May  1 12:06:06 2016
 
 @author: mayou
 """
-import os,sys
+import os, sys
 import subprocess
 
 import matplotlib.pyplot as plt
@@ -112,13 +112,14 @@ class OutputHandler(object):
             for extension in fig_dict.get('file_format'):
                 file_path = path + extension + '/'
                 file_name = file_path + fig_name + "." + extension
-                file_name.replace(" ", "_")  # it was human-readable
+                file_name = file_name.replace(" ", "_")  # it was human-readable
                 fig_dict['figure'].savefig(file_name, format=extension,
-                                            **fig_dict.get('save_cfg'))
+                                           **fig_dict.get('save_cfg'))
 
             if fig_dict.get('to_pickle'):
                 file_name = (path + meta_config.PICKLE_DATATYPE + '/' +
                              fig_name + "." + meta_config.PICKLE_DATATYPE)
+                file_name = file_name.replace(" ", "_")
                 with open(str(file_name), 'wb') as f:
                     pickle.dump(fig_dict.get('figure'), f, meta_config.PICKLE_PROTOCOL)
 
@@ -127,7 +128,6 @@ class OutputHandler(object):
                 plt.close(fig_dict.get('figure'))
         # clear the _figures dict
         self._figures = {}
-
 
     def add_output(self, data_out, to_end=False, title=None, subtitle=None,
                    section=None, obj_separator=None, data_separator=None,
@@ -264,9 +264,12 @@ class OutputHandler(object):
         self.add_output("\n\n", title="END OF RUN", do_print=False)
         self.output += self.end_output
         # TODO: get git informations
-        # commit_nr
-        self.add_output(["Git commit number"], section="Git information",
-                        do_print=False)
+        git_version = subprocess.check_output(["git", "-C",
+            "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
+            "describe"])
+
+        self.add_output(["Program version from Git", git_version], section="Git information",
+                        do_print=False, obj_separator=" : ")
 #==============================================================================
 #   write output to file
 #==============================================================================
@@ -288,7 +291,12 @@ class OutputHandler(object):
             self._figure_to_file()
         except:
             self.logger.error("Could not save plots to file")
-            raise
+
+#==============================================================================
+#   copy the config file and save
+#==============================================================================
+       # TODO: copy config file. Necessary?
+
 
 #==============================================================================
 #    if a folder to overwrite exists, delete it and move the temp folder
