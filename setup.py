@@ -14,11 +14,11 @@ def readme():
 
 
 setup(name='raredecay',
-      version='0.4',
+      version='0.8.1',
       description='A package for analysis of rare particle decays with ml',
       long_description=readme(),
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 8 - Alpha',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='particle physics analysis machine learning reweight',
@@ -26,7 +26,6 @@ setup(name='raredecay',
       author='Jonas Eschle',
       author_email='mayou36@jonas.eschle.com',
       license='None',
-      #packages=['funniest'],
       install_requires=[
           #'hep_ml',
           #'rep',

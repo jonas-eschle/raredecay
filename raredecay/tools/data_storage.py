@@ -16,12 +16,7 @@ import matplotlib.pyplot as plt
 import math
 
 from root_numpy import root2rec
-
-try:
-    from rep.data.storage import LabeledDataStorage
-except ImportError:
-    warnings.warn("Could not import parts from the REP repository. \
-                  Some functions will be unavailable and raise errors")
+from rep.data.storage import LabeledDataStorage
 
 from raredecay.tools import data_tools, dev_tool
 
@@ -38,11 +33,6 @@ class HEPDataStorage(object):
 
 
     """
-    __HIST_SETTINGS_DEFAULT = dict(
-        bins=40,
-        normed=True,
-        alpha=0.5  # transparency [0.0, 1.0]
-        )
     __figure_number = 0
     __figure_dic = {}
 
@@ -118,7 +108,7 @@ class HEPDataStorage(object):
 
         # plot settings
         if dev_tool.is_in_primitive(hist_settings, None):
-            hist_settings = self.__HIST_SETTINGS_DEFAULT
+            hist_settings = meta_config.DEFAULT_HIST_SETTINGS
         self.hist_settings = hist_settings
         self.supertitle_fontsize = supertitle_fontsize
 
@@ -181,9 +171,15 @@ class HEPDataStorage(object):
     def pandasDF(self, branches=None, treename=None, filenames=None,
                  selection=None, index=None):
         """Convert the data to pandas or cut an already existing data frame and
-        return
+        return it.
 
         Return a pandas DataFrame
+
+        Parameters
+        ---------
+        branches, treename, filenames, selection : str
+            Arguments for the :py:func:`~root_numpy.root2rec` function.
+        index : NotImplemented
         """
         if isinstance(branches, str):
             branches = [branches]
@@ -220,10 +216,21 @@ class HEPDataStorage(object):
             labels_out = {key: self._label_dic.get(key) for key in branches}
         return dev_tool.make_list_fill_var(labels_out)
 
-    def get_name(self):
-        """Return the human-readable name of the data as a string"""
-        # TODO: change into real name
-        return "only test-string"
+    def get_name(self, add_str=None, separator=None):
+        """Return the human-readable name of the data as a string
+
+        Parameters
+        ----------
+        add_str : obj with string representation
+            To be added after the data name.
+        separator : str
+            Separates the different name, subname, add_str etc.
+        """
+
+        out_str = data_tools.obj_to_string(self._name, separator=separator)
+        out_str = data_tools.obj_to_string([out_str, add_str], separator=separator)
+
+        return out_str
 
     def get_targets(self):
 
@@ -312,13 +319,14 @@ class HEPDataStorage(object):
         if dev_tool.is_in_primitive(hist_settings, None):
             hist_settings = {}
         if isinstance(hist_settings, dict):
-            hist_settings = dict(self.__HIST_SETTINGS_DEFAULT, **hist_settings)
+            hist_settings = dict(meta_config.DEFAULT_HIST_SETTINGS, **hist_settings)
         data_plot = self.pandasDF(branches=branches, index=index)
         columns = data_plot.columns.values
         self.logger.debug("plot columns from pandasDataFrame: " + str(columns))
         # set the right number of rows and columns for the subplot
         subplot_col = int(math.ceil(math.sqrt(len(columns))))
         subplot_row = int(math.ceil(float(len(columns))/subplot_col))
+
         # assign a free figure if argument is None
         if dev_tool.is_in_primitive(figure, None):
             while True:

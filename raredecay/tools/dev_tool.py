@@ -136,7 +136,7 @@ def fill_list_var(to_check, length=0, var=1):
 def make_list_fill_var(to_check, length=0, var=None):
     """Returns a list with the objects or a list filled with None.
     """
-    if type(to_check) is not list:
+    if not isinstance(to_check, list):
         to_check = [to_check]
     difference = length - len(to_check)
     if difference > 0:

@@ -15,22 +15,30 @@ import seaborn as sns
 
 from raredecay.analysis.physical_analysis import run
 
-# set plotting style
-sns.set_context("poster")
 
-print "starting main"
+def main_run(run_mode, cfg_file=None):
+    # set plotting style
+    sns.set_context("poster")
 
-# possible loop over method
-for i in range(1):
-    print "run number ", i+1, " started"
-    run("reweight_comparison")
-    # show()
+    print "starting main"
 
-# to hear/see whether the analysis has finished
-try:
-    from raredecay.tools.dev_tool import play_sound
-    play_sound()
-except:
-    print "BEEEEEP"
-a = raw_input(["Run finished, press Enter to show the plots"])
-plt.show()
+    if run_mode is None:
+        run_mode = "reweight_comparison"
+        print "Run mode was None, set to default " + run_mode
+    # possible loop over method
+    for i in range(1):
+        print "run number ", i+1, " started"
+        run(run_mode, cfg_file=cfg_file)
+        # show()
+
+    # to hear/see whether the analysis has finished
+    try:
+        from raredecay.tools.dev_tool import play_sound
+        play_sound()
+    except:
+        print "BEEEEEP"
+    a = raw_input(["Run finished, press Enter to show the plots"])
+    plt.show()
+
+if __name__ == '__main__':
+    main_run(run_mode=None)

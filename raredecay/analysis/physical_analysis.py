@@ -35,7 +35,7 @@ def run(run_mode, cfg_file=None):
     # initialize
     from raredecay.globals_ import out
     out.initialize(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
-    out.add_output(["config file used" + str(raredecay.meta_config.run_config)],
+    out.add_output(["config file used", str(raredecay.meta_config.run_config)],
                     section="Configuration", obj_separator=" : ", to_end=True)
 
     # create logger
@@ -54,7 +54,8 @@ def run(run_mode, cfg_file=None):
         test(cfg)
     if run_mode == "reweight_comparison":
         reweight_comparison(cfg, logger)
-    #_simple_plot()
+    if run_mode == "simple_plot":
+        simple_plot()
 
 #==============================================================================
 # Run finished, finalize it
@@ -63,17 +64,18 @@ def run(run_mode, cfg_file=None):
 
 def test(cfg):
     """just a test-function"""
-    import numpy as np
+    print "empty"
+
+
+def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
+                           branch_name=None):
+    """Add a branch to a given rootfile"""
+
     from raredecay.tools import data_tools
-    DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/testing/'
-    data = dict(
-        filenames=DATA_PATH+'cut-data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-        treename='DecayTree',
-        branches=["B_PT",
-                  "nTracks", 'Jpsi_P',
-                  'B_TAU', 'nSPDHits']
-)
-    data_tools.add_to_rootfile(data, new_branch=np.ones(6631), branch_name= "yyyyeeeeeoooooooooooooooo")
+
+    data_tools.add_to_rootfile(root_data, new_branch=new_branch,
+                               branch_name=branch_name)
+
 
 def reweight(cfg, logger, data_to_reweight=None):
 
@@ -87,7 +89,7 @@ def reweight(cfg, logger, data_to_reweight=None):
     return data_tools.adv_return(new_weights)
 
 
-def _simple_plot(cfg, logger):
+def simple_plot(cfg, logger):
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_storage

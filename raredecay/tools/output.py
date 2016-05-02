@@ -113,15 +113,24 @@ class OutputHandler(object):
                 file_path = path + extension + '/'
                 file_name = file_path + fig_name + "." + extension
                 file_name = file_name.replace(" ", "_")  # it was human-readable
-                fig_dict['figure'].savefig(file_name, format=extension,
-                                           **fig_dict.get('save_cfg'))
+                try:
+                    fig_dict['figure'].savefig(file_name, format=extension,
+                                               **fig_dict.get('save_cfg'))
+                except:
+                    self.logger.error("Could not save figure")
+                    meta_config.error_occured()
 
             if fig_dict.get('to_pickle'):
                 file_name = (path + meta_config.PICKLE_DATATYPE + '/' +
                              fig_name + "." + meta_config.PICKLE_DATATYPE)
                 file_name = file_name.replace(" ", "_")
-                with open(str(file_name), 'wb') as f:
-                    pickle.dump(fig_dict.get('figure'), f, meta_config.PICKLE_PROTOCOL)
+                try:
+                    with open(str(file_name), 'wb') as f:
+                        pickle.dump(fig_dict.get('figure'), f, meta_config.PICKLE_PROTOCOL)
+                except:
+                    self.logger.error("Could not open file" + str(file_name) +
+                                      " OR pickle the figure to it")
+                    meta_config.error_occured()
 
             # delete if it is not intended to be plotted
             if not fig_dict.get('plot'):
@@ -225,11 +234,17 @@ class OutputHandler(object):
         output_folders = {} if output_folders is None else output_folders
         self._output_folders = dict(meta_config.DEFAULT_OUTPUT_FOLDERS, **output_folders)
 
+        # make sure no blank spaces are left in the folder names
+        for key, value in self._output_folders.iteritems():
+            assert isinstance(value, str), "path is not a string: " + str(value)
+            self._output_folders[key] = value.replace(" ", "_")
+
+
         # find a non-existing folder
-        run_name = str(run_name)
+        run_name = str(run_name).replace(" ", "_")
         output_path += run_name if output_path.endswith('/') else '/' + run_name
         output_path = os.path.expanduser(output_path)  # replaces ~ with /home/myUser
-        self._output_path = output_path
+        self._output_path = output_path.replace(" ", "_")
 
         temp_i = 1
         while os.path.isdir(self._output_path):
@@ -243,7 +258,6 @@ class OutputHandler(object):
 
         # create subfolders
         for value in self._output_folders.itervalues():
-            assert isinstance(value, str), "path is not a string: " + str(value)
             subprocess.call(['mkdir', '-p', self._output_path + value])
 
         # TODO: remove?:
@@ -280,17 +294,18 @@ class OutputHandler(object):
                 break
 
         temp_out_file = self._output_path + self._output_folders.get('results') + '/output.txt'
-        with open(temp_out_file, 'w') as f:
-            f.write(self.output)
+        try:
+            with open(temp_out_file, 'w') as f:
+                f.write(self.output)
+        except:
+            self.logger.error("Could not save output to file")
         #del temp_out_file  # block abuse
 
 #==============================================================================
 #  save figures to file
 #==============================================================================
-        try:
-            self._figure_to_file()
-        except:
-            self.logger.error("Could not save plots to file")
+
+        self._figure_to_file()
 
 #==============================================================================
 #   copy the config file and save

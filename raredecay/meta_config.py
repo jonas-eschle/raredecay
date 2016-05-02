@@ -33,6 +33,8 @@ import cPickle as pickle
 run_config = None  # 'config'
 
 
+
+
 #==============================================================================
 #  Datatype ending variables
 #==============================================================================
@@ -47,6 +49,20 @@ MULTITHREAD = False  # not yet implemented
 SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
 MAX_AUTO_FOLDERS = 10000  # max number of auto-generated folders by initialize
 NO_PROMPT_ASSUME_YES = False  # no userinput required, assumes yes (e.g. when overwritting files)
+MAX_ERROR_COUNT = 10000  # set a maximum number of possible errors (like not able to save figure etc.)
+
+
+#==============================================================================
+# ERROR HANDLING
+#==============================================================================
+
+_error_count = 0  # increases if an error happens
+def error_occured(max_error_count=MAX_ERROR_COUNT):
+    """Call this function every time a non-critical error (saving etc) occurs"""
+    global _error_count
+    _error_count += 1
+    if _error_count >= max_error_count:
+        raise RuntimeError("Too many errors encountered from different sources")
 
 #==============================================================================
 # DEFAULT SETTINGS
@@ -59,6 +75,12 @@ DEFAULT_OUTPUT_FOLDERS = dict(
     plots="plots",
     results="results",
     config="config"
+)
+
+DEFAULT_HIST_SETTINGS = dict(
+        bins=40,
+        normed=True,
+        alpha=0.5  # transparency [0.0, 1.0]
 )
 
 DEFAULT_LOGGER_CFG = dict(

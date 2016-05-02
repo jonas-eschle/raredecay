@@ -86,11 +86,7 @@ def format_data_weights(data_to_shape, weights, logger=None):
     # conver the data
     if not isinstance(data_to_shape, list):
         data_to_shape = [data_to_shape]
-    if (ml_analysis_object is not None and  # could also be 'None'
-            hasattr(ml_analysis_object, 'fast_to_pandas')):
-        data_to_shape = map(ml_analysis_object.fast_to_pandas, data_to_shape)
-    else:
-        data_to_shape = map(to_pandas, data_to_shape)
+    data_to_shape = map(to_pandas, data_to_shape)
     # convert the weights
     if not isinstance(weights, list):
         weights = [weights]
@@ -106,6 +102,37 @@ def format_data_weights(data_to_shape, weights, logger=None):
             weights[data_id] = np.array([1] * len(data))
         weights[data_id] = to_pandas(weights[data_id]).squeeze().values
     return data_to_shape, weights
+
+
+def obj_to_string(objects, separator=None):
+    """Return a string containing all objects as strings, separated by the separator.
+
+    Useful for automatic conversion for different types. The following objects
+    will automatically be converted:
+
+    - None will be omitted
+
+    Parameters
+    ----------
+    objects : any object or list(obj, obj, ...) with a string representation
+        The objects will be converted to a string and concatenated, separated
+        by the separator.
+    separator : str
+        The separator between the objects. Default is " - ".
+    """
+    if isinstance(objects, str):  # no need to change things
+        return objects
+    separator = " - " if separator is None else separator
+    assert isinstance(separator, str), "Separator not a string"
+
+    objects = to_list(objects)
+    objects = [str(obj) for obj in objects if obj is not None]  # remove Nones
+
+    string_out = ""
+    for word in objects:
+        string_out += word + separator if word != objects[-1] else word
+
+    return string_out
 
 
 def is_root(data_to_check):
@@ -145,6 +172,39 @@ def is_pickle(data_to_check):
         if data_to_check.endswith(cfg.PICKLE_DATATYPE):
             flag = True
     return flag
+
+
+def to_list(data_in):
+    """Convert the data into a list. Does not pack objects into a new one.
+
+    If your input is, for example, a string or a list of strings, or a
+    tuple filled with strings, you have, in general, a problem:
+
+    - just iterate through the object will fail because it iterates through the
+      characters of the string.
+    - using list(obj) converts the tuple, leaves the list but splits the strings
+      characters into single elements of a new list.
+    - using [obj] creates a list containing a string, but also a list containing
+      a list or a tuple, which you did not want to.
+
+    Solution: use to_list(obj), which creates a new list in case the object is
+    a single object (a string is a single object in this sence) or converts
+    to a list if the object is already a container for several objects.
+
+    Parameters
+    ----------
+    data_in : any obj
+        So far, any object can be entered.
+
+    Returns
+    -------
+    out : list
+        Return a list containing the object or the object converted to a list.
+    """
+    if isinstance(data_in, str):
+        data_in = [data_in]
+    data_in = list(data_in)
+    return data_in
 
 
 def to_ndarray(data_in, logger=None, dtype=None, float_array=True):
