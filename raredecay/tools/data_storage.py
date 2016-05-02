@@ -36,9 +36,10 @@ class HEPDataStorage(object):
     __figure_number = 0
     __figure_dic = {}
 
-    def __init__(self, data, target=None, sample_weights=None, data_name=None,
-                 data_name_addition=None, data_labels=None, add_label=False,
-                 hist_settings=None, supertitle_fontsize=18, logger=None):
+    def __init__(self, data, index=None, target=None, sample_weights=None,
+                 data_name=None, data_name_addition=None, data_labels=None,
+                 add_label=False, hist_settings=None, supertitle_fontsize=18,
+                 logger=None):
         """Initialize instance and load data
 
         Parameters
@@ -47,6 +48,8 @@ class HEPDataStorage(object):
             Dictionary which specifies all the information to convert a root-
             tree to an array. Directly given to :func:`~root_numpy.root2rec`
         .. note:: Will be also arrays or pandas DataFrame in the future
+        index : 1-D array-like
+            The indices of the data that will be used.
         target : list or 1-D array or int {0, 1}
             Labels the data for the machine learning. Usually the y.
         sample_weights : 1-D array
@@ -81,6 +84,7 @@ class HEPDataStorage(object):
         # initialize data
         self._data_pandas = None
         self._root_dict = data
+        self._index = index
 
         # data name
         self._name = (data_name, data_name_addition)
@@ -94,12 +98,14 @@ class HEPDataStorage(object):
         self._label_dic = {col: col for col in self._root_dict.get('branches')}
         self._label_dic.update(data_labels)
 
-        # TODO: removeLine: self.data_name = data_name
         # define length of object
-        temp_root_dict = copy.deepcopy(self._root_dict)
-        temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
-        temp_branch = dev_tool.make_list_fill_var(temp_branch)
-        self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
+        if dev_tool.is_in_primitive(index, None):
+            temp_root_dict = copy.deepcopy(self._root_dict)
+            temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
+            temp_branch = dev_tool.make_list_fill_var(temp_branch)
+            self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
+        else:
+            self._length = len(index)
 
         # initialize weights
         if not dev_tool.is_in_primitive(sample_weights, None):
@@ -115,28 +121,20 @@ class HEPDataStorage(object):
     def __len__(self):
         return self._length
 
-# TODO: required to have them? data should not be an available attribute...
-#    @property
-#    def data(self):
-#        raise IOError("Don't access data with my_data = HEPDataStorageInstance\
-#                      .data. Use one of the built-in methods.")
-#
-#    @data.setter
-#    def data(self):
-#        raise IOError("You cannot set the data atribute manualy. Use a method\
-#                      or the constructor")
-
-    def get_rootdict(self):
+    def get_rootdict(self, return_index=False):
         """Return the root-dictionary if available, else None"""
-        return self._root_dict
+        if return_index:
+            return self._root_dict, self._index
+        else:
+            return self._root_dict
 
-    def get_weights(self, index=None, normalize=True):
+    def get_weights(self, normalize=True):
         """Return the weights of the specified indeces or, if None, return all.
 
         Parameters
         ----------
-        index: NotImplemented
-            not yet implemented
+        normalize : boolean
+            If True, the weights will be normalized to 1 (the average is 1).
         Return
         ------
         out: 1-D numpy array
@@ -147,7 +145,14 @@ class HEPDataStorage(object):
         weights_out = data_tools.to_ndarray(self.weights)
         assert len(weights_out) == len(self), str("data and weights differ in lenght")
         if normalize:
-            weights_out *= weights_out.size/weights_out.sum()
+            eps = 0.00001
+            counter = 0
+            while not (1-eps < np.mean(weights_out) < 1 + eps):
+                weights_out *= weights_out.size/weights_out.sum()
+                counter += 1
+                if counter > 100:  # to prevent endless loops
+                    self.logger.warning("Could not normalize weights. Mean(weights): " + str(np.mean(weights_out)))
+                    break
         return weights_out
 
     def set_weights(self, sample_weights):
@@ -179,8 +184,12 @@ class HEPDataStorage(object):
         ---------
         branches, treename, filenames, selection : str
             Arguments for the :py:func:`~root_numpy.root2rec` function.
-        index : NotImplemented
+        index : 1-D array-like
+            The index from the root-branche to be used. If None, all indices
+            will be used (all the HEPDataStorage instance was created with).
         """
+        index = self._index if dev_tool.is_in_primitive(index) else index
+
         if isinstance(branches, str):
             branches = [branches]
         temp_root_dict = {'branches': branches, 'treename': treename,
@@ -188,8 +197,13 @@ class HEPDataStorage(object):
         for key, val in temp_root_dict.iteritems():
             if dev_tool.is_in_primitive(val, None):
                 temp_root_dict[key] = self._root_dict.get(key)
-        data_out = data_tools.to_pandas(temp_root_dict)
-        if len(temp_root_dict['branches']) == 1:
+
+        if dev_tool.is_in_primitive(index):
+            data_out = data_tools.to_pandas(temp_root_dict)
+        else:
+            data_out = data_tools.to_pandas(temp_root_dict)[index, :]
+
+        if len(temp_root_dict['branches']) == 1:  # pandas has naming "problems" if only 1 branch
             data_out.columns = temp_root_dict['branches']
         return data_out
 
@@ -233,9 +247,8 @@ class HEPDataStorage(object):
         return out_str
 
     def get_targets(self):
-
+        """Return the targets of the data **as a numpy array**."""
         if dev_tool.is_in_primitive(self._target_label, (0, 1, None)):
-            # complicated? No! target_label could be array -> use any, all etc.
             if self._target_label is None:
                 self.logger.warning("Target list consists of None")
             self._target_label = dev_tool.make_list_fill_var([], len(self),
@@ -251,21 +264,30 @@ class HEPDataStorage(object):
 
         """
 
-    def copy_storage(self, branches=None):
+    def copy_storage(self, branches=None, index=None):
         """Return a copy of self with only some of the columns (and therefore \
-        labels etc).
+        labels etc) or indices.
 
+        Parameters
+        ----------
+        branches : str or list(str, str, str, ...)
+            The branches which will be in the new storage.
+        index : 1-D array-like
+            The indices of the rows (and corresponding weights, targets etc.)
+            for the new storage.
         """
-        branches = dev_tool.make_list_fill_var(branches)
+        index = self._index if index is None else index
+        index = range(len(self)) if index is None else index
+        branches = data_tools.to_list(branches)
         new_labels = {}
-        if self._data_pandas is not None:
-            return None
-        else:
-            new_root_dic = copy.deepcopy(self._root_dict)
-            new_root_dic['branches'] = branches
-            for column in branches:
-                new_labels[column] = self._label_dic.get(column)
-            new_storage = HEPDataStorage(new_root_dic, target=self.get_targets,
+
+        new_root_dic = copy.deepcopy(self._root_dict)
+        new_root_dic['branches'] = branches
+        # TODO: under construction
+        new_target = self.get_targets()[index]
+        for column in branches:
+            new_labels[column] = self._label_dic.get(column)
+        new_storage = HEPDataStorage(new_root_dic, target=self.get_targets,
                                          sample_weights=self.get_weights(),
                                          data_labels=new_labels,
                                          add_label=self.add_label)

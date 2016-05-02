@@ -144,7 +144,7 @@ def make_list_fill_var(to_check, length=0, var=None):
     return to_check
 
 
-def is_in_primitive(test_object, allowed_primitives):
+def is_in_primitive(test_object, allowed_primitives=None):
     """Fixes the numpy/python "bug/stupidity" that ("==" can be replaced by
     "is"): "array([1,4,5]) == None" is not defined (it is clearly False)
     This way you can test safely for a primitive type. If the object is a list
