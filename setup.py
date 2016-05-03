@@ -6,15 +6,20 @@ Created on Thu Apr 28 16:26:12 2016
 """
 
 from setuptools import setup
+import subprocess
 
 
 def readme():
     with open('README.md') as f:
         return f.read()
+git_version = subprocess.check_output(["git", "-C",
+            "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
+            "describe"])
+git_version = git_version.partition('-')
 
 
 setup(name='raredecay',
-      version='0.8.1',
+      version=git_version,  # '0.8.5',
       description='A package for analysis of rare particle decays with ml',
       long_description=readme(),
       classifiers=[

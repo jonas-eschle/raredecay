@@ -139,9 +139,9 @@ def is_root(data_to_check):
     """Check whether a given data is a root file. Needs dicts to be True!
     """
     flag = False
-    if type(data_to_check) is dict:
+    if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
-        assert type(path_name) is str, ("'filenames' of the dictionary " +
+        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
                                         str(data_to_check) + "is not a string")
         if path_name.endswith(meta_config.ROOT_DATATYPE):
             flag = True
@@ -216,11 +216,15 @@ def to_ndarray(data_in, logger=None, dtype=None, float_array=True):
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
     # change numpy.void to normal floats
-    if isinstance(data_in[0], np.void):
+    if isinstance(data_in, (pd.Series, pd.DataFrame)):
+        test_sample = data_in.iloc[0]
+    else:
+        test_sample = data_in[0]
+    if isinstance(test_sample, np.void):
         data_in = np.array([val[0] for val in data_in])
     if isinstance(data_in, (np.recarray, np.ndarray)):
         data_in = data_in.tolist()
-    if is_list(data_in):
+    if is_list(data_in) or isinstance(data_in, pd.Series):
         data_in = np.array(data_in)
     if float_array:
         data_in = np.asfarray(data_in)

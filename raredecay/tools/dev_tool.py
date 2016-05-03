@@ -8,6 +8,7 @@ Contains several useful tools for all kind of programs
 """
 from __future__ import division, absolute_import
 
+import pandas as pd
 import numpy as np
 import collections
 
@@ -145,13 +146,13 @@ def make_list_fill_var(to_check, length=0, var=None):
 
 
 def is_in_primitive(test_object, allowed_primitives=None):
-    """Fixes the numpy/python "bug/stupidity" that ("==" can be replaced by
+    """Fixes the pandas.Series "bug/stupidity" that ("==" can be replaced by
     "is"): "array([1,4,5]) == None" is not defined (it is clearly False)
     This way you can test safely for a primitive type. If the object is a list
     , array or similar, it returns 'False'.
     """
     flag = False
-    if isinstance(test_object, (list, np.ndarray)):
+    if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif (isinstance(allowed_primitives, collections.Iterable) and
             (not isinstance(allowed_primitives, basestring))):

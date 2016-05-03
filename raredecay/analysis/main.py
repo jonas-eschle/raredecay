@@ -41,4 +41,5 @@ def main_run(run_mode, cfg_file=None):
     plt.show()
 
 if __name__ == '__main__':
-    main_run(run_mode=None)
+    #main_run("reweight_comparison")
+    main_run("reweight")

@@ -51,11 +51,13 @@ def run(run_mode, cfg_file=None):
 #==============================================================================
 
     if run_mode == "test":
-        test(cfg)
+        test(cfg, logger)
     if run_mode == "reweight_comparison":
         reweight_comparison(cfg, logger)
     if run_mode == "simple_plot":
-        simple_plot()
+        simple_plot(cfg, logger)
+    if run_mode == "reweight":
+        reweight(cfg, logger)
 
 #==============================================================================
 # Run finished, finalize it
@@ -77,15 +79,39 @@ def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
                                branch_name=branch_name)
 
 
-def reweight(cfg, logger, data_to_reweight=None):
+def reweight(cfg, logger, n_folds=3, n_checks=3):
 
     import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools import data_tools
+    from raredecay.tools import data_tools, data_storage
 
-    reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
-                                         **cfg.reweight_cfg)
-    # reweighter = ''  # load from pickle file
-    new_weights = ml_ana.reweight_weights(data_to_reweight, reweighter)
+    import matplotlib.pyplot as plt
+
+    # initialize data
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_real.make_folds(2)
+    reweight_mc.make_folds(2)
+    logger.info("Data created, starting folding")
+    for fold in range(2):
+
+        train_real, test_real = reweight_real.get_fold(fold)
+        train_mc, test_mc = reweight_mc.get_fold(fold)
+        print "lenght of train_mc", len(train_mc)
+        train_real.plot(figure="Reweighter trainer, fold " + str(fold))
+        train_mc.plot(figure="Reweighter trainer, fold " + str(fold))
+        reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
+                                             reweight_data_mc=train_mc,
+                                             reweight_data_real=train_real)
+        print "reweighting finished"
+        # reweighter = ''  # load from pickle file
+        train_mc.plot(figure="Bevor reweighting, fold " + str(fold))
+        train_real.plot(figure="Bevor reweighting, fold " + str(fold))
+        new_weights = ml_ana.reweight_weights(train_mc, reweighter)
+        ml_ana.data_ROC(train_real, train_mc)
+        train_mc.plot(figure="After reweighting, fold " + str(fold))
+        train_real.plot(figure="After reweighting, fold " + str(fold))
+
+        logger.info("fold " + str(fold) + "finished")
     return data_tools.adv_return(new_weights)
 
 

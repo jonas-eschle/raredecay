@@ -4,8 +4,10 @@ Created on Sun May  1 12:06:06 2016
 
 @author: mayou
 """
-import os, sys
+import os
+import sys
 import subprocess
+import warnings
 
 import matplotlib.pyplot as plt
 import cPickle as pickle
@@ -277,11 +279,12 @@ class OutputHandler(object):
         self.add_output("\n\n", do_print=False)
         self.add_output("\n\n", title="END OF RUN", do_print=False)
         self.output += self.end_output
-        # TODO: get git informations
+
+        self.add_output(["Errors encountered during run", meta_config._error_count],
+                        obj_separator=" : ")
         git_version = subprocess.check_output(["git", "-C",
             "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
             "describe"])
-
         self.add_output(["Program version from Git", git_version], section="Git information",
                         do_print=False, obj_separator=" : ")
 #==============================================================================
@@ -299,6 +302,8 @@ class OutputHandler(object):
                 f.write(self.output)
         except:
             self.logger.error("Could not save output to file")
+            meta_config.error_occured()
+            warnings.warn("Could not save output. Check the logs!", RuntimeWarning)
         #del temp_out_file  # block abuse
 
 #==============================================================================

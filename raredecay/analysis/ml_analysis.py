@@ -236,12 +236,12 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
             clf_tmva = TMVAClassifier()
             clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
             factory = ClassifiersFactory()
-            #factory.add_classifier('Gradient Boosting', clf_gb)
+            factory.add_classifier('Gradient Boosting', clf_gb)
             #factory.add_classifier('tmva', clf_tmva)
             factory.add_classifier('XGBoost', clf_xgb)
             factory.add_classifier('random forest', clf_rnd_forest)
             #factory.add_classifier('AdaBoost over XGBoost', clf_ada_xgb)
-            #factory.add_classifier('AdaBoost over random forest', clf_ada_forest)
+            factory.add_classifier('AdaBoost over random forest', clf_ada_forest)
             clf = factory
             clf.fit(X_train, y_train, weight_train, parallel_profile='threads-2')
 
