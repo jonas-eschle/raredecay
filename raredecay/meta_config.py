@@ -30,43 +30,55 @@ from __future__ import division, absolute_import
 import cPickle as pickle
 
 
-run_config = None  # 'config'
-
-
-
-
 #==============================================================================
+# Parameters which can be changed WITHOUT affecting stability of a single run.
+# Be aware: certain tasks like loading  a pickled file may fail if the file-
+# endings are changed.
+#==============================================================================
+
+#------------------------------------------------------------------------------
+# General run parameters
+#------------------------------------------------------------------------------
+
+MULTITHREAD = False  # if False, no parallel work will be done
+n_cpu_max = None  # specifies the number of maximal cpu's to be used
+
+#------------------------------------------------------------------------------
 #  Datatype ending variables
-#==============================================================================
+#------------------------------------------------------------------------------
+
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
-#==============================================================================
-#  DEBUG options
-#==============================================================================
+#------------------------------------------------------------------------------
+#  Debug related options
+#------------------------------------------------------------------------------
+
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
-MULTITHREAD = False  # not yet implemented
 SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
+
+#==============================================================================
+# Parameters which may affect stability
+# setting for example MAX_AUTO_FOLDERS to 0, it will surely not work
+#==============================================================================
+#------------------------------------------------------------------------------
+#  Limits for auto-methods
+#------------------------------------------------------------------------------
+
 MAX_AUTO_FOLDERS = 10000  # max number of auto-generated folders by initialize
 NO_PROMPT_ASSUME_YES = False  # no userinput required, assumes yes (e.g. when overwritting files)
-MAX_ERROR_COUNT = 10000  # set a maximum number of possible errors (like not able to save figure etc.)
+MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (like not able to save figure etc.)
+MAX_FIGURES = 5000
 
 
-#==============================================================================
-# ERROR HANDLING
-#==============================================================================
-
-_error_count = 0  # increases if an error happens
-def error_occured(max_error_count=MAX_ERROR_COUNT):
-    """Call this function every time a non-critical error (saving etc) occurs"""
-    global _error_count
-    _error_count += 1
-    if _error_count >= max_error_count:
-        raise RuntimeError("Too many errors encountered from different sources")
 
 #==============================================================================
-# DEFAULT SETTINGS
+# DEFAULT SETTINGS for different things
 #==============================================================================
+
+#------------------------------------------------------------------------------
+#  Output and plot configurations
+#------------------------------------------------------------------------------
 
 # available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
 # You may add additional key-value pairs or just change some values
@@ -78,9 +90,20 @@ DEFAULT_OUTPUT_FOLDERS = dict(
 )
 
 DEFAULT_HIST_SETTINGS = dict(
-        bins=40,
-        normed=True,
-        alpha=0.5  # transparency [0.0, 1.0]
+    bins=40,
+    normed=True,
+    alpha=0.5  # transparency [0.0, 1.0]
+)
+
+DEFAULT_SAVE_FIGURE = dict(
+    file_format=['png', 'svg'],
+    to_pickle=True,
+    plot=True,
+    #save_cfg=None
+)
+
+DEFAULT_CLF_XGB = dict(
+    n_estimators = 200
 )
 
 DEFAULT_LOGGER_CFG = dict(
@@ -97,6 +120,34 @@ DEFAULT_LOGGER_CFG = dict(
     # the beginning ofthe name of the logfile, like 'project1'
     log_file_dir=DEFAULT_OUTPUT_FOLDERS.get('log')
 )
+#==============================================================================
+# END OF CONFIGURABLE PARAMETERS - DO NOT CHANGE WHAT IS BELOW
+#==============================================================================
+
+
+
+
+#==============================================================================
+# START INTERNE CONFIGURATION - DO NOT CHANGE
+#==============================================================================
+
+run_config = None
+
+
+#==============================================================================
+# ERROR HANDLING
+#==============================================================================
+
+_error_count = 0  # increases if an error happens
+def error_occured(max_error_count=MAX_ERROR_COUNT):
+    """Call this function every time a non-critical error (saving etc) occurs"""
+    global _error_count
+    _error_count += 1
+    if _error_count >= max_error_count:
+        raise RuntimeError("Too many errors encountered from different sources")
+
+
+
 
 
 if __name__ == '__main__':

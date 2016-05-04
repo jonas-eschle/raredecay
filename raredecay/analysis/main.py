@@ -42,4 +42,4 @@ def main_run(run_mode, cfg_file=None):
 
 if __name__ == '__main__':
     #main_run("reweight_comparison")
-    main_run("reweight")
+    main_run("reweightCV")

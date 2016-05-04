@@ -169,6 +169,8 @@ data = dict(
 # REWEIGHTING BEGIN
 #==============================================================================
 
+branches = ['B_PT', 'nTracks', 'nSPDHits']
+
 # start configuration for gradient boosted reweighter
 # TODO: remove the reweight_cfg?
 reweight_cfg = dict(
@@ -179,19 +181,20 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=100,
-        max_depth=4,
+        n_estimators=200,
+        max_depth=3,
         learning_rate=0.1,
         min_samples_leaf=100,  # 200
-        loss_regularization=100.0,  # 5.0
+        loss_regularization=1000.0,  # 5.0
         gb_args=dict(
-            subsample=0.9,
+            subsample=0.8,
             #random_state=43,
-            min_samples_split=3
+            min_samples_split=40
         )
     ),
     bins=dict(
-        n_bins=20
+        n_bins=20,
+        n_neighs=1
     )
 ).get(reweight_cfg.get('reweighter'))  # Don't change!
 
@@ -209,7 +212,7 @@ reweight_meta_cfg_bins = dict(
         n_estimators=80
     ),
     bins=dict(
-        n_bins=30,
+        n_bins=10,
         n_neighs=1
     )
 ).get(reweight_cfg_bins.get('reweighter'))  # Don't change!

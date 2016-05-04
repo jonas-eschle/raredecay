@@ -14,7 +14,7 @@ import raredecay.meta_config
 
 
 DEFAULT_CFG_FILE = dict(
-    reweight='raredecay.run_config.reweight_cfg',
+    reweightCV='raredecay.run_config.reweight_cfg',
     simple_plot=None,
     test='raredecay.run_config.reweight1_comparison_cfg',
     reweight_comparison='raredecay.run_config.reweight1_comparison_cfg'
@@ -56,8 +56,10 @@ def run(run_mode, cfg_file=None):
         reweight_comparison(cfg, logger)
     if run_mode == "simple_plot":
         simple_plot(cfg, logger)
-    if run_mode == "reweight":
-        reweight(cfg, logger)
+    if run_mode == "reweightCV":
+        reweightCV(cfg, logger)
+    else:
+        raise ValueError("Runmode " + str(run_mode) + " not a valid choice")
 
 #==============================================================================
 # Run finished, finalize it
@@ -79,20 +81,27 @@ def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
                                branch_name=branch_name)
 
 
-def reweight(cfg, logger, n_folds=3, n_checks=3):
+def reweightCV(cfg, logger, n_folds=2, n_checks=1):
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_tools, data_storage
-
+    from raredecay.globals_ import out
     import matplotlib.pyplot as plt
+
+    out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
+    # initialize variables
+    n_checks = min([n_folds, n_checks])
 
     # initialize data
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_real.make_folds(2)
-    reweight_mc.make_folds(2)
+    reweight_real.make_folds(n_folds=n_folds)
+    reweight_mc.make_folds(n_folds=n_folds)
     logger.info("Data created, starting folding")
-    for fold in range(2):
+    out.add_output(["Start reweighting cross-validated with", n_folds,
+                    "split up the data and do", n_checks, "checks on it."],
+                    subtitle="cross-validation", obj_separator=" ")
+    for fold in range(n_checks):
 
         train_real, test_real = reweight_real.get_fold(fold)
         train_mc, test_mc = reweight_mc.get_fold(fold)
@@ -101,18 +110,25 @@ def reweight(cfg, logger, n_folds=3, n_checks=3):
         train_mc.plot(figure="Reweighter trainer, fold " + str(fold))
         reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
                                              reweight_data_mc=train_mc,
-                                             reweight_data_real=train_real)
+                                             reweight_data_real=train_real,
+                                             branches=cfg.branches, reweighter='gb')
+        # TODO: attention, completely wrong redefinition for test purposes
+#        test_mc, temp = reweight_mc.get_fold(fold+1)
+#        test_real, temp = reweight_real.get_fold(fold+1)
         print "reweighting finished"
         # reweighter = ''  # load from pickle file
-        train_mc.plot(figure="Bevor reweighting, fold " + str(fold))
-        train_real.plot(figure="Bevor reweighting, fold " + str(fold))
-        new_weights = ml_ana.reweight_weights(train_mc, reweighter)
-        ml_ana.data_ROC(train_real, train_mc)
-        train_mc.plot(figure="After reweighting, fold " + str(fold))
-        train_real.plot(figure="After reweighting, fold " + str(fold))
+        plot1 = test_mc.plot(figure="Bevor reweighting, fold " + str(fold))
+        out.save_fig(plot1)
+        test_real.plot(figure="Bevor reweighting, fold " + str(fold))
+        new_weights = ml_ana.reweight_weights(test_mc, reweighter,
+                                              branches=cfg.branches)
+        plt.figure("new weights")
+        plt.hist(new_weights,bins=40, log=True)
+        ml_ana.data_ROC(test_real, test_mc)
+        test_mc.plot(figure="After reweighting, fold " + str(fold))
+        test_real.plot(figure="After reweighting, fold " + str(fold))
 
         logger.info("fold " + str(fold) + "finished")
-    return data_tools.adv_return(new_weights)
 
 
 def simple_plot(cfg, logger):

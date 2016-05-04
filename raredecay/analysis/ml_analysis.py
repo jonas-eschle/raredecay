@@ -13,6 +13,7 @@ from __future__ import division, absolute_import
 
 import warnings
 import memory_profiler
+import multiprocessing
 
 import math
 import numpy as np
@@ -21,6 +22,8 @@ import pandas as pd
 import seaborn as sns
 
 import hep_ml.reweight
+from rep.metaml import ClassifiersFactory
+
 from raredecay.tools import dev_tool, data_tools
 from raredecay import globals_
 
@@ -141,9 +144,9 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     return new_weights
 
 
-def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
+def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=None, n_folds=1, n_checks=1,
              weight_original=None, weight_target=None, config_clf=None,
-             take_target_from_data=False, use_factory=True):
+             take_target_from_data=False, use_factory=True, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
 
@@ -182,6 +185,27 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
     out : float
         The ROC AUC from the classifier on the test samples.
     """
+    # TODO: specify default classifier
+
+    # initialize variables
+    curve_name = 'data' if curve_name is None else curve_name
+    classifier = 'xgb' if classifier is None else data_tools.to_list(classifier)
+
+    # initialize classifiers and put them together into the factory
+    factory = ClassifiersFactory()
+
+    if 'xgb' in classifier:
+        cfg_xgb = dict(meta_config.DEFAULT_CLF_XGB, **kwargs.get('cfg_xgb', {}))
+
+        factory.add_classifier(clf_xgb)
+
+
+
+
+
+
+
+
     __DEFAULT_CONFIG_CLF = dict(
         n_estimators=200,
         learning_rate=0.15,
@@ -201,7 +225,7 @@ def data_ROC(original_data, target_data, plot=True, curve_name=None, n_folds=1,
 
     config_clf = {} if config_clf is None else config_clf
     config_clf = dict(__DEFAULT_CONFIG_CLF, **config_clf)
-    curve_name = 'data' if curve_name is None else curve_name
+
 
     # concatenate the original and target data
     data = pd.concat([original_data.pandasDF(), target_data.pandasDF()])

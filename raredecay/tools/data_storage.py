@@ -20,6 +20,7 @@ from root_numpy import root2rec
 from rep.data.storage import LabeledDataStorage
 
 from raredecay.tools import data_tools, dev_tool
+from raredecay.globals_ import out
 
 import importlib
 from raredecay import meta_config
@@ -432,9 +433,9 @@ class HEPDataStorage(object):
                                      random_state=random_state, shuffle=shuffle)
         return new_lds
 
-    def plot(self, figure=None, branches=None, index=None, sample_weights=None,
-             hist_settings=None, data_labels=None, log_y_axes=False,
-             plots_name=None):
+    def plot(self, figure=None, plots_name=None, std_save=True, log_y_axes=False,
+             branches=None, index=None, sample_weights=None, data_labels=None,
+             hist_settings=None):
         """Draw histograms of the data.
 
 
@@ -480,7 +481,7 @@ class HEPDataStorage(object):
                 safety = 0
                 figure = self.__figure_number + 1
                 self.__figure_number += 1
-                assert safety < 5000, "stuck in an endless while loop"
+                assert safety < meta_config.MAX_FIGURES, "stuck in an endless while loop"
                 if figure not in self.__figure_dic.keys():
                     x_limits_col = {}
                     self.__figure_dic.update({figure: x_limits_col})
@@ -492,8 +493,9 @@ class HEPDataStorage(object):
 
         temp_name = data_tools.obj_to_string([i for i in self._name] + [plots_name],
                                              separator=" - ")
+        label_name = data_tools.obj_to_string([self._name[0], self._name[1]], separator=" - ")
         plt.suptitle(temp_name, fontsize=self.supertitle_fontsize)
-# TODO: label not showing...
+
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
             # only plot in range x_limits, otherwise the plot is too big
@@ -504,11 +506,13 @@ class HEPDataStorage(object):
                 self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
             temp1, temp2, patches = plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
-                     range=x_limits, #label=label_name,#data_labels.get(column),
+                     range=x_limits, label=label_name,#data_labels.get(column),
                      **hist_settings)
             plt.title(column)
         plt.legend()
 
+        if std_save:
+            out.save_fig(out_figure, **meta_config.DEFAULT_SAVE_FIGURE)
         return out_figure
 
     def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
