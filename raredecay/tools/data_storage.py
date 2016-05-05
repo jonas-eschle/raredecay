@@ -54,13 +54,13 @@ class HEPDataStorage(object):
             The indices of the data that will be used.
         target : list or 1-D array or int {0, 1}
             Labels the data for the machine learning. Usually the y.
-        sample_weights : 1-D array or 1
+        sample_weights : 1-D array or {1, None}
             Contains the weights of the samples.
-        .. note:: If None specified, 1 will be assumed for all.
+        .. note:: If None or 1 specified, 1 will be assumed for all.
         data_name : str
             | Name of the data, human-readable. Displayed in the title of \
             plots.
-            | *Example: 'Bu2K1piee_mc', 'beta-decay_realData' etc.*
+            | *Example: 'Bu2K1piee mc', 'beta-decay real data' etc.*
         data_name_addition : str
             | Additional remarks to the data, human readable. Displayed in \
             the title of plots.
@@ -70,7 +70,10 @@ class HEPDataStorage(object):
             | Dictionary has to contain the exact column (=branch) name of \
             the data
             | All not specified labels will be auto-labeled by the branch \
-            name itself.
+              name itself.
+
+            | *Good practice*: keep a dictionary containing all possible lables
+              and hand it over every time.
         add_label : boolean
             If true, the human-readable labels will be added to the branch name
             shows in the plot instead of replaced.
@@ -78,7 +81,7 @@ class HEPDataStorage(object):
             Dictionary with the settings for the histogram plot function
             :func:`~matplotlip.pyplot.hist`
         supertitle_fontsize : int
-            The size of the title of several subplots (data_name, _addition)
+            The size of the title of several subplots.
         """
         # initialize logger
         self.logger = modul_logger if logger is None else logger
@@ -224,7 +227,6 @@ class HEPDataStorage(object):
         """
         return None if self._fold_index is None else len(self._fold_index)
 
-
     def get_weights(self, normalize=True, index=None, **kwargs):
         """Return the weights of the specified indeces or, if None, return all.
 
@@ -244,7 +246,7 @@ class HEPDataStorage(object):
 
         if dev_tool.is_in_primitive(self.weights, (None, 1)):
             normalize = False
-            if kwargs.get('inter', False):
+            if kwargs.get('inter', False):  # intern use
                 weights_out = self.weights
             else:
                 weights_out = dev_tool.fill_list_var([], length, 1)
@@ -355,10 +357,12 @@ class HEPDataStorage(object):
         add_str : obj with string representation
             To be added after the data name.
         separator : str
-            Separates the different name, subname, add_str etc.
+            Separates the different name from the add_str. Default is the
+            default of :py:func:`~raredecay.tools.data_tools.obj_to_string()`,
+            currently " - "
         """
 
-        out_str = data_tools.obj_to_string(self._name, separator=separator)
+        out_str = data_tools.obj_to_string(self._name, separator=" ")
         out_str = data_tools.obj_to_string([out_str, add_str], separator=separator)
 
         return out_str

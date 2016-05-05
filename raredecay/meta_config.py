@@ -41,7 +41,8 @@ import cPickle as pickle
 #------------------------------------------------------------------------------
 
 MULTITHREAD = False  # if False, no parallel work will be done
-n_cpu_max = None  # specifies the number of maximal cpu's to be used
+MULTIPROCESSING = False  # requires MULTITHREAD to be true, else it's False
+n_cpu_max = None  # VAGUE ESTIMATION but not a strict limit.
 
 #------------------------------------------------------------------------------
 #  Datatype ending variables
@@ -103,7 +104,30 @@ DEFAULT_SAVE_FIGURE = dict(
 )
 
 DEFAULT_CLF_XGB = dict(
-    n_estimators = 200
+    n_estimators=500,
+    eta=0.1,  # learning-rate
+    max_depth=8
+)
+
+DEFAULT_CLF_TMVA = dict(
+    method='kBDT'
+)
+
+DEFAULT_CLF_RDF = dict(
+    n_estimators=1000,
+)
+
+DEFAULT_CLF_GB = dict(
+    n_estimators=200,
+    learning_rate=0.15,
+    max_depth=5,
+    subsample=0.9,
+    max_features=None
+)
+
+DEFAULT_CLF_ADA = dict(
+    n_estimators=500,
+    learning_rate=0.1
 )
 
 DEFAULT_LOGGER_CFG = dict(
@@ -134,6 +158,10 @@ DEFAULT_LOGGER_CFG = dict(
 run_config = None
 
 
+#------------------------------------------------------------------------------
+# parallel profile
+#------------------------------------------------------------------------------
+
 #==============================================================================
 # ERROR HANDLING
 #==============================================================================
@@ -151,4 +179,6 @@ def error_occured(max_error_count=MAX_ERROR_COUNT):
 
 
 if __name__ == '__main__':
-    pass
+    print "selftest of meta_config started"
+    if DEFAULT_CLF_XGB.has_key(nthreads):
+        raise ValueError("Do not specify threads. Use the parallel-profile")

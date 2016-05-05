@@ -26,6 +26,12 @@ from rep.metaml import ClassifiersFactory
 
 from raredecay.tools import dev_tool, data_tools
 from raredecay import globals_
+from raredecay.globals_ import out
+
+# classifier imports
+from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
 
 # import the specified config file
 # TODO: is this import really necessary? Best would be without config...
@@ -93,16 +99,22 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     except KeyError:
         raise ValueError("Reweighter invalid: " + reweighter)
     reweighter += 'Reweighter'
-    logger.info("Reweighter: " + str(reweighter) + " with config: " + str(meta_cfg))
-    reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
+
+    # logging and writing output
+    msg = data_tools.obj_to_string(["Reweighter:", reweighter, "with config:", meta_cfg],
+                                   separator=" ")
+    logger.info(msg)
+    out.add_output([msg, "\nData used:\n", reweight_data_mc.get_name(),
+                   reweight_data_real.get_name()], section="Training the reweighter",
+                   obj_separator=" and ")
 
     # do the reweighting
+    reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
     reweighter.fit(original=reweight_data_mc.pandasDF(branches=branches),
                    target=reweight_data_real.pandasDF(branches=branches),
                    original_weight=reweight_data_mc.get_weights(),
                    target_weight=reweight_data_real.get_weights())
-    return data_tools.adv_return(reweighter, logger=logger,
-                                 save_name=reweight_saveas)
+    return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
 
 def reweight_weights(reweight_data, reweighter_trained, branches=None,
@@ -134,17 +146,25 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
         Return a numpy.array of shape [n_samples] containing the new
         weights.
     """
+
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
                                         original_weight=reweight_data.get_weights())
+
+    # write to output
+    out.add_output(["Using the reweighter", reweighter_trained, "to reweight",
+                    reweight_data.get_name()], separator=" ")
+
     if normalize:
-        new_weights *= new_weights.size/new_weights.sum()
+        for i in range(3):  # enhance precision
+            new_weights *= new_weights.size/new_weights.sum()
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
 
 
-def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=None, n_folds=1, n_checks=1,
+def data_ROC(original_data, target_data, features=None, classifier=None,
+             plot=True, curve_name=None, n_folds=3, n_checks=1,
              weight_original=None, weight_target=None, config_clf=None,
              take_target_from_data=False, use_factory=True, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
@@ -156,16 +176,21 @@ def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=
     Parameters
     ----------
     original_data : instance of :class:`HEPDataStorage`
-        The original or monte-carlo data
+        The original (*or* monte-carlo data)
     target_data : instance of :class:`HEPDataStorage`
-        The target or real data
+        The target (*or* real data)
+    features : str or list(str, str, str, ...)
+        The features of the data to be used for the training.
+    classifier : str or list(str, str, str, ...)
+        The classifiers to be trained on the data. The following are valid
+        choices.
     plot : boolean
         If true, ROC is plotted. Otherwise, only the ROC AUC is calculated.
     curve_name : str
         Name to label the plottet ROC curve.
     n_folds : int
         Specify how many folds and checks should be made for the training/test.
-        If it is 1, a normal trait-test-split with 2/3 - 1/3 ratio is done.
+        If it is 1, a normal train-test-split with 2/3 - 1/3 ratio is done.
     weight_original : numpy array 1-D [n_samples]
         The weights for the original data. Only use if you don't want to use
         the weights contained in the original_data.
@@ -185,50 +210,22 @@ def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=
     out : float
         The ROC AUC from the classifier on the test samples.
     """
+    __IMPLEMENTED_CLF = ['xgb', 'tmva', 'gb', 'rdf', 'ada']
     # TODO: specify default classifier
 
-    # initialize variables
+#==============================================================================
+# Initialize data and classifier
+#==============================================================================
+    # initialize variables and setting defaults
     curve_name = 'data' if curve_name is None else curve_name
     classifier = 'xgb' if classifier is None else data_tools.to_list(classifier)
-
-    # initialize classifiers and put them together into the factory
-    factory = ClassifiersFactory()
-
-    if 'xgb' in classifier:
-        cfg_xgb = dict(meta_config.DEFAULT_CLF_XGB, **kwargs.get('cfg_xgb', {}))
-
-        factory.add_classifier(clf_xgb)
-
-
-
-
-
-
-
-
-    __DEFAULT_CONFIG_CLF = dict(
-        n_estimators=200,
-        learning_rate=0.15,
-        max_depth=5,
-        subsample=0.9,
-        max_features=None
-    )
-
-    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-    from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-    from rep.utils import train_test_split
-    from rep.report.metrics import RocAuc
-    from sklearn import tree
-    from rep.metaml import ClassifiersFactory
-    import rep
-
-
-    config_clf = {} if config_clf is None else config_clf
-    config_clf = dict(__DEFAULT_CONFIG_CLF, **config_clf)
-
+    for clf in classifier:
+        assert clf in __IMPLEMENTED_CLF, str(clf) + " not a valid classifier choice"
+    n_cpu = globals_.free_cpus()
 
     # concatenate the original and target data
-    data = pd.concat([original_data.pandasDF(), target_data.pandasDF()])
+    data = pd.concat([original_data.pandasDF(branches=features),
+                      target_data.pandasDF(branches=features)])
     # take weights from data if not explicitly specified
     if dev_tool.is_in_primitive(weight_original, None):
         weight_original = original_data.get_weights()
@@ -244,6 +241,77 @@ def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=
     else:
         label = np.array([0] * len(original_data) + [1] * len(target_data))
 
+    # initialize classifiers and put them together into the factory
+    factory = ClassifiersFactory()
+    out.add_output(["Running data_ROC with the classifiers", classifier],
+                   subtitle="Separate two datasets: data_ROC")
+    if 'xgb' in classifier:
+        name = "XGBoost classifier"
+        cfg = dict(meta_config.DEFAULT_CLF_XGB, **kwargs.get('cfg_xgb', {}))
+        cfg = dict(nthreads=n_cpu, random_state=globals_.randint+4)
+        clf = XGBoostClassifier(**cfg)
+        factory.add_classifier(name, clf)
+        out.add_output([clf], section=name, do_print=False)
+
+    if 'tmva' in classifier:
+        name = "TMVA classifier"
+        cfg = dict(meta_config.DEFAULT_CLF_TMVA, **kwargs.get('cfg_tmva', {}))
+        clf = TMVAClassifier(**cfg)
+        factory.add_classifier(name, clf)
+        out.add_output([clf], section=name, do_print=False)
+
+    if 'gb' in classifier:
+        name = "GradientBoosting classifier"
+        cfg = dict(meta_config.DEFAULT_CLF_GB, **kwargs.get('cfg_gb', {}))
+        clf = SklearnClassifier(GradientBoostingClassifier(**cfg))
+        factory.add_classifier(name, clf)
+        out.add_output([clf], section=name, do_print=False)
+
+    if 'rdf' in classifier:
+        name = "RandomForest classifier"
+        cfg = dict(meta_config.DEFAULT_CLF_RDF, **kwargs.get('cfg_rdf', {}))
+        cfg = dict(n_jobs=n_cpu, random_state=globals_.randint+432)
+        clf = SklearnClassifier(RandomForestClassifier(**cfg))
+        factory.add_classifier(name, clf)
+        out.add_output([clf], section=name, do_print=False)
+
+    if 'ada' in classifier:
+        name = "AdABoost over DecisionTree classifier"
+        cfg = dict(meta_config.DEFAULT_CLF_ADA, **kwargs.get('cfg_xgb', {}))
+        cfg = dict(random_state=globals_.randint+43)
+        clf = SklearnClassifier(AdaBoostClassifier(DecisionTreeClassifier(
+                                random_state=cfg.get('random_state') + 29)))
+        factory.add_classifier(name, clf)
+        out.add_output([clf], section=name, do_print=False)
+
+
+
+
+
+
+
+
+
+    __DEFAULT_CONFIG_CLF = dict(
+
+    )
+
+
+
+    from rep.utils import train_test_split
+    from rep.report.metrics import RocAuc
+    from sklearn import tree
+    from rep.metaml import ClassifiersFactory
+    import rep
+
+
+    config_clf = {} if config_clf is None else config_clf
+    config_clf = dict(__DEFAULT_CONFIG_CLF, **config_clf)
+
+
+
+
+
     # start ml-part
     clf = SklearnClassifier(GradientBoostingClassifier(
                                 random_state=globals_.randint+5, **config_clf))
@@ -253,8 +321,7 @@ def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=
             train_test_split(data, label, weights, test_size=0.33,
                              random_state=globals_.randint))
         if use_factory:
-            clf_xgb = XGBoostClassifier(n_estimators=500, eta=0.1, nthreads=8, max_depth=8)
-            clf_rnd_forest = SklearnClassifier(RandomForestClassifier(n_estimators=1000, n_jobs=-1))
+
             clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.1), n_estimators=20 ,learning_rate=0.7))
             clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=1000, learning_rate=0.05))
             clf_tmva = TMVAClassifier()
@@ -322,3 +389,5 @@ def data_ROC(original_data, target_data, classifier=None, plot=True, curve_name=
         proba = clf.predict_proba(X_test)[:, 1]
         plt.hist(proba, bins=20, histtype='bar')
     return ROC_AUC
+
+

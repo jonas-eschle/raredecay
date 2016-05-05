@@ -8,12 +8,15 @@ import os
 import sys
 import subprocess
 import warnings
+import timeit
+import time
 
 import matplotlib.pyplot as plt
 import cPickle as pickle
+import multiprocessing
 
 from raredecay import meta_config
-from raredecay.tools import dev_tool
+from raredecay.tools import dev_tool, data_tools
 
 
 class OutputHandler(object):
@@ -33,6 +36,8 @@ class OutputHandler(object):
             self._figures = {}
             self._formats_used = set([])
             self._pickle_folder = False
+            self._start_timer = timeit.default_timer()
+            self._start_time = time.strftime("%c")
 
     def get_logger_path(self):
         """Return the path for the log folder"""
@@ -262,6 +267,14 @@ class OutputHandler(object):
         for value in self._output_folders.itervalues():
             subprocess.call(['mkdir', '-p', self._output_path + value])
 
+        # set meta-config variables
+        meta_config.MULTIPROCESSING = meta_config.MULTITHREAD and meta_config.MULTIPROCESSING
+        if (meta_config.n_cpu_max is None):
+            meta_config.n_cpu_max = multiprocessing.cpu_count()
+        if not meta_config.MULTITHREAD:
+            meta_config.n_cpu_max = 1
+
+
         # TODO: remove?:
         # create the default log file folder in case it is needed
         #subprocess.call(['mkdir', '-p', self._output_path +
@@ -272,7 +285,9 @@ class OutputHandler(object):
         """
         from raredecay.globals_ import randint  # here to avoid circular dependencies
 
-        # add the pseudo random-generator integer
+#==============================================================================
+#  write all the necessary things to the output
+#==============================================================================
         self.add_output(["randint", randint], title="Different parameters",
                         obj_separator=" : ", do_print=False)
 
@@ -287,9 +302,15 @@ class OutputHandler(object):
             "describe"])
         self.add_output(["Program version from Git", git_version], section="Git information",
                         do_print=False, obj_separator=" : ")
+        elapsed_time = self._start_timer - timeit.default_timer()
+        elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        self.add_output(["Run startet at", self._start_time, "\nand lasted for",
+                         elapsed_time], section="Time information", obj_separator=" ")
+
 #==============================================================================
 #   write output to file
 #==============================================================================
+
         # remove leading blank lines
         for i in range(1,100):
             if not self.output.startswith("\n" * i):  # "break" condition
