@@ -1,6 +1,4 @@
-# README #
-
-This README would normally document whatever steps are necessary to get your application up and running.
+# README of the raredecay-package #
 
 # What is it for? #
  The repository is created for a particle decay analysis. The core is a solid data-structure, a wrapper around pandas DataFrame and more. Furthermore, some useful methods are included which do the work. For example reweighting two datasets and train a classifier on it, to be able to see how much they differ.
