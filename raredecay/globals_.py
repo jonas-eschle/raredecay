@@ -17,6 +17,7 @@ from __future__ import division, absolute_import
 import random
 
 from raredecay.tools import output
+from raredecay import meta_config
 
 #==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
@@ -29,6 +30,14 @@ out = output.OutputHandler()
 #==============================================================================
 
 randint = random.randint(123, 1512412)  # 357422 or 566575
+
+#==============================================================================
+# parallel profile
+#==============================================================================
+
+n_cpu_used = 0
+def free_cpus():
+    n_out = max([meta_config.n_cpu_max - n_cpu_used, 1])
 
 
 
