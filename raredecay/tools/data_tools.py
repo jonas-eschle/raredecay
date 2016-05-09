@@ -19,11 +19,7 @@ from rootpy.io import root_open
 from raredecay.tools import dev_tool
 from raredecay import meta_config
 
-
-import importlib
-from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
-module_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+module_logger = dev_tool.make_logger(__name__, **meta_config.DEFAULT_LOGGER_CFG)
 
 
 def add_to_rootfile(rootfile, new_branch, branch_name=None):
@@ -52,7 +48,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         f.write("", TObject.kOverwrite)  # overwrite, does not create friends
 
 
-def format_data_weights(data_to_shape, weights, logger=None):
+def format_data_weights(data_to_shape, weights, logger):
     """Format the data and the weights perfectly. Same length and more.
 
     Change the data to pandas.DataFrame and fill the weights with ones where
@@ -81,8 +77,6 @@ def format_data_weights(data_to_shape, weights, logger=None):
     out : list(numpy.array(weight), numpy.array(weight),...)
         Return a list with the weights, converted and filled.
     """
-    if logger is None:
-        logger = module_logger
     # conver the data
     if not isinstance(data_to_shape, list):
         data_to_shape = [data_to_shape]
@@ -127,7 +121,6 @@ def obj_to_string(objects, separator=None):
 
     objects = to_list(objects)
     objects = [str(obj) for obj in objects if obj is not None]  # remove Nones
-
     string_out = ""
     for word in objects:
         string_out += word + separator if word != objects[-1] else word
@@ -169,7 +162,7 @@ def is_ndarray(data_to_check):
 def is_pickle(data_to_check):
     flag = False
     if isinstance(data_to_check, str):
-        if data_to_check.endswith(cfg.PICKLE_DATATYPE):
+        if data_to_check.endswith(meta_config.PICKLE_DATATYPE):
             flag = True
     return flag
 
@@ -295,7 +288,7 @@ def adv_return(return_value, save_name=None, logger=None):
         logger = module_logger
     if save_name not in (None, False):
         if isinstance(save_name, str):
-            save_name = cfg.PICKLE_PATH + save_name
+            save_name = meta_config.PICKLE_PATH + save_name
             if not is_pickle(save_name):
                 save_name += "." + meta_config.PICKLE_DATATYPE
             with open(str(save_name), 'wb') as f:
@@ -312,7 +305,7 @@ def adv_return(return_value, save_name=None, logger=None):
 def try_unpickle(file_to_unpickle):
     """Try to unpickle a file and return, otherwise just return input"""
     if is_pickle(file_to_unpickle):
-        with open(cfg.PICKLE_PATH + file_to_unpickle, 'rb') as f:
+        with open(meta_config.PICKLE_PATH + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
 

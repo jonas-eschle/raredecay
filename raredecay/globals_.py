@@ -38,6 +38,7 @@ randint = random.randint(123, 1512412)  # 357422 or 566575
 n_cpu_used = 0
 def free_cpus():
     n_out = max([meta_config.n_cpu_max - n_cpu_used, 1])
+    return n_out
 
 
 

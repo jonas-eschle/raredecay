@@ -116,6 +116,9 @@ class OutputHandler(object):
 
         # save figures to file
         for fig_name, fig_dict in self._figures.iteritems():
+            replace_char = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.', '/']
+            for char in replace_char:
+                fig_name = fig_name.replace(char, "_")
             for extension in fig_dict.get('file_format'):
                 file_path = path + extension + '/'
                 file_name = file_path + fig_name + "." + extension
@@ -130,7 +133,6 @@ class OutputHandler(object):
             if fig_dict.get('to_pickle'):
                 file_name = (path + meta_config.PICKLE_DATATYPE + '/' +
                              fig_name + "." + meta_config.PICKLE_DATATYPE)
-                file_name = file_name.replace(" ", "_")
                 try:
                     with open(str(file_name), 'wb') as f:
                         pickle.dump(fig_dict.get('figure'), f, meta_config.PICKLE_PROTOCOL)
@@ -171,7 +173,7 @@ class OutputHandler(object):
         data_separator : str
             | Separates the data_outs from each other. Inserted at the end and
             creates a separation from the next call of add_output.
-            | Default is a blank line as separation: "\n\n".
+            | Default is a blank line as separation: '\n\n'.
         do_print : boolean
             If True, the data will not only be added to the output but
             also printed when add_output is called.
@@ -197,15 +199,21 @@ class OutputHandler(object):
         subtitle_f = ('-', '-')
         section_f = ('', '=')
         for name, form in ((title, title_f), (subtitle, subtitle_f), (section, section_f)):
-            if name is not None:
-                name = str(name)
-                temp_out += "\n" + form[0] * len(name)
-                temp_out += "\n" + name
-                temp_out += "\n" + form[1] * len(name) + "\n"
+            temp_out = self._make_title(name, form)
 
-    # TODO: add nice format for dictionaries
+        # nice format for dicts
         for word in data_out:
-            temp_out += str(word)
+            if isinstance(word, dict):
+                for key, val in word.iteritems():
+                    if isinstance(val, dict):
+                        temp_out += self._make_title("  " + key, ('', '^'))
+                        for key2, val2 in val.iteritems():
+                            temp_out += "    " + str(key2) + " : " + str(val2) + "\n"
+                    else:
+                        sepr = "" if temp_out.endswith("\n") else "\n"
+                        temp_out += sepr + "  " + str(key) + " : " + str(val)
+            else:
+                temp_out += str(word)
             temp_out += obj_separator if word is not data_out[-1] else data_separator
         if do_print and (not to_end):
             sys.stdout.write(temp_out)
@@ -213,6 +221,28 @@ class OutputHandler(object):
             self.end_output += temp_out
         else:
             self.output += temp_out
+
+    @staticmethod
+    def _make_title(title, title_format):
+        """Create a title and return it as a string.
+
+        Parameter
+        ---------
+        title : str
+            The title in words
+        title_format : (str, str)
+            The surrounding lines. The titel will be:
+            | title_format[0] * len(title)
+            | title
+            | title_format[1] * len(title)
+        """
+        out_str = ""
+        if title is not None:
+            title = str(title)
+            out_str += "\n" + title_format[0] * len(title)
+            out_str += "\n" + title
+            out_str += "\n" + title_format[1] * len(title) + "\n"
+        return out_str
 
     def initialize(self, output_path, run_name=None, output_folders=None,
                    del_existing_dir=False, logger_cfg=None, **config_kw):
@@ -253,6 +283,8 @@ class OutputHandler(object):
         output_path = os.path.expanduser(output_path)  # replaces ~ with /home/myUser
         self._output_path = output_path.replace(" ", "_")
 
+
+
         temp_i = 1
         while os.path.isdir(self._output_path):
             if del_existing_dir:
@@ -266,6 +298,8 @@ class OutputHandler(object):
         # create subfolders
         for value in self._output_folders.itervalues():
             subprocess.call(['mkdir', '-p', self._output_path + value])
+        subprocess.call(['touch', self._output_path + 'run_NOT_finished'])  # show that ongoing run
+
 
         # set meta-config variables
         meta_config.MULTIPROCESSING = meta_config.MULTITHREAD and meta_config.MULTIPROCESSING
@@ -302,7 +336,7 @@ class OutputHandler(object):
             "describe"])
         self.add_output(["Program version from Git", git_version], section="Git information",
                         do_print=False, obj_separator=" : ")
-        elapsed_time = self._start_timer - timeit.default_timer()
+        elapsed_time = timeit.default_timer() - self._start_timer
         elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
         self.add_output(["Run startet at", self._start_time, "\nand lasted for",
                          elapsed_time], section="Time information", obj_separator=" ")
@@ -358,4 +392,5 @@ class OutputHandler(object):
         else:
             path = self._output_path
         print "All output saved under: " + path
-        subprocess.call(['touch', path + '.finished'])  # .finished shows if the run finished
+        subprocess.call(['rm', path + 'run_NOT_finished'])
+        subprocess.call(['touch', path + 'run_succesfully_finished'])  # .finished shows if the run finished

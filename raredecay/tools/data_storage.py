@@ -22,6 +22,7 @@ from rep.data.storage import LabeledDataStorage
 from raredecay.tools import data_tools, dev_tool
 from raredecay.globals_ import out
 
+# import configuration
 import importlib
 from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
@@ -437,7 +438,7 @@ class HEPDataStorage(object):
                                      random_state=random_state, shuffle=shuffle)
         return new_lds
 
-    def plot(self, figure=None, plots_name=None, std_save=True, log_y_axes=False,
+    def plot(self, figure=None, plots_name=None, curve_name=None, std_save=True, log_y_axes=False,
              branches=None, index=None, sample_weights=None, data_labels=None,
              hist_settings=None):
         """Draw histograms of the data.
@@ -495,10 +496,8 @@ class HEPDataStorage(object):
             self.__figure_dic.update({figure: x_limits_col})
         out_figure = plt.figure(figure, figsize=(20, 30))
 
-        temp_name = data_tools.obj_to_string([i for i in self._name] + [plots_name],
-                                             separator=" - ")
-        label_name = data_tools.obj_to_string([self._name[0], self._name[1]], separator=" - ")
-        plt.suptitle(temp_name, fontsize=self.supertitle_fontsize)
+        label_name = data_tools.obj_to_string([self._name[0], self._name[1], curve_name], separator=" - ")
+        plt.suptitle(plots_name, fontsize=self.supertitle_fontsize)
 
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
@@ -516,7 +515,7 @@ class HEPDataStorage(object):
         plt.legend()
 
         if std_save:
-            out.save_fig(out_figure, **meta_config.DEFAULT_SAVE_FIGURE)
+            out.save_fig(out_figure, **meta_config.DEFAULT_SAVE_FIG)
         return out_figure
 
     def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):

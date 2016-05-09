@@ -14,6 +14,7 @@ from __future__ import division, absolute_import
 import warnings
 import memory_profiler
 import multiprocessing
+import copy
 
 import math
 import numpy as np
@@ -23,15 +24,30 @@ import seaborn as sns
 
 import hep_ml.reweight
 from rep.metaml import ClassifiersFactory
+from rep.utils import train_test_split
+from rep.data import LabeledDataStorage
+
+# classifier imports
+from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import AdaBoostClassifier, VotingClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from rep.metaml.folding import FoldingClassifier
+from rep.report import metrics
+from rep.report.classification import ClassificationReport
 
 from raredecay.tools import dev_tool, data_tools
 from raredecay import globals_
 from raredecay.globals_ import out
 
-# classifier imports
-from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
+# import configuration
+import importlib
+from raredecay import meta_config
+cfg = importlib.import_module(meta_config.run_config)
+modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+
+
 
 # import the specified config file
 # TODO: is this import really necessary? Best would be without config...
@@ -101,12 +117,13 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     reweighter += 'Reweighter'
 
     # logging and writing output
-    msg = data_tools.obj_to_string(["Reweighter:", reweighter, "with config:", meta_cfg],
-                                   separator=" ")
+    msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
-    out.add_output([msg, "\nData used:\n", reweight_data_mc.get_name(),
-                   reweight_data_real.get_name()], section="Training the reweighter",
-                   obj_separator=" and ")
+    branches = reweight_data_mc.get_branches() if branches is None else branches
+    out.add_output(msg + ["\nData used:\n", reweight_data_mc.get_name(), " and ",
+                   reweight_data_real.get_name(), "\nBranches used for the training:\n",
+                    branches], section="Training the reweighter",
+                   obj_separator=" ")
 
     # do the reweighting
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
@@ -150,10 +167,10 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
                                         original_weight=reweight_data.get_weights())
-
+    branches = rewei
     # write to output
-    out.add_output(["Using the reweighter", reweighter_trained, "to reweight",
-                    reweight_data.get_name()], separator=" ")
+    out.add_output(["Using the reweighter:\n", reweighter_trained, "\nto reweight ",
+                    reweight_data.get_name(), obj_separator="")
 
     if normalize:
         for i in range(3):  # enhance precision
@@ -164,9 +181,8 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
 
 
 def data_ROC(original_data, target_data, features=None, classifier=None,
-             plot=True, curve_name=None, n_folds=3, n_checks=1,
-             weight_original=None, weight_target=None, config_clf=None,
-             take_target_from_data=False, use_factory=True, **kwargs):
+             curve_name=None, n_folds=3, weight_original=None, weight_target=None,
+             config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
 
@@ -183,7 +199,13 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
         The features of the data to be used for the training.
     classifier : str or list(str, str, str, ...)
         The classifiers to be trained on the data. The following are valid
-        choices.
+        choices:
+
+        - 'xgb' : XGboost classifier
+        - 'tmva' : the TMVA classifier
+        - 'gb': Gradient Boosting classifier from scikit-learn
+        - 'rdf': Random Forest classifier
+        - 'ada_dt': AdaBoost over decision trees
     plot : boolean
         If true, ROC is plotted. Otherwise, only the ROC AUC is calculated.
     curve_name : str
@@ -210,22 +232,34 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
     out : float
         The ROC AUC from the classifier on the test samples.
     """
-    __IMPLEMENTED_CLF = ['xgb', 'tmva', 'gb', 'rdf', 'ada']
-    # TODO: specify default classifier
+    __IMPLEMENTED_CLF = ['xgb', 'tmva', 'gb', 'rdf', 'ada_dt']#, 'knn']
 
 #==============================================================================
 # Initialize data and classifier
 #==============================================================================
+
     # initialize variables and setting defaults
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+
     curve_name = 'data' if curve_name is None else curve_name
-    classifier = 'xgb' if classifier is None else data_tools.to_list(classifier)
+    if classifier is None:
+        classifier = 'xgb'
+    elif classifier == 'all':
+        classifier = __IMPLEMENTED_CLF
+        classifier.remove('tmva')
+    elif classifier == 'all_with_tmva':
+        classifier = __IMPLEMENTED_CLF
+    classifier = data_tools.to_list(classifier)
     for clf in classifier:
         assert clf in __IMPLEMENTED_CLF, str(clf) + " not a valid classifier choice"
     n_cpu = globals_.free_cpus()
+    data_name = original_data.get_name() + " and " + target_data.get_name()
 
     # concatenate the original and target data
     data = pd.concat([original_data.pandasDF(branches=features),
                       target_data.pandasDF(branches=features)])
+
     # take weights from data if not explicitly specified
     if dev_tool.is_in_primitive(weight_original, None):
         weight_original = original_data.get_weights()
@@ -248,24 +282,21 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
     if 'xgb' in classifier:
         name = "XGBoost classifier"
         cfg = dict(meta_config.DEFAULT_CLF_XGB, **kwargs.get('cfg_xgb', {}))
-        cfg = dict(nthreads=n_cpu, random_state=globals_.randint+4)
+        cfg = dict(nthreads=n_cpu, random_state=globals_.randint+4)  # overwrite entries
         clf = XGBoostClassifier(**cfg)
         factory.add_classifier(name, clf)
-        out.add_output([clf], section=name, do_print=False)
 
     if 'tmva' in classifier:
         name = "TMVA classifier"
         cfg = dict(meta_config.DEFAULT_CLF_TMVA, **kwargs.get('cfg_tmva', {}))
         clf = TMVAClassifier(**cfg)
         factory.add_classifier(name, clf)
-        out.add_output([clf], section=name, do_print=False)
 
     if 'gb' in classifier:
         name = "GradientBoosting classifier"
         cfg = dict(meta_config.DEFAULT_CLF_GB, **kwargs.get('cfg_gb', {}))
         clf = SklearnClassifier(GradientBoostingClassifier(**cfg))
         factory.add_classifier(name, clf)
-        out.add_output([clf], section=name, do_print=False)
 
     if 'rdf' in classifier:
         name = "RandomForest classifier"
@@ -273,121 +304,120 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
         cfg = dict(n_jobs=n_cpu, random_state=globals_.randint+432)
         clf = SklearnClassifier(RandomForestClassifier(**cfg))
         factory.add_classifier(name, clf)
-        out.add_output([clf], section=name, do_print=False)
 
-    if 'ada' in classifier:
+    if 'ada_dt' in classifier:
         name = "AdABoost over DecisionTree classifier"
-        cfg = dict(meta_config.DEFAULT_CLF_ADA, **kwargs.get('cfg_xgb', {}))
+        cfg = dict(meta_config.DEFAULT_CLF_ADA, **kwargs.get('cfg_ada_dt', {}))
         cfg = dict(random_state=globals_.randint+43)
         clf = SklearnClassifier(AdaBoostClassifier(DecisionTreeClassifier(
-                                random_state=cfg.get('random_state') + 29)))
+                                random_state=cfg.get('random_state') + 29), **cfg))
         factory.add_classifier(name, clf)
-        out.add_output([clf], section=name, do_print=False)
+    if 'knn' in classifier:
+        name = "KNearest Neighbour classifier"
+        cfg = dict(meta_config.DEFAULT_CLF_KNN, **kwargs.get('cfg_knn', {}))
+        cfg = dict(random_state=globals_.randint+919, n_jobs=n_cpu)
+        clf = SklearnClassifier(KNeighborsClassifier(**cfg))
+        factory.add_classifier(name, clf)
 
+    out.add_output("The following classifiers were used to distinguish the data",
+                   subtitle="List of classifiers for data_ROC", do_print=False)
+    for key, val in factory.iteritems():
+        out.add_output([val], section=key, do_print=False)
 
-
-
-
-
-
-
-
-    __DEFAULT_CONFIG_CLF = dict(
-
-    )
-
-
-
-    from rep.utils import train_test_split
-    from rep.report.metrics import RocAuc
-    from sklearn import tree
-    from rep.metaml import ClassifiersFactory
-    import rep
-
-
-    config_clf = {} if config_clf is None else config_clf
-    config_clf = dict(__DEFAULT_CONFIG_CLF, **config_clf)
-
-
-
-
-
-    # start ml-part
-    clf = SklearnClassifier(GradientBoostingClassifier(
-                                random_state=globals_.randint+5, **config_clf))
-    # getting roc (auc score) for 1 fold
-    if n_folds == 1:
+    if n_folds <= 1:
+        train_size = 0.66 if n_folds == 1 else n_folds
         X_train, X_test, y_train, y_test, weight_train, weight_test = (
-            train_test_split(data, label, weights, test_size=0.33,
-                             random_state=globals_.randint))
-        if use_factory:
-
-            clf_ada_xgb = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.1), n_estimators=20 ,learning_rate=0.7))
-            clf_ada_forest = SklearnClassifier(AdaBoostClassifier(n_estimators=1000, learning_rate=0.05))
-            clf_tmva = TMVAClassifier()
-            clf_gb = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
-            factory = ClassifiersFactory()
-            factory.add_classifier('Gradient Boosting', clf_gb)
-            #factory.add_classifier('tmva', clf_tmva)
-            factory.add_classifier('XGBoost', clf_xgb)
-            factory.add_classifier('random forest', clf_rnd_forest)
-            #factory.add_classifier('AdaBoost over XGBoost', clf_ada_xgb)
-            factory.add_classifier('AdaBoost over random forest', clf_ada_forest)
-            clf = factory
-            clf.fit(X_train, y_train, weight_train, parallel_profile='threads-2')
-
-        else:
-            clf = XGBoostClassifier(n_estimators=200, eta=0.1, nthreads=8, max_depth=8)
-            #clf = TMVAClassifier(NTrees=150, Shrinkage=0.8, AdaBoostBeta=0.3)
-            #clf = SklearnClassifier(RandomForestClassifier(n_estimators=50, n_jobs=-1))
-            #clf = SklearnClassifier(AdaBoostClassifier(base_estimator=XGBoostClassifier(n_estimators=20, eta=0.2), n_estimators=70 ,learning_rate=0.7))
-            #clf = SklearnClassifier(AdaBoostClassifier(n_estimators=300, learning_rate=0.05))
-            #clf = SklearnClassifier(GradientBoostingClassifier(random_state=globals_.randint+5, **config_clf))
-            clf.fit(X_train, y_train, weight_train)
-# FIXME:
-        #plt.figure()
-
-
-        report = clf.test_on(X_test, y_test, weight_test)
+            train_test_split(data, label, weights, train_size=train_size,
+                             random_state=globals_.randint+1214))
     else:
-        # TODO: maybe implement for more then 1 fold
-        raise NotImplementedError("n_folds >1 not yet implemented. Sorry!")
+        parallel_profile = 'threads-' + str(min(n_folds, n_cpu))
+        vote_estimators = copy.deepcopy([(key, val) for key, val in factory.iteritems()])
+        for key, val in factory.iteritems():
+            factory[key] = FoldingClassifier(val, n_folds=n_folds, parallel_profile=parallel_profile)
+        X_train = X_test = data  # folding scorer takes care of CV
+        y_train = y_test = label
+        weight_train = weight_test = weights
 
-    plt.figure("Learning curve of classifier")
-    report.learning_curve(RocAuc(), steps=1).plot(new_plot=True, title="Learning curve of classifiers")
-    if plot and use_factory:
-        ROC_AUC = report.compute_metric(RocAuc())
-        print "Roc auc = ", ROC_AUC
-        try:
-            report.feature_importance().plot(new_plot=True)
-        except:
-            warnings.warn("feature importance not calculated due to (most probably) runtime error", RuntimeWarning)
-        report.feature_importance_shuffling().plot(new_plot=True)
-        report.features_correlation_matrix_by_class().plot(new_plot=True)
-        report.features_pdf().plot(new_plot=True)
-        #report.metrics_vs_cut(rep.report.metrics.RocAuc).plot(new_plot=True)  # , metric_label="ROC AUC"
-        report.prediction_pdf().plot(new_plot=True)
 
-        # TODO: change title because it plots now only one ROC, use labels
-        title = ("ROC curve for comparison of " + original_data.get_name() +
-                 " and " + target_data.get_name() + "\nROC AUC: " + str(ROC_AUC))
-        # curve_name += "AUC = " + str(round(ROC_AUC, 3))
-        plt.figure("Data reweighter comparison")
-        #report.prediction[curve_name] = report.prediction.pop('clf')
-        report.roc(physical_notion=False).plot(new_plot=True, title=title)
-        plt.plot([0, 1], [0, 1], 'k--')
-    elif plot:
-        ROC_AUC = report.compute_metric(RocAuc())['clf']
-        title = ("ROC curve for comparison of " + original_data.get_name() +
-                 " and " + target_data.get_name())
-        curve_name += "AUC = " + str(round(ROC_AUC, 3))
-        plt.figure("Data reweighter comparison")
-        report.prediction[curve_name] = report.prediction.pop('clf')
-        report.roc(physical_notion=False).plot(new_plot=False, title=title)
-        plt.plot([0, 1], [0, 1], 'k--')
-        plt.figure()
-        proba = clf.predict_proba(X_test)[:, 1]
-        plt.hist(proba, bins=20, histtype='bar')
-    return ROC_AUC
+#==============================================================================
+#     Train the classifiers
+#==============================================================================
+
+    parallel_profile = 'threads-' + str(min(len(factory.keys()), n_cpu))
+    factory.fit(X_train, y_train, weight_train, parallel_profile=parallel_profile)
+    report = factory.test_on(X_test, y_test, weight_test)
+
+    # add a voting meta-classifier
+    if len(factory.keys()) > 1:
+        # TODO: old: estimators = [(key, val) for key, val in factory.iteritems()]
+        vote_cfg = dict(estimators=vote_estimators, voting='soft')
+        clf_vote = SklearnClassifier(VotingClassifier(**vote_cfg))
+        if n_folds > 1:
+            clf_vote = FoldingClassifier(clf_vote, n_folds=n_folds, parallel_profile=parallel_profile,
+                                         random_state=globals_.randint +6183)
+        clf_vote.fit(X_train, y_train)
+
+#==============================================================================
+#   Report the classification
+#==============================================================================
+
+        # voting report
+        lds = LabeledDataStorage(X_test, y_test)#, weight_test)
+        vote_report = ClassificationReport({'Voting report': clf_vote}, lds)
+        vote_auc = vote_report.compute_metric(metrics.RocAuc())
+        out_auc = vote_auc.values()[0]
+        out.add_output(["ROC AUC of voted classifier: ", round(out_auc, 4)],
+                       obj_separator="", subtitle="Report of data_ROC")
+
+        # voting plots
+        out.save_fig(plt.figure("ROC voting classifier" + data_name), save_fig_cfg)
+        vote_report.roc(physical_notion=False).plot(title="ROC curve of voting classifier." +
+                               data_name + "\nROC AUC = " + str(round(out_auc, 4)))
+        plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
+
+        out.save_fig(plt.figure("Learning curve voting classifier" + data_name), save_fig_cfg)
+        vote_report.learning_curve(metrics.RocAuc(), steps=1).plot()
+
+    # factory report
+    factory_auc = report.compute_metric(metrics.RocAuc())
+    for key, val in factory_auc.iteritems():  # round the auc on four digits
+        factory_auc[key] = round(val, 4)
+    out.add_output(factory_auc, section="ROC AUC Classifiers")
+
+    # factory plots
+    out.save_fig(plt.figure("Learning curve of classifiers" + data_name), save_fig_cfg)
+    report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of classifiers")
+
+# TODO: trial, may remove if buggy
+    for key, val in factory.items():
+        clf = factory.pop(key)
+        clf_auc = factory_auc.get(key)
+        factory[key + ", AUC = " + str(round(clf_auc, 3))] = clf
+
+    out.save_fig(plt.figure("ROC comparison " + data_name), **save_fig_cfg)
+    # TODO: if trial works, remove?:
+    # curve_name += "AUC = " + str(round(ROC_AUC, 3))
+    for key, val in report.prediction.items():
+        report.prediction[key + ", AUC = " + str(round(clf_auc, 3))] = report.prediction.pop(key)
+    report.roc(physical_notion=False).plot(title="ROC curve for comparison of " + data_name)
+    plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
+    # factory extended plots
+    out.save_fig(plt.figure("feature importance shuffled " + data_name), **save_ext_fig_cfg)
+    report.feature_importance_shuffling().plot()
+
+    out.save_fig(plt.figure("correlation matrix " + data_name), **save_ext_fig_cfg)
+    report.features_correlation_matrix_by_class().plot(title="Correlation matrix of data " + data_name)
+
+    out.save_fig(plt.figure("features pdf " + data_name), **save_ext_fig_cfg)
+    report.features_pdf().plot(title="Features pdf of data: " + data_name)
+
+    out.save_fig(plt.figure("Data_ROC prediction pdf" + data_name), **save_ext_fig_cfg)
+    report.prediction_pdf().plot(title="prediction pdf of different classifiers, data: " + data_name)
+
+    # make output
+    if len(factory.keys()) == 1:
+        out_auc = factory_auc.values()[0]
+
+    return out_auc
 
 

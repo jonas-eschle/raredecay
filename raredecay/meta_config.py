@@ -40,16 +40,24 @@ import cPickle as pickle
 # General run parameters
 #------------------------------------------------------------------------------
 
-MULTITHREAD = False  # if False, no parallel work will be done
-MULTIPROCESSING = False  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = None  # VAGUE ESTIMATION but not a strict limit.
+MULTITHREAD = True  # if False, no parallel work will be done
+MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
+n_cpu_max = 8  # VAGUE ESTIMATION but not a strict limit.
 
 #------------------------------------------------------------------------------
 #  Datatype ending variables
 #------------------------------------------------------------------------------
 
+
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
+
+#------------------------------------------------------------------------------
+# SHARED OBJECT PATHES INPUT & OUTPUT
+#------------------------------------------------------------------------------
+
+# folder where the pickled objects are stored
+PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 
 #------------------------------------------------------------------------------
 #  Debug related options
@@ -81,6 +89,11 @@ MAX_FIGURES = 5000
 #  Output and plot configurations
 #------------------------------------------------------------------------------
 
+metric_prec = 3  # precision of the metric, digits
+
+
+
+
 # available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
 # You may add additional key-value pairs or just change some values
 DEFAULT_OUTPUT_FOLDERS = dict(
@@ -96,39 +109,20 @@ DEFAULT_HIST_SETTINGS = dict(
     alpha=0.5  # transparency [0.0, 1.0]
 )
 
-DEFAULT_SAVE_FIGURE = dict(
+DEFAULT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
     to_pickle=True,
     plot=True,
     #save_cfg=None
 )
 
-DEFAULT_CLF_XGB = dict(
-    n_estimators=500,
-    eta=0.1,  # learning-rate
-    max_depth=8
+DEFAULT_EXT_SAVE_FIG = dict(
+    file_format=['png', 'svg'],
+    to_pickle=True,
+    plot=False,
+    #save_cfg=None
 )
 
-DEFAULT_CLF_TMVA = dict(
-    method='kBDT'
-)
-
-DEFAULT_CLF_RDF = dict(
-    n_estimators=1000,
-)
-
-DEFAULT_CLF_GB = dict(
-    n_estimators=200,
-    learning_rate=0.15,
-    max_depth=5,
-    subsample=0.9,
-    max_features=None
-)
-
-DEFAULT_CLF_ADA = dict(
-    n_estimators=500,
-    learning_rate=0.1
-)
 
 DEFAULT_LOGGER_CFG = dict(
     logging_mode='console',   # define where the logger is written to
@@ -144,6 +138,42 @@ DEFAULT_LOGGER_CFG = dict(
     # the beginning ofthe name of the logfile, like 'project1'
     log_file_dir=DEFAULT_OUTPUT_FOLDERS.get('log')
 )
+
+#------------------------------------------------------------------------------
+#  Classifier configurations
+#------------------------------------------------------------------------------
+
+DEFAULT_CLF_XGB = dict(
+    n_estimators=20,
+    eta=0.2,  # learning-rate
+    max_depth=6
+)
+
+DEFAULT_CLF_TMVA = dict(
+    method='kBDT'
+)
+
+DEFAULT_CLF_RDF = dict(
+    n_estimators=20,
+)
+
+DEFAULT_CLF_GB = dict(
+    n_estimators=20,
+    learning_rate=0.15,
+    max_depth=5,
+    subsample=0.9,
+    max_features=None
+)
+
+DEFAULT_CLF_ADA = dict(
+    n_estimators=20,
+    learning_rate=0.2
+)
+
+DEFAULT_CLF_KNN = dict(
+    n_neigh = 5
+)
+
 #==============================================================================
 # END OF CONFIGURABLE PARAMETERS - DO NOT CHANGE WHAT IS BELOW
 #==============================================================================

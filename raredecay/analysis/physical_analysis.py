@@ -14,7 +14,8 @@ import raredecay.meta_config
 
 
 DEFAULT_CFG_FILE = dict(
-    reweightCV='raredecay.run_config.reweight_cfg',
+    reweightCV='raredecay.run_config.reweightCV_cfg',
+    reweight='raredecay.run_config.reweight_cfg',
     simple_plot=None,
     test='raredecay.run_config.reweight1_comparison_cfg',
     reweight_comparison='raredecay.run_config.reweight1_comparison_cfg'
@@ -52,12 +53,14 @@ def run(run_mode, cfg_file=None):
 
     if run_mode == "test":
         test(cfg, logger)
-    if run_mode == "reweight_comparison":
+    elif run_mode == "reweight_comparison":
         reweight_comparison(cfg, logger)
-    if run_mode == "simple_plot":
+    elif run_mode == "simple_plot":
         simple_plot(cfg, logger)
-    if run_mode == "reweightCV":
+    elif run_mode == "reweightCV":
         reweightCV(cfg, logger)
+    elif run_mode == "reweight":
+        reweight(cfg, logger)
     else:
         raise ValueError("Runmode " + str(run_mode) + " not a valid choice")
 
@@ -68,7 +71,7 @@ def run(run_mode, cfg_file=None):
 
 def test(cfg):
     """just a test-function"""
-    print "empty"
+    print "empty test function"
 
 
 def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
@@ -79,6 +82,44 @@ def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
 
     data_tools.add_to_rootfile(root_data, new_branch=new_branch,
                                branch_name=branch_name)
+def reweight(cfg, logger, rootfile_to_add=None):
+    """
+
+    """
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.tools import data_tools, data_storage
+    from raredecay.globals_ import out
+    import matplotlib.pyplot as plt
+
+    out.add_output("Starting the run 'reweight'", title="Reweighting")
+
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
+
+    reweight_apply.plot(figure="Data for reweights apply", plots_name="Data before and after reweighting",
+                        curve_name="no weights")
+
+    reweight_real.plot(figure="Data to train reweighter", plots_name="before reweighting")
+    reweight_mc.plot(figure="Data to train reweighter")
+
+    gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
+                                            reweight_data_real=reweight_real,
+                                            branches=cfg.reweight_branches,
+                                            meta_cfg=cfg.reweight_meta_cfg,
+                                            **cfg.reweight_cfg)
+    new_weights = ml_ana.reweight_weights(reweight_data=reweight_apply,
+                                          branches=cfg.reweight_branches,
+                                          reweighter_trained=gb_reweighter)
+    reweight_apply.plot(figure="Data for reweights apply", curve_name="gb weights")
+    out.save_fig(plt.figure("New weights"))
+    plt.hist(new_weights, bins=30)
+
+    ml_ana.reweight_weights(reweight_data=reweight_mc, branches=cfg.reweight_branches,
+                            reweighter_trained=gb_reweighter)
+    reweight_real.plot(figure="Data self reweighted", curve_name="gb weights")
+    reweight_mc.plot(figure="Data self reweighted", plots_name="after reweighting")
+
 
 
 def reweightCV(cfg, logger, n_folds=2, n_checks=1):
@@ -87,6 +128,7 @@ def reweightCV(cfg, logger, n_folds=2, n_checks=1):
     from raredecay.tools import data_tools, data_storage
     from raredecay.globals_ import out
     import matplotlib.pyplot as plt
+
 
     out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
     # initialize variables
@@ -111,7 +153,7 @@ def reweightCV(cfg, logger, n_folds=2, n_checks=1):
         reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
                                              reweight_data_mc=train_mc,
                                              reweight_data_real=train_real,
-                                             branches=cfg.branches, reweighter='gb')
+                                             branches=cfg.reweight_branches, reweighter='gb')
         # TODO: attention, completely wrong redefinition for test purposes
 #        test_mc, temp = reweight_mc.get_fold(fold+1)
 #        test_real, temp = reweight_real.get_fold(fold+1)
@@ -121,7 +163,7 @@ def reweightCV(cfg, logger, n_folds=2, n_checks=1):
         out.save_fig(plot1)
         test_real.plot(figure="Bevor reweighting, fold " + str(fold))
         new_weights = ml_ana.reweight_weights(test_mc, reweighter,
-                                              branches=cfg.branches)
+                                              branches=cfg.reweight_branches)
         plt.figure("new weights")
         plt.hist(new_weights,bins=40, log=True)
         ml_ana.data_ROC(test_real, test_mc)
@@ -177,7 +219,8 @@ def reweight_comparison(cfg, logger):
     reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
     reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
     gb_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-                                 target_data=reweight_real, curve_name="GB reweighted")
+                                 target_data=reweight_real, curve_name="GB reweighted",
+                                 classifier='all')
     plot1 = reweight_mc.plot(figure="gradient boosted reweighting",
                      plots_name="comparison real-target", hist_settings={'bins':20})
     reweight_real.plot(figure="gradient boosted reweighting", hist_settings={'bins':20})
@@ -185,7 +228,10 @@ def reweight_comparison(cfg, logger):
     out.save_fig(plt.figure("Weights bg reweighter"))
     plt.hist(reweight_mc.get_weights(), bins=20)
     plt.figure("Big weights (>4) bg reweighter")
-    plt.hist([i for i in reweight_mc.get_weights() if i > 4], bins=200)
+    try:
+        plt.hist([i for i in reweight_mc.get_weights() if i > 1], bins=200)
+    except:
+        pass
     print "mc weights sum", str(reweight_mc.get_weights().sum())
     print "real weights sum", str(reweight_real.get_weights().sum())
     #plt.show()
