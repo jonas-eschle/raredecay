@@ -6,6 +6,7 @@ Created on Sun May  1 12:06:06 2016
 """
 import os
 import sys
+import select
 import subprocess
 import warnings
 import timeit
@@ -24,6 +25,8 @@ class OutputHandler(object):
 
     """
     IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
+    _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.' '/']
+    _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
 
     def __init__(self):
             self._output_path = None
@@ -36,8 +39,8 @@ class OutputHandler(object):
             self._figures = {}
             self._formats_used = set([])
             self._pickle_folder = False
-            self._start_timer = timeit.default_timer()
-            self._start_time = time.strftime("%c")
+            self._start_timer = None
+            self._start_time = None
 
     def get_logger_path(self):
         """Return the path for the log folder"""
@@ -60,11 +63,14 @@ class OutputHandler(object):
         self.logger = dev_tool.make_logger(__name__, **self._logger_cfg)
 
     def save_fig(self, figure, file_format=None, to_pickle=True, plot=True, **save_cfg):
-        """Save a certain figure at the end of the run.
+        """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
+        certain figure at the end of the run.
 
-        To save a figure, you just hand it over as a parameter and specify the
-        fileformats it should be saved to. The figure can also be pickled
-        so that it can be re-plotted anytime.
+        To create and save a figure, you just enter an already created or a new
+        figure as a parameter and specify the fileformats it should be saved
+        to. The figure can also be pickled so that it can be re-plotted
+        anytime.
+
 
         .. note:: The figure will be saved at the end of the run
             (by calling :py:meth:`~raredecay.tools.output.OutputHandler.finalize`)
@@ -73,7 +79,7 @@ class OutputHandler(object):
         Parameter
         ---------
         figure : instance of :class:`matplotlib.figure.Figure` (e.g. returned
-        by :func:`matplotlib.figure`)
+            by :func:`matplotlib.figure`)
             The figure to be saved.
         file_format : str or list(str, str, str,...)
             The ending of the desired format, example: 'png' (default).
@@ -88,7 +94,7 @@ class OutputHandler(object):
         """
         self._pickle_folder = self._pickle_folder or to_pickle
 
-        file_format = ['png'] if file_format is None else file_format
+        file_format = ['png', 'svg'] if file_format is None else file_format
         if isinstance(file_format, str):
             file_format = [file_format]
         file_format = set(file_format)
@@ -116,8 +122,7 @@ class OutputHandler(object):
 
         # save figures to file
         for fig_name, fig_dict in self._figures.iteritems():
-            replace_char = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.', '/']
-            for char in replace_char:
+            for char in self._REPLACE_CHAR:
                 fig_name = fig_name.replace(char, "_")
             for extension in fig_dict.get('file_format'):
                 file_path = path + extension + '/'
@@ -148,14 +153,26 @@ class OutputHandler(object):
         self._figures = {}
 
     def add_output(self, data_out, to_end=False, title=None, subtitle=None,
-                   section=None, obj_separator=None, data_separator=None,
+                   section=None, obj_separator="\n", data_separator="\n\n",
                    do_print=True, force_newline=True):
-        """Method to collect the output and format
+        """A method to collect the output and format it nicely.
+
+        All the objects in data_out get converted to strings and concatenated
+        with obj_separator in between. After the objects, a data_separator is
+        added. In the end, the whole output gets printed to a file and saved.
+
+        Available options:
+            - You can add the data at the end of the output file instead of
+              right in place.
+
+            - You can add the data to the output "silently", without printing.
+
+            - Add title, subtitle and section on top of the data.
 
         Parameter
         ---------
         data_out : obj or list(obj, obj, obj, ...)
-            The data to be added to the output. Has to be convertible to string!
+            The data to be added to the output. Has to be convertible to str!
         to_end : boolean
             If True, the data will be added at the end of the file and not
             printed. For example all information which is not interesting in
@@ -169,7 +186,7 @@ class OutputHandler(object):
             The section title. Can be additional to the others or exclusive.
         obj_separator : str
             The separator between the objects in data_out.
-            Default is a new line: "\n".
+            Default is a new line: '\n'.
         data_separator : str
             | Separates the data_outs from each other. Inserted at the end and
             creates a separation from the next call of add_output.
@@ -182,8 +199,6 @@ class OutputHandler(object):
             concatenated to the data written before
         """
         # initialize defaults
-        obj_separator = "\n" if obj_separator is None else obj_separator
-        data_separator = "\n\n" if data_separator is None else data_separator
         assert isinstance(obj_separator, str), (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
         assert isinstance(data_separator, str), (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
 
@@ -201,8 +216,9 @@ class OutputHandler(object):
         for name, form in ((title, title_f), (subtitle, subtitle_f), (section, section_f)):
             temp_out = self._make_title(name, form)
 
-        # nice format for dicts
+        # Concatenation of the objects
         for word in data_out:
+            # Make nice format for dictionaries
             if isinstance(word, dict):
                 for key, val in word.iteritems():
                     if isinstance(val, dict):
@@ -215,6 +231,8 @@ class OutputHandler(object):
             else:
                 temp_out += str(word)
             temp_out += obj_separator if word is not data_out[-1] else data_separator
+
+        # print and add to output collector
         if do_print and (not to_end):
             sys.stdout.write(temp_out)
         if to_end:
@@ -224,14 +242,16 @@ class OutputHandler(object):
 
     @staticmethod
     def _make_title(title, title_format):
-        """Create a title and return it as a string.
+        """Create a title/subtitle/section in the reST-format and return it as
+        a string.
 
         Parameter
         ---------
         title : str
             The title in words
         title_format : (str, str)
-            The surrounding lines. The titel will be:
+            | The surrounding lines. The titel will be:
+            |
             | title_format[0] * len(title)
             | title
             | title_format[1] * len(title)
@@ -244,7 +264,7 @@ class OutputHandler(object):
             out_str += "\n" + title_format[1] * len(title) + "\n"
         return out_str
 
-    def initialize(self, output_path, run_name=None, output_folders=None,
+    def initialize(self, output_path, run_name="test", output_folders=None,
                    del_existing_dir=False, logger_cfg=None, **config_kw):
         """Initializes the run. Creates the neccesary folders.
 
@@ -256,6 +276,8 @@ class OutputHandler(object):
             Absolute path to the folder where the run output folder will be
             created (named after the run) which will contain all the output
             folders (logfile, figures, output etc)
+        run_name : str
+            The name of the run and also of the output folder.
         output_folders : dict
             Contain the name of the folders for the different outputs. For the
             available keys
@@ -263,7 +285,12 @@ class OutputHandler(object):
         del_existing_dir : boolean
             If True, an already existing folder with the same name will be deleted.
             If False and the folder exists already, an exception will be raised.
+        logger_cfg : dict
+            The configuration for the logger, which will be created later. If
+            not specified (or only a few arguments), the meta_config will be
+            taken.
         """
+        # initialize defaults
         logger_cfg = {} if logger_cfg is None else logger_cfg
         self._logger_cfg = dict(meta_config.DEFAULT_LOGGER_CFG, **logger_cfg)
 
@@ -277,14 +304,18 @@ class OutputHandler(object):
             self._output_folders[key] = value.replace(" ", "_")
 
 
-        # find a non-existing folder
-        run_name = str(run_name).replace(" ", "_")
+        # ask if you want to add something to the run_name (and folder name)
+        if meta_config.PROMPT_FOR_COMMENT:
+            pass
+            # TODO: implement promt with timeout
+
+        # "clean" and correct the path-name
+        for char in self._REPLACE_CHAR:
+            run_name = run_name.replace(char, "_")
         output_path += run_name if output_path.endswith('/') else '/' + run_name
-        output_path = os.path.expanduser(output_path)  # replaces ~ with /home/myUser
-        self._output_path = output_path.replace(" ", "_")
+        self._output_path = os.path.expanduser(output_path)  # replaces ~ with /home/myUser
 
-
-
+        # find a non-existing folder
         temp_i = 1
         while os.path.isdir(self._output_path):
             if del_existing_dir:
@@ -300,7 +331,6 @@ class OutputHandler(object):
             subprocess.call(['mkdir', '-p', self._output_path + value])
         subprocess.call(['touch', self._output_path + 'run_NOT_finished'])  # show that ongoing run
 
-
         # set meta-config variables
         meta_config.MULTIPROCESSING = meta_config.MULTITHREAD and meta_config.MULTIPROCESSING
         if (meta_config.n_cpu_max is None):
@@ -308,11 +338,9 @@ class OutputHandler(object):
         if not meta_config.MULTITHREAD:
             meta_config.n_cpu_max = 1
 
-
-        # TODO: remove?:
-        # create the default log file folder in case it is needed
-        #subprocess.call(['mkdir', '-p', self._output_path +
-         #               meta_config.DEFAULT_LOGGER_CFG.get('log_file_dir')])
+        # start timer and log current time
+        self._start_timer = timeit.default_timer()
+        self._start_time = time.strftime("%c")
 
     def finalize(self):
         """Finalize the run: save output and information to file.
@@ -322,20 +350,23 @@ class OutputHandler(object):
 #==============================================================================
 #  write all the necessary things to the output
 #==============================================================================
-        self.add_output(["randint", randint], title="Different parameters",
-                        obj_separator=" : ", do_print=False)
 
-        self.add_output("\n\n", do_print=False)
         self.add_output("\n\n", title="END OF RUN", do_print=False)
+        self.add_output(["randint", randint], title="Different parameters",
+            obj_separator=" : ", do_print=False)
         self.output += self.end_output
 
         self.add_output(["Errors encountered during run", meta_config._error_count],
                         obj_separator=" : ")
+
+        # add current version
         git_version = subprocess.check_output(["git", "-C",
             "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
             "describe"])
         self.add_output(["Program version from Git", git_version], section="Git information",
                         do_print=False, obj_separator=" : ")
+
+        # time information
         elapsed_time = timeit.default_timer() - self._start_timer
         elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
         self.add_output(["Run startet at", self._start_time, "\nand lasted for",
@@ -370,12 +401,13 @@ class OutputHandler(object):
 #==============================================================================
 #   copy the config file and save
 #==============================================================================
-       # TODO: copy config file. Necessary?
 
+       # TODO: copy config file. Necessary?
 
 #==============================================================================
 #    if a folder to overwrite exists, delete it and move the temp folder
 #==============================================================================
+
         if self._path_to_be_overriden is not None:
             if not meta_config.NO_PROMPT_ASSUME_YES:
                 stop_del = raw_input("ATTENTION! The folder " + self._path_to_be_overriden +
@@ -393,4 +425,4 @@ class OutputHandler(object):
             path = self._output_path
         print "All output saved under: " + path
         subprocess.call(['rm', path + 'run_NOT_finished'])
-        subprocess.call(['touch', path + 'run_succesfully_finished'])  # .finished shows if the run finished
+        subprocess.call(['touch', path + 'run_finished_succesfully'])  # .finished shows if the run finished

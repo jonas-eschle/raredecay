@@ -141,6 +141,10 @@ class HEPDataStorage(object):
         else:
             return self._root_dict
 
+    def get_branches(self):
+        """Return the branches of the data; the branches from the root-dict"""
+        return self._root_dict.get('branches')
+
     def _make_index(self, index=None):
         """Return the index, else the self._index. If none exist, **create**
         the normal one
@@ -323,7 +327,8 @@ class HEPDataStorage(object):
             # apply "normal" indices for the output array
             data_out = pd.DataFrame(data_out, index=range(len(data_out)))
 
-        #if len(temp_root_dict['branches']) == 1:  # pandas has naming "problems" if only 1 branch
+        # reassign branch names after conversation.
+        # And pandas has naming "problems" if only 1 branch
         data_out.columns = temp_root_dict['branches']
         return data_out
 
@@ -438,11 +443,16 @@ class HEPDataStorage(object):
                                      random_state=random_state, shuffle=shuffle)
         return new_lds
 
-    def plot(self, figure=None, plots_name=None, curve_name=None, std_save=True, log_y_axes=False,
-             branches=None, index=None, sample_weights=None, data_labels=None,
-             hist_settings=None):
+    def plot(self, figure=None, title=None, data_name=None, std_save=True,
+             log_y_axes=False, branches=None, index=None, sample_weights=None,
+             data_labels=None, see_all=False, hist_settings=None):
         """Draw histograms of the data.
 
+        .. warning:: Only 99.98% of the newest plotted data will be shown to focus
+           on the essential parts (the axis limits will be set accordingly).
+           This implies a risk of cutting the previously (in the same figure)
+           plotted data (mostly, if they do not overlap a lot.)
+# TODO: add comment
 
         Parameters
         ----------
@@ -450,15 +460,38 @@ class HEPDataStorage(object):
             The name of the figure. If the figure already exists, the plots
             will be plotted in the same window (can be intentional, for
             example to compare data)
+        title : str
+            | The title of the whole plot (NOT of the subplots). If several
+            titles for the same figures are given, they will be *concatenated*.
+            | So for a "simple" title, specify the title only once.
+        data_name:
+            | Additional, (to the *data_name* and *data_name_addition*), human-
+            readable name for the legend.
+            | Examples: "before cut", "after cut" etc
+        std_save : boolean
+            If True, the figure will be saved (with
+            :py:meth:`~raredecay.tools.output.output.save_fig()`) with
+            "standard" parameters as specified in *meta_config*.
         log_y_axes : boolean
             If True, the y-axes will be scaled logarithmically.
-        plots_name:
-            Additional, (to the *data_name* and *data_name_addition*), human-
-            readable name for the plot.
+        branches : str or list(str, str, str, ...)
+            The branches of the data to be plotted. If None, all are plotted.
+        index : list(int, int, int, ...)
+            A list of indeces to be plotted. If None, all are plotted.
+        sample_weights : list containing weights
+            The weights for the data, how "high" a bin is. Actually, how much
+            it should account for the whole distribution or how "often" it
+            occures.
         data_labels : dict
             Contain the column as key and the value as label
+        hist_settings : dict
+            A dictionary containing the settings as keywords for the
+            :py:func:`~matplotlib.pyplot.hist()` function.
 
         """
+#==============================================================================
+#        initialize values
+#==============================================================================
         # update labels
         if dev_tool.is_in_primitive(data_labels, None):
             data_labels = {}
@@ -473,6 +506,7 @@ class HEPDataStorage(object):
             hist_settings = {}
         if isinstance(hist_settings, dict):
             hist_settings = dict(meta_config.DEFAULT_HIST_SETTINGS, **hist_settings)
+        # create data
         data_plot = self.pandasDF(branches=branches, index=index)
         columns = data_plot.columns.values
         self.logger.debug("plot columns from pandasDataFrame: " + str(columns))
@@ -493,24 +527,32 @@ class HEPDataStorage(object):
                     break
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
-            self.__figure_dic.update({figure: x_limits_col})
+            self.__figure_dic.update({figure: x_limits_col, 'title': ""})
         out_figure = plt.figure(figure, figsize=(20, 30))
 
-        label_name = data_tools.obj_to_string([self._name[0], self._name[1], curve_name], separator=" - ")
-        plt.suptitle(plots_name, fontsize=self.supertitle_fontsize)
+        label_name = data_tools.obj_to_string([self._name[0], self._name[1],
+                                               data_name], separator=" - ")
+        self.__figure_dic['title'] += "" if title is None else title
+        plt.suptitle(self.__figure_dic.get('title'), fontsize=self.supertitle_fontsize)
 
+#==============================================================================
+#       Start plotting
+#==============================================================================
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
             # only plot in range x_limits, otherwise the plot is too big
             x_limits = self.__figure_dic.get(figure).get(column, None)
-            if dev_tool.is_in_primitive(x_limits, None):
-                x_limits = np.percentile(np.hstack(data_plot[column]),
+            lower, upper = np.percentile(np.hstack(data_plot[column]),
                                          [0.01, 99.99])
-                self.__figure_dic[figure].update({column: x_limits})
+            if dev_tool.is_in_primitive(x_limits, None):
+                x_limits = (lower, upper)
+            elif see_all:  # choose the maximum range. Bins not nicely overlapping.
+                x_limits = (min(x_limits[0], lower), max(x_limits[1], upper))
+            self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
-            temp1, temp2, patches = plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
-                     range=x_limits, label=label_name,#data_labels.get(column),
-                     **hist_settings)
+            temp1, temp2, patches = plt.hist(data_plot[column], weights=sample_weights,
+                                             log=log_y_axes, range=x_limits,
+                                             label=label_name, **hist_settings)
             plt.title(column)
         plt.legend()
 
@@ -521,7 +563,15 @@ class HEPDataStorage(object):
     def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
         """Plots two branches against each other to see the distribution.
 
+        The dots size is proportional to the weights, so you have a good
+        overview on the data and the weights.
+
+        Parameters
+        ----------
+        x_branch : str
+
         """
+        # TODO: make nice again
         out_figure = plt.figure(figure)
         if isinstance(weights, (int, long, float)):
             weights = dev_tool.make_list_fill_var(weights, length=len(self),

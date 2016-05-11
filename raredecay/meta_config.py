@@ -40,6 +40,7 @@ import cPickle as pickle
 # General run parameters
 #------------------------------------------------------------------------------
 
+PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 8  # VAGUE ESTIMATION but not a strict limit.
@@ -144,7 +145,7 @@ DEFAULT_LOGGER_CFG = dict(
 #------------------------------------------------------------------------------
 
 DEFAULT_CLF_XGB = dict(
-    n_estimators=20,
+    n_estimators=200,
     eta=0.2,  # learning-rate
     max_depth=6
 )
@@ -154,11 +155,11 @@ DEFAULT_CLF_TMVA = dict(
 )
 
 DEFAULT_CLF_RDF = dict(
-    n_estimators=20,
+    n_estimators=200,
 )
 
 DEFAULT_CLF_GB = dict(
-    n_estimators=20,
+    n_estimators=200,
     learning_rate=0.15,
     max_depth=5,
     subsample=0.9,
@@ -166,7 +167,7 @@ DEFAULT_CLF_GB = dict(
 )
 
 DEFAULT_CLF_ADA = dict(
-    n_estimators=20,
+    n_estimators=200,
     learning_rate=0.2
 )
 

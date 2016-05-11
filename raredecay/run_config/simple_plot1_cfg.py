@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 21 22:26:13 2016
+Created on Wed May 11 09:13:47 2016
 
 @author: mayou
 """
+
 from __future__ import division, absolute_import
 
 import cPickle as pickle
@@ -12,7 +13,7 @@ from root_numpy import root2array
 
 
 # the name of the run and the output folder
-RUN_NAME = 'test new data_ROC'
+RUN_NAME = 'Data plot'
 run_message = str("Test for new data_ROC implementation" +
                 " ")
 #==============================================================================
@@ -30,7 +31,7 @@ PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 # INPUT PATH
 #------------------------------------------------------------------------------
 
-#path where the data are stored  (folder)
+#path where the data is stored  (folder)
 DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 
 #------------------------------------------------------------------------------
@@ -61,48 +62,68 @@ OUTPUT_CFG = dict(
 # DATA BEGIN
 #==============================================================================
 
+all_branches = ['B_PT', 'nTracks', 'nSPDHits'
+              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+              ]
+to_plot = ['B_PT', 'nTracks', 'nSPDHits'
+              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+              ]
 #------------------------------------------------------------------------------
 # root data (dictionaries with parameters for root2array)
 #------------------------------------------------------------------------------
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'original_data/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=['B_PT', 'nTracks']
+    branches=to_plot
 )
 
 Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'original_data/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=['B_PT', 'nTracks']
+    branches=to_plot
 )
+
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'cut_data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=['B_PT', 'nTracks', 'nSPDHits'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]#, 'B_TAU']
+    branches=to_plot
 
 )
+
+B2KpiLL_real = dict(
+    filenames=DATA_PATH+'original_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=to_plot
+)
+
 cut_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut_data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
-    treename='DecayTree',
-    branches=['B_PT', 'nTracks']
+    treename='Bd2K1LL/DecayTree',
+    branches=to_plot
 )
+
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'sweighted_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=['B_PT', 'nTracks', 'nSPDHits'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]#, 'B_TAU']
+    branches=to_plot
 
 )
+
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------
+
+B2KpiLL_real_original = dict(
+    data=B2KpiLL_real,
+    target=1,
+    data_name="B->KpiLL real data",
+    data_name_addition="no cut",
+)
+
 B2KpiLL_real_cut = dict(
     data=cut_sWeight_B2KpiLL_real,
     target=1,
@@ -110,7 +131,6 @@ B2KpiLL_real_cut = dict(
     data_name_addition="cut",
 )
 
-# gradient boosted reweighting
 B2KpiLL_real_cut_sweighted = dict(
     data=cut_sWeight_B2KpiLL_real,
     sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
@@ -124,30 +144,20 @@ B2K1Jpsi_mc_cut = dict(
     data_name_addition="cut"
 )
 
-# train-test splitted data for reweighting
-B2KpiLL_real_train = dict(
-    data=dict(cut_sWeight_B2KpiLL_real, selection='B_M0234_Subst3_pi2p>4100'),
-    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'], selection='B_M0234_Subst3_pi2p>4100')),
-    data_name="B->KpiLL real data",
-    data_name_addition="train set",
-)
-B2KpiLL_real_test = dict(
-    data=dict(cut_sWeight_B2KpiLL_real, selection='B_M0234_Subst3_pi2p<4100'),
-    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'], selection='B_M0234_Subst3_pi2p<4100')),
-    data_name="B->KpiLL real data",
-    data_name_addition="test set",
-)
-B2K1Jpsi_mc_train = dict(
-    data=dict(cut_Bu2K1Jpsi_mc, selection='B_M0234_Subst3_pi2p>4200'),
+B2K1Jpsi_mc_original = dict(
+    data=Bu2K1Jpsi_mc,
     sample_weights=None,
     data_name="B->K1 J/Psi monte-carlo",
+    data_name_addition=""
 )
-B2K1Jpsi_mc_test = dict(
-    data=dict(cut_Bu2K1Jpsi_mc, selection='B_M0234_Subst3_pi2p<4200'),
+
+Bu2K1ee_mc_original = dict(
+    data=Bu2K1ee_mc,
     sample_weights=None,
     data_name="B->K1 J/Psi monte-carlo",
-    data_name_addition="test set",
+    data_name_addition=""
 )
+
 
 
 #------------------------------------------------------------------------------
@@ -155,8 +165,12 @@ B2K1Jpsi_mc_test = dict(
 #------------------------------------------------------------------------------
 # this dictionary will finaly be used in the code
 data = dict(
-    reweight_mc=B2K1Jpsi_mc_cut,
-    reweight_real=B2KpiLL_real_cut_sweighted
+    B2KpiLL_real=B2KpiLL_real_original,
+    B2KpiLL_real_cut=B2KpiLL_real_cut,
+    B2KpiLL_real_cut_sweighted=B2KpiLL_real_cut_sweighted,
+    B2KJpsi_mc=B2K1Jpsi_mc_original,
+    B2KJpsi_mc_cut=B2K1Jpsi_mc_cut,
+    B2Kee_mc=Bu2K1ee_mc_original
 )
 
 #==============================================================================
@@ -164,64 +178,7 @@ data = dict(
 #==============================================================================
 
 
-#==============================================================================
-# REWEIGHTING BEGIN
-#==============================================================================
 
-# branches to use for the reweighting
-reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                     #'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-                      #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-                      #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]
-# start configuration for gradient boosted reweighter
-# TODO: remove the reweight_cfg?
-reweight_cfg = dict(
-    reweighter='gb',
-    reweight_saveas='gb_reweighter1'  # 'reweighter1.pickl'
-)
-reweight_meta_cfg = dict(
-    gb=dict(
-        n_estimators=250,
-        max_depth=3,
-        learning_rate=0.1,
-        min_samples_leaf=100,  # 200
-        loss_regularization=20.0,  # 5.0
-        gb_args=dict(
-            subsample=1,
-            #random_state=43,
-            min_samples_split=100
-        )
-    ),
-    bins=dict(
-        n_bins=15,
-        n_neighs=3
-    )
-).get(reweight_cfg.get('reweighter'))  # Don't change!
-
-
-
-reweight_cfg_bins = dict(
-    reweighter='bins',
-    reweight_data_mc=cut_Bu2K1Jpsi_mc,
-    reweight_data_real=cut_sWeight_B2KpiLL_real,
-    reweight_saveas='bins_reweighter1'  # 'reweighter1.pickl'
-)
-
-reweight_meta_cfg_bins = dict(
-    gb=dict(
-        n_estimators=80
-    ),
-    bins=dict(
-        n_bins=10,
-        n_neighs=1
-    )
-).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
-# end config 1
-
-#==============================================================================
-# REWEIGHTER END
-#==============================================================================
 
 
 #==============================================================================

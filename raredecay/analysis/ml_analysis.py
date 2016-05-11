@@ -32,6 +32,7 @@ from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier, VotingClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from rep.metaml.folding import FoldingClassifier
 from rep.report import metrics
@@ -119,11 +120,10 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     # logging and writing output
     msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
-    branches = reweight_data_mc.get_branches() if branches is None else branches
+    # TODO: branches = reweight_data_mc.get_branches() if branches is None else branches
     out.add_output(msg + ["\nData used:\n", reweight_data_mc.get_name(), " and ",
-                   reweight_data_real.get_name(), "\nBranches used for the training:\n",
-                    branches], section="Training the reweighter",
-                   obj_separator=" ")
+                   reweight_data_real.get_name(), "\nBranches used for the reweighter training:\n",
+                    branches], section="Training the reweighter", obj_separator=" ")
 
     # do the reweighting
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
@@ -167,10 +167,10 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
                                         original_weight=reweight_data.get_weights())
-    branches = rewei
+
     # write to output
     out.add_output(["Using the reweighter:\n", reweighter_trained, "\nto reweight ",
-                    reweight_data.get_name(), obj_separator="")
+                    reweight_data.get_name()], obj_separator="")
 
     if normalize:
         for i in range(3):  # enhance precision
@@ -180,7 +180,7 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     return new_weights
 
 
-def data_ROC(original_data, target_data, features=None, classifier=None,
+def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
              config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
@@ -331,7 +331,6 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
                              random_state=globals_.randint+1214))
     else:
         parallel_profile = 'threads-' + str(min(n_folds, n_cpu))
-        vote_estimators = copy.deepcopy([(key, val) for key, val in factory.iteritems()])
         for key, val in factory.iteritems():
             factory[key] = FoldingClassifier(val, n_folds=n_folds, parallel_profile=parallel_profile)
         X_train = X_test = data  # folding scorer takes care of CV
@@ -348,35 +347,39 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
     report = factory.test_on(X_test, y_test, weight_test)
 
     # add a voting meta-classifier
-    if len(factory.keys()) > 1:
+    if len(factory.keys()) > 1 and meta_clf and n_folds > 1:
         # TODO: old: estimators = [(key, val) for key, val in factory.iteritems()]
-        vote_cfg = dict(estimators=vote_estimators, voting='soft')
-        clf_vote = SklearnClassifier(VotingClassifier(**vote_cfg))
-        if n_folds > 1:
-            clf_vote = FoldingClassifier(clf_vote, n_folds=n_folds, parallel_profile=parallel_profile,
-                                         random_state=globals_.randint +6183)
-        clf_vote.fit(X_train, y_train)
+        assert y_train is y_test, "train and test not the same (problem because we use folding-clf)"
+        parallel_profile = 'threads-' + str(min(n_folds, n_cpu))
+        #meta_clf = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag', n_jobs=-1))
+        meta_clf = XGBoostClassifier(n_estimators=300, eta=0.1)
+        meta_clf = FoldingClassifier(meta_clf, n_folds=n_folds, parallel_profile='threads-8')
+        X_meta = pd.DataFrame()
+        for key, val in factory.predict_proba(X_test).iteritems():
+            X_meta[key] = val[:,0]
+        meta_clf.fit(X_meta, y_train, weight_train)
 
 #==============================================================================
 #   Report the classification
 #==============================================================================
 
         # voting report
-        lds = LabeledDataStorage(X_test, y_test)#, weight_test)
-        vote_report = ClassificationReport({'Voting report': clf_vote}, lds)
-        vote_auc = vote_report.compute_metric(metrics.RocAuc())
-        out_auc = vote_auc.values()[0]
-        out.add_output(["ROC AUC of voted classifier: ", round(out_auc, 4)],
-                       obj_separator="", subtitle="Report of data_ROC")
+        meta_report = meta_clf.test_on(X_meta, y_test, weight_test)
+        meta_auc = round(meta_report.compute_metric(metrics.RocAuc()).values()[0], 3)
+        out.add_output(["ROC AUC of XGBoost meta-classifier: ",
+                        meta_auc], obj_separator="", subtitle="Report of data_ROC")
 
         # voting plots
-        out.save_fig(plt.figure("ROC voting classifier" + data_name), save_fig_cfg)
-        vote_report.roc(physical_notion=False).plot(title="ROC curve of voting classifier." +
-                               data_name + "\nROC AUC = " + str(round(out_auc, 4)))
+        meta_name = "XGBoost meta-clf, AUC = " + str(meta_auc)
+        meta_report.prediction[meta_name] = meta_report.prediction.pop('clf')
+        meta_report.estimators[meta_name] = meta_report.estimators.pop('clf')
+        out.save_fig(plt.figure("ROC XGBoost meta-classifier" + data_name), save_fig_cfg)
+        meta_report.roc(physical_notion=False).plot(title="ROC curve of meta-classifier." +
+                               data_name + "\nROC AUC = " + str(meta_auc))
         plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
 
-        out.save_fig(plt.figure("Learning curve voting classifier" + data_name), save_fig_cfg)
-        vote_report.learning_curve(metrics.RocAuc(), steps=1).plot()
+        out.save_fig(plt.figure("Learning curve XGBoost meta-classifier" + data_name), save_fig_cfg)
+        meta_report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve XGBoost meta-classifier")
 
     # factory report
     factory_auc = report.compute_metric(metrics.RocAuc())
@@ -398,7 +401,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
     # TODO: if trial works, remove?:
     # curve_name += "AUC = " + str(round(ROC_AUC, 3))
     for key, val in report.prediction.items():
-        report.prediction[key + ", AUC = " + str(round(clf_auc, 3))] = report.prediction.pop(key)
+        report.prediction[key + ", AUC = " + str(round(factory_auc.get(key), 3))] = report.prediction.pop(key)
     report.roc(physical_notion=False).plot(title="ROC curve for comparison of " + data_name)
     plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
     # factory extended plots
@@ -417,6 +420,8 @@ def data_ROC(original_data, target_data, features=None, classifier=None,
     # make output
     if len(factory.keys()) == 1:
         out_auc = factory_auc.values()[0]
+    else:
+        out_auc = None
 
     return out_auc
 

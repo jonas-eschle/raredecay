@@ -71,28 +71,40 @@ all_branches = ['B_PT', 'nTracks', 'nSPDHits'
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=all_branches
+    branches=to_plot
 )
 
-#Bu2K1Jpsi_mc = dict(
-#    filenames=DATA_PATH+'DarkBoson/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-#    treename='Bd2K1LL/DecayTree',
-#    branches=['B_PT', 'nTracks']
-#)
+Bu2K1Jpsi_mc = dict(
+    filenames=DATA_PATH+'original_data/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=to_plot
+)
+
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=all_branches
+    branches=to_plot
+
 )
-#cut_B2KpiLL_real = dict(
-#    filenames=DATA_PATH+'cut-data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
-#    treename='DecayTree',
-#    branches=['B_PT', 'nTracks']
-#)
+
+B2KpiLL_real = dict(
+    filenames=DATA_PATH+'original_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=to_plot
+)
+
+cut_B2KpiLL_real = dict(
+    filenames=DATA_PATH+'CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=to_plot
+)
+
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=all_branches
+    branches=to_plot
+
+)
 )
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
@@ -146,7 +158,7 @@ data = dict(
 #==============================================================================
 
 # branches to use for the reweighting
-reweight_branches = ['B_PT'#, 'nTracks', 'nSPDHits',
+reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
                      # 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
                       #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
                       #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
@@ -160,15 +172,15 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=150,
+        n_estimators=80,
         max_depth=3,
-        learning_rate=0.03,
-        min_samples_leaf=10,  # 200
+        learning_rate=0.1,
+        min_samples_leaf=100,  # 200
         loss_regularization=5000.0,  # 5.0
         gb_args=dict(
             subsample=1,  # 0.8,
             #random_state=43,
-            min_samples_split=10
+            min_samples_split=150
         )
     ),
     bins=dict(
