@@ -341,6 +341,7 @@ class HEPDataStorage(object):
             The labels of the branches to return
         as_list : boolean
             If true, the labels will be returned as a list instead of a dict.
+
         Return
         ------
         out : list or dict
@@ -430,7 +431,7 @@ class HEPDataStorage(object):
 
     def get_LabeledDataStorage(self, index=None, random_state=None, shuffle=False):
         """Create and return an instance of class "LabeledDataStorage" from
-        the REP repository
+        the REP repository.
 
         Return
         ------
@@ -451,8 +452,8 @@ class HEPDataStorage(object):
         .. warning:: Only 99.98% of the newest plotted data will be shown to focus
            on the essential parts (the axis limits will be set accordingly).
            This implies a risk of cutting the previously (in the same figure)
-           plotted data (mostly, if they do not overlap a lot.)
-# TODO: add comment
+           plotted data (mostly, if they do not overlap a lot). To ensure that
+           all data is plotted, set *see_all* to *True*.
 
         Parameters
         ----------
@@ -462,11 +463,11 @@ class HEPDataStorage(object):
             example to compare data)
         title : str
             | The title of the whole plot (NOT of the subplots). If several
-            titles for the same figures are given, they will be *concatenated*.
+              titles for the same figures are given, they will be *concatenated*.
             | So for a "simple" title, specify the title only once.
         data_name:
             | Additional, (to the *data_name* and *data_name_addition*), human-
-            readable name for the legend.
+              readable name for the legend.
             | Examples: "before cut", "after cut" etc
         std_save : boolean
             If True, the figure will be saved (with

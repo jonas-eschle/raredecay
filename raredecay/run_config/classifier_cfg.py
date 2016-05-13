@@ -1,5 +1,14 @@
 # -*- coding: utf-8 -*-
 """
+Created on Thu May 12 19:56:52 2016
+
+This config file contains all parameters for the training, hyperparameter
+optimization and classification of the data.
+
+@author: mayou
+"""
+# -*- coding: utf-8 -*-
+"""
 Created on Mon Mar 21 22:26:13 2016
 
 @author: mayou
@@ -12,20 +21,14 @@ from root_numpy import root2array
 
 
 # the name of the run and the output folder
-RUN_NAME = 'find best reweighting'
-run_message = str("Try different configurations of different reweighters and" +
-                "see how they perform on the training data as well as on the" +
-                " data they are supposed to be used.")
+RUN_NAME = 'Classifier optimization'
+run_message = str("Test-run" +
+                " ")
 #==============================================================================
 # PATHES BEGIN
 #==============================================================================
 
-#------------------------------------------------------------------------------
-# SHARED OBJECT PATHES INPUT & OUTPUT
-#------------------------------------------------------------------------------
 
-# folder where the pickled objects are stored
-PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 
 #------------------------------------------------------------------------------
 # INPUT PATH
@@ -62,90 +65,107 @@ OUTPUT_CFG = dict(
 # DATA BEGIN
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# root data (dictionaries with parameters for root2array)
+#------------------------------------------------------------------------------
+
 all_branches = ['B_PT', 'nTracks', 'nSPDHits'
               , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
               ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
               'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
 
-#------------------------------------------------------------------------------
-# root data (dictionaries with parameters for root2array)
-#------------------------------------------------------------------------------
+
+
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'original_data/Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=all_branches  # ['B_PT', 'nTracks']
+    branches=all_branches
 )
 
 Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'original_data/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=['B_PT', 'nTracks']
+    branches=all_branches
 )
+
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'cut_data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=['B_PT', 'nTracks', 'nSPDHits'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]#, 'B_TAU']
+    branches=all_branches
 
 )
+
+B2KpiLL_real = dict(
+    filenames=DATA_PATH+'original_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
+    treename='Bd2K1LL/DecayTree',
+    branches=all_branches
+)
+
 cut_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut_data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
-    treename='DecayTree',
-    branches=['B_PT', 'nTracks']
+    treename='Bd2K1LL/DecayTree',
+    branches=all_branches
 )
+
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'sweighted_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=['B_PT', 'nTracks', 'nSPDHits'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]#, 'B_TAU']
+    branches=all_branches
 
 )
+
+cut_bg_B2KpiLL_real = dict(
+    filenames=DATA_PATH+'cut_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
+    treename='DecayTree',
+    branches=all_branches,
+    selection='B_M > 5400'
+
+)
+
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------
-B2KpiLL_real_cut = dict(
-    data=cut_sWeight_B2KpiLL_real,
-    target=1,
-    data_name="B->KpiLL real data",
-    data_name_addition="cut",
-)
+
+#B2KpiLL_real_cut = dict(
+#    data=cut_sWeight_B2KpiLL_real,
+#    target=1,
+#    data_name="B->KpiLL real data",
+#    data_name_addition="cut",
+#)
 
 # gradient boosted reweighting
-B2KpiLL_real_cut_sweighted = dict(
-    data=cut_sWeight_B2KpiLL_real,
-    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
-    data_name="B->KpiLL real data",
-    data_name_addition="cut & sweighted",
-)
-B2K1Jpsi_mc_cut = dict(
-    data=cut_Bu2K1Jpsi_mc,
-    sample_weights=None,
-    data_name="B->K1 J/Psi monte-carlo",
-    data_name_addition="cut"
-)
-
-Bu2K1ee_mc_std = dict(
+Bu2K1ee_mc_signal = dict(
     data=Bu2K1ee_mc,
     sample_weights=None,
-    data_name="Bu->K1ee monte-carlo"
+    data_name="Bu->K1ee monte-carlo",
+    data_name_addition="WEIGHTS MISSING!",
+    target=1
 )
+
+B2KpiLL_real_cut_background = dict(
+    data=cut_bg_B2KpiLL_real,
+    sample_weights=None,  # root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
+    data_name="B->KpiLL real data",
+    data_name_addition="cut - background",
+    target=0
+)
+
+#B2K1Jpsi_mc_cut = dict(
+#    data=cut_Bu2K1Jpsi_mc,
+#    sample_weights=None,
+#    data_name="B->K1 J/Psi monte-carlo",
+#    data_name_addition="cut"
+#)
 
 
 #------------------------------------------------------------------------------
 # collection of all data
 #------------------------------------------------------------------------------
-# this dictionary will finaly be used in the code
+# this dictionary will finally be used in the code
 data = dict(
-    reweight_mc=B2K1Jpsi_mc_cut,
-    reweight_real=B2KpiLL_real_cut_sweighted,
-    reweight_apply=Bu2K1ee_mc_std
+    clf_sig=Bu2K1ee_mc_signal,
+    clf_bg=B2KpiLL_real_cut_background
 )
 
 #==============================================================================
@@ -159,33 +179,28 @@ data = dict(
 
 # branches to use for the reweighting
 reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                     'B_FDCHI2_OWNPV',
-                     'B_DIRA_OWNPV',
-#                     'B_IPCHI2_OWNPV',
-                     'l1_PT',
-#                     'l1_IPCHI2_OWNPV',
-#                     'B_ENDVERTEX_CHI2',
-                     'h1_IPCHI2_OWNPV',
-                     'h1_PT',
-#                     'h1_TRACK_TCHI2NDOF'
+                     # 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+                      #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+                      #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
+
 # start configuration for gradient boosted reweighter
 
 reweight_cfg = dict(
     reweighter='gb',
-    reweight_saveas='gb_reweighter1'  # 'reweighter1.pickl'
+    reweight_saveas='gb_reweighter1'
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=800,
-        max_depth=6,
-        learning_rate=0.01,
-        min_samples_leaf=2,  # 200
-        loss_regularization=6000.0,  # 5.0
+        n_estimators=80,
+        max_depth=3,
+        learning_rate=0.1,
+        min_samples_leaf=100,  # 200
+        loss_regularization=5000.0,  # 5.0
         gb_args=dict(
-            subsample=0.8,
+            subsample=1,  # 0.8,
             #random_state=43,
-            min_samples_split=200
+            min_samples_split=150
         )
     ),
     bins=dict(
@@ -194,25 +209,6 @@ reweight_meta_cfg = dict(
     )
 ).get(reweight_cfg.get('reweighter'))  # Don't change!
 
-
-
-reweight_cfg_bins = dict(
-    reweighter='bins',
-    reweight_data_mc=cut_Bu2K1Jpsi_mc,
-    reweight_data_real=cut_sWeight_B2KpiLL_real,
-    reweight_saveas='bins_reweighter1'  # 'reweighter1.pickl'
-)
-
-reweight_meta_cfg_bins = dict(
-    gb=dict(
-        n_estimators=80
-    ),
-    bins=dict(
-        n_bins=20,
-        n_neighs=3
-    )
-).get(reweight_cfg_bins.get('reweighter'))  # Don't change!
-# end config 1
 
 #==============================================================================
 # REWEIGHTER END
@@ -236,7 +232,7 @@ save_fig_cfg = dict(
 
 save_ext_fig_cfg = dict(
     file_format=None,
-    plot=True
+    plot=False
 )
 
 #==============================================================================
@@ -296,3 +292,4 @@ def test_all():
 if __name__ == '__main__':
     test_all()
     print "config file succesfully tested!"
+

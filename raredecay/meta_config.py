@@ -120,7 +120,7 @@ DEFAULT_SAVE_FIG = dict(
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
     to_pickle=True,
-    plot=False,
+    plot=True,
     #save_cfg=None
 )
 

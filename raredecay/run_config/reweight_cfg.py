@@ -71,41 +71,41 @@ all_branches = ['B_PT', 'nTracks', 'nSPDHits'
 Bu2K1ee_mc = dict(
     filenames=DATA_PATH+'Bu2K1ee-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=to_plot
+    branches=all_branches
 )
 
 Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'original_data/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='Bd2K1LL/DecayTree',
-    branches=to_plot
+    branches=all_branches
 )
 
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
-    branches=to_plot
+    branches=all_branches
 
 )
 
 B2KpiLL_real = dict(
     filenames=DATA_PATH+'original_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='Bd2K1LL/DecayTree',
-    branches=to_plot
+    branches=all_branches
 )
 
 cut_B2KpiLL_real = dict(
     filenames=DATA_PATH+'CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='Bd2K1LL/DecayTree',
-    branches=to_plot
+    branches=all_branches
 )
 
 cut_sWeight_B2KpiLL_real = dict(
     filenames=DATA_PATH+'B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
     treename='DecayTree',
-    branches=to_plot
+    branches=all_branches
 
 )
-)
+
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------

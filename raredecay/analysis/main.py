@@ -19,6 +19,7 @@ from raredecay.analysis.physical_analysis import run
 def main_run(run_mode, cfg_file=None):
     # set plotting style
     sns.set_context("poster")
+    plt.rc('figure', figsize=(20, 20))
 
     print "starting main"
 
@@ -45,3 +46,4 @@ if __name__ == '__main__':
     #main_run("reweight")
     #main_run("reweightCV")
     #main_run("simple_plot")
+    #main_run("hyper_optimization")

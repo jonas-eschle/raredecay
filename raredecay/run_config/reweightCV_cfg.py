@@ -26,7 +26,7 @@ run_message = str("Test-run" +
 #------------------------------------------------------------------------------
 
 #path where the data are stored  (folder)
-DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/reweighting/'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
+DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/'  # '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/'
 
 #------------------------------------------------------------------------------
 # OUTPUT PATHES
@@ -105,7 +105,7 @@ cut_sWeight_B2KpiLL_real = dict(
     branches=all_branches
 
 )
-)
+
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------
@@ -159,9 +159,9 @@ data = dict(
 
 # branches to use for the reweighting
 reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                     # 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-                      #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-                      #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+                      'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+                      ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+                      'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
 
 # start configuration for gradient boosted reweighter
@@ -172,15 +172,15 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=150,
-        max_depth=3,
-        learning_rate=0.03,
+        n_estimators=120,
+        max_depth=8,
+        learning_rate=0.1,
         min_samples_leaf=10,  # 200
-        loss_regularization=5000.0,  # 5.0
+        loss_regularization=4000.0,  # 5.0
         gb_args=dict(
-            subsample=1,  # 0.8,
+            subsample=0.8,  # 0.8,
             #random_state=43,
-            min_samples_split=10
+            min_samples_split=100
         )
     ),
     bins=dict(

@@ -46,16 +46,19 @@ from raredecay.globals_ import out
 import importlib
 from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
-modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 
 # import the specified config file
 # TODO: is this import really necessary? Best would be without config...
-import importlib
-from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
-logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+
+
+
+def optimize_XGBoost(original, target, config_clf, branches=None,
+                     optimize_features=False, take_target_from_data=False):
+    """Optimize the hyperparameters of an XGBoost classifier"""
+
 
 
 def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
@@ -180,7 +183,10 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     return new_weights
 
 
-def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
+
+
+
+def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=False,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
              config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
@@ -206,8 +212,9 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
         - 'gb': Gradient Boosting classifier from scikit-learn
         - 'rdf': Random Forest classifier
         - 'ada_dt': AdaBoost over decision trees
-    plot : boolean
-        If true, ROC is plotted. Otherwise, only the ROC AUC is calculated.
+    meta_clf : boolean
+        If True, a meta-classifier will be used to "average" the results of the
+        other classifiers
     curve_name : str
         Name to label the plottet ROC curve.
     n_folds : int

@@ -100,6 +100,13 @@ class OutputHandler(object):
         file_format = set(file_format)
         file_format.intersection_update(self.IMPLEMENTED_FORMATS)
         self._formats_used.update(file_format)
+
+        # change layout of figures
+#        figure.tight_layout()
+ #       figure.set_figheight(20)
+  #      figure.set_figwidth(20)
+
+        # add figure to dict for later output to file
         figure_dict = {'figure': figure, 'file_format': file_format,
                        'to_pickle': to_pickle, 'plot': plot, 'save_cfg': save_cfg}
         self._figures[figure.canvas.get_window_title()] = figure_dict
@@ -109,7 +116,7 @@ class OutputHandler(object):
 
         # check if there are figures to plot, else return
         if self._figures == {}:
-            self.logger.info("_figure to file called but nothing to plot")
+            self.logger.info("_figure_to_file called but nothing to plot")
             return None
 
         # create folders if they don't exist already
@@ -127,7 +134,6 @@ class OutputHandler(object):
             for extension in fig_dict.get('file_format'):
                 file_path = path + extension + '/'
                 file_name = file_path + fig_name + "." + extension
-                file_name = file_name.replace(" ", "_")  # it was human-readable
                 try:
                     fig_dict['figure'].savefig(file_name, format=extension,
                                                **fig_dict.get('save_cfg'))
@@ -189,7 +195,7 @@ class OutputHandler(object):
             Default is a new line: '\n'.
         data_separator : str
             | Separates the data_outs from each other. Inserted at the end and
-            creates a separation from the next call of add_output.
+              creates a separation from the next call of add_output.
             | Default is a blank line as separation: '\n\n'.
         do_print : boolean
             If True, the data will not only be added to the output but
@@ -306,7 +312,9 @@ class OutputHandler(object):
 
         # ask if you want to add something to the run_name (and folder name)
         if meta_config.PROMPT_FOR_COMMENT:
-            pass
+            temp_add = str(raw_input("Enter an (optional) extension to the run-name and press 'enter':\n"))
+            run_name += temp_add
+            #del temp_add
             # TODO: implement promt with timeout
 
         # "clean" and correct the path-name
@@ -377,7 +385,7 @@ class OutputHandler(object):
 #==============================================================================
 
         # remove leading blank lines
-        for i in range(1,100):
+        for i in xrange(1,100):
             if not self.output.startswith("\n" * i):  # "break" condition
                 self.output = self.output[i-1:]
                 break

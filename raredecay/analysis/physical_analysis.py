@@ -18,7 +18,8 @@ DEFAULT_CFG_FILE = dict(
     reweight='raredecay.run_config.reweight_cfg',
     simple_plot='raredecay.run_config.simple_plot1_cfg',
     test='raredecay.run_config.reweight1_comparison_cfg',
-    reweight_comparison='raredecay.run_config.reweight1_comparison_cfg'
+    reweight_comparison='raredecay.run_config.reweight1_comparison_cfg',
+    hyper_optimization='classifier_cfg'
 )
 
 
@@ -74,6 +75,10 @@ def test(cfg):
     print "empty test function"
 
 
+def hyper_optimization(cfg, logger):
+    """Perform hyperparameter optimization in this module"""
+
+
 def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
                            branch_name=None):
     """Add a branch to a given rootfile"""
@@ -82,6 +87,8 @@ def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
 
     data_tools.add_to_rootfile(root_data, new_branch=new_branch,
                                branch_name=branch_name)
+
+
 def reweight(cfg, logger, rootfile_to_add=None):
     """
 
@@ -97,8 +104,8 @@ def reweight(cfg, logger, rootfile_to_add=None):
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
 
-    reweight_apply.plot(figure="Data for reweights apply", data_name="Data before and after reweighting",
-                        curve_name="no weights")
+    reweight_apply.plot(figure="Data for reweights apply", title="Data before and after reweighting",
+                        data_name="no weights")
 
     reweight_real.plot(figure="Data to train reweighter", data_name="before reweighting")
     reweight_mc.plot(figure="Data to train reweighter")
@@ -111,13 +118,13 @@ def reweight(cfg, logger, rootfile_to_add=None):
     new_weights = ml_ana.reweight_weights(reweight_data=reweight_apply,
                                           branches=cfg.reweight_branches,
                                           reweighter_trained=gb_reweighter)
-    reweight_apply.plot(figure="Data for reweights apply", curve_name="gb weights")
+    reweight_apply.plot(figure="Data for reweights apply", data_name="gb weights")
     out.save_fig(plt.figure("New weights"))
     plt.hist(reweight_apply.get_weights(), bins=30, log=True)
 
     ml_ana.reweight_weights(reweight_data=reweight_mc, branches=cfg.reweight_branches,
                             reweighter_trained=gb_reweighter)
-    reweight_real.plot(figure="Data self reweighted", curve_name="gb weights")
+    reweight_real.plot(figure="Data self reweighted", data_name="gb weights")
     reweight_mc.plot(figure="Data self reweighted", data_name="after reweighting")
 
 
@@ -208,11 +215,18 @@ def simple_plot(cfg, logger):
     mc_jpsi_cut.plot(figure="B2K1piLL CUT real vs mc (all normalized)",
                           data_name="nEvents: " + str(len(mc_jpsi_cut)))
 
-    mc_jpsi_original.plot(figure="B2K1piLL original real vs mc (all normalized)",
-                          title="B2K1piLL original real vs mc comparison (all normalized)",
-                          data_name="nEvents: " + str(len(mc_jpsi_original)))
-    real_original.plot(figure="B2K1piLL original real vs mc (all normalized)",
-                       data_name="nEvents: " + str(len(real_original)))
+
+    real_sweight.plot(figure="B2K1piLL sweighted real vs mc (all normalized)",
+                  data_name="nEvents: " + str(len(real_cut)),
+                  title="B2K1piLL sweighted real vs mc comparison (all normalized)")
+    mc_jpsi_cut.plot(figure="B2K1piLL sweighted real vs mc (all normalized)",
+                          data_name="nEvents: " + str(len(mc_jpsi_cut)))
+
+#    mc_jpsi_original.plot(figure="B2K1piLL original real vs mc (all normalized)",
+#                          title="B2K1piLL original real vs mc comparison (all normalized)",
+#                          data_name="nEvents: " + str(len(mc_jpsi_original)))
+#    real_original.plot(figure="B2K1piLL original real vs mc (all normalized)",
+#                       data_name="nEvents: " + str(len(real_original)))
 
     mc_ee_original.plot(figure="B2K1ee mc original (normalized)",
                         title="B2K1ee mc original (normalized)",
@@ -248,44 +262,73 @@ def reweight_comparison(cfg, logger):
                                  target_data=reweight_real, curve_name="GB reweighted",
                                  classifier='all')
     plot1 = reweight_mc.plot(figure="gradient boosted reweighting",
-                     data_name="comparison real-target", hist_settings={'bins':20})
+                     title="comparison real-target", data_name="self-reweighted", hist_settings={'bins':20})
     reweight_real.plot(figure="gradient boosted reweighting", hist_settings={'bins':20})
     out.save_fig(plot1, file_format=['png', 'svg'], to_pickle=False)
     out.save_fig(plt.figure("Weights bg reweighter"))
     plt.hist(reweight_mc.get_weights(), bins=20)
-    plt.figure("Big weights (>4) bg reweighter")
+    plt.figure("weights from reweighting self")
     try:
-        plt.hist([i for i in reweight_mc.get_weights() if i > 1], bins=200)
+        plt.hist([i for i in reweight_mc.get_weights() if i > -5], bins=200, log=True)
     except:
         pass
+
+#==============================================================================
+# predict new weights of unknown data
+#==============================================================================
+    reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
+
+    reweight_apply.plot(figure="Data for reweights apply", title="Data before and after reweighting",
+                        data_name="no weights")
+
+
+
+    ml_ana.reweight_weights(reweight_data=reweight_apply, branches=cfg.reweight_branches,
+                            reweighter_trained=gb_reweighter)
+    reweight_apply.plot(figure="Data for reweights apply", data_name="gb weights")
+    out.save_fig(plt.figure("New weights on new dataset"))
+    plt.hist(reweight_apply.get_weights(), bins=30, log=True)
+
+
+    reweight_apply.plot(figure="Comparison gb - bins reweighted", data_name="gb weights")
+
     print "mc weights sum", str(reweight_mc.get_weights().sum())
     print "real weights sum", str(reweight_real.get_weights().sum())
     #plt.show()
+    return
 
 
-#    logger.info("Start with bins reweighter")
-#    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-#    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-#    logger.debug("plotted figure 2")
-#    bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
-#                                            reweight_data_real=reweight_real,
-#                                            reweighter='bins',
-#                                            branches=['B_PT', 'nTracks', 'nSPDHits'
-#                                            #, 'h1_TRACK_TCHI2NDOF'
-#                                            ],
-#                                            meta_cfg=cfg.reweight_meta_cfg_bins)
-#    #bins_reweighter = 'bins_reweighter1.pickle'
-#    ml_ana.reweight_weights(reweight_mc, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits'
-#                                            #, 'h1_TRACK_TCHI2NDOF'
-#                                            ],)
-#    reweight_mc.plot(figure="binned reweighting",
-#                     data_name="comparison real-target")
-#    reweight_real.plot(figure="binned reweighting")
-#    bins_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-#                                   target_data=reweight_real, curve_name="Bins reweighted")
-#    # plt.show()
-#
-#
+    logger.info("Start with bins reweighter")
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+    reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
+
+    logger.debug("plotted figure 2")
+    bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
+                                            reweight_data_real=reweight_real,
+                                            reweighter='bins',
+                                            branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            #, 'h1_TRACK_TCHI2NDOF'
+                                            ],
+                                            meta_cfg=cfg.reweight_meta_cfg_bins)
+    #bins_reweighter = 'bins_reweighter1.pickle'
+    ml_ana.reweight_weights(reweight_mc, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            #, 'h1_TRACK_TCHI2NDOF'
+                                            ],)
+    ml_ana.reweight_weights(reweight_apply, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            #, 'h1_TRACK_TCHI2NDOF'
+                                            ],)
+    reweight_mc.plot(figure="binned reweighting",
+                     data_name="comparison real-target")
+    reweight_real.plot(figure="binned reweighting")
+    bins_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
+                                   target_data=reweight_real, curve_name="Bins reweighted")
+
+    reweight_apply.plot(figure="Comparison gb - bins reweighted", data_name="bins weights")
+    # plt.show()
+
+
+
 #    logger.debug("starting with original")
 #    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
 #    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
