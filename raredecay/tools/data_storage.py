@@ -21,12 +21,14 @@ from rep.data.storage import LabeledDataStorage
 
 from raredecay.tools import data_tools, dev_tool
 from raredecay.globals_ import out
-
-# import configuration
-import importlib
 from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
-modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+
+# TODO: import config not needed??
+# import configuration
+#import importlib
+#from raredecay import meta_config
+#cfg = importlib.import_module(meta_config.run_config)
+modul_logger = dev_tool.make_logger(__name__, **meta_config.DEFAULT_LOGGER_CFG)
 
 
 class HEPDataStorage(object):
@@ -97,6 +99,8 @@ class HEPDataStorage(object):
 
         # data name
         self._fold_name = None
+        data_name = "unnamed data" if data_name is None else data_name
+        data_name_addition = "" if data_name_addition is None else data_name_addition
         self._name = [data_name, data_name_addition, self._fold_name]
 
         # initialize targets
@@ -201,7 +205,7 @@ class HEPDataStorage(object):
         Return
         ------
         out : tuple(HEPDataStorage, HEPDataStorage)
-            Return the train and the test data in a HEPDataStorage
+            Return the *train* and the *test* data in a HEPDataStorage
         """
         assert self._fold_index is not None, "Tried to get a fold but data has no folds. First create them (make_folds())"
         assert isinstance(fold, int) and fold<len(self._fold_index), "your value of fold is not valid"
@@ -223,7 +227,7 @@ class HEPDataStorage(object):
 
     def get_n_folds(self):
         """Return how many folds are currently availabe or None if no folds
-        created
+        have been created
 
         Return
         ------

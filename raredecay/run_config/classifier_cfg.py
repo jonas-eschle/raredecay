@@ -7,12 +7,6 @@ optimization and classification of the data.
 
 @author: mayou
 """
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Mar 21 22:26:13 2016
-
-@author: mayou
-"""
 from __future__ import division, absolute_import
 
 import cPickle as pickle
@@ -116,7 +110,7 @@ cut_sWeight_B2KpiLL_real = dict(
 )
 
 cut_bg_B2KpiLL_real = dict(
-    filenames=DATA_PATH+'cut_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3-Window-sWeights.root',
+    filenames=DATA_PATH+'cut_data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='DecayTree',
     branches=all_branches,
     selection='B_M > 5400'
@@ -164,14 +158,38 @@ B2KpiLL_real_cut_background = dict(
 #------------------------------------------------------------------------------
 # this dictionary will finally be used in the code
 data = dict(
-    clf_sig=Bu2K1ee_mc_signal,
-    clf_bg=B2KpiLL_real_cut_background
+    hyper_target=Bu2K1ee_mc_signal,
+    hyper_original=B2KpiLL_real_cut_background
 )
 
 #==============================================================================
 # DATA END
 #==============================================================================
 
+#==============================================================================
+# CLASSIFIER TRAINING BEGIN
+#==============================================================================
+
+hyper_cfg = dict(
+    optimize_clf='xgb',
+    generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression'}
+    n_evaluations = 12,
+    n_folds=5,
+    n_fold_checks=3
+)
+
+#------------------------------------------------------------------------------
+# XGBoost
+#------------------------------------------------------------------------------
+
+cfg_xgb = dict(
+    n_estimators=range(2,200),
+    eta=0.2
+)
+
+#==============================================================================
+# CLASSIFIER TRAINING END
+#==============================================================================
 
 #==============================================================================
 # REWEIGHTING BEGIN

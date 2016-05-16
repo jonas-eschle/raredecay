@@ -43,7 +43,7 @@ import cPickle as pickle
 PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 8  # VAGUE ESTIMATION but not a strict limit.
+n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 
 #------------------------------------------------------------------------------
 #  Datatype ending variables
@@ -174,6 +174,12 @@ DEFAULT_CLF_ADA = dict(
 DEFAULT_CLF_KNN = dict(
     n_neigh = 5
 )
+
+#------------------------------------------------------------------------------
+#  Hyper parameter optimization
+#------------------------------------------------------------------------------
+
+DEFAULT_HYPER_GENERATOR = 'subgrid'
 
 #==============================================================================
 # END OF CONFIGURABLE PARAMETERS - DO NOT CHANGE WHAT IS BELOW

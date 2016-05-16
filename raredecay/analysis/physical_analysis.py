@@ -12,14 +12,14 @@ import importlib
 
 import raredecay.meta_config
 
-
+__CFG_PATH = 'raredecay.run_config.'
 DEFAULT_CFG_FILE = dict(
-    reweightCV='raredecay.run_config.reweightCV_cfg',
-    reweight='raredecay.run_config.reweight_cfg',
-    simple_plot='raredecay.run_config.simple_plot1_cfg',
-    test='raredecay.run_config.reweight1_comparison_cfg',
-    reweight_comparison='raredecay.run_config.reweight1_comparison_cfg',
-    hyper_optimization='classifier_cfg'
+    reweightCV=__CFG_PATH + 'reweightCV_cfg',
+    reweight=__CFG_PATH + 'reweight_cfg',
+    simple_plot=__CFG_PATH + 'simple_plot1_cfg',
+    test=__CFG_PATH + 'reweight1_comparison_cfg',
+    reweight_comparison=__CFG_PATH + 'reweight1_comparison_cfg',
+    hyper_optimization=__CFG_PATH + 'classifier_cfg'
 )
 
 
@@ -62,6 +62,8 @@ def run(run_mode, cfg_file=None):
         reweightCV(cfg, logger)
     elif run_mode == "reweight":
         reweight(cfg, logger)
+    elif run_mode == "hyper_optimization":
+        hyper_optimization(cfg, logger)
     else:
         raise ValueError("Runmode " + str(run_mode) + " not a valid choice")
 
@@ -77,6 +79,15 @@ def test(cfg):
 
 def hyper_optimization(cfg, logger):
     """Perform hyperparameter optimization in this module"""
+    from raredecay.tools import data_tools, dev_tool, data_storage
+    import raredecay.analysis.ml_analysis as ml_ana
+
+    original_data = data_storage.HEPDataStorage(**cfg.data['hyper_original'])
+    target_data = data_storage.HEPDataStorage(**cfg.data['hyper_target'])
+
+    to_optimize = data_tools.to_list(cfg.hyper_cfg['optimize_clf'])
+    if 'xgb' in to_optimize:
+        ml_ana.optimize_XGBoost(original_data, target_data, config_clf=cfg.cfg_xgb)
 
 
 def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
@@ -202,11 +213,11 @@ def simple_plot(cfg, logger):
 #    real_sweight.plot(figure="B2K1piLL data comparison: original-cut-sweighted (all normalized)",
 #                      data_name="nEvents: " + str(len(real_sweight)))
 
-    mc_jpsi_original.plot(figure="B2K1Jpsi mc data comparison: original-cut (all normalized)",
-                          title="B2K1Jpsi mc data comparison: original-cut (all normalized)",
-                          data_name="nEvents: " + str(len(mc_jpsi_original)))
-    mc_jpsi_cut.plot(figure="B2K1Jpsi mc data comparison: original-cut (all normalized)",
-                          data_name="nEvents: " + str(len(mc_jpsi_cut)))
+#    mc_jpsi_original.plot(figure="B2K1Jpsi mc data comparison: original-cut (all normalized)",
+#                          title="B2K1Jpsi mc data comparison: original-cut (all normalized)",
+#                          data_name="nEvents: " + str(len(mc_jpsi_original)))
+#    mc_jpsi_cut.plot(figure="B2K1Jpsi mc data comparison: original-cut (all normalized)",
+#                          data_name="nEvents: " + str(len(mc_jpsi_cut)))
 
 
     real_cut.plot(figure="B2K1piLL CUT real vs mc (all normalized)",

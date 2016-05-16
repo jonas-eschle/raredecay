@@ -67,10 +67,11 @@ all_branches = ['B_PT', 'nTracks', 'nSPDHits'
               ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
               'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
-to_plot = ['B_PT', 'nTracks', 'nSPDHits'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+to_plot = ['B_PT', 'nTracks', 'nSPDHits',
+              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF',
+              'B_ETA'
               ]
 #------------------------------------------------------------------------------
 # root data (dictionaries with parameters for root2array)

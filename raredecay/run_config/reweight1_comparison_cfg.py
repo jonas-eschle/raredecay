@@ -159,12 +159,12 @@ data = dict(
 
 # branches to use for the reweighting
 reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
+                     'B_ENDVERTEX_CHI2',
                      'B_FDCHI2_OWNPV',
                      'B_DIRA_OWNPV',
 #                     'B_IPCHI2_OWNPV',
                      'l1_PT',
 #                     'l1_IPCHI2_OWNPV',
-#                     'B_ENDVERTEX_CHI2',
                      'h1_IPCHI2_OWNPV',
                      'h1_PT',
 #                     'h1_TRACK_TCHI2NDOF'
@@ -177,9 +177,9 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=800,
+        n_estimators=80,
         max_depth=6,
-        learning_rate=0.01,
+        learning_rate=0.1,
         min_samples_leaf=2,  # 200
         loss_regularization=6000.0,  # 5.0
         gb_args=dict(

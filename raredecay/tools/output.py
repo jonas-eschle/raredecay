@@ -11,6 +11,8 @@ import subprocess
 import warnings
 import timeit
 import time
+import StringIO
+import copy
 
 import matplotlib.pyplot as plt
 import cPickle as pickle
@@ -27,6 +29,7 @@ class OutputHandler(object):
     IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
     _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.' '/']
     _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
+    __SAVE_STDOUT = sys.stdout
 
     def __init__(self):
             self._output_path = None
@@ -41,6 +44,7 @@ class OutputHandler(object):
             self._pickle_folder = False
             self._start_timer = None
             self._start_time = None
+            self._IO_string = ""
 
     def get_logger_path(self):
         """Return the path for the log folder"""
@@ -61,6 +65,28 @@ class OutputHandler(object):
         """
         # create logger
         self.logger = dev_tool.make_logger(__name__, **self._logger_cfg)
+
+    def IO_to_string(self):
+        """Redericts stdout (print etc.) to string"""
+        self._IO_string = ""
+        self._IO_string = StringIO.StringIO()
+        sys.stdout = self._IO_string
+
+    def IO_to_sys(self, to_output=True, **add_output_kwarg):
+        """Directs stdout back to the sys.stdout and return/save string to output
+
+        Parameter
+        ---------
+        to_output : boolean
+            | If True, the collected output will be added to the output-file.
+            | Additional keyword-arguments for the
+            :py:meth:`~raredecay.tools.output.add_output()` method can be
+            passed.
+        """
+        sys.stdout = self.__SAVE_STDOUT
+        if to_output:
+            self.add_output(self._IO_string.getvalue(), **add_output_kwarg)
+        return self._IO_string.getvalue()
 
     def save_fig(self, figure, file_format=None, to_pickle=True, plot=True, **save_cfg):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
@@ -93,6 +119,8 @@ class OutputHandler(object):
             Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`
         """
         self._pickle_folder = self._pickle_folder or to_pickle
+        if isinstance(figure, str):
+            figure = plt.figure(figure)
 
         file_format = ['png', 'svg'] if file_format is None else file_format
         if isinstance(file_format, str):
