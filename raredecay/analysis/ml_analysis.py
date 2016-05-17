@@ -83,7 +83,7 @@ def _make_data(original_data, target_data, features=None, target_from_data=False
     return data, weights, label
 
 
-def optimize_XGBoost(original_data, target_data, config_clf, features=None,
+def optimize_hyper_parameters(original_data, target_data, clf, config_clf, features=None,
                      optimize_features=False, take_target_from_data=False,
                      train_best=False):
     """Optimize the hyperparameters of an XGBoost classifier"""
@@ -113,7 +113,8 @@ def optimize_XGBoost(original_data, target_data, config_clf, features=None,
                                       target_from_data=take_target_from_data)
 
     # initialize classifier
-    clf = XGBoostClassifier(**config_clf)
+    if clf == 'xgb':
+        clf = XGBoostClassifier(**config_clf)
 
     if generator_type == 'regression':
         generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
@@ -362,7 +363,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     n_cpu = globals_.free_cpus()
     data_name = original_data.get_name() + " and " + target_data.get_name()
 
-    data, weights, label = _get_data(original_data, target_data, features=features,
+    data, weights, label = _make_data(original_data, target_data, features=features,
                                      weight_target=weight_target,
                                      weight_original=weight_original,
                                      target_from_data=take_target_from_data)
@@ -462,7 +463,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
 
         # voting report
         meta_report = meta_clf.test_on(X_meta, y_train)
-        meta_auc = round(meta_report.compute_metric(metrics.RocAuc()).values()[0], 3)
+        meta_auc = round(meta_report.compute_metric(metrics.RocAuc()).values()[0], 4)
         out.add_output(["ROC AUC of voting meta-classifier: ",
                         meta_auc], obj_separator="", subtitle="Report of data_ROC")
 
@@ -492,13 +493,13 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     for key, val in factory.items():
         clf = factory.pop(key)
         clf_auc = factory_auc.get(key)
-        factory[key + ", AUC = " + str(round(clf_auc, 3))] = clf
+        factory[key + ", AUC = " + str(round(clf_auc, 4))] = clf
 
     out.save_fig(plt.figure("ROC comparison " + data_name), **save_fig_cfg)
     # TODO: if trial works, remove?:
     # curve_name += "AUC = " + str(round(ROC_AUC, 3))
     for key, val in report.prediction.items():
-        report.prediction[key + ", AUC = " + str(round(factory_auc.get(key), 3))] = report.prediction.pop(key)
+        report.prediction[key + ", AUC = " + str(round(factory_auc.get(key), 4))] = report.prediction.pop(key)
     report.roc(physical_notion=False).plot(title="ROC curve for comparison of " + data_name)
     plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
     # factory extended plots

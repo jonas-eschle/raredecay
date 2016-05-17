@@ -85,9 +85,14 @@ def hyper_optimization(cfg, logger):
     original_data = data_storage.HEPDataStorage(**cfg.data['hyper_original'])
     target_data = data_storage.HEPDataStorage(**cfg.data['hyper_target'])
 
+    original_data.plot(figure="data comparison", title="data comparison")
+    target_data.plot(figure="data comparison")
+
     to_optimize = data_tools.to_list(cfg.hyper_cfg['optimize_clf'])
-    if 'xgb' in to_optimize:
-        ml_ana.optimize_XGBoost(original_data, target_data, config_clf=cfg.cfg_xgb)
+    for clf in to_optimize:
+        ml_ana.optimize_hyper_parameters(original_data, target_data, features=cfg.opt_features,
+                                         clf=clf, config_clf=cfg.cfg_xgb)
+
 
 
 def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
@@ -95,6 +100,10 @@ def add_branch_to_rootfile(cfg, logger, root_data=None, new_branch=None,
     """Add a branch to a given rootfile"""
 
     from raredecay.tools import data_tools
+    from raredecay.globals_ import out
+
+    out.add_output(["Adding", new_branch, "as", branch_name, "to",
+                    root_data.get('filenames')], obj_separator=" ")
 
     data_tools.add_to_rootfile(root_data, new_branch=new_branch,
                                branch_name=branch_name)
@@ -133,10 +142,14 @@ def reweight(cfg, logger, rootfile_to_add=None):
     out.save_fig(plt.figure("New weights"))
     plt.hist(reweight_apply.get_weights(), bins=30, log=True)
 
-    ml_ana.reweight_weights(reweight_data=reweight_mc, branches=cfg.reweight_branches,
+    new_weights = ml_ana.reweight_weights(reweight_data=reweight_mc, branches=cfg.reweight_branches,
                             reweighter_trained=gb_reweighter)
     reweight_real.plot(figure="Data self reweighted", data_name="gb weights")
     reweight_mc.plot(figure="Data self reweighted", data_name="after reweighting")
+
+    # add weights to root TTree
+    #add_branch_to_rootfile(cfg, logger, root_data=reweight_mc.get_rootdict(),
+    #                       new_branch=new_weights, branch_name="weights_gb")
 
 
 

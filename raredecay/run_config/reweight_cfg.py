@@ -172,15 +172,16 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(
-        n_estimators=80,
-        max_depth=3,
-        learning_rate=0.1,
-        min_samples_leaf=100,  # 200
-        loss_regularization=5000.0,  # 5.0
+        n_estimators=800,
+        max_depth=6,
+        learning_rate=0.01,
+        min_samples_leaf=2,  # 200
+        loss_regularization=1000.0,  # 5.0
         gb_args=dict(
-            subsample=1,  # 0.8,
+            subsample=0.8,
             #random_state=43,
-            min_samples_split=150
+            min_samples_split=200
+
         )
     ),
     bins=dict(

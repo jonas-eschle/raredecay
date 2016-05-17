@@ -113,7 +113,7 @@ cut_bg_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut_data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='DecayTree',
     branches=all_branches,
-    selection='B_M > 5400'
+    selection='B_M > 1'
 
 )
 
@@ -128,7 +128,7 @@ cut_bg_B2KpiLL_real = dict(
 #    data_name_addition="cut",
 #)
 
-# gradient boosted reweighting
+
 Bu2K1ee_mc_signal = dict(
     data=Bu2K1ee_mc,
     sample_weights=None,
@@ -145,12 +145,27 @@ B2KpiLL_real_cut_background = dict(
     target=0
 )
 
-#B2K1Jpsi_mc_cut = dict(
-#    data=cut_Bu2K1Jpsi_mc,
-#    sample_weights=None,
-#    data_name="B->K1 J/Psi monte-carlo",
-#    data_name_addition="cut"
-#)
+B2KpiLL_real_signal = dict(
+    data=cut_sWeight_B2KpiLL_real,
+    sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
+    data_name="B->KpiLL real data",
+    data_name_addition="cut - background",
+    target=0
+)
+
+B2K1Jpsi_mc_cut = dict(
+    data=cut_Bu2K1Jpsi_mc,
+    sample_weights=None,
+    data_name="B->K1 J/Psi monte-carlo",
+    data_name_addition="cut"
+)
+
+B2K1Jpsi_mc_cut_reweighted = dict(
+    data=cut_Bu2K1Jpsi_mc,
+    sample_weights=root2array(**dict(cut_Bu2K1Jpsi_mc, branches=['weights_gb'])),
+    data_name="B->K1 J/Psi monte-carlo",
+    data_name_addition="cut - gbreweighted"
+)
 
 
 #------------------------------------------------------------------------------
@@ -158,7 +173,8 @@ B2KpiLL_real_cut_background = dict(
 #------------------------------------------------------------------------------
 # this dictionary will finally be used in the code
 data = dict(
-    hyper_target=Bu2K1ee_mc_signal,
+    #hyper_target=B2KpiLL_real_signal,
+    hyper_target=B2K1Jpsi_mc_cut_reweighted,
     hyper_original=B2KpiLL_real_cut_background
 )
 
@@ -169,24 +185,40 @@ data = dict(
 #==============================================================================
 # CLASSIFIER TRAINING BEGIN
 #==============================================================================
+opt_features = ['B_PT', 'nTracks', 'nSPDHits',
+              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+              'B_IPCHI2_OWNPV',
+                #'l1_PT', 'l1_IPCHI2_OWNPV',
+                'B_ENDVERTEX_CHI2',
+              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+              ]
 
 hyper_cfg = dict(
     optimize_clf='xgb',
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations = 12,
+    n_evaluations=6,
     n_folds=5,
-    n_fold_checks=3
+    n_fold_checks=1
 )
 
 #------------------------------------------------------------------------------
 # XGBoost
 #------------------------------------------------------------------------------
-
+import numpy as np
 cfg_xgb = dict(
-    n_estimators=range(2,200),
-    eta=0.2
+    eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
+    n_estimators=75,  # stage 1 to optimize
+    min_child_weight=0,  # stage 2 to optimize
+    max_depth=6,  # stage 2 to optimize
+    gamma=list(np.arange(0.1, 2, 0.1)),  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
+    subsample=1.0, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    colsample=1.0 # stage 4, only take several colons for training
+    # no loss regularization available so far...
 )
+cfg_gb = dict(
+    learning_rate=0.2,
 
+)
 #==============================================================================
 # CLASSIFIER TRAINING END
 #==============================================================================

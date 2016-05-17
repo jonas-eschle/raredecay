@@ -36,6 +36,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         The name of the branche resp. the name in the dtype of the array.
     """
     # get the right parameters
+    # TODO: what does that if there? an assertion maybe?
     if isinstance(rootfile, dict):
         filename = rootfile.get('filenames')
     treename = rootfile.get('treename')
