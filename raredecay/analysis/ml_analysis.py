@@ -31,6 +31,7 @@ from rep.data import LabeledDataStorage
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier, VotingClassifier
+from rep.estimators.theanets import TheanetsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
@@ -56,8 +57,6 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 
-# import the specified config file
-# TODO: is this import really necessary? Best would be without config...
 def _make_data(original_data, target_data, features=None, target_from_data=False,
                   weight_original=None, weight_target=None):
     """Return the concatenated data, weights and labels for classifier training
@@ -95,13 +94,15 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     n_checks = cfg.hyper_cfg['n_fold_checks']
     n_folds = cfg.hyper_cfg['n_folds']
     generator_type = cfg.hyper_cfg.get('generator', meta_config.DEFAULT_HYPER_GENERATOR)
-    config_clf.update(nthreads=1)
 
     # Create parameter for clf and hyper-search
     grid_param = {}
+    list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
     for key, val in config_clf.items():
-        if isinstance(val, list):
-            grid_param[key] = config_clf.pop(key)
+        if isinstance(val, (list, np.ndarray, pd.Series)):
+            if key not in list_param or isinstance(val[0], list):
+                val = data_tools.to_list(val)
+                grid_param[key] = config_clf.pop(key)
 
     assert grid_param != {}, "No values for optimization found"
 
@@ -114,7 +115,19 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
 
     # initialize classifier
     if clf == 'xgb':
+        clf_name = "XGBoost"
+        config_clf.update(nthreads=1)
         clf = XGBoostClassifier(**config_clf)
+    elif clf == 'rdf':
+        clf_name = "Random Forest"
+        clf = SklearnClassifier(RandomForestClassifier(**config_clf))
+    elif clf == 'gb':
+        clf_name = "GradientBoosting classifier"
+        clf = SklearnClassifier(GradientBoostingClassifier(**config_clf))
+    elif clf == 'nn':
+        clf_name = "Theanets Neural Network"
+        clf = TheanetsClassifier(**config_clf)
+
 
     if generator_type == 'regression':
         generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
@@ -129,10 +142,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
 
     # Search for hyperparameters
-    logger.info("starting XGBoost hyper optimization")
+    logger.info("starting" + clf_name + " hyper optimization")
     grid_finder.fit(data, label, weights)
-    logger.info("XGBoost hyper optimization finished")
-    print "XGBoost parameters:"
+    logger.info(clf_name + " hyper optimization finished")
+    print clf_name + " parameters:"
     grid_finder.params_generator.print_results()
 
 

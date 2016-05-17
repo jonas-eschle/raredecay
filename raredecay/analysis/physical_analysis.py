@@ -85,13 +85,13 @@ def hyper_optimization(cfg, logger):
     original_data = data_storage.HEPDataStorage(**cfg.data['hyper_original'])
     target_data = data_storage.HEPDataStorage(**cfg.data['hyper_target'])
 
-    original_data.plot(figure="data comparison", title="data comparison")
-    target_data.plot(figure="data comparison")
+    clf = cfg.hyper_cfg['optimize_clf']
+    config_clf = getattr(cfg, 'cfg_' + clf)
+    ml_ana.optimize_hyper_parameters(original_data, target_data, features=cfg.opt_features,
+                                     clf=clf, config_clf=config_clf)
 
-    to_optimize = data_tools.to_list(cfg.hyper_cfg['optimize_clf'])
-    for clf in to_optimize:
-        ml_ana.optimize_hyper_parameters(original_data, target_data, features=cfg.opt_features,
-                                         clf=clf, config_clf=cfg.cfg_xgb)
+    original_data.plot(figure="data comparison", title="data comparison", branches=cfg.opt_features)
+    target_data.plot(figure="data comparison", branches=cfg.opt_features)
 
 
 

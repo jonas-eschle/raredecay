@@ -392,15 +392,14 @@ class OutputHandler(object):
             obj_separator=" : ", do_print=False)
         self.output += self.end_output
 
-        self.add_output(["Errors encountered during run", meta_config._error_count],
-                        obj_separator=" : ")
-
-        # add current version
-        git_version = subprocess.check_output(["git", "-C",
-            "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
-            "describe"])
-        self.add_output(["Program version from Git", git_version], section="Git information",
-                        do_print=False, obj_separator=" : ")
+        # add current version (if available)
+        try:
+            git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH])
+            self.add_output(["Program version from Git", git_version], section="Git information",
+                            do_print=False, obj_separator=" : ")
+        except:
+            meta_config.error_occured()
+            self.logger.error("Could not get version number from git")
 
         # time information
         elapsed_time = timeit.default_timer() - self._start_timer
@@ -443,6 +442,9 @@ class OutputHandler(object):
 #==============================================================================
 #    if a folder to overwrite exists, delete it and move the temp folder
 #==============================================================================
+
+        self.add_output(["Errors encountered during run", meta_config._error_count],
+            obj_separator=" : ")
 
         if self._path_to_be_overriden is not None:
             if not meta_config.NO_PROMPT_ASSUME_YES:

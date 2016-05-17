@@ -194,7 +194,7 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 hyper_cfg = dict(
-    optimize_clf='xgb',
+    optimize_clf='nn',
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression'}
     n_evaluations=6,
     n_folds=5,
@@ -215,9 +215,25 @@ cfg_xgb = dict(
     colsample=1.0 # stage 4, only take several colons for training
     # no loss regularization available so far...
 )
+
 cfg_gb = dict(
     learning_rate=0.2,
 
+)
+
+cfg_nn = dict(
+    layers=[30],
+    hidden_activation='logistig',
+    output_activation='linear',
+    input_noise=[0,1,2,3,4,5,10,20],
+    hidden_noise=0,
+    input_dropout=0,
+    hidden_dropout=0,
+    decode_from=1,
+    weight_l1=0.01,
+    weight_l2=0.01,
+    scaler='standard',
+    trainers=[{'optimize': 'nag', 'learning_rate': 0.1, 'min_improvement': 0.1}],
 )
 #==============================================================================
 # CLASSIFIER TRAINING END
