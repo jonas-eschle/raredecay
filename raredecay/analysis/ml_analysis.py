@@ -184,7 +184,8 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
 
 
-def classify(original_data, target_data=None, validation=10, clf='xgb'):
+def classify(original_data, target_data=None, validation=10, clf='xgb',
+             target_from_data=False):
     """Training and testing a classifier or distinguish a dataset
 
     Parameters
@@ -194,6 +195,22 @@ def classify(original_data, target_data=None, validation=10, clf='xgb'):
     target_data : HEPDataStorage or None
         The target data for the training. If None, only the original_data will
         be used for the training.
+    validation : int >= 1 or HEPDataStorage
+        You can either do cross-validation or give a testsample for the data.
+
+        * Cross-validation:
+            Enter an integer, which is the number of folds
+        * Validation-dataset:
+            Enter a *HEPDataStorage* which contains data to be tested on.
+    clf : str {'xgb'} or rep-classifier
+        The classifier to be used for the training and predicting. If you don't
+        pass a classifier (with *fit*, *predict* and *predict_proba* at least),
+        an XGBoost classifier will be used.
+    target_from_data : boolean
+        | If true, the target-values (labels; 0 or 1) will be taken from the
+          data instead of assigned accordingly (original:1, target:0).
+        | If no target_data is provided, the targets/labels will be taken
+          from the original_data anyway.
     """
 
 

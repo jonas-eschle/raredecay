@@ -187,15 +187,15 @@ data = dict(
 #==============================================================================
 opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              'B_IPCHI2_OWNPV',
+              #'B_IPCHI2_OWNPV',
                 #'l1_PT', 'l1_IPCHI2_OWNPV',
-                'B_ENDVERTEX_CHI2',
+               # 'B_ENDVERTEX_CHI2',
               #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
 
 hyper_cfg = dict(
-    optimize_clf='xgb',
-    generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression'}
+    optimize_clf='rdf',
+    generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
     n_evaluations=2,
     n_folds=10,
     n_fold_checks=1
@@ -211,20 +211,39 @@ cfg_xgb = dict(
     min_child_weight=0,  # stage 2 to optimize
     max_depth=6,  # stage 2 to optimize
     gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
-    subsample=np.arange(0.6, 1.0, 0.01), # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
-    colsample=np.arange(0.6, 1.0, 0.01) # stage 4, only take several colons for training
+    subsample=0.8, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    colsample=0.7 # stage 4, only take several colons for training
     # no loss regularization available so far...
 )
 
 cfg_gb = dict(
     learning_rate=0.2,
     n_estimators=75,
+    max_depht=range(2, 20),
+    min_samples_split=range(2, 2000),
+    min_samples_leaf=1,
+    min_weight_fraction_leaf=0.,
+    subsample=1.0,
+    max_features=None,
+    max_leaf_nodes=None
+)
+
+cfg_rdf = dict(
+    n_estimators=range(30, 3000),
+    max_features='auto',
+    max_depth=None,
+    min_samples_split=2,
+    min_samples_leaf=1,
+    min_weight_fraction_leaf=0.,
+    max_leaf_nodes=None,
+    bootstrap=True,
+    #oob_score=True,
 
 )
 
 cfg_nn = dict(
     layers=[30],
-    hidden_activation='logistig',
+    hidden_activation='logistic',
     output_activation='linear',
     input_noise=[0,1,2,3,4,5,10,20],
     hidden_noise=0,
