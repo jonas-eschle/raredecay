@@ -394,7 +394,7 @@ class OutputHandler(object):
 
         # add current version (if available)
         try:
-            git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH])
+            git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH, "describe"])
             self.add_output(["Program version from Git", git_version], section="Git information",
                             do_print=False, obj_separator=" : ")
         except:
@@ -406,6 +406,21 @@ class OutputHandler(object):
         elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
         self.add_output(["Run startet at", self._start_time, "\nand lasted for",
                          elapsed_time], section="Time information", obj_separator=" ")
+
+
+
+#==============================================================================
+#  save figures to file
+#==============================================================================
+
+        self._figure_to_file()
+
+#==============================================================================
+#   copy the config file and save
+#==============================================================================
+
+       # TODO: copy config file. Necessary?
+
 
 #==============================================================================
 #   write output to file
@@ -426,25 +441,12 @@ class OutputHandler(object):
             meta_config.error_occured()
             warnings.warn("Could not save output. Check the logs!", RuntimeWarning)
         #del temp_out_file  # block abuse
-
-#==============================================================================
-#  save figures to file
-#==============================================================================
-
-        self._figure_to_file()
-
-#==============================================================================
-#   copy the config file and save
-#==============================================================================
-
-       # TODO: copy config file. Necessary?
+        self.add_output(["Errors encountered during run", meta_config._error_count],
+            obj_separator=" : ")
 
 #==============================================================================
 #    if a folder to overwrite exists, delete it and move the temp folder
 #==============================================================================
-
-        self.add_output(["Errors encountered during run", meta_config._error_count],
-            obj_separator=" : ")
 
         if self._path_to_be_overriden is not None:
             if not meta_config.NO_PROMPT_ASSUME_YES:

@@ -194,10 +194,10 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 hyper_cfg = dict(
-    optimize_clf='nn',
+    optimize_clf='xgb',
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=6,
-    n_folds=5,
+    n_evaluations=2,
+    n_folds=10,
     n_fold_checks=1
 )
 
@@ -210,14 +210,15 @@ cfg_xgb = dict(
     n_estimators=75,  # stage 1 to optimize
     min_child_weight=0,  # stage 2 to optimize
     max_depth=6,  # stage 2 to optimize
-    gamma=list(np.arange(0.1, 2, 0.1)),  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
-    subsample=1.0, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
-    colsample=1.0 # stage 4, only take several colons for training
+    gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
+    subsample=np.arange(0.6, 1.0, 0.01), # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    colsample=np.arange(0.6, 1.0, 0.01) # stage 4, only take several colons for training
     # no loss regularization available so far...
 )
 
 cfg_gb = dict(
     learning_rate=0.2,
+    n_estimators=75,
 
 )
 

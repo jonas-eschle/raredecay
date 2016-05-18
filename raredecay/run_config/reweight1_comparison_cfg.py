@@ -89,7 +89,8 @@ cut_Bu2K1Jpsi_mc = dict(
               , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
               ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
               'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]#, 'B_TAU']
+              ],#, 'B_TAU']
+    selection='nTracks < 300'
 
 )
 cut_B2KpiLL_real = dict(
@@ -104,8 +105,8 @@ cut_sWeight_B2KpiLL_real = dict(
               , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
               ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
               'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]#, 'B_TAU']
-
+              ],#, 'B_TAU']
+    selection='nTracks < 300'
 )
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
@@ -160,13 +161,13 @@ data = dict(
 # branches to use for the reweighting
 reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
                      'B_ENDVERTEX_CHI2',
-                     'B_FDCHI2_OWNPV',
-                     'B_DIRA_OWNPV',
+                     #'B_FDCHI2_OWNPV',
+                     #'B_DIRA_OWNPV',
 #                     'B_IPCHI2_OWNPV',
-                     'l1_PT',
+                     #'l1_PT',
 #                     'l1_IPCHI2_OWNPV',
-                     'h1_IPCHI2_OWNPV',
-                     'h1_PT',
+                     #'h1_IPCHI2_OWNPV',
+                     #'h1_PT',
 #                     'h1_TRACK_TCHI2NDOF'
               ]
 # start configuration for gradient boosted reweighter

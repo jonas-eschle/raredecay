@@ -21,14 +21,16 @@ def main_run(run_mode, cfg_file=None):
     sns.set_context("poster")
     plt.rc('figure', figsize=(20, 20))
 
-    print "starting main"
+    print "starting main, run: " + run_mode
 
     if run_mode is None:
         run_mode = "reweight_comparison"
         print "Run mode was None, set to default " + run_mode
     # possible loop over method
-    for i in range(1):
-        print "run number ", i+1, " started"
+    n_executions = 1
+    for i in range(n_executions):
+        if n_executions > 1:
+            print "run number " + i+1 + " of " + n_executions + " started"
         run(run_mode, cfg_file=cfg_file)
         # show()
 
@@ -38,12 +40,12 @@ def main_run(run_mode, cfg_file=None):
         play_sound()
     except:
         print "BEEEEEP"
-    a = raw_input(["Run finished, press Enter to show the plots"])
+    raw_input(["Run finished, press Enter to show the plots"])
     plt.show()
 
 if __name__ == '__main__':
-    #main_run("reweight_comparison")
+    main_run("reweight_comparison")
     #main_run("reweight")
     #main_run("reweightCV")
     #main_run("simple_plot")
-    main_run("hyper_optimization")
+    #main_run("hyper_optimization")

@@ -57,27 +57,34 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 
-def _make_data(original_data, target_data, features=None, target_from_data=False,
+def _make_data(original_data, target_data=None, features=None, target_from_data=False,
                   weight_original=None, weight_target=None):
     """Return the concatenated data, weights and labels for classifier training
     """
-    # concatenate the original and target data
-    data = pd.concat([original_data.pandasDF(branches=features),
-                      target_data.pandasDF(branches=features)])
 
-    # take weights from data if not explicitly specified
     if dev_tool.is_in_primitive(weight_original, None):
         weight_original = original_data.get_weights()
     assert len(weight_original) == len(original_data), "Original weights have wrong length"
-    if dev_tool.is_in_primitive(weight_target, None):
-        weight_target = target_data.get_weights()
-    assert len(weight_target) == len(target_data), "Target weights have wrong length"
-    weights = np.concatenate((weight_original, weight_target))
 
-    if target_from_data:  # if "original" and "target" are "mixed"
-        label = np.concatenate((original_data.get_targets(), target_data.get_targets()))
+    if target_data is None:
+        data = original_data.pandasDF(branches=features)
+        weights = weight_original
+        label = original_data.get_targets()
     else:
-        label = np.array([0] * len(original_data) + [1] * len(target_data))
+        # concatenate the original and target data
+        data = pd.concat([original_data.pandasDF(branches=features),
+                          target_data.pandasDF(branches=features)])
+
+        # take weights from data if not explicitly specified
+        if dev_tool.is_in_primitive(weight_target, None):
+            weight_target = target_data.get_weights()
+        assert len(weight_target) == len(target_data), "Target weights have wrong length"
+        weights = np.concatenate((weight_original, weight_target))
+
+        if target_from_data:  # if "original" and "target" are "mixed"
+            label = np.concatenate((original_data.get_targets(), target_data.get_targets()))
+        else:
+            label = np.array([0] * len(original_data) + [1] * len(target_data))
 
     return data, weights, label
 
@@ -162,7 +169,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
             out.save_fig(name1, **save_fig_cfg)
             report.roc().plot(title=name1)
             name2 = str("Feature correlation matrix of " + original_data.get_name() +
-                       " and " + target_data.get_name())
+                        " and " + target_data.get_name())
             out.save_fig(name2, **save_ext_fig_cfg)
             report.features_correlation_matrix().plot(title=name2)
             name3 = "Learning curve of best XGBoost classifier"
@@ -172,9 +179,22 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
             out.save_fig(name4, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name4)
         except:
-            logger.error("Could not plot hyper optimization XGBoost plots")
+            logger.error("Could not plot hyper optimization " + clf_name + " plots")
 
     out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
+
+
+def classify(original_data, target_data=None, validation=10, clf='xgb'):
+    """Training and testing a classifier or distinguish a dataset
+
+    Parameters
+    ----------
+    original_data : HEPDataStorage
+        The original data for the training
+    target_data : HEPDataStorage or None
+        The target data for the training. If None, only the original_data will
+        be used for the training.
+    """
 
 
 def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
@@ -325,6 +345,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
         - 'gb': Gradient Boosting classifier from scikit-learn
         - 'rdf': Random Forest classifier
         - 'ada_dt': AdaBoost over decision trees
+
     meta_clf : boolean
         If True, a meta-classifier will be used to "average" the results of the
         other classifiers
@@ -460,10 +481,10 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
         # TODO: old: estimators = copy.deepcopy([(key, val) for key, val in factory.iteritems()])
         assert y_train is y_test, "train and test not the same (problem because we use folding-clf)"
         parallel_profile = 'threads-' + str(min(n_folds, n_cpu))
-        meta_clf = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag', n_jobs=-1))
+        meta_clf = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag', n_jobs=n_cpu))
         #meta_clf = XGBoostClassifier(n_estimators=300, eta=0.1)
         # TODO: old: meta_clf = SklearnClassifier(VotingClassifier(estimators, voting='soft'))
-        meta_clf = FoldingClassifier(meta_clf, n_folds=n_folds, parallel_profile=parallel_profile)
+        meta_clf = FoldingClassifier(meta_clf, n_folds=n_folds)#, parallel_profile=parallel_profile) instead meta clf parallel
         X_meta = pd.DataFrame()
         for key, val in factory.predict_proba(X_test).iteritems():
             X_meta[key] = val[:,0]
