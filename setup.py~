@@ -6,19 +6,27 @@ Created on Thu Apr 28 16:26:12 2016
 """
 
 from setuptools import setup
+import subprocess
 
 
 def readme():
-    with open('README.rst') as f:
+    with open('README.md') as f:
         return f.read()
+try:
+    git_version = subprocess.check_output(["git", "-C",
+                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
+            "describe"])
+    git_version = git_version.partition('-')
+except:
+    git_version = 'unknown'
 
 
 setup(name='raredecay',
-      version='0.4',
+      version=git_version,  # '0.8.5',
       description='A package for analysis of rare particle decays with ml',
       long_description=readme(),
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 8 - Alpha',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='particle physics analysis machine learning reweight',
@@ -26,10 +34,14 @@ setup(name='raredecay',
       author='Jonas Eschle',
       author_email='mayou36@jonas.eschle.com',
       license='None',
-      #packages=['funniest'],
       install_requires=[
-          'hep_ml',
-          'rep',
+          #'hep_ml',
+          #'rep',
+      ],
+      packages=['raredecay',
+                'raredecay.analysis',
+                'raredecay.run_config',
+                'raredecay.tools',
       ],
       include_package_data=True,
       zip_safe=False)

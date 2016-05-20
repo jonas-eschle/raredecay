@@ -12,10 +12,13 @@ import subprocess
 def readme():
     with open('README.md') as f:
         return f.read()
-git_version = subprocess.check_output(["git", "-C",
-            "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
+try:
+    git_version = subprocess.check_output(["git", "-C",
+                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
             "describe"])
-git_version = git_version.partition('-')
+    git_version = git_version.partition('-')
+except:
+    git_version = 'unknown'
 
 
 setup(name='raredecay',

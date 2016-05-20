@@ -194,9 +194,9 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 hyper_cfg = dict(
-    optimize_clf='rdf',
+    optimize_clf='gb',
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=80,
+    n_evaluations=8,
     n_folds=10,
     n_fold_checks=1
 )
@@ -216,14 +216,14 @@ cfg_xgb = dict(
     # no loss regularization available so far...
 )
 
-cfg_gb = dict(
-    learning_rate=0.2,  # 0.2
-    n_estimators=75,  # 75
-    max_depht=range(2, 20),
-    min_samples_split=range(2, 2000),
+cfg_gb = dict(  # optimised
+    learning_rate=0.2,
+    n_estimators=75,
+    max_depth=4,
+    min_samples_split=600,
     min_samples_leaf=1,
     min_weight_fraction_leaf=0.,
-    subsample=1.0,
+    subsample=1,
     max_features=None,
     max_leaf_nodes=None
 )
@@ -242,10 +242,10 @@ cfg_rdf = dict(
 )
 
 cfg_nn = dict(
-    layers=[30],
+    layers=[30, 30, 30],
     hidden_activation='logistic',
     output_activation='linear',
-    input_noise=[0,1,2,3,4,5,10,20],
+    input_noise=[0,0.001],  # [0,1,2,3,4,5,10,20],
     hidden_noise=0,
     input_dropout=0,
     hidden_dropout=0,
@@ -253,7 +253,7 @@ cfg_nn = dict(
     weight_l1=0.01,
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'nag', 'learning_rate': 0.1, 'min_improvement': 0.1}],
+    trainers=[{'optimize': 'esgd', 'learning_rate': 0.1, 'min_improvement': 0.1}],
 )
 #==============================================================================
 # CLASSIFIER TRAINING END
