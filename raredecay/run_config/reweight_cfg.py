@@ -6,13 +6,12 @@ Created on Mon Mar 21 22:26:13 2016
 """
 from __future__ import division, absolute_import
 
-import cPickle as pickle
 from root_numpy import root2array
 
 
 
 # the name of the run and the output folder
-RUN_NAME = 'GBReweighting MC-data'
+RUN_NAME = 'ReweightingCV test 5'
 run_message = str("Test-run" +
                 " ")
 #==============================================================================
@@ -157,9 +156,24 @@ data = dict(
 # REWEIGHTING BEGIN
 #==============================================================================
 
+#------------------------------------------------------------------------------
+# ONLY FOR CV-RUN BEGIN
+#------------------------------------------------------------------------------
+
+reweight_cv_cfg = dict(
+    n_folds=10,
+    n_checks=10,
+    plot_all=False,  # If True, all data (Folds and weights) are plotted. If False, only one example is
+    total_roc=True  # computes the ROC of all the reweighted samples. Only works if n_folds=n_checks
+)
+
+#------------------------------------------------------------------------------
+# GENERAL REWEIGHTING PARAMETERS
+#------------------------------------------------------------------------------
+
 # branches to use for the reweighting
 reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                     # 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+                     'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
                       #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
                       #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
@@ -167,24 +181,24 @@ reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
 # start configuration for gradient boosted reweighter
 
 reweight_cfg = dict(
-    reweighter='gb',
-    reweight_saveas='gb_reweighter1'
+    reweighter='gb',  # can also be a pickled reweighter or 'bins' resp 'gb'
+    reweight_saveas='gb_reweighter1'  # if you want to save your reweighter
 )
 reweight_meta_cfg = dict(
-    gb=dict(
-        n_estimators=800,
-        max_depth=6,
-        learning_rate=0.01,
+    gb=dict(  # GB reweighter configuration
+        n_estimators=500,  # 80
+        max_depth=6,  # 6 or n_features
+        learning_rate=0.1,  # 0.1
         min_samples_leaf=2,  # 200
-        loss_regularization=1000.0,  # 5.0
+        loss_regularization=10.0,  #
         gb_args=dict(
-            subsample=0.8,
+            subsample=0.8, # 0.8
             #random_state=43,
-            min_samples_split=200
+            min_samples_split=200  # 200
 
         )
     ),
-    bins=dict(
+    bins=dict(  # Bins reweighter configuration
         n_bins=20,
         n_neighs=3
     )
@@ -224,6 +238,7 @@ save_ext_fig_cfg = dict(
 #==============================================================================
 # LOGGER CONFIGURATION BEGIN
 #==============================================================================
+
 logger_cfg = dict(
     logging_mode='both',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'

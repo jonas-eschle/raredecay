@@ -14,7 +14,7 @@ import raredecay.meta_config
 
 __CFG_PATH = 'raredecay.run_config.'
 DEFAULT_CFG_FILE = dict(
-    reweightCV=__CFG_PATH + 'reweightCV_cfg',
+    reweightCV=__CFG_PATH + 'reweight_cfg',
     reweight=__CFG_PATH + 'reweight_cfg',
     simple_plot=__CFG_PATH + 'simple_plot1_cfg',
     test=__CFG_PATH + 'reweight1_comparison_cfg',
@@ -153,55 +153,83 @@ def reweight(cfg, logger, rootfile_to_add=None):
 
 
 
-def reweightCV(cfg, logger, n_folds=2, n_checks=1):
+def reweightCV(cfg, logger):
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_tools, data_storage
     from raredecay.globals_ import out
     import matplotlib.pyplot as plt
+    import numpy as np
 
 
     out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
     # initialize variables
-    n_checks = min([n_folds, n_checks])
+    n_folds = cfg.reweight_cv_cfg['n_folds']
+    n_checks = min([cfg.reweight_cv_cfg['n_checks'], n_folds])
+    score_gb = np.ones(n_checks)
+    score_min = np.ones(n_checks)
+    score_max = np.ones(n_checks)
 
     # initialize data
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+    # TODO: remove, debug: reweight_real = reweight_real.copy_storage(index=range(6600))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+    reweight_mc_reweighted = reweight_mc.copy_storage()
+
+    print "in reweightCV: len real, mc", len(reweight_real), len(reweight_mc)
     reweight_real.make_folds(n_folds=n_folds)
     reweight_mc.make_folds(n_folds=n_folds)
     logger.info("Data created, starting folding")
     out.add_output(["Start reweighting cross-validated with", n_folds,
-                    "split up the data and do", n_checks, "checks on it."],
+                    "fold of the data and do", n_checks, "checks on it."],
                     subtitle="cross-validation", obj_separator=" ")
     for fold in range(n_checks):
 
+
         train_real, test_real = reweight_real.get_fold(fold)
         train_mc, test_mc = reweight_mc.get_fold(fold)
-        print "lenght of train_mc", len(train_mc)
-        train_real.plot(figure="Reweighter trainer, fold " + str(fold))
-        train_mc.plot(figure="Reweighter trainer, fold " + str(fold))
+        if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
+            train_real.plot(figure="Reweighter trainer, example, fold " + str(fold))
+            train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold))
         reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
                                              reweight_data_mc=train_mc,
                                              reweight_data_real=train_real,
-                                             branches=cfg.reweight_branches, reweighter='gb')
-        # TODO: attention, completely wrong redefinition for test purposes
-#        test_mc, temp = reweight_mc.get_fold(fold+1)
-#        test_real, temp = reweight_real.get_fold(fold+1)
-        print "reweighting finished"
+                                             branches=cfg.reweight_branches,
+                                             **cfg.reweight_cfg)
+
+        logger.info("reweighting fold " + str(fold) + "finished")
         # reweighter = ''  # load from pickle file
-        plot1 = test_mc.plot(figure="Bevor reweighting, fold " + str(fold))
-        out.save_fig(plot1)
-        test_real.plot(figure="Bevor reweighting, fold " + str(fold))
         new_weights = ml_ana.reweight_weights(test_mc, reweighter,
                                               branches=cfg.reweight_branches)
-        plt.figure("new weights")
+        if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
+            plt.figure("new weights of fold " + str(fold))
         plt.hist(new_weights,bins=40, log=True)
-        ml_ana.data_ROC(test_real, test_mc)
-        test_mc.plot(figure="After reweighting, fold " + str(fold))
-        test_real.plot(figure="After reweighting, fold " + str(fold))
+        test_mc.set_targets(1)
+        clf, score_gb[fold] = ml_ana.classify(train_mc, train_real, validation=test_mc,
+                                        curve_name="mc reweighted as real",
+                                        plot_title="fold " + str(fold) + " reweighted validation")
 
+        test_mc.set_weights(1)
+        tmp_, score_min[fold] = ml_ana.classify(clf=clf, validation=test_mc, curve_name="mc as real")
+        test_real.set_targets(1)
+        tmp_, score_max[fold] = ml_ana.classify(clf=clf, validation=test_real, curve_name="real as real")
+
+
+        if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
+            reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index(), concat=True)
         logger.info("fold " + str(fold) + "finished")
+
+    if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
+        ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, curve_name="mc reweighted", n_folds=n_folds)
+        reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
+                           data_name="mc reweighted")
+        reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
+    out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification")
+    score_list = [("GBReweighted: ", score_gb), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
+    for name, score in score_list:
+        mean, std = round(np.mean(score), 4), round(np.std(score), 4)
+        out.add_output(["Average score " + name + str(mean) + " +- " + str(std)])
+
 
 
 def simple_plot(cfg, logger):

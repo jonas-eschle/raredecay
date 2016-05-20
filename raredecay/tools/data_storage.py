@@ -127,7 +127,7 @@ class HEPDataStorage(object):
         if not dev_tool.is_in_primitive(sample_weights, (None, 1)):
             #assert len(sample_weights) == self._length
             sample_weights = pd.Series(sample_weights, index=index, copy=True)
-        self.weights = sample_weights
+        self._weights = sample_weights
 
         # plot settings
         if dev_tool.is_in_primitive(hist_settings, None):
@@ -164,6 +164,10 @@ class HEPDataStorage(object):
         else:
             temp = index
         return temp
+
+    def get_index(self):
+        """Return the index used inside the DataStorage. Advanced feature."""
+        return self._make_index()
 
     def make_folds(self, n_folds=10):
         """Create train-test folds which can be accessed via
@@ -253,17 +257,17 @@ class HEPDataStorage(object):
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
-        if dev_tool.is_in_primitive(self.weights, (None, 1)):
+        if dev_tool.is_in_primitive(self._weights, (None, 1)):
             normalize = False
             if kwargs.get('inter', False):  # intern use
-                weights_out = self.weights
+                weights_out = self._weights
             else:
                 weights_out = dev_tool.fill_list_var([], length, 1)
                 weights_out = data_tools.to_ndarray(weights_out)
         elif index is None:
-            weights_out = data_tools.to_ndarray(self.weights)
+            weights_out = data_tools.to_ndarray(self._weights)
         else:
-            weights_out = data_tools.to_ndarray(self.weights[index])
+            weights_out = data_tools.to_ndarray(self._weights[index])
 
 
         if normalize:
@@ -277,19 +281,35 @@ class HEPDataStorage(object):
                     break
         return weights_out
 
-    def set_weights(self, sample_weights):
+    def set_weights(self, sample_weights, index=None, concat=False):
         """Set the weights of the sample.
 
         Parameters
         ----------
         sample_weights : 1-D array or list or int {1}
             The new weights for the dataset.
+        index : 1-D array or list or None
+            The indeces for the weights to be set
+        concat : boolean
+            If True, the weights will be concatenated to the already existing.
+            Any conflict will be resolved in favour of the new ones.
         """
-        assert (len(sample_weights) == len(self) or dev_tool.is_in_primitive(
-                sample_weights, (None, 1)), "Invalid weights")
-        if not dev_tool.is_in_primitive(sample_weights, (None, 1)):
-            sample_weights = pd.Series(sample_weights, index=self._index)
-        self.weights = sample_weights
+        index = self._index if index is None else index
+        length = len(self) if index is None else len(index)
+        assert dev_tool.is_in_primitive(sample_weights, (None, 1)) or len(sample_weights) == length, "Invalid weights"
+
+        if dev_tool.is_in_primitive(sample_weights, (None, 1)):
+            sample_weights = np.ones(length)
+        if dev_tool.is_in_primitive(self._weights, (None, 1)) and concat:
+            if self._index is None:
+                self._weights = pd.Series(np.ones(len(self)))
+            else:
+                self._weights = pd.Series(np.ones(len(self)), index=self._index)
+        sample_weights = pd.Series(sample_weights, index=index)
+        if concat:
+            self._weights.update(sample_weights)
+        else:
+            self._weights = sample_weights
 
     def extend(self, branches, treename=None, filenames=None, selection=None):
         """Add the branches as columns to the data
@@ -384,7 +404,7 @@ class HEPDataStorage(object):
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
-        if dev_tool.is_in_primitive(self._target_label, (0, 1, None)):
+        if dev_tool.is_in_primitive(self._target_label, (-1, 0, 1, None)):
             if kwargs.get('inter', False):
                 return copy.deepcopy(self._target_label)
             else:
@@ -398,6 +418,14 @@ class HEPDataStorage(object):
                 out_targets = self._target_label[index]
 
         return np.array(out_targets)
+
+    def set_targets(self, targets):
+        """Set the targets of the data. Either a list-like object or
+        {-1, 0, 1, None}"""
+
+        if not dev_tool.is_in_primitive(targets, (-1, 0, 1, None)):
+            assert len(self) == len(targets), "Invalid targets"
+        self._target_label = targets
 
     def copy_storage(self, branches=None, index=None):
         """Return a copy of self with only some of the columns (and therefore \
@@ -433,7 +461,7 @@ class HEPDataStorage(object):
 
         return new_storage
 
-    def get_LabeledDataStorage(self, index=None, random_state=None, shuffle=False):
+    def get_LabeledDataStorage(self, branches=None, index=None, random_state=None, shuffle=False):
         """Create and return an instance of class "LabeledDataStorage" from
         the REP repository.
 
@@ -443,7 +471,8 @@ class HEPDataStorage(object):
             Return a Labeled Data Storage instance created with the data
         """
         index = self._index if index is None else list(index)
-        new_lds = LabeledDataStorage(self.pandasDF(index=index), target=self.get_targets(index=index),
+        new_lds = LabeledDataStorage(self.pandasDF(branches=branches, index=index),
+                                     target=self.get_targets(index=index),
                                      sample_weight=self.get_weights(index=index),
                                      random_state=random_state, shuffle=shuffle)
         return new_lds

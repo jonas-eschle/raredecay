@@ -43,7 +43,8 @@ import cPickle as pickle
 PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+n_cpu_max = 8  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu)
 
 #------------------------------------------------------------------------------
 #  Datatype ending variables
@@ -90,10 +91,6 @@ MAX_FIGURES = 5000
 #------------------------------------------------------------------------------
 #  Output and plot configurations
 #------------------------------------------------------------------------------
-
-metric_prec = 3  # precision of the metric, digits
-
-
 
 
 # available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
@@ -146,9 +143,10 @@ DEFAULT_LOGGER_CFG = dict(
 #------------------------------------------------------------------------------
 
 DEFAULT_CLF_XGB = dict(
-    n_estimators=200,
-    eta=0.2,  # learning-rate
-    max_depth=6
+    n_estimators=180,
+    eta=0.1,  # learning-rate
+    max_depth=6,
+    subsample=0.85
 )
 
 DEFAULT_CLF_TMVA = dict(

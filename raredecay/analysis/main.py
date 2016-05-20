@@ -30,7 +30,7 @@ def main_run(run_mode, cfg_file=None):
     n_executions = 1
     for i in range(n_executions):
         if n_executions > 1:
-            print "run number " + i+1 + " of " + n_executions + " started"
+            print "run number", i+1, "of", n_executions, " started"
         run(run_mode, cfg_file=cfg_file)
         # show()
 
@@ -44,8 +44,10 @@ def main_run(run_mode, cfg_file=None):
     plt.show()
 
 if __name__ == '__main__':
-    main_run("reweight_comparison")
+    #main_run("reweight_comparison")
     #main_run("reweight")
-    #main_run("reweightCV")
+    main_run("reweightCV")
     #main_run("simple_plot")
     #main_run("hyper_optimization")
+
+

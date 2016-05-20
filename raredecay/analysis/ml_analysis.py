@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+from collections import Counter
 
 import hep_ml.reweight
 from rep.metaml import ClassifiersFactory
@@ -40,12 +41,13 @@ from sklearn.neighbors import KNeighborsClassifier
 from rep.metaml.folding import FoldingClassifier
 from rep.report import metrics
 from rep.report.classification import ClassificationReport
+from sklearn.metrics import recall_score, accuracy_score, classification_report
 
 # Hyperparameter optimization
 from rep.metaml import GridOptimalSearchCV, FoldingScorer, RandomParameterOptimizer, SubgridParameterOptimizer
 from rep.metaml.gridsearch import RegressionParameterOptimizer, AnnealingParameterOptimizer
 
-from raredecay.tools import dev_tool, data_tools
+from raredecay.tools import dev_tool, data_tools, data_storage
 from raredecay import globals_
 from raredecay.globals_ import out
 
@@ -86,13 +88,13 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
         else:
             label = np.array([0] * len(original_data) + [1] * len(target_data))
 
-    return data, weights, label
+    return data, label, weights
 
 
-def optimize_hyper_parameters(original_data, target_data, clf, config_clf, features=None,
-                     optimize_features=False, take_target_from_data=False,
-                     train_best=False):
-    """Optimize the hyperparameters of an XGBoost classifier"""
+def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
+                              features=None, optimize_features=False,
+                              take_target_from_data=False, train_best=False):
+    """Optimize the hyperparameters of a classifier"""
 
     # initialize variables and setting defaults
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
@@ -101,6 +103,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     n_checks = cfg.hyper_cfg['n_fold_checks']
     n_folds = cfg.hyper_cfg['n_folds']
     generator_type = cfg.hyper_cfg.get('generator', meta_config.DEFAULT_HYPER_GENERATOR)
+    parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
 
     # Create parameter for clf and hyper-search
     grid_param = {}
@@ -117,7 +120,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     out.IO_to_string()
 
     # initialize data
-    data, weights, label = _make_data(original_data, target_data, features=features,
+    data, label, weights = _make_data(original_data, target_data, features=features,
                                       target_from_data=take_target_from_data)
 
     # initialize classifier
@@ -127,12 +130,15 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
         clf = XGBoostClassifier(**config_clf)
     elif clf == 'rdf':
         clf_name = "Random Forest"
+        config_clf.update(n_jobs=globals_.free_cpus())  # needs less RAM if parallelized this way
+        parallel_profile=None
         clf = SklearnClassifier(RandomForestClassifier(**config_clf))
     elif clf == 'gb':
         clf_name = "GradientBoosting classifier"
         clf = SklearnClassifier(GradientBoostingClassifier(**config_clf))
     elif clf == 'nn':
         clf_name = "Theanets Neural Network"
+        parallel_profile=None if meta_config.use_gpu else parallel_profile
         clf = TheanetsClassifier(**config_clf)
 
 
@@ -145,11 +151,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     else:
         raise ValueError(str(generator) + " not a valid, implemented generator")
     scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
-    parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
     grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
 
     # Search for hyperparameters
-    logger.info("starting" + clf_name + " hyper optimization")
+    logger.info("starting " + clf_name + " hyper optimization")
     grid_finder.fit(data, label, weights)
     logger.info(clf_name + " hyper optimization finished")
     print clf_name + " parameters:"
@@ -165,17 +170,17 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
 
         # plots
         try:
-            name1 = "Learning curve of best XGBoost classifier"
+            name1 = "Learning curve of best classifier"
             out.save_fig(name1, **save_fig_cfg)
             report.roc().plot(title=name1)
             name2 = str("Feature correlation matrix of " + original_data.get_name() +
                         " and " + target_data.get_name())
             out.save_fig(name2, **save_ext_fig_cfg)
             report.features_correlation_matrix().plot(title=name2)
-            name3 = "Learning curve of best XGBoost classifier"
+            name3 = "Learning curve of best classifier"
             out.save_fig(name3, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name3)
-            name4 = "Feature importance of best XGBoost classifier"
+            name4 = "Feature importance of best classifier"
             out.save_fig(name4, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name4)
         except:
@@ -184,8 +189,8 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, featu
     out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
 
 
-def classify(original_data, target_data=None, validation=10, clf='xgb',
-             target_from_data=False):
+def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
+             make_plots=True, plot_title=None, curve_name=None, target_from_data=False):
     """Training and testing a classifier or distinguish a dataset
 
     Parameters
@@ -195,6 +200,8 @@ def classify(original_data, target_data=None, validation=10, clf='xgb',
     target_data : HEPDataStorage or None
         The target data for the training. If None, only the original_data will
         be used for the training.
+    features : list(str, str, str...)
+        List with features/branches to use in training.
     validation : int >= 1 or HEPDataStorage
         You can either do cross-validation or give a testsample for the data.
 
@@ -202,16 +209,121 @@ def classify(original_data, target_data=None, validation=10, clf='xgb',
             Enter an integer, which is the number of folds
         * Validation-dataset:
             Enter a *HEPDataStorage* which contains data to be tested on.
+            The target-label will be taken from it, so ensure that they are
+            not None!
     clf : str {'xgb'} or rep-classifier
         The classifier to be used for the training and predicting. If you don't
         pass a classifier (with *fit*, *predict* and *predict_proba* at least),
         an XGBoost classifier will be used.
+    make_plots : boolean
+        If True, plots of the classification will be made.
+    plot_title : str
+        A part of the title of the plots.
+    curve_name : str
+        A labeling for the plotted data.
     target_from_data : boolean
-        | If true, the target-values (labels; 0 or 1) will be taken from the
+        | If true, the target-values (labels; 0 or 1) for the original and the
+          target data will be taken from the
           data instead of assigned accordingly (original:1, target:0).
         | If no target_data is provided, the targets/labels will be taken
           from the original_data anyway.
+
+    Returns
+    -------
+    out : clf
+        Return the trained classifier.
+    .. note::
+        If validation was choosen to be KFold, the returned classifier well be
+        of instance :py:class:`~rep.metaml.folding.FoldingClassifier()`!
+    out : float (only if validation is not None)
+        Return the score (recall or roc auc) of the validation.
     """
+    logger.info("Starting classify with " + str(clf))
+    # initialize variables and data
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+
+    plot_title = "classify" if plot_title is None else plot_title
+    if (original_data is None) and (target_data is not None):
+        print "in classify: swap ori and target"
+        original_data, target_data = target_data, original_data  # switch places
+    if original_data is not None:
+        data, label, weights = _make_data(original_data, target_data, features=features)
+        data_name = original_data.get_name()
+        if target_data is not None:
+            data_name += " and " + target_data.get_name()
+    clf_name = 'classifier'
+    if clf == 'xgb':
+        clf_name = 'XGBoost classifier'
+        clf = XGBoostClassifier(**dict(meta_config.DEFAULT_CLF_XGB, nthreads=globals_.free_cpus()))
+        is_xgb = True
+
+    if isinstance(validation, (float, int, long)) and validation > 1:
+        if is_xgb:
+            parallel_profile = None
+        else:
+            parallel_profile = 'threads-' + str(min(globals_.free_cpus(), validation))
+
+        clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile)
+        lds_test = LabeledDataStorage(data, target=label, sample_weight=weights)  # folding-> same data for train and test
+
+    elif isinstance(validation, data_storage.HEPDataStorage):
+        lds_test = validation.get_LabeledDataStorage(branches=features)
+    elif validation is None:
+        make_plots = False
+    else:
+        raise ValueError("Validation method " + validation + " not a valid choice")
+
+    # train the classifier
+    if original_data is not None:
+        clf.fit(data, label, weights)  # if error "1 not in list" or similar occurs: no valid targets (None?)
+
+    # test the classifier
+    if validation is not None:
+        report = ClassificationReport({clf_name: clf}, lds_test)
+        n_classes = len(set(lds_test.get_targets()))
+        if n_classes == 2:
+            clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
+            out.add_output(["ROC AUC of ", clf_name, ": ", clf_score],
+                           obj_separator="", subtitle="Report of classify")
+            plot_name = clf_name + ", AUC = " + str(clf_score)
+            binary_test = True
+        elif n_classes == 1:
+            # score returns accuracy; if only one label present, it is the same as recall
+            y_true = lds_test.get_targets()
+            y_pred = clf.predict(lds_test.get_data())
+            w_test = lds_test.get_weights()
+            clf_score = clf.score(lds_test.get_data(), y_true, w_test)
+            clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)#, sample_weight=w_test)
+            class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
+            out.add_output(class_rep, section="Classification report " + clf_name)
+            out.add_output(["accuracy with sklearn: ", clf_name, ", ", curve_name, ": ", clf_score2],
+                           obj_separator="", subtitle="Report of classify")
+            out.add_output(["recall of ", clf_name, ", ", curve_name, ": ", clf_score],
+                           obj_separator="", subtitle="Report of classify")
+            binary_test = False
+            plot_name = clf_name + ", recall = " + str(clf_score)
+        else:
+            raise ValueError("Multi-label classification not supported")
+
+    #plots
+    if make_plots:
+
+        if curve_name is not None:
+            plot_name = curve_name + " " + plot_name
+        report.prediction[plot_name] = report.prediction.pop(clf_name)
+        report.estimators[plot_name] = report.estimators.pop(clf_name)
+
+        if binary_test:
+            out.save_fig(plt.figure(plot_title + ", ROC " + plot_name), save_fig_cfg)
+            report.roc(physical_notion=True).plot(title="ROC curve of" + clf_name + " on data:" +
+                                                   data_name + "\nROC AUC = " + str(clf_score))
+            plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
+
+            out.save_fig(plt.figure("Learning curve" + plot_name), save_fig_cfg)
+            report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " + plot_name)
+
+    return clf, clf_score if clf_score is not None else clf
 
 
 def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
@@ -267,6 +379,9 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
 
     # check for valid user input
+    if data_tools.is_pickle(reweighter):
+        return data_tools.adv_return(reweighter, save_name=reweight_saveas)
+
     try:
         reweighter = __REWEIGHT_MODE.get(reweighter.lower())
     except KeyError:
@@ -414,7 +529,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     n_cpu = globals_.free_cpus()
     data_name = original_data.get_name() + " and " + target_data.get_name()
 
-    data, weights, label = _make_data(original_data, target_data, features=features,
+    data, label, weights = _make_data(original_data, target_data, features=features,
                                      weight_target=weight_target,
                                      weight_original=weight_original,
                                      target_from_data=take_target_from_data)

@@ -186,9 +186,9 @@ data = dict(
 # CLASSIFIER TRAINING BEGIN
 #==============================================================================
 opt_features = ['B_PT', 'nTracks', 'nSPDHits',
-              #, 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+               'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
               #'B_IPCHI2_OWNPV',
-                #'l1_PT', 'l1_IPCHI2_OWNPV',
+                'l1_PT', 'l1_IPCHI2_OWNPV',
                # 'B_ENDVERTEX_CHI2',
               #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
@@ -196,7 +196,7 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
 hyper_cfg = dict(
     optimize_clf='rdf',
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=2,
+    n_evaluations=80,
     n_folds=10,
     n_fold_checks=1
 )
@@ -217,8 +217,8 @@ cfg_xgb = dict(
 )
 
 cfg_gb = dict(
-    learning_rate=0.2,
-    n_estimators=75,
+    learning_rate=0.2,  # 0.2
+    n_estimators=75,  # 75
     max_depht=range(2, 20),
     min_samples_split=range(2, 2000),
     min_samples_leaf=1,
@@ -229,11 +229,11 @@ cfg_gb = dict(
 )
 
 cfg_rdf = dict(
-    n_estimators=range(30, 3000),
-    max_features='auto',
-    max_depth=None,
-    min_samples_split=2,
-    min_samples_leaf=1,
+    n_estimators=1500,  # 1600
+    max_features= 'auto', # only 1 feature seems to be pritty good...
+    max_depth=[1,2,3,5,7,10,14,18,25,30,35,40,45,50,60,70,80,90,100],
+    min_samples_split=range(2,3000),
+    min_samples_leaf=range(1,3000),
     min_weight_fraction_leaf=0.,
     max_leaf_nodes=None,
     bootstrap=True,

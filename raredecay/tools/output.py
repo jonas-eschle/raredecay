@@ -341,7 +341,7 @@ class OutputHandler(object):
         # ask if you want to add something to the run_name (and folder name)
         if meta_config.PROMPT_FOR_COMMENT:
             temp_add = str(raw_input("Enter an (optional) extension to the run-name and press 'enter':\n"))
-            run_name += temp_add
+            run_name += " " + temp_add if temp_add != "" else ""
             #del temp_add
             # TODO: implement promt with timeout
 
