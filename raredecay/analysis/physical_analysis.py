@@ -160,6 +160,7 @@ def reweightCV(cfg, logger):
     from raredecay.globals_ import out
     import matplotlib.pyplot as plt
     import numpy as np
+    import copy
 
 
     out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
@@ -174,9 +175,8 @@ def reweightCV(cfg, logger):
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     # TODO: remove, debug: reweight_real = reweight_real.copy_storage(index=range(6600))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_mc_reweighted = reweight_mc.copy_storage()
+    reweight_mc_reweighted = reweight_mc.copy_storage() # produces an error: copy.deepcopy(reweight_mc)
 
-    print "in reweightCV: len real, mc", len(reweight_real), len(reweight_mc)
     reweight_real.make_folds(n_folds=n_folds)
     reweight_mc.make_folds(n_folds=n_folds)
     logger.info("Data created, starting folding")
@@ -203,27 +203,34 @@ def reweightCV(cfg, logger):
                                               branches=cfg.reweight_branches)
         if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
             plt.figure("new weights of fold " + str(fold))
-        plt.hist(new_weights,bins=40, log=True)
+            plt.hist(new_weights,bins=40, log=True)
         test_mc.set_targets(1)
         clf, score_gb[fold] = ml_ana.classify(train_mc, train_real, validation=test_mc,
-                                        curve_name="mc reweighted as real",
-                                        plot_title="fold " + str(fold) + " reweighted validation")
+                                            curve_name="mc reweighted as real",
+                                            plot_title="fold " + str(fold) + " reweighted validation")
 
+        # Get the max and min for "calibration" of the possible score for the reweighted data by
+        # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
         test_mc.set_weights(1)
         tmp_, score_min[fold] = ml_ana.classify(clf=clf, validation=test_mc, curve_name="mc as real")
         test_real.set_targets(1)
         tmp_, score_max[fold] = ml_ana.classify(clf=clf, validation=test_real, curve_name="real as real")
 
 
+
         if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
+            assert len(reweight_mc) == len(reweight_mc_reweighted), "Something bad happend somehow..."
             reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index(), concat=True)
         logger.info("fold " + str(fold) + "finished")
 
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
-        ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, curve_name="mc reweighted", n_folds=n_folds)
+        ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='all',
+                        curve_name="mc reweighted", n_folds=n_folds)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
+        out.save_fig(figure="New weights of total mc")
+        plt.hist(reweight_mc_reweighted.get_weights(), bins=30)
     out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification")
     score_list = [("GBReweighted: ", score_gb), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
     for name, score in score_list:

@@ -194,9 +194,9 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 hyper_cfg = dict(
-    optimize_clf='gb',
+    optimize_clf='erf',
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=8,
+    n_evaluations=20,
     n_folds=10,
     n_fold_checks=1
 )
@@ -230,10 +230,10 @@ cfg_gb = dict(  # optimised
 
 cfg_rdf = dict(
     n_estimators=1500,  # 1600
-    max_features= 'auto', # only 1 feature seems to be pritty good...
-    max_depth=[1,2,3,5,7,10,14,18,25,30,35,40,45,50,60,70,80,90,100],
-    min_samples_split=range(2,3000),
-    min_samples_leaf=range(1,3000),
+    max_features= 'auto', # only 1 feature seems to be pretty good...
+    max_depth=range(100,250,50),
+    min_samples_split=range(80,240,40),
+    min_samples_leaf=range(90,300,40),
     min_weight_fraction_leaf=0.,
     max_leaf_nodes=None,
     bootstrap=True,
@@ -241,8 +241,24 @@ cfg_rdf = dict(
 
 )
 
+cfg_erf = dict(
+    n_estimators=100,
+    max_features='auto',
+    max_depth=None,
+    min_samples_split=2,
+    min_samples_leaf=range(1, 100,),
+    min_weight_fraction_leaf=0,
+    max_leaf_nodes=None,
+    bootstrap=False
+)
+
+cfg_ada = dict(
+    n_estimators=[2000, 2001],
+    learning_rate=0.1
+)
+
 cfg_nn = dict(
-    layers=[30, 30, 30],
+    layers=[500, 500, 500],
     hidden_activation='logistic',
     output_activation='linear',
     input_noise=[0,0.001],  # [0,1,2,3,4,5,10,20],
@@ -253,7 +269,7 @@ cfg_nn = dict(
     weight_l1=0.01,
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'esgd', 'learning_rate': 0.1, 'min_improvement': 0.1}],
+    trainers=[{'optimize': 'rmsprop', 'learning_rate': 0.1, 'min_improvement': 0.1}],
 )
 #==============================================================================
 # CLASSIFIER TRAINING END

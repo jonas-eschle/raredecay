@@ -30,7 +30,7 @@ from rep.data import LabeledDataStorage
 
 # classifier imports
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, ExtraTreesClassifier
 from sklearn.ensemble import AdaBoostClassifier, VotingClassifier
 from rep.estimators.theanets import TheanetsClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -140,6 +140,12 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         clf_name = "Theanets Neural Network"
         parallel_profile=None if meta_config.use_gpu else parallel_profile
         clf = TheanetsClassifier(**config_clf)
+    elif clf == 'erf':
+        clf_name = "Extra Random Forest"
+        clf = SklearnClassifier(ExtraTreesClassifier(**config_clf))
+    elif clf == 'ada':
+        clf_name = "AdaBoost classifier"
+        clf = SklearnClassifier(AdaBoostClassifier(**config_clf))
 
 
     if generator_type == 'regression':
@@ -189,7 +195,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
 
 
-def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
+def classify(original_data=None, target_data=None, features=None, validation=10, clf='rdf',
              make_plots=True, plot_title=None, curve_name=None, target_from_data=False):
     """Training and testing a classifier or distinguish a dataset
 
@@ -256,10 +262,16 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     if clf == 'xgb':
         clf_name = 'XGBoost classifier'
         clf = XGBoostClassifier(**dict(meta_config.DEFAULT_CLF_XGB, nthreads=globals_.free_cpus()))
-        is_xgb = True
+        is_parallel = True
+    if clf == 'rdf':
+        clf_name = "RandomForest classifier"
+        cfg_clf = meta_config.DEFAULT_CLF_RDF,
+        cfg_clf = dict(n_jobs=globals_.free_cpus(), random_state=globals_.randint+432)
+        clf = SklearnClassifier(RandomForestClassifier(**cfg_clf))
+        is_parallel = True
 
     if isinstance(validation, (float, int, long)) and validation > 1:
-        if is_xgb:
+        if is_parallel:
             parallel_profile = None
         else:
             parallel_profile = 'threads-' + str(min(globals_.free_cpus(), validation))
@@ -295,6 +307,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             w_test = lds_test.get_weights()
             clf_score = clf.score(lds_test.get_data(), y_true, w_test)
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)#, sample_weight=w_test)
+            print "in classify: prediction ", y_pred
             class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
             out.add_output(class_rep, section="Classification report " + clf_name)
             out.add_output(["accuracy with sklearn: ", clf_name, ", ", curve_name, ": ", clf_score2],

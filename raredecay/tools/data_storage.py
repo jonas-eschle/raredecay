@@ -445,18 +445,20 @@ class HEPDataStorage(object):
 
         if branches is not None:
             branches = data_tools.to_list(branches)
-            new_root_dic['branches'] = branches
+            new_root_dic['branches'] = copy.deepcopy(branches)
 
-        new_targets = self.get_targets(index=index, inter=True)
-        new_weights = self.get_weights(index=index, inter=True)
+        new_targets = copy.deepcopy(self.get_targets(index=index, inter=True))
+        new_weights = copy.deepcopy(self.get_weights(index=index, inter=True))
+        new_index = copy.deepcopy(index)
+        new_add_label = copy.deepcopy(self.add_label)
 
         for column in new_root_dic['branches']:
-            new_labels[column] = self._label_dic.get(column)
+            new_labels[column] = copy.deepcopy(self._label_dic.get(column))
 
         new_storage = HEPDataStorage(new_root_dic, target=new_targets,
                                      sample_weights=new_weights,
-                                     data_labels=new_labels, index=index,
-                                     add_label=self.add_label, data_name=self._name[0],
+                                     data_labels=new_labels, index=new_index,
+                                     add_label=new_add_label, data_name=self._name[0],
                                      data_name_addition=self._name[1] + " cp")
 
         return new_storage

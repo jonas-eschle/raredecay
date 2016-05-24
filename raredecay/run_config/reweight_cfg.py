@@ -11,7 +11,7 @@ from root_numpy import root2array
 
 
 # the name of the run and the output folder
-RUN_NAME = 'ReweightingCV test 5'
+RUN_NAME = 'ReweightingCV gb'
 run_message = str("Test-run" +
                 " ")
 #==============================================================================
@@ -174,8 +174,8 @@ reweight_cv_cfg = dict(
 # branches to use for the reweighting
 reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
                      'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-                      #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-                      #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+                      ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+                      'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
 
 # start configuration for gradient boosted reweighter
@@ -186,11 +186,11 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(  # GB reweighter configuration
-        n_estimators=500,  # 80
-        max_depth=6,  # 6 or n_features
+        n_estimators=50,  # 80
+        max_depth=4,  # 6 or number of features
         learning_rate=0.1,  # 0.1
-        min_samples_leaf=2,  # 200
-        loss_regularization=10.0,  #
+        min_samples_leaf=200,  # 200
+        loss_regularization=1000.0,  #
         gb_args=dict(
             subsample=0.8, # 0.8
             #random_state=43,
