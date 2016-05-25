@@ -318,7 +318,7 @@ class HEPDataStorage(object):
         warnings.warn("Function 'extend' not yet implemented")
 
     def pandasDF(self, branches=None, treename=None, filenames=None,
-                 selection=None, index=None):
+                 selection=None, index=None, weights_as_events=False):
         """Convert the data to pandas or cut an already existing data frame and
         return it.
 
@@ -327,10 +327,33 @@ class HEPDataStorage(object):
         Parameters
         ---------
         branches, treename, filenames, selection : str
-            Arguments for the :py:func:`~root_numpy.root2rec` function.
+            Arguments for the :py:func:`~root_numpy.root2rec` ls
+            function.
         index : 1-D list
             The index from the root-branche to be used. If None, all indices
             will be used (all the HEPDataStorage instance was created with).
+        weights_as_events : boolean or int >= 1
+            If False, the data will returned as usual. If an integer is
+            provided, this has three effects:
+
+            1. The **weights** are divided by it's smallest element (so
+               the smallest weight will be one)
+
+            2. multiplied by the provided integer
+
+            3. each event is multiple times recreated and added to the data
+               according to its (new created) weight.
+
+            As the weight of an event basically is the occurence of it, this
+            can be seen as a *weight-to-events* conversion and is useful,
+            if you have few data with sometimes high weights (which then can
+            cause statistic effects if badly distributed)
+
+            Don't forget to manually assing weights 1 and not just take
+            the weights from data.
+
+        .. note:: With highly unbalanced weights this can lead to a memory
+                  explosion!
         """
         index = self._index if index is None else list(index)
 
@@ -350,6 +373,22 @@ class HEPDataStorage(object):
             data_out = np.array(data_out.iloc[index])
             # apply "normal" indices for the output array
             data_out = pd.DataFrame(data_out, index=range(len(data_out)))
+
+        if isinstance(weights_as_events, int) and self.get_weights(index=index, inter=True) not in (None, 1):
+            assert weights_as_events >= 1, "no value < 1 possible (how?! a half event?)"
+            weights = self.get_weights(index=index)
+            weights = weights / min(weights) * weights_as_events
+            weights = map(round, weights)
+            assert min(weights) >= 0.95, "weights are not higher then 1, but they should be."
+            temp_df = pd.DataFrame()
+            for i, tmp_ in enumerate(data_out.iterrows()):
+                if int(weights[i] + 0.005) == 1:
+                    continue
+                else:
+                    for tmp_ in range(1, i):
+                        temp_df = temp_df.append(data_out.iloc[i], ignore_index=True)
+            data_out = data_out.append(temp_df, ignore_index=True)
+
 
         # reassign branch names after conversation.
         # And pandas has naming "problems" if only 1 branch

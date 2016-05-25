@@ -53,25 +53,33 @@ class Mayou(Classifier):
             n_estimators=350,
             eta=0.1
         ),
-#        rdf=dict(
-#            n_estimators=5,
-#        ),
+        rdf=dict(
+            n_estimators=1500,  # 1600
+            max_features= 'auto', # only 1 feature seems to be pretty good...
+            max_depth=120,
+            min_samples_split=250,
+            min_samples_leaf=150,
+            min_weight_fraction_leaf=0.,
+            max_leaf_nodes=None,
+            bootstrap=True,
+            #oob_score=True,
+        ),
 #        erf=dict(
 #            n_estimators=50,
 #        ),
         nn=dict(
-            layers=[500, 500, 500],
-            hidden_activation='logistic',
-            output_activation='linear',
+            layers=[500, 100, 20],
+            hidden_activation='tanh',
+            output_activation='sigmoid',
             input_noise=0.01,  # [0,1,2,3,4,5,10,20],
             hidden_noise=0,
             input_dropout=0,
             hidden_dropout=0,
             decode_from=1,
             weight_l1=0.01,
-            weight_l2=0.01,
+            weight_l2=0.03,
             scaler='standard',
-            trainers=[{'optimize': 'rmsprop', 'learning_rate': 0.1, 'min_improvement': 0.1}],
+            trainers=[{'optimize': 'nag', 'learning_rate': 0.1, 'min_improvement': 0.1}],
         ),
 #        ada=dict(
 #            n_estimators=300,
@@ -79,19 +87,19 @@ class Mayou(Classifier):
 #        ),
         gb=dict(
             learning_rate=0.05,
-        n_estimators=300,
-        max_depth=4,
-        min_samples_split=600,
-        min_samples_leaf=1,
-        min_weight_fraction_leaf=0.,
-        subsample=1,
-        max_features=None,
-        max_leaf_nodes=None
+            n_estimators=300,
+            max_depth=4,
+            min_samples_split=600,
+            min_samples_leaf=1,
+            min_weight_fraction_leaf=0.,
+            subsample=1,
+            max_features=None,
+            max_leaf_nodes=None
         ),
     )
     __DEFAULT_BAG_CFG = dict(
         n_estimators=20,
-        max_samples=0.8,
+        max_samples=0.9,
         max_features=1.0,
     )
 
@@ -151,7 +159,7 @@ class Mayou(Classifier):
         # TODO: change dummy method
         return self._transform(X)
 
-    def _make_clf(self, clf, bagging=20):
+    def _make_clf(self, clf, bagging=None):
         """Creates a classifier from a dict or returns the clf"""
         if isinstance(clf, dict):
             key, val = clf.popitem()
@@ -160,6 +168,10 @@ class Mayou(Classifier):
             except KeyError:
                 logger.error(str(val) + " not an implemented classifier.")
                 raise
+
+            bagging = val.pop('bagging', bagging)
+
+
             if key == 'rdf':
                 config_clf = dict(val)  # possible multi-threading arguments
                 clf = SklearnClassifier(RandomForestClassifier(**config_clf))
@@ -385,11 +397,12 @@ if __name__ == '__main__':
 
     lds = LabeledDataStorage(X_test, y_test, w_test)
     #clf = SklearnClassifier(RandomForestClassifier())
-    clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8)
-    clf = Mayou(bagging_base=None, bagging_stack=None, stacking=clf_stacking, features_stack=branch_names)
+    #clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8)
+    clf_stacking='nn'
+    clf = Mayou(bagging_base=10, bagging_stack=None, stacking=clf_stacking)#, features_stack=branch_names)
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
-    clf = SklearnClassifier(NuSVC(cache_size=1000000))
+    #clf = SklearnClassifier(NuSVC(cache_size=1000000))
     if folding:
         X_train = X_test = X
         y_train = y_test = y

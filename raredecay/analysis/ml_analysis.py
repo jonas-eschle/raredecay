@@ -60,33 +60,40 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
-                  weight_original=None, weight_target=None):
+                  weight_original=None, weight_target=None, conv_ori_weights=False,
+                  conv_tar_weights=False):
     """Return the concatenated data, weights and labels for classifier training
     """
 
     if dev_tool.is_in_primitive(weight_original, None):
-        weight_original = original_data.get_weights()
+        if conv_ori_weights:
+            weight_original = np.ones(len(original_data))
+        else:
+            weight_original = original_data.get_weights()
     assert len(weight_original) == len(original_data), "Original weights have wrong length"
 
     if target_data is None:
-        data = original_data.pandasDF(branches=features)
+        data = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights)
         weights = weight_original
         label = original_data.get_targets()
     else:
         # concatenate the original and target data
-        data = pd.concat([original_data.pandasDF(branches=features),
-                          target_data.pandasDF(branches=features)])
+        data = pd.concat([original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights),
+                          target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights)])
 
         # take weights from data if not explicitly specified
         if dev_tool.is_in_primitive(weight_target, None):
-            weight_target = target_data.get_weights()
+            if conv_ori_weights:
+                weight_original = np.ones(len(original_data))
+            else:
+                weight_target = target_data.get_weights()
         assert len(weight_target) == len(target_data), "Target weights have wrong length"
         weights = np.concatenate((weight_original, weight_target))
 
         if target_from_data:  # if "original" and "target" are "mixed"
             label = np.concatenate((original_data.get_targets(), target_data.get_targets()))
         else:
-            label = np.array([0] * len(original_data) + [1] * len(target_data))
+            label = np.zeros(len(original_data)) + np.ones(len(target_data))
 
     return data, label, weights
 
@@ -195,7 +202,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
 
 
-def classify(original_data=None, target_data=None, features=None, validation=10, clf='rdf',
+def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
              make_plots=True, plot_title=None, curve_name=None, target_from_data=False):
     """Training and testing a classifier or distinguish a dataset
 
@@ -216,7 +223,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         * Validation-dataset:
             Enter a *HEPDataStorage* which contains data to be tested on.
             The target-label will be taken from it, so ensure that they are
-            not None!
+            not None! To use two datasets, you can also use a list of
+            **maximum** two datastorages.
     clf : str {'xgb'} or rep-classifier
         The classifier to be used for the training and predicting. If you don't
         pass a classifier (with *fit*, *predict* and *predict_proba* at least),
@@ -283,6 +291,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         lds_test = validation.get_LabeledDataStorage(branches=features)
     elif validation is None:
         make_plots = False
+    elif isinstance(validation, list) and len(validation) in (1, 2):
+        data, target, sample_weight = _make_data(validation[0], validation[1])
+        lds_test = LabeledDataStorage(data=data, target=target, sample_weight=sample_weight)
     else:
         raise ValueError("Validation method " + validation + " not a valid choice")
 
@@ -466,6 +477,7 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
 
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
+             conv_ori_weights=False, conv_tar_weights=False,
              config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
@@ -505,6 +517,10 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     weight_target : numpy array 1-D [n_samples]
         The weights for the target data. Only use if you don't want to use
         the weights contained in the target_data.
+    conv_ori_weights : boolean
+        If True, *convert* the original weights to more events.
+    conv_tar_weights : boolean
+        If True, *convert* the target weights to more events.
     config_clf : dict
         The configuration for the classifier. If None, a default config is
         taken.
@@ -545,7 +561,9 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     data, label, weights = _make_data(original_data, target_data, features=features,
                                      weight_target=weight_target,
                                      weight_original=weight_original,
-                                     target_from_data=take_target_from_data)
+                                     target_from_data=take_target_from_data,
+                                     conv_ori_weights=conv_ori_weights,
+                                     conv_tar_weights=conv_tar_weights)
 
     # initialize classifiers and put them together into the factory
     factory = ClassifiersFactory()

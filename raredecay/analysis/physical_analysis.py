@@ -225,10 +225,17 @@ def reweightCV(cfg, logger):
 
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='all',
-                        curve_name="mc reweighted", n_folds=n_folds)
+                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=True)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
+
+        reweight_real.make_folds(n_folds=3)
+        real_train, real_test = reweight_real.get_fold()
+        ml_ana.classify(reweight_mc_reweighted, real_train, validation=[real_test, reweight_mc],
+                        plot_tile="Trained with reweighted and real data, tested on mc and real",
+                        curve_name="mc vs real by reweighted, real")
+
         out.save_fig(figure="New weights of total mc")
         plt.hist(reweight_mc_reweighted.get_weights(), bins=30)
     out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification")
