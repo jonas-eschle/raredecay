@@ -50,8 +50,10 @@ class Mayou(Classifier):
 
     __DEFAULT_CLF_CFG = dict(
         xgb=dict(
-            n_estimators=350,
-            eta=0.1
+            n_estimators=450,
+            eta=0.1,
+            subsample=0.9,
+            bagging=None
         ),
         rdf=dict(
             n_estimators=1500,  # 1600
@@ -61,17 +63,19 @@ class Mayou(Classifier):
             min_samples_leaf=150,
             min_weight_fraction_leaf=0.,
             max_leaf_nodes=None,
-            bootstrap=True,
-            #oob_score=True,
+            bootstrap=False,
+            oob_score=False,
+            class_weight=None,
+            bagging=None
         ),
 #        erf=dict(
 #            n_estimators=50,
 #        ),
         nn=dict(
-            layers=[500, 100, 20],
-            hidden_activation='tanh',
-            output_activation='sigmoid',
-            input_noise=0.01,  # [0,1,2,3,4,5,10,20],
+            layers=[200, 50],
+            hidden_activation='logistic',
+            output_activation='linear',
+            input_noise=0.02,  # [0,1,2,3,4,5,10,20],
             hidden_noise=0,
             input_dropout=0,
             hidden_dropout=0,
@@ -80,6 +84,7 @@ class Mayou(Classifier):
             weight_l2=0.03,
             scaler='standard',
             trainers=[{'optimize': 'nag', 'learning_rate': 0.1, 'min_improvement': 0.1}],
+            bagging=None
         ),
 #        ada=dict(
 #            n_estimators=300,
@@ -87,14 +92,15 @@ class Mayou(Classifier):
 #        ),
         gb=dict(
             learning_rate=0.05,
-            n_estimators=300,
+            n_estimators=500,
             max_depth=4,
             min_samples_split=600,
             min_samples_leaf=1,
             min_weight_fraction_leaf=0.,
-            subsample=1,
+            subsample=0.8,
             max_features=None,
-            max_leaf_nodes=None
+            max_leaf_nodes=None,
+            bagging=None
         ),
     )
     __DEFAULT_BAG_CFG = dict(
@@ -399,7 +405,7 @@ if __name__ == '__main__':
     #clf = SklearnClassifier(RandomForestClassifier())
     #clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8)
     clf_stacking='nn'
-    clf = Mayou(bagging_base=10, bagging_stack=None, stacking=clf_stacking)#, features_stack=branch_names)
+    clf = Mayou(bagging_base=None, bagging_stack=None, stacking=clf_stacking)#, features_stack=branch_names)
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))

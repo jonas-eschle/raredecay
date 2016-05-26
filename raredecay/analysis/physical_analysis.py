@@ -224,11 +224,14 @@ def reweightCV(cfg, logger):
         logger.info("fold " + str(fold) + "finished")
 
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
-        ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='all',
-                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=True)
+        logger.info("Starting data_ROC at the end of all")
+        ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
+                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=3)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
+
+        logger.info("Finished data_ROC, starting second data_ROC")
 
         reweight_real.make_folds(n_folds=3)
         real_train, real_test = reweight_real.get_fold()

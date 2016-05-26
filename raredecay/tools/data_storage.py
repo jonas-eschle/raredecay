@@ -374,19 +374,26 @@ class HEPDataStorage(object):
             # apply "normal" indices for the output array
             data_out = pd.DataFrame(data_out, index=range(len(data_out)))
 
-        if isinstance(weights_as_events, int) and self.get_weights(index=index, inter=True) not in (None, 1):
+        flag = isinstance(weights_as_events, int) and not isinstance(weights_as_events, bool)
+        if flag and not dev_tool.is_in_primitive(self.get_weights(index=index, inter=True), (None, 1)):
             assert weights_as_events >= 1, "no value < 1 possible (how?! a half event?)"
             weights = self.get_weights(index=index)
             weights = weights / min(weights) * weights_as_events
             weights = map(round, weights)
             assert min(weights) >= 0.95, "weights are not higher then 1, but they should be."
             temp_df = pd.DataFrame()
+            self.logger.info("Length of data was " + str(len(weights)) + ", new one will be " + str(sum(weights)))
+            # TODO: veeeery inefficient loop!
             for i, tmp_ in enumerate(data_out.iterrows()):
-                if int(weights[i] + 0.005) == 1:
+                int_weight = int(weights[i] + 0.005)
+                if i %100 == 0:
+                    self.logger.info("adding row nr " + str(i) + " with weight " + str(int_weight))
+                if  int_weight == 1:
                     continue
                 else:
-                    for tmp_ in range(1, i):
+                    for tmp_ in range(1, int_weight):
                         temp_df = temp_df.append(data_out.iloc[i], ignore_index=True)
+            self.logger.info("temp Dataframe created, appending")
             data_out = data_out.append(temp_df, ignore_index=True)
 
 

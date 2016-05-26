@@ -67,33 +67,39 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
 
     if dev_tool.is_in_primitive(weight_original, None):
         if conv_ori_weights:
-            weight_original = np.ones(len(original_data))
+            weight_original = None
+            todo_ori_weights = True
         else:
             weight_original = original_data.get_weights()
-    assert len(weight_original) == len(original_data), "Original weights have wrong length"
+    #assert len(weight_original) == len(original_data), "Original weights have wrong length"
 
     if target_data is None:
         data = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights)
+        # TODO:
+        raise NotImplementedError("length of weigths and labels have to be adjusted")
         weights = weight_original
         label = original_data.get_targets()
     else:
         # concatenate the original and target data
-        data = pd.concat([original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights),
-                          target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights)])
+        original = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights)
+        target = target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights)
+        data = pd.concat([original, target])
 
         # take weights from data if not explicitly specified
         if dev_tool.is_in_primitive(weight_target, None):
-            if conv_ori_weights:
-                weight_original = np.ones(len(original_data))
+            if conv_tar_weights:
+                weight_target = np.ones(len(target))
             else:
                 weight_target = target_data.get_weights()
-        assert len(weight_target) == len(target_data), "Target weights have wrong length"
+        #assert len(weight_target) == len(target_data), "Target weights have wrong length"
+        if todo_ori_weights:
+            weight_original = np.zeros(len(original))
         weights = np.concatenate((weight_original, weight_target))
 
         if target_from_data:  # if "original" and "target" are "mixed"
             label = np.concatenate((original_data.get_targets(), target_data.get_targets()))
         else:
-            label = np.zeros(len(original_data)) + np.ones(len(target_data))
+            label = np.concatenate((np.zeros(len(original_data)), np.ones(len(target_data))))
 
     return data, label, weights
 
@@ -321,7 +327,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             print "in classify: prediction ", y_pred
             class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
             out.add_output(class_rep, section="Classification report " + clf_name)
-            out.add_output(["accuracy with sklearn: ", clf_name, ", ", curve_name, ": ", clf_score2],
+            out.add_output(["accuracy with sklearn (NO WEIGHTS!): ", clf_name, ", ", curve_name, ": ", clf_score2],
                            obj_separator="", subtitle="Report of classify")
             out.add_output(["recall of ", clf_name, ", ", curve_name, ": ", clf_score],
                            obj_separator="", subtitle="Report of classify")
