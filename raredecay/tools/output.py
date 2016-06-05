@@ -443,6 +443,8 @@ class OutputHandler(object):
         #del temp_out_file  # block abuse
         self.add_output(["Errors encountered during run", meta_config._error_count],
             obj_separator=" : ")
+        self.add_output(["Warnings encountered during run", meta_config._warning_count],
+            obj_separator=" : ")
 
 #==============================================================================
 #    if a folder to overwrite exists, delete it and move the temp folder

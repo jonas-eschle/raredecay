@@ -43,7 +43,7 @@ import cPickle as pickle
 PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+n_cpu_max = 1  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu)
 
 #------------------------------------------------------------------------------
@@ -143,10 +143,10 @@ DEFAULT_LOGGER_CFG = dict(
 #------------------------------------------------------------------------------
 
 DEFAULT_CLF_XGB = dict(
-    n_estimators=180,
-    eta=0.1,  # learning-rate
+    n_estimators=10,
+    eta=0.02,  # learning-rate
     max_depth=6,
-    subsample=0.85
+    subsample=0.8
 )
 
 DEFAULT_CLF_TMVA = dict(
@@ -209,6 +209,12 @@ def error_occured(max_error_count=MAX_ERROR_COUNT):
     _error_count += 1
     if _error_count >= max_error_count:
         raise RuntimeError("Too many errors encountered from different sources")
+
+_warning_count = 0  # increases if an error happens
+def warning_occured():
+    """Call this function every time a warning occurs"""
+    global _warning_count
+    _warning_count += 1
 
 
 

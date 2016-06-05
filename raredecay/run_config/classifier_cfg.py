@@ -194,9 +194,9 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 hyper_cfg = dict(
-    optimize_clf='erf',
+    optimize_clf='nn',
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=20,
+    n_evaluations=10,
     n_folds=10,
     n_fold_checks=1
 )
@@ -205,6 +205,7 @@ hyper_cfg = dict(
 # XGBoost
 #------------------------------------------------------------------------------
 import numpy as np
+
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
     n_estimators=75,  # stage 1 to optimize
@@ -229,14 +230,14 @@ cfg_gb = dict(  # optimised
 )
 
 cfg_rdf = dict(
-    n_estimators=1500,  # 1600
+    n_estimators=300,  # 1600
     max_features= 'auto', # only 1 feature seems to be pretty good...
-    max_depth=range(100,250,50),
-    min_samples_split=range(80,240,40),
-    min_samples_leaf=range(90,300,40),
+    max_depth=200,  # range(100,250,50),
+    min_samples_split=200,  # range(80,240,40),
+    min_samples_leaf=150,  # range(90,300,40),
     min_weight_fraction_leaf=0.,
     max_leaf_nodes=None,
-    bootstrap=True,
+    bootstrap=False,
     #oob_score=True,
 
 )
@@ -252,24 +253,29 @@ cfg_erf = dict(
     bootstrap=False
 )
 
+from sklearn.tree import ExtraTreeClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+
 cfg_ada = dict(
-    n_estimators=[2000, 2001],
-    learning_rate=0.1
+    n_estimators=range(10, 500, 30),
+    learning_rate=0.1,
+    base_estimator=ExtraTreesClassifier(n_estimators=300, n_jobs=6),
 )
 
 cfg_nn = dict(
-    layers=[500, 500, 500],
+    layers=[100, 100],
     hidden_activation='logistic',
     output_activation='linear',
-    input_noise=[0,0.001],  # [0,1,2,3,4,5,10,20],
+    input_noise=0,  # [0,1,2,3,4,5,10,20],
     hidden_noise=0,
     input_dropout=0,
-    hidden_dropout=0,
+    hidden_dropout=np.arange(0.01, 0.3, 0.01),
     decode_from=1,
     weight_l1=0.01,
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'rmsprop', 'learning_rate': 0.1, 'min_improvement': 0.1}],
+    trainers=[{'optimize': 'adagrad', 'patience': 50, 'learning_rate': 2, 'min_improvement': 0.005,
+               'momentum':0.5, 'nesterov':True, 'loss': 'xe'}],
 )
 #==============================================================================
 # CLASSIFIER TRAINING END

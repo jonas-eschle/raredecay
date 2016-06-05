@@ -64,42 +64,39 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
                   conv_tar_weights=False):
     """Return the concatenated data, weights and labels for classifier training
     """
-
-    if dev_tool.is_in_primitive(weight_original, None):
-        if conv_ori_weights:
-            weight_original = None
-            todo_ori_weights = True
-        else:
+    min_weight = None
+    if (original_data is not None) and (target_data is not None) and conv_ori_weights >= 1 and conv_tar_weights >= 1:
+        if dev_tool.is_in_primitive(weight_original, None):
             weight_original = original_data.get_weights()
+        if dev_tool.is_in_primitive(weight_target, None):
+            weight_target = target_data.get_weights()
+        min_weight = min(min(weight_original), min(weight_target))
+
+    if dev_tool.is_in_primitive(weight_original, None) or conv_ori_weights >= 1:
+            weight_original = original_data.get_weights(weights_as_events=conv_ori_weights, min_weight=min_weight)
     #assert len(weight_original) == len(original_data), "Original weights have wrong length"
 
     if target_data is None:
-        data = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights)
-        # TODO:
-        raise NotImplementedError("length of weigths and labels have to be adjusted")
+        data = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
         weights = weight_original
-        label = original_data.get_targets()
+        label = original_data.get_targets(weights_as_events=conv_ori_weights, min_weight=min_weight)
     else:
         # concatenate the original and target data
-        original = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights)
-        target = target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights)
+        original = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
+        target = target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights, min_weight=min_weight)
         data = pd.concat([original, target])
 
         # take weights from data if not explicitly specified
-        if dev_tool.is_in_primitive(weight_target, None):
-            if conv_tar_weights:
-                weight_target = np.ones(len(target))
-            else:
-                weight_target = target_data.get_weights()
+        if dev_tool.is_in_primitive(weight_target, None) or conv_ori_weights >= 1:
+            weight_target = target_data.get_weights(weights_as_events=conv_tar_weights, min_weight=min_weight)
         #assert len(weight_target) == len(target_data), "Target weights have wrong length"
-        if todo_ori_weights:
-            weight_original = np.zeros(len(original))
         weights = np.concatenate((weight_original, weight_target))
 
         if target_from_data:  # if "original" and "target" are "mixed"
-            label = np.concatenate((original_data.get_targets(), target_data.get_targets()))
+            label = np.concatenate((original_data.get_targets(weights_as_events=conv_ori_weights, min_weight=min_weight),
+                                    target_data.get_targets(weights_as_events=conv_tar_weights, min_weight=min_weight)))
         else:
-            label = np.concatenate((np.zeros(len(original_data)), np.ones(len(target_data))))
+            label = np.concatenate((np.zeros(len(original)), np.ones(len(target))))
 
     return data, label, weights
 
@@ -176,7 +173,6 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     logger.info("starting " + clf_name + " hyper optimization")
     grid_finder.fit(data, label, weights)
     logger.info(clf_name + " hyper optimization finished")
-    print clf_name + " parameters:"
     grid_finder.params_generator.print_results()
 
 
@@ -209,7 +205,8 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
 
 
 def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
-             make_plots=True, plot_title=None, curve_name=None, target_from_data=False):
+             make_plots=True, plot_title=None, curve_name=None, target_from_data=False,
+             conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False):
     """Training and testing a classifier or distinguish a dataset
 
     Parameters
@@ -265,10 +262,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
     plot_title = "classify" if plot_title is None else plot_title
     if (original_data is None) and (target_data is not None):
-        print "in classify: swap ori and target"
         original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
-        data, label, weights = _make_data(original_data, target_data, features=features)
+        data, label, weights = _make_data(original_data, target_data, features=features,
+                                                       conv_ori_weights=conv_ori_weights,
+                                                       conv_tar_weights=conv_tar_weights)
         data_name = original_data.get_name()
         if target_data is not None:
             data_name += " and " + target_data.get_name()
@@ -291,15 +289,17 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             parallel_profile = 'threads-' + str(min(globals_.free_cpus(), validation))
 
         clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile)
-        lds_test = LabeledDataStorage(data, target=label, sample_weight=weights)  # folding-> same data for train and test
+        lds_test = LabeledDataStorage(data=data, target=label, sample_weight=weights)  # folding-> same data for train and test
 
     elif isinstance(validation, data_storage.HEPDataStorage):
         lds_test = validation.get_LabeledDataStorage(branches=features)
     elif validation is None:
         make_plots = False
     elif isinstance(validation, list) and len(validation) in (1, 2):
-        data, target, sample_weight = _make_data(validation[0], validation[1])
-        lds_test = LabeledDataStorage(data=data, target=target, sample_weight=sample_weight)
+        data_val, target_val, weights_val = _make_data(validation[0], validation[1],
+                                                       conv_ori_weights=conv_vali_weights,
+                                                       conv_tar_weights=conv_vali_weights)
+        lds_test = LabeledDataStorage(data=data_val, target=target_val, sample_weight=weights_val)
     else:
         raise ValueError("Validation method " + validation + " not a valid choice")
 
@@ -324,7 +324,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             w_test = lds_test.get_weights()
             clf_score = clf.score(lds_test.get_data(), y_true, w_test)
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)#, sample_weight=w_test)
-            print "in classify: prediction ", y_pred
             class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
             out.add_output(class_rep, section="Classification report " + clf_name)
             out.add_output(["accuracy with sklearn (NO WEIGHTS!): ", clf_name, ", ", curve_name, ": ", clf_score2],
@@ -562,7 +561,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     for clf in classifier:
         assert clf in __IMPLEMENTED_CLF, str(clf) + " not a valid classifier choice"
     n_cpu = globals_.free_cpus()
-    data_name = original_data.get_name() + " and " + target_data.get_name()
+    data_name = curve_name + ", " + original_data.get_name() + " and " + target_data.get_name()
 
     data, label, weights = _make_data(original_data, target_data, features=features,
                                      weight_target=weight_target,
@@ -578,7 +577,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     if 'xgb' in classifier:
         name = "XGBoost classifier"
         cfg_clf = dict(meta_config.DEFAULT_CLF_XGB, **kwargs.get('cfg_xgb', {}))
-        cfg_clf = dict(nthreads=n_cpu, random_state=globals_.randint+4)  # overwrite entries
+        cfg_clf.update(dict(nthreads=n_cpu, random_state=globals_.randint+4))  # overwrite entries
         clf = XGBoostClassifier(**cfg_clf)
         factory.add_classifier(name, clf)
 
@@ -597,21 +596,21 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     if 'rdf' in classifier:
         name = "RandomForest classifier"
         cfg_clf = dict(meta_config.DEFAULT_CLF_RDF, **kwargs.get('cfg_rdf', {}))
-        cfg_clf = dict(n_jobs=n_cpu, random_state=globals_.randint+432)
+        cfg_clf.update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
         clf = SklearnClassifier(RandomForestClassifier(**cfg_clf))
         factory.add_classifier(name, clf)
 
     if 'ada_dt' in classifier:
         name = "AdABoost over DecisionTree classifier"
         cfg_clf = dict(meta_config.DEFAULT_CLF_ADA, **kwargs.get('cfg_ada_dt', {}))
-        cfg_clf = dict(random_state=globals_.randint+43)
+        cfg_clf.update(dict(random_state=globals_.randint+43))
         clf = SklearnClassifier(AdaBoostClassifier(DecisionTreeClassifier(
                                 random_state=globals_.randint + 29), **cfg_clf))
         factory.add_classifier(name, clf)
     if 'knn' in classifier:
         name = "KNearest Neighbour classifier"
         cfg_clf = dict(meta_config.DEFAULT_CLF_KNN, **kwargs.get('cfg_knn', {}))
-        cfg_clf = dict(random_state=globals_.randint+919, n_jobs=n_cpu)
+        cfg_clf.update(dict(random_state=globals_.randint+919, n_jobs=n_cpu))
         clf = SklearnClassifier(KNeighborsClassifier(**cfg_clf))
         factory.add_classifier(name, clf)
 

@@ -56,7 +56,7 @@ class Mayou(Classifier):
             bagging=None
         ),
         rdf=dict(
-            n_estimators=1500,  # 1600
+            n_estimators=1000,  # 1600
             max_features= 'auto', # only 1 feature seems to be pretty good...
             max_depth=120,
             min_samples_split=250,
@@ -72,7 +72,7 @@ class Mayou(Classifier):
 #            n_estimators=50,
 #        ),
         nn=dict(
-            layers=[200, 50],
+            layers=[100, 50],
             hidden_activation='logistic',
             output_activation='linear',
             input_noise=0.02,  # [0,1,2,3,4,5,10,20],
@@ -109,8 +109,8 @@ class Mayou(Classifier):
         max_features=1.0,
     )
 
-    def __init__(self, base_estimators=None, bagging_base=10, stacking='xgb',
-                 features_stack=None, bagging_stack=None, hunting=False):
+    def __init__(self, base_estimators=None, bagging_base=None, stacking='xgb',
+                 features_stack=None, bagging_stack=None, hunting=False, transform=True):
         """blablabla
 
 
@@ -142,6 +142,8 @@ class Mayou(Classifier):
             stacking = False
         else:
             self._clf_1 = {'clf_stacking': stacking}  # stacking is a classifier
+
+        self._transform_data = transform
         self._bagging = bagging_base
         self._hunting = hunting
         self._clf_1_bagging = bagging_stack
@@ -157,8 +159,11 @@ class Mayou(Classifier):
         return out
 
     def _transform(self, X):
-        scaler = StandardScaler(copy=False)
-        X = scaler.fit_transform(X)
+
+        #TODO: remove HACK
+        if self._transform_data:
+            scaler = StandardScaler(copy=False)
+            X = scaler.fit_transform(X)
         return X
 
     def _transform_pred(self, X):
@@ -277,7 +282,7 @@ class Mayou(Classifier):
         X = self._transform(X)
 
         # get the predictions of the base estimators
-        lvl_0_proba = pd.DataFrame(self._factory_predict_proba(X))
+        lvl_0_proba = pd.DataFrame(self._factory_predict_proba(X), columns=self._factory.keys())
 
         # add data features to stacking data
         if self._features_stack is not None:
@@ -288,8 +293,9 @@ class Mayou(Classifier):
 
         return lvl_0_proba
 
-    def _clf_1_fit(self, X_stack, y, sample_weight):
+    def _clf_1_fit(self, X, y, sample_weight):
 
+        X_stack = self._get_X_stack(X)
 
         if self._clf_1 not in (False, None):
             if self._clf_1.values()[0] is None or isinstance(self._clf_1.values()[0], dict):
@@ -298,25 +304,28 @@ class Mayou(Classifier):
             self._clf = copy.deepcopy(self._clf_1.values()[0])
 
         self._clf.fit(X_stack, y, sample_weight)
+
+    def _set_features(self, X):
+        """Set the 'features' attribute for the classifier"""
+        if isinstance(X, pd.DataFrame):
+            self.features = X.columns.values
+        else:
+            self.features = ["Feature_" + str(i) for i in range(X.shape[1])]
+
     @profile
     def fit(self, X, y, sample_weight=None):
 
-        self.features = X.columns.values
+        # initiate properties
+        self._set_features(X)
+        self.classes_ = range(len(set(y)))
 
+        # fit the base estimators
         self._factory_fit(X, y, sample_weight)
 
-        X_stack = self._get_X_stack(X)
-
-        self._clf_1_fit(X_stack, y, sample_weight)
+        # fit the stacking classifier
+        self._clf_1_fit(X, y, sample_weight)
 
         return self
-
-
-#        if self._clf_1 is not None:
-#            lvl_0_proba = factory.predict_proba(X, parallel_profile=parallel_profile)
-#            for key, val in lvl_0_proba.items():
-#                lvl_0_proba[key] = val[:,1]
-#            lvl_0_proba = pd.DataFrame(lvl_0_proba)
 
     def predict(self, X):
 
@@ -334,6 +343,7 @@ class Mayou(Classifier):
 
     def test_on_lds(self, lds):
         return ClassificationReport({'Mayou clf': self}, lds)
+
     def staged_predict_proba(self, X):
         try:
             X_stack = self._get_X_stack(X)
@@ -341,6 +351,17 @@ class Mayou(Classifier):
         except:
             print "error occured in mayou, staged predict proba not supported"
         return temp_proba
+
+    def stacker_test_on_lds(self, lds):
+        """Return report for the stacker only"""
+        lds.data = self._get_X_stack(lds.get_data())
+        return ClassificationReport({'Mayou stacker': self._clf}, lds)
+
+    def stacker_test_on(self, X, y, sample_weight=None):
+        """Return report for the stacker only"""
+        lds = LabeledDataStorage(X, y, sample_weight)
+        return self.stacker_test_on_lds(lds)
+
 
 if __name__ == '__main__':
     """selftest"""
@@ -352,11 +373,13 @@ if __name__ == '__main__':
 
     from root_numpy import root2array, rec2array
 
+
     folding = False
-    higgs_data = True
+    higgs_data = False
 
     n_ones, n_zeros = 3000, 3000
     n_tot = n_ones + n_zeros
+    branch_names = ['one', 'two']
     feature_one = np.concatenate((np.random.normal(loc=0.2, size=n_ones), np.random.exponential(scale=1.0, size=n_zeros)))
     feature_two = np.concatenate((np.random.exponential(scale=1.7, size=n_ones), np.random.normal(loc=-0.7, size=n_zeros)))
     X = pd.DataFrame({'one': feature_one, 'two': feature_two})
@@ -403,12 +426,14 @@ if __name__ == '__main__':
 
     lds = LabeledDataStorage(X_test, y_test, w_test)
     #clf = SklearnClassifier(RandomForestClassifier())
-    #clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8)
-    clf_stacking='nn'
-    clf = Mayou(bagging_base=None, bagging_stack=None, stacking=clf_stacking)#, features_stack=branch_names)
+    clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8)
+    #clf_stacking='nn'
+    clf = Mayou(bagging_base=None, bagging_stack=None, stacking=clf_stacking,
+                features_stack=branch_names, transform=True)
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))
+    #clf = SklearnClassifier(clf)
     if folding:
         X_train = X_test = X
         y_train = y_test = y
@@ -426,7 +451,12 @@ if __name__ == '__main__':
     print "\nOptimalAccuracy = ", report.compute_metric(OptimalAccuracy())
     print "\nOptimalAMS = ", report.compute_metric(OptimalAMS())
     print "score: ", clf.score(X_test, y_test, w_test)
-#    report.feature_importance_shuffling().plot(new_plot=True)
+    feat_imp = report.feature_importance_shuffling()
+
+    report_stack = clf.stacker_test_on_lds(lds)
+    report_stack.feature_importance_shuffling().plot(new_plot=True)
+    report_stack.features_correlation_matrix().plot(new_plot=True)
+
 #    report.features_correlation_matrix().plot(new_plot=True)
 
     plt.show()
