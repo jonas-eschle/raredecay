@@ -196,7 +196,7 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
 hyper_cfg = dict(
     optimize_clf='nn',
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=10,
+    n_evaluations=1,
     n_folds=10,
     n_fold_checks=1
 )
@@ -269,13 +269,13 @@ cfg_nn = dict(
     input_noise=0,  # [0,1,2,3,4,5,10,20],
     hidden_noise=0,
     input_dropout=0,
-    hidden_dropout=np.arange(0.01, 0.3, 0.01),
+    hidden_dropout=0.03,
     decode_from=1,
-    weight_l1=0.01,
+    weight_l1=[0.01, 0.01],
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'adagrad', 'patience': 50, 'learning_rate': 2, 'min_improvement': 0.005,
-               'momentum':0.5, 'nesterov':True, 'loss': 'xe'}],
+    trainers=[{'optimize': 'adagrad', 'patience': 10, 'learning_rate': 0.1, 'min_improvement': 0.005,
+               'momentum':0.6, 'nesterov':True, 'loss': 'xe'}],
 )
 #==============================================================================
 # CLASSIFIER TRAINING END

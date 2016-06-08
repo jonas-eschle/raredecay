@@ -35,6 +35,9 @@ from raredecay import globals_
 from raredecay.tools import dev_tool
 from raredecay import meta_config
 
+# TODO: remove debugging
+debug1 = 0
+
 if __name__ == '__main__':
     logger = None  # dev_tool.make_logger(__name__)
 else:
@@ -44,7 +47,7 @@ else:
     cfg = importlib.import_module(meta_config.run_config)
     logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
-
+# TODO: Transformations don't work
 class Mayou(Classifier):
     """Classifier for raredecay analysis"""
 
@@ -110,7 +113,7 @@ class Mayou(Classifier):
     )
 
     def __init__(self, base_estimators=None, bagging_base=None, stacking='xgb',
-                 features_stack=None, bagging_stack=None, hunting=False, transform=True):
+                 features_stack=None, bagging_stack=None, hunting=False, transform=True, transform_pred=True):
         """blablabla
 
 
@@ -150,25 +153,45 @@ class Mayou(Classifier):
         self._features_stack = features_stack
         self._clf_0 = {}
         self._factory = ClassifiersFactory()
+        self._base_scaler = None
+        self._pred_scaler = None
 
     def get_params(self, deep=True):
         out = dict(
-            base_estimators=None, bagging_base=10, stacking='xgb',
+            base_estimators=None, bagging_base=None, stacking='xgb',
             features_stack=None, bagging_stack=None, hunting=False
             )
         return out
 
-    def _transform(self, X):
+    def _transform(self, X, fit=False):
 
-        #TODO: remove HACK
         if self._transform_data:
-            scaler = StandardScaler(copy=False)
-            X = scaler.fit_transform(X)
+            columns = copy.deepcopy(X.keys())
+            index = copy.deepcopy(X.index)
+
+            if fit:
+                self._base_scaler = StandardScaler(copy=True)
+                self._base_scaler.fit_transform(X)
+            else:
+                X = self._base_scaler.transform(X)
+
+            X = pd.DataFrame(X, index=index, columns=columns)
         return X
 
-    def _transform_pred(self, X):
-        # TODO: change dummy method
-        return self._transform(X)
+    def _transform_pred(self, X, fit=False):
+
+        if self._transform_pred:
+            columns = copy.deepcopy(X.keys())
+            index = copy.deepcopy(X.index)
+
+            if fit:
+                self._pred_scaler = StandardScaler(copy=True)  # don't change data!
+                self._pred_scaler.fit_transform(X)
+            else:
+                X = self._pred_scaler.transform(X)
+
+            X = pd.DataFrame(X, index=index, columns=columns)
+        return X
 
     def _make_clf(self, clf, bagging=None):
         """Creates a classifier from a dict or returns the clf"""
@@ -180,7 +203,8 @@ class Mayou(Classifier):
                 logger.error(str(val) + " not an implemented classifier.")
                 raise
 
-            bagging = val.pop('bagging', bagging)
+            temp_bagging = val.pop('bagging', bagging)
+            bagging = temp_bagging if bagging is None else bagging
 
 
             if key == 'rdf':
@@ -207,6 +231,7 @@ class Mayou(Classifier):
             # bagging over the instantiated estimators
             if isinstance(bagging, int) and bagging >= 1:
                 bagging = dict(self.__DEFAULT_BAG_CFG, n_estimators=bagging)
+                print "BAGGING!!!"
             if isinstance(bagging, dict):
             # TODO: implement multi-thread:
                 bagging.update({'base_estimator': clf})
@@ -221,10 +246,7 @@ class Mayou(Classifier):
         clf = {key: clf}
         return clf
 
-    @profile
     def _factory_fit(self, X, y, sample_weight):
-
-        X = self._transform(X)
 
         # create classifiers from initial dictionary
         if self._base_estimators != {}:
@@ -248,7 +270,8 @@ class Mayou(Classifier):
 
     def _factory_predict(self, X):
 
-        X = self._transform(X)
+        columns = copy.deepcopy(X.keys())
+        index = copy.deepcopy(X.index)
 
         # parallel on factory level -> good mixture of clfs (one uses lot of RAM, one cpu...)
         parallel_profile = 'threads-' + str(min([len(self._factory.items()), globals_.free_cpus()]))
@@ -259,11 +282,11 @@ class Mayou(Classifier):
         # slice the arrays of predictions in the dict right
         for key, val in predictions.items():
             predictions[key] = val[:,1]
-        return pd.DataFrame(predictions)
+        return pd.DataFrame(predictions, index=index, columns=columns)
 
     def _factory_predict_proba(self, X):
 
-        X = self._transform(X)
+        index = X.index
 
         # parallel on factory level -> good mixture of clfs (one uses lot of RAM, one cpu...)
         parallel_profile = 'threads-' + str(min([len(self._factory.items()), globals_.free_cpus()]))
@@ -274,20 +297,22 @@ class Mayou(Classifier):
         # slice the arrays of predictions in the dict right
         for key, val in predictions.items():
             predictions[key] = val[:,1]
-        predictions = self._transform_pred(pd.DataFrame(predictions))
-        return predictions
+        return pd.DataFrame(predictions, index=index)
 
-    def _get_X_stack(self, X):
-
-        X = self._transform(X)
+    def _get_X_stack(self, X, fit_scaler=False):
 
         # get the predictions of the base estimators
-        lvl_0_proba = pd.DataFrame(self._factory_predict_proba(X), columns=self._factory.keys())
+        lvl_0_proba = pd.DataFrame(self._factory_predict_proba(X), index=X.index,
+                                   columns=self._factory.keys())
+        lvl_0_proba = self._transform_pred(lvl_0_proba,fit=fit_scaler)
 
         # add data features to stacking data
         if self._features_stack is not None:
             if self._features_stack == 'all':
                 self._features_stack = self.features
+            elif not set(self._features_stack).issubset(self.features):
+                raise RuntimeError("Stacked features not in features of the data fitted to")
+
             X_data = pd.DataFrame(X, columns=self._features_stack)
             lvl_0_proba = pd.concat([lvl_0_proba, X_data], axis=1, copy=False)
 
@@ -295,7 +320,7 @@ class Mayou(Classifier):
 
     def _clf_1_fit(self, X, y, sample_weight):
 
-        X_stack = self._get_X_stack(X)
+        X_stack = self._get_X_stack(X, fit_scaler=True)
 
         if self._clf_1 not in (False, None):
             if self._clf_1.values()[0] is None or isinstance(self._clf_1.values()[0], dict):
@@ -312,12 +337,12 @@ class Mayou(Classifier):
         else:
             self.features = ["Feature_" + str(i) for i in range(X.shape[1])]
 
-    @profile
     def fit(self, X, y, sample_weight=None):
 
         # initiate properties
         self._set_features(X)
         self.classes_ = range(len(set(y)))
+        X = self._transform(X, fit=True)
 
         # fit the base estimators
         self._factory_fit(X, y, sample_weight)
@@ -330,10 +355,12 @@ class Mayou(Classifier):
     def predict(self, X):
 
         # TODO: inside get_X_stack: lvl_0_proba = self._factory_predict_proba(X)
+        X = self._transform(X)
         X_stack = self._get_X_stack(X)
         return self._clf.predict(X_stack)
 
     def predict_proba(self, X):
+        X = self._transform(X)
         X_stack = self._get_X_stack(X)
         return self._clf.predict_proba(X_stack)
 
@@ -342,19 +369,22 @@ class Mayou(Classifier):
         return self.test_on_lds(lds)
 
     def test_on_lds(self, lds):
+        lds.data = self._transform(lds.data)
         return ClassificationReport({'Mayou clf': self}, lds)
 
     def staged_predict_proba(self, X):
+        X = self._transform(X)
+        X_stack = self._get_X_stack(X)
         try:
-            X_stack = self._get_X_stack(X)
             temp_proba = self._clf.staged_predict_proba(X_stack)
+        # TODO: change error catching
         except:
             print "error occured in mayou, staged predict proba not supported"
         return temp_proba
 
     def stacker_test_on_lds(self, lds):
         """Return report for the stacker only"""
-        lds.data = self._get_X_stack(lds.get_data())
+        lds.data = self._get_X_stack(self._transform(lds.data))
         return ClassificationReport({'Mayou stacker': self._clf}, lds)
 
     def stacker_test_on(self, X, y, sample_weight=None):
@@ -375,13 +405,16 @@ if __name__ == '__main__':
 
 
     folding = False
-    higgs_data = False
+    higgs_data = True
+    primitiv = False
 
-    n_ones, n_zeros = 3000, 3000
+    n_ones, n_zeros = 5000, 5000
     n_tot = n_ones + n_zeros
-    branch_names = ['one', 'two']
+
+    branch_names = ['two', 'one']
     feature_one = np.concatenate((np.random.normal(loc=0.2, size=n_ones), np.random.exponential(scale=1.0, size=n_zeros)))
     feature_two = np.concatenate((np.random.exponential(scale=1.7, size=n_ones), np.random.normal(loc=-0.7, size=n_zeros)))
+    #feature_two = copy.deepcopy(feature_one)
     X = pd.DataFrame({'one': feature_one, 'two': feature_two})
     y = np.concatenate((np.ones(n_ones), np.zeros(n_zeros)))
     w = np.ones(n_tot)
@@ -403,12 +436,12 @@ if __name__ == '__main__':
         signal = root2array("/home/mayou/Downloads/higgs/HIGGSsignal.root",
                             "tree",
                             branch_names)
-        signal = pd.DataFrame(rec2array(signal))
+        signal = pd.DataFrame(rec2array(signal), columns=branch_names)
 
         backgr = root2array("/home/mayou/Downloads/higgs/HIGGSbackground.root",
                             "tree",
                             branch_names)
-        backgr = pd.DataFrame(rec2array(backgr))
+        backgr = pd.DataFrame(rec2array(backgr), columns=branch_names)
 
         # for sklearn data is usually organised
         # into one 2D array of shape (n_samples x n_features)
@@ -421,15 +454,26 @@ if __name__ == '__main__':
 
 
 
+    if primitiv:
+        X = pd.DataFrame({'odin': np.array([2., 2., 2., 2., 3., 3., 2., 3., 8., 7., 8., 7., 8., 8., 7., 8.]),
+                              'dwa': np.array([2.2, 2.1, 2.2, 2.3, 3.1, 3.1, 2.1, 3.2, 8.1, 7.5, 8.2, 7.1, 8.5, 8.2, 7.6, 8.1])
+                              })
+        y = np.array([0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
+        w = np.ones(16)
+        branch_names = ['odin', 'dwa']
+    print branch_names
     X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(X, y, w, test_size=0.33)
 
 
     lds = LabeledDataStorage(X_test, y_test, w_test)
     #clf = SklearnClassifier(RandomForestClassifier())
-    clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8)
+    clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,
+                                     subsample=0.5
+                                     )
     #clf_stacking='nn'
     clf = Mayou(bagging_base=None, bagging_stack=None, stacking=clf_stacking,
-                features_stack=branch_names, transform=True)
+                features_stack=branch_names,
+                transform=True, transform_pred=False)
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))
