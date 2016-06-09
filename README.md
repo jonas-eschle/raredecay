@@ -16,9 +16,9 @@ The following is split into a (simple) user-manual, a more detailed user-with-de
 First of all, whatever you do: DO NEVER CHANGE THE KEYWORDS/VARIABLE NAMES, only its values.
 
 Explained modules:  
-  - main  
-  - config-files  
-  - meta_config  
+- main  
+- config-files  
+- meta_config  
 
 ## main ##
 
