@@ -55,7 +55,13 @@ Having all the data, you need to assign what is should be used for in the run. T
 
 ### Run specific parameters ###
 
-Every 
+Every run contains several parameters like: what reweighter to use, what kind of cross-validation, what classifier to optimize. They are highly dependent of the run-mode you choose. One important category should be mentioned here:
+
+#### Classifier config ####
+
+Most of the run-modes will use somehow classifiers. Some of them have (should) be specified in the config file. What you actually do is setting the parameters via keywords.
+
+.. note:: test
 
 
 ## The core: _HEPDataStorage_ ##
