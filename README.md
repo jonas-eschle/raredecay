@@ -13,6 +13,7 @@ The following is split into a (simple) user-manual, a more detailed user-with-de
 # A simple user-guide #
 
 First of all, whatever you do: DO NEVER CHANGE THE KEYWORDS/VARIABLE NAMES, only its values.
+
 Explained modules:
 - main
 - config-files
