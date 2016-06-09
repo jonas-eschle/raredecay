@@ -61,7 +61,21 @@ Every run contains several parameters like: what reweighter to use, what kind of
 
 Most of the run-modes will use somehow classifiers. Some of them have (should) be specified in the config file. What you actually do is setting the parameters via keywords.
 
-.. note:: test
+**Be aware**: Some keywords (like n_jobs) may get overridden by the package for optimal parallelisation.
+
+## Meta config ##
+
+This file contains two sorts of interesting parameters:
+
+### Administrative concerning execution ###
+
+Parameters like number of CPU, maximal number of errors, maximal number of folders and more. They should be used with caution because they can make the code to fail.
+
+### Default values ###
+
+As there are a lot of configurable things in the code, from which most are of no interest to change, they are defined here. Classifier configurations, save behavior and more. You are free to change those but it should actually not be necessary for most purposes.
+
+Do NOT touch the rest of the file.
 
 
 ## The core: _HEPDataStorage_ ##
