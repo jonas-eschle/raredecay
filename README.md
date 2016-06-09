@@ -3,8 +3,7 @@
 # Overview #
  The repository is created for a particle decay analysis. The idea was to create a workplace where you can focus on the data manipulation and analysis instead of things like difficult data-conversion, plotting, making good output and more. The core consists of:
 
-- a solid data-structure, a wrapper around pandas DataFrame which provides plotting function, data-naming, creation of sub-folds, weight-, label-storage and more.
-
+- a solid data-structure, a wrapper around pandas DataFrame which provides plotting function, data-naming, creation of sub-folds, weight-, label-storage and more.  
 - a machine learning analysis tool, which provides the most common used things for analysis like hyper-parameter optimization, classification etc. which works with the data-storage
 
 - an output-module, which takes care of writing log-files, creating folders, saving images and more.
