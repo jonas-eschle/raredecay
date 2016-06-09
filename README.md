@@ -1,7 +1,33 @@
 # README of the raredecay-package #
 
-# What is it for? #
- The repository is created for a particle decay analysis. The core is a solid data-structure, a wrapper around pandas DataFrame and more. Furthermore, some useful methods are included which do the work. For example reweighting two datasets and train a classifier on it, to be able to see how much they differ.
+# Overview #
+ The repository is created for a particle decay analysis. The idea was to create a workplace where you can focus on the data manipulation and analysis instead of things like difficult data-conversion, plotting, making good output and more. The core consists of 
+- a solid data-structure, a wrapper around pandas DataFrame which provides plotting function, data-naming, creation of sub-folds, weight-, label-storage and more.
+- a machine learning analysis tool, which provides the most common used things for analysis like hyper-parameter optimization, classification etc. which works with the data-storage
+- an output-module, which takes care of writing log-files, creating folders, saving images and more.
+- the physical analysis module, where you can build your own analysis tools pretty easily.
+- configurations files which contain all the necessary things to use the implemented physical analysis modes
+
+The following is split into a (simple) user-manual, a more detailed user-with-developer-skills (create your own analysis tools) section and a developer section. Start reading with the simple user-manual and go on until you have enough details.
+
+# A simple user-guide #
+Explained modules:
+- main
+- config-files
+
+## main ##
+
+The main file is the one to run. Here, you can specify what do you want to run by either directly invoking the *run* method with the right keyword (strings) or by comment and uncomment the right lines in the "if main"-body.
+
+Next to the run-mode, the config-file should be specified. If None is given, the default one will be taken.
+
+## config ##
+
+The config file specifies everything about a certain run: which data to take, what classifier to use, how many iterations etc. This is where you basically control the run.
+
+There are several config files under "run_config". Each of this can be used as well as your own can be created. Depending on the run-mode, several keywords have to be contained in the config-file in order to run correctly.
+
+### 
 
 ## The core: _HEPDataStorage_ ##
  The idea is to create a data frame which perfectly fits the need for data analysis. It is not a general replacement for the [pandas DataFrame][pandas.DataFrame] or the [Labeled Data Storage][LabeledDataStorage] but a wrapper for the first one and an extension for the second one. Both and more data frames are accessible (or returned) by built-in methods. Therefore, using HEPDataStorage has no disadvantage.
