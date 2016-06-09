@@ -13,9 +13,11 @@ The following is split into a (simple) user-manual, a more detailed user-with-de
 
 # A simple user-guide #
 
-First of all, whatever you do: DO NEVER CHANGE THE KEYWORDS/VARIABLE NAMES, only its values.
+First of all, whatever you do: DO NEVER CHANGE THE KEYWORDS/VARIABLE NAMES, only its values (unless EXPLICITLY allowed).
 
-Explained modules:  
+
+Explained modules:
+
 - main  
 - config-files  
 - meta_config  
@@ -35,6 +37,26 @@ There are several config files under "run_config". Each of this can be used as w
 ### Administrative part ###
 
 Every config file should contain some administrative part, which means the run_name, an additional message, an output configuration etc.
+
+### Data ###
+
+An important part plays the data-handling. If you want to use some data, you should define the data there. This is for:
+
+- ROOT TTree: dictionary, containing all the keywords to access the right branches (more specific: the keyword arguments for the root2rec method from root_numpy)
+- more data-formats will be implemented soon.
+
+The naming of the data is arbitrary, you are free to choose any variable-name.
+
+This is the pure data. Next you need to create a dictionary containing all the keywords describing the data (more specific: the keyword arguments for the HEPDataStorage). This includes a name, weights, target...
+
+This naming is again arbitray!
+
+Having all the data, you need to assign what is should be used for in the run. This is done by inserting them into the "data"-dictionary (do NOT change its name or keys). The names should be self-explanatory.
+
+### Run specific parameters ###
+
+Every 
+
 
 ## The core: _HEPDataStorage_ ##
  The idea is to create a data frame which perfectly fits the need for data analysis. It is not a general replacement for the [pandas DataFrame][pandas.DataFrame] or the [Labeled Data Storage][LabeledDataStorage] but a wrapper for the first one and an extension for the second one. Both and more data frames are accessible (or returned) by built-in methods. Therefore, using HEPDataStorage has no disadvantage.
