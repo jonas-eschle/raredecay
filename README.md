@@ -11,9 +11,12 @@
 The following is split into a (simple) user-manual, a more detailed user-with-developer-skills (create your own analysis tools) section and a developer section. Start reading with the simple user-manual and go on until you have enough details.
 
 # A simple user-guide #
+
+First of all, whatever you do: DO NEVER CHANGE THE KEYWORDS/VARIABLE NAMES, only its values.
 Explained modules:
 - main
 - config-files
+- meta_config
 
 ## main ##
 
@@ -25,9 +28,11 @@ Next to the run-mode, the config-file should be specified. If None is given, the
 
 The config file specifies everything about a certain run: which data to take, what classifier to use, how many iterations etc. This is where you basically control the run.
 
-There are several config files under "run_config". Each of this can be used as well as your own can be created. Depending on the run-mode, several keywords have to be contained in the config-file in order to run correctly.
+There are several config files under "run_config". Each of this can be used as well as your own can be created. Depending on the run-mode, several keywords have to be contained in the config-file in order to run correctly. Do understand the parameters, you best look at one of the existing files which contain a lot of explanation as comments.
 
-### 
+### Administrative part ###
+
+Every config file should contain some administrative part, which means the run_name, an additional message, an output configuration etc.
 
 ## The core: _HEPDataStorage_ ##
  The idea is to create a data frame which perfectly fits the need for data analysis. It is not a general replacement for the [pandas DataFrame][pandas.DataFrame] or the [Labeled Data Storage][LabeledDataStorage] but a wrapper for the first one and an extension for the second one. Both and more data frames are accessible (or returned) by built-in methods. Therefore, using HEPDataStorage has no disadvantage.
