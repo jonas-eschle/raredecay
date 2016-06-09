@@ -1,11 +1,16 @@
 # README of the raredecay-package #
 
 # Overview #
- The repository is created for a particle decay analysis. The idea was to create a workplace where you can focus on the data manipulation and analysis instead of things like difficult data-conversion, plotting, making good output and more. The core consists of 
+ The repository is created for a particle decay analysis. The idea was to create a workplace where you can focus on the data manipulation and analysis instead of things like difficult data-conversion, plotting, making good output and more. The core consists of:
+
 - a solid data-structure, a wrapper around pandas DataFrame which provides plotting function, data-naming, creation of sub-folds, weight-, label-storage and more.
+
 - a machine learning analysis tool, which provides the most common used things for analysis like hyper-parameter optimization, classification etc. which works with the data-storage
+
 - an output-module, which takes care of writing log-files, creating folders, saving images and more.
+
 - the physical analysis module, where you can build your own analysis tools pretty easily.
+
 - configurations files which contain all the necessary things to use the implemented physical analysis modes
 
 The following is split into a (simple) user-manual, a more detailed user-with-developer-skills (create your own analysis tools) section and a developer section. Start reading with the simple user-manual and go on until you have enough details.
