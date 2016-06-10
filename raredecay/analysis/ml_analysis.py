@@ -77,13 +77,13 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
     #assert len(weight_original) == len(original_data), "Original weights have wrong length"
 
     if target_data is None:
-        data = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
+        data = original_data.pandasDF(columns=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
         weights = weight_original
         label = original_data.get_targets(weights_as_events=conv_ori_weights, min_weight=min_weight)
     else:
         # concatenate the original and target data
-        original = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
-        target = target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights, min_weight=min_weight)
+        original = original_data.pandasDF(columns=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
+        target = target_data.pandasDF(columns=features, weights_as_events=conv_tar_weights, min_weight=min_weight)
         data = pd.concat([original, target])
 
         # take weights from data if not explicitly specified
@@ -217,7 +217,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         The target data for the training. If None, only the original_data will
         be used for the training.
     features : list(str, str, str...)
-        List with features/branches to use in training.
+        List with features/columns to use in training.
     validation : int >= 1 or HEPDataStorage
         You can either do cross-validation or give a testsample for the data.
 
@@ -292,7 +292,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         lds_test = LabeledDataStorage(data=data, target=label, sample_weight=weights)  # folding-> same data for train and test
 
     elif isinstance(validation, data_storage.HEPDataStorage):
-        lds_test = validation.get_LabeledDataStorage(branches=features)
+        lds_test = validation.get_LabeledDataStorage(columns=features)
     elif validation is None:
         make_plots = False
     elif isinstance(validation, list) and len(validation) in (1, 2):
@@ -355,7 +355,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     return clf, clf_score if clf_score is not None else clf
 
 
-def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
+def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
                      reweighter='gb', reweight_saveas=None, meta_cfg=None,
                      weights_mc=None, weights_real=None):
     """Return a trained reweighter from a (mc/real) distribution comparison.
@@ -379,7 +379,7 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
         The Monte-Carlo data, which has to be "fitted" to the real data.
     reweight_data_real : :class:`HEPDataStorage` (depreceated: root-dict)
         Same as *reweight_data_mc* but for the real data.
-    branches : list of strings
+    columns : list of strings
         The columns/features/branches you want to use for the reweighting.
     reweighter : {'gb', 'bins'}
         Specify which reweighter to be used
@@ -420,21 +420,21 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     # logging and writing output
     msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
-    # TODO: branches = reweight_data_mc.get_branches() if branches is None else branches
+    # TODO: columns = reweight_data_mc.columns if columns is None else columns
     out.add_output(msg + ["\nData used:\n", reweight_data_mc.get_name(), " and ",
-                   reweight_data_real.get_name(), "\nBranches used for the reweighter training:\n",
-                    branches], section="Training the reweighter", obj_separator=" ")
+                   reweight_data_real.get_name(), "\ncolumns used for the reweighter training:\n",
+                    columns], section="Training the reweighter", obj_separator=" ")
 
     # do the reweighting
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
-    reweighter.fit(original=reweight_data_mc.pandasDF(branches=branches),
-                   target=reweight_data_real.pandasDF(branches=branches),
+    reweighter.fit(original=reweight_data_mc.pandasDF(columns=columns),
+                   target=reweight_data_real.pandasDF(columns=columns),
                    original_weight=reweight_data_mc.get_weights(),
                    target_weight=reweight_data_real.get_weights())
     return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
 
-def reweight_weights(reweight_data, reweighter_trained, branches=None,
+def reweight_weights(reweight_data, reweighter_trained, columns=None,
                      normalize=True, add_weights_to_data=True):
     """Adds (or only returns) new weights to the data by applying a given
     reweighter on the data.
@@ -465,7 +465,7 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     """
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
+    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
                                         original_weight=reweight_data.get_weights())
 
     # write to output

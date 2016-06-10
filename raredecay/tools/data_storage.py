@@ -21,7 +21,12 @@ from root_numpy import root2rec
 from rep.data.storage import LabeledDataStorage
 
 from raredecay.tools import data_tools, dev_tool
-from raredecay.globals_ import out
+try:
+    from raredecay.globals_ import out
+    out_imported = True
+except ImportError:
+    warnings.warn(ImportWarning, "could not import out. Some functions regarding output (save figure etc.) won't be available")
+    out_imported = False
 from raredecay import meta_config
 
 # TODO: import config not needed??
@@ -39,21 +44,29 @@ class HEPDataStorage(object):
 
 
     """
+    # define constants for independence
+    __ROOT_DATATYPE = meta_config.ROOT_DATATYPE
+
     __figure_number = 0
     __figure_dic = {}
 
     def __init__(self, data, index=None, target=None, sample_weights=None,
                  data_name=None, data_name_addition=None, data_labels=None,
-                 add_label=False, hist_settings=None, supertitle_fontsize=18,
-                 logger=None):
+                 hist_settings=None, supertitle_fontsize=18):
         """Initialize instance and load data
 
         Parameters
         ----------
-        data : root-tree dict
-            Dictionary which specifies all the information to convert a root-
-            tree to an array. Directly given to :py:func:`~root_numpy.root2rec`
-        .. note:: Will be also arrays or pandas DataFrame in the future
+        data : (root-tree dict, pandas DataFrame)
+
+            - **root-tree dict** (*root-dict*):
+            |   Dictionary which specifies all the information to convert a root-
+            |   tree to an array. Directly given to :py:func:`~root_numpy.root2rec`
+
+            - **pandas DataFrame**:
+            |   A pandas DataFrame. The index (if not explicitly defined)
+                and column names will be taken.
+
         index : 1-D array-like
             The indices of the data that will be used.
         target : list or 1-D array or int {0, 1}
@@ -91,44 +104,26 @@ class HEPDataStorage(object):
         self.logger = modul_logger if logger is None else logger
 
         # initialize data
-        # TODO: not implemented: needed?
-        # self._data_pandas = None
-        self._root_dict = data
-        self._index = index if index is None else list(index)
         self._fold_index = None  # list with indeces of folds
         self._fold_status = None  # tuple (my_fold_number, total_n_folds)
+        self.set_data(data=data)
 
         # data name
-        self._fold_name = None
+        self._name = ["", "", ""]
         data_name = "unnamed data" if data_name is None else data_name
-        data_name_addition = "" if data_name_addition is None else data_name_addition
-        self._name = [data_name, data_name_addition, self._fold_name]
+        self.data_name = data_name
+        self.data_name_addition = data_name_addition
+        self.fold_name = None
 
         # initialize targets
-        if isinstance(target, (list, np.ndarray, pd.Series)):
-            target = pd.Series(target, index=index, copy=True)
-        self._target_label = target
+        self._set_target(target=target)
 
-        # data-labels human readable
-        data_labels = {} if data_labels is None else data_labels
-        self.add_label = add_label
-        self._label_dic = {col: col for col in self._root_dict.get('branches')}
-        self._label_dic.update(data_labels)
-
-        # define length of object
-        if dev_tool.is_in_primitive(index):
-            temp_root_dict = copy.deepcopy(self._root_dict)
-            temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
-            temp_branch = dev_tool.make_list_fill_var(temp_branch)
-            self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
-        else:
-            self._length = len(index)
+        # data-labels human readable, initialize with the column name
+        self._label_dic = {col: col for col in self.columns if self._label_dic.get(col) is None}
+        self.set_labels(data_labels=data_labels, add_label=add_label)
 
         # initialize weights
-        if not dev_tool.is_in_primitive(sample_weights, (None, 1)):
-            #assert len(sample_weights) == self._length
-            sample_weights = pd.Series(sample_weights, index=index, copy=True)
-        self._weights = sample_weights
+        self._set_weights(sample_weights)
 
         # plot settings
         if dev_tool.is_in_primitive(hist_settings, None):
@@ -136,19 +131,60 @@ class HEPDataStorage(object):
         self.hist_settings = hist_settings
         self.supertitle_fontsize = supertitle_fontsize
 
+    @property
     def __len__(self):
         return self._length
 
-    def get_rootdict(self, return_index=False):
-        """Return the root-dictionary if available, else None"""
-        if return_index:
-            return self._root_dict, self._index
-        else:
-            return self._root_dict
+# TODO: remove obsolet
+    def get_name(self):
+        """Return the human-readable name of the data as a string"""
+        warnings.warn(DeprecationWarning, "Depreceated, will be removed. Use obj.name instead.)
+        return self._get_name()
 
-    def get_branches(self):
-        """Return the branches of the data; the branches from the root-dict"""
-        return self._root_dict.get('branches')
+    @property
+    def name(self):
+        """Return the **full** human-readable name of the data as a string"""
+        return self._get_name()
+
+    def _get_name(self):
+        out_str = data_tools.obj_to_string(self._name, separator=" ")
+        return out_str
+
+    def _set_name(self, data_name, data_name_addition, fold_name):
+        """Set the data name"""
+        # initialize name
+        if self._name is None:
+
+        # set the new name in self._name
+        for i, name in enumerate([data_name, data_name_addition, fold_name]):
+            if name is not None:
+                self._name[i] = name
+
+    @data_name.setter
+    def data_name(self, data_name):
+        self._set_name(data_name=data_name)
+
+    @data_name_addition.setter
+    def data_name_addition(self, data_name_addition):
+        self._set_name(data_name_addition=data_name_addition)
+
+    @fold_name.setter
+    def fold_name(self, fold_name):
+        self._set_name(fold_name=fold_name)
+
+    def get_index(self):
+        """Return the index used inside the DataStorage. Advanced feature."""
+        warnings.warn(FutureWarning, "Will be removed in the future. Use obj.index instead")
+        return self._make_index()
+
+    @property
+    def index(self):
+        """Return the *real* index as a list"""
+        return self._make_index()
+
+    @index.setter
+    def index(self, index):
+        self._set_index(index)
 
     def _make_index(self, index=None):
         """Return the index, else the self._index. If none exist, **create**
@@ -166,80 +202,123 @@ class HEPDataStorage(object):
             temp = index
         return temp
 
-    def get_index(self):
-        """Return the index used inside the DataStorage. Advanced feature."""
-        return self._make_index()
+    def _set_index(self, index):
+        """If index is not None -> assign. Else try to get from data"""
+        if index is None:
+            if self._data_type == 'root':
+                pass  # no index contained in root-dicts
+            elif self._data_type == 'array':
+                pass  # no index information contained in an array
+            elif self._data_type == 'df':
+                index_list = self._data.index.tolist()
+                if not  index_list == range(len(self)):  # if special indexing
+                    self._index = index_list
+        else:
+            self._index = index
 
-    def make_folds(self, n_folds=10):
-        """Create train-test folds which can be accessed via
-        :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
+    @property
+    def columns(self):
+        return self._columns
 
-        Parameters
-        ----------
-        n_folds : int > 1
-            The number of folds to be created from the data. If you want, for
-            example, a simple 2/3-1/3 split, just specify n_folds = 3 and
-            just take one fold.
+    @columns.setter
+    def columns(self, columns):
+        if columns is None:
+            self._set_columns
+        else:
+            # TODO: maybe check?
+            self._columns = columns
+
+    def _set_columns(self):
+        if self._data_type == 'root':
+            self._columns = data_tools.to_list(self._data['branches'])
+        elif self._data_type == 'df':
+            self._columns = data_tools.to_list(self._data.columns.values)
+        elif self._data_type == 'array':
+            self._columns = ['feature_' + str(i) for i in range(len(self._data))]
+
+    def _set_length(self):
+         # determine whether to set length individually from the data or not
+        if self._index is None:
+
+            if self._data_type == 'root':
+                temp_root_dict = copy.deepcopy(self._data)
+                temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
+                temp_branch = data_tools.to_list(temp_branch)
+                self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
+            elif self._data_type == 'df':
+                self._length = len(self._data)
+            elif self._data_type == 'array':
+                self._length = self._data.shape[1]
+
+        else:
+            self._length = len(self._index)
+
+    def _get_data_type(self, data):
+        """Return the type of the data
+
+        - 'df' : pandas DataFrame
+        - 'root': root-file
+        - 'array': numpy array
         """
-        if n_folds <= 1:
-            self.logger.error("Wrong number of folds. Set to default 10")
-            n_folds = 10
-            meta_config.error_occured()
+        data_type = None
+        if isinstance(data, dict):
+            if data.has_key('filenames') and data['filenames'].endswith(self.__ROOT_DATATYPE):
+                data_type = 'root'
+        elif isinstance(data, pd.DataFrame):
+            data_type = 'df'
+        elif isinstance(data, (np.ndarray, np.array)):
+            data_type = 'array'
 
-        self._fold_index = []
+        return data_type
 
-        # split indices of shuffled list
-        length = len(self)
-        temp_indeces = [int(round(length/n_folds)) * i for i in range(n_folds)]
-        temp_indeces.append(length)  # add last index. len(index) = n_folds + 1
+    def _set_data(self, data, index=None, columns=None):
+        """Set the data, length- and columns-attribute
 
-        # get a copy of index and shuffle it
-        temp_shuffled = copy.deepcopy(self._make_index())
-        random.shuffle(temp_shuffled)
-        for i in range(n_folds):
-            self._fold_index.append(temp_shuffled[temp_indeces[i]:temp_indeces[i + 1]])
+        Convert the data to the right (root-dict, df etc.) format (and save).
+        Also set the length and columns.
 
-    def get_fold(self, fold):
-        """Return the specified fold: train and test data as instance of
-        :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
-
-        Parameters
-        ----------
-        fold : int
-            The number of the fold to return. From 0 to n_folds - 1
-        Return
-        ------
-        out : tuple(HEPDataStorage, HEPDataStorage)
-            Return the *train* and the *test* data in a HEPDataStorage
+        currently implemented:
+            - ROOT-data file (*root-dict*)
+            - Pandas DataFrame
         """
-        assert self._fold_index is not None, "Tried to get a fold but data has no folds. First create them (make_folds())"
-        assert isinstance(fold, int) and fold<len(self._fold_index), "your value of fold is not valid"
-        train_index = []
-        for i, index_slice in enumerate(self._fold_index):
-            if i == fold:
-                test_index = copy.deepcopy(index_slice)
-            else:
-                train_index += copy.deepcopy(index_slice)
-        n_folds = len(self._fold_index)
-        test_DS = self.copy_storage(index=test_index)
-        test_DS._fold_status = (fold, n_folds)
-        test_DS._fold_name = "test set of fold " + str(fold) + " of " + str(n_folds)
-        train_DS = self.copy_storage(index=train_index)
-        train_DS._fold_status = (fold, n_folds)
-        train_DS._fold_name = "train set of fold " + str(fold) + " of " + str(n_folds)
-        return train_DS, test_DS
+        # get the data_type
+        self._data = data
+        self._data_type = self._get_data_type(data)
+
+        self.index = index
+        self.columns = columns
+        self._set_length()
+
+        # convert the data (and save it)
+
+        # root data
+        if self._data_type == 'root':
+            pass
+        # pandas DataFrame
+        elif self._data_type == 'df':
+            self._data = self._make_df(data=self._data, index=self._index)
+        # numpy array
+        elif self._data_type == 'array':
+            self._data = self._make_df(data=data, index=self._index)
+        else:
+            raise NotImplementedError("Other dataformats are not yet implemented")
+
+# TODO: implement pickleable data?
+
+    def get_rootdict(self, return_index=False):
+        """Return the root-dictionary if available, else None"""
+        warnings.warn(FutureWarning, "will be removed. Use obj.data instead")
+        if return_index:
+            return self._root_dict, self._index
+        else:
+            return self._root_dict
 
 
-    def get_n_folds(self):
-        """Return how many folds are currently availabe or None if no folds
-        have been created
 
-        Return
-        ------
-        out : int
-            The number of folds which are currently available.
-        """
-        return None if self._fold_index is None else len(self._fold_index)
+
+############# STOPPED WORKING HERE ######################################################################3
+
+
 
     def get_weights(self, normalize=True, index=None, weights_as_events=False, min_weight=None, **kwargs):
         """Return the weights of the specified indeces or, if None, return all.
@@ -334,16 +413,17 @@ class HEPDataStorage(object):
         else:
             self._weights = sample_weights
 
-    def extend(self, branches, treename=None, filenames=None, selection=None):
-        """Add the branches as columns to the data
+    def _set_weights(self, sample_weights):
+        """Set the weights"""
 
-        """
-        warnings.warn("Function 'extend' not yet implemented")
+        if not dev_tool.is_in_primitive(sample_weights, (None, 1)):
+            #assert len(sample_weights) == self._length
+            sample_weights = pd.Series(sample_weights, index=self._index, copy=True)
+        self._weights = sample_weights
 
-    #def get_dataTargetWeights()
 
-    def _scale_weights(self, index, weights_as_events, cast_int=False, min_weight=None):
-        """Scale the weights to have minimum *weights_as_events* """
+    def _scale_weights(self, index, weights_as_events=False, cast_int=True, min_weight=None):
+        """Scale the weights to have minimum *weights_as_events* or min_weight"""
         weights = self.get_weights(index=index)
 
         # take care of negative weights
@@ -382,8 +462,8 @@ class HEPDataStorage(object):
         assert min(weights) >= 0.98, "weights are not higher then 1, but they should be."
         return weights
 
-    def pandasDF(self, branches=None, treename=None, filenames=None,
-                 selection=None, index=None, weights_as_events=False, min_weight=None):
+    def pandasDF(self, columns=None, index=None, weights_as_events=False, min_weight=None,
+                 selection=None):
         """Convert the data to pandas or cut an already existing data frame and
         return it.
 
@@ -391,7 +471,7 @@ class HEPDataStorage(object):
 
         Parameters
         ---------
-        branches, treename, filenames, selection : str
+        columns : str
             Arguments for the :py:func:`~root_numpy.root2rec` ls
             function.
         index : 1-D list
@@ -426,70 +506,84 @@ class HEPDataStorage(object):
             if a *min_weight* is provided, the minimum of the weights and
             *min_weight* times the *weights_as_events* will be taken for
             scaling.
+
+        selection : str
+            A selection applied to **ROOT TTrees** only! For further details,
+            see the root_numpy module.
         """
 
         # initialize variables
         index = self._index if index is None else list(index)
+        columns = self.columns if columns is None else data_tools.to_list(columns)
 
-        # flag whether we have to add new data or not
+        # flag whether we have to add new data or not (convert weights to events)
         convert_data = (weights_as_events >= 1) and not dev_tool.is_in_primitive(self.get_weights(
                                                         index=index, inter=True), (None, 1))
 
-        # create new
-        if isinstance(branches, str):
-            branches = [branches]
-        temp_root_dict = {'branches': branches, 'treename': treename,
-                          'filenames': filenames, 'selection': selection}
-        for key, val in temp_root_dict.iteritems():
-            if dev_tool.is_in_primitive(val, None):
-                temp_root_dict[key] = self._root_dict.get(key)
-
         # create data
-        if index is None:  # if None, return all indices
-            data_out = data_tools.to_pandas(temp_root_dict)
-        else:
-            # TODO: horrible all the conversion? How to change DF indexes?
-            data_out = data_tools.to_pandas(temp_root_dict)
-            data_out = np.array(data_out.iloc[index])
-            # apply "normal" indices for the output array
-            data_out = pd.DataFrame(data_out, index=range(len(data_out)))
+        data_out = self._make_df(columns=columns, index=index, selection=selection, copy=True)
+        if not data_out.index.tolist() == range(len(data_out)):  # if not, convert the indices to
+            data_out.reset_index(drop=True, inplace=True)
 
         # weights to number of events conversion
         if convert_data:
+            # get new weights > weights_as_events OR > min_weight
             weights = self._scale_weights(index=index, weights_as_events=weights_as_events,
-                                          cast_int=True, min_weight=True)
+                                          cast_int=True, min_weight=min_weight)
             n_rows = sum(weights)
             starting_row = len(data_out)
-            columns = data_out.columns.values
-            data_out = data_out.append(pd.DataFrame(index=range(starting_row, n_rows), columns=columns))
+            data_out = data_out.append(pd.DataFrame(index=range(starting_row, n_rows), columns=data_out.columns))
 
             self.logger.info("Length of data was " + str(len(weights)) + ", new one will be " + str(sum(weights)))
-            row_new = starting_row
-            for row_ori in range(starting_row):
+            new_row = starting_row  # starting row for adding data == endrow of first dataframe
+            for row_ori in xrange(starting_row):
                 weight = weights[row_ori]
-                if row_new %10000 == 0:
+                if new_row %3000 == 0:
                     self.logger.info("adding row nr " + str(row_ori) + " with weight " + str(weight))
                 if  weight == 1:
-                    continue
+                    continue  # there is no need to add extra data in this "special case"
                 else:
-                    for tmp_ in range(1, weight):
-                        data_out.iloc[row_new] = data_out.iloc[row_ori]
-                        row_new += 1
+                    for tmp_ in xrange(1, weight):
+                        data_out.iloc[new_row] = data_out.iloc[row_ori]
+                        new_row += 1
             self.logger.info("data_out Dataframe created")
 
-            assert row_new == n_rows, "They should be the same in the end"
+            assert new_row == n_rows, "They should be the same in the end"
         # reassign branch names after conversation.
         # And pandas has naming "problems" if only 1 branch
-        data_out.columns = temp_root_dict['branches']
+        data_out.columns = columns
         return data_out
 
-    def get_labels(self, branches=None, as_list=False):
+    def _make_df(self, data=None, columns=None, index=None, copy=False, selection=None):
+        """Return a DataFrame from the given data. Does some dirty, internal work."""
+        # initialize data
+        data = self._data if dev_tool.is_in_primitive(data) else data
+        columns = self.columns if columns is None else data_tools.to_list(columns)
+        index = self.index if index is None else data_tools.to_list(index)
+
+        if self._data_type == 'root':
+            #update root dictionary
+            temp_root_dict = dict(data, **{'branches': columns, 'selection': selection})
+            for key, val in temp_root_dict.items():
+                if dev_tool.is_in_primitive(val, None):
+                    temp_root_dict[key] = self._root_dict.get(key)
+            data = data_tools.to_pandas(data)
+
+        elif self._data_type == 'array':
+            data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
+
+        assert isinstance(data, pd.DataFrame), "data did not convert correctly"
+        data = data if index is None else data.loc[index]
+
+        return data
+
+    def get_labels(self, columns=None, as_list=False):
         """Return the human readable branch-labels of the data.
 
         Parameters
         ----------
-        branches : list with str or str
-            The labels of the branches to return
+        columns : list with str or str
+            The labels of the columns to return
         as_list : boolean
             If true, the labels will be returned as a list instead of a dict.
 
@@ -498,32 +592,44 @@ class HEPDataStorage(object):
         out : list or dict
             Return a list or dict containing the labels.
         """
-        if branches is None:
-            branches = self._root_dict.get('branches')
-        branches = dev_tool.make_list_fill_var(branches)
+        if columns is None:
+            columns = self._root_dict.get('branches')
+        columns = data_tools.to_list(columns)
         if as_list:
-            labels_out = [self._label_dic.get(col, col) for col in branches]
+            labels_out = [self._label_dic.get(col, col) for col in columns]
         else:
-            labels_out = {key: self._label_dic.get(key) for key in branches}
-        return dev_tool.make_list_fill_var(labels_out)
+            labels_out = {key: self._label_dic.get(key) for key in columns}
+        return labels_out
 
-    def get_name(self, add_str=None, separator=None):
-        """Return the human-readable name of the data as a string
+    def set_labels(self, data_labels, add_label=True):
+        """Set the human readable data-labels (for the columns).
+
+        Sometimes you want to change the labels of columns. This can be done
+        by passing a dictionary containing the column as key and a
+        human-readable name as value.
 
         Parameters
         ----------
-        add_str : obj with string representation
-            To be added after the data name.
-        separator : str
-            Separates the different name from the add_str. Default is the
-            default of :py:func:`~raredecay.tools.data_tools.obj_to_string()`,
-            currently " - "
+        data_labels : dict
+            It has the form: {column: name}
+        add_label : boolean
+            If False, the existing label dictionary gets overwritten instead
+            of updated.
         """
+        if data_labels is None:
+            return
+        assert isinstance(data_labels, dict), "Not a dictionary"
+        self._set_data_labels(data_labels=data_labels, add_label=add_label)
 
-        out_str = data_tools.obj_to_string(self._name, separator=" ")
-        out_str = data_tools.obj_to_string([out_str, add_str], separator=separator)
+    def _set_data_labels(self, data_labels, add_label=True):
+        """Update the data labels"""
 
-        return out_str
+        self.add_label = add_label
+        self._label_dic.update(data_labels)
+
+
+
+
 
     def get_targets(self, index=None, weights_as_events=False, min_weight=None, **kwargs):
         """Return the targets of the data **as a numpy array**."""
@@ -564,16 +670,22 @@ class HEPDataStorage(object):
 
         if not dev_tool.is_in_primitive(targets, (-1, 0, 1, None)):
             assert len(self) == len(targets), "Invalid targets"
-        self._target_label = targets
+        self._set_target(targets)
 
-    def copy_storage(self, branches=None, index=None):
+    def _set_target(self, target):
+        """Set the target"""
+        if isinstance(target, (list, np.ndarray, pd.Series)):
+            target = pd.Series(target, index=self._index, copy=True)
+        self._target_label = target
+
+    def copy_storage(self, columns=None, index=None):
         """Return a copy of self with only some of the columns (and therefore \
         labels etc) or indices.
 
         Parameters
         ----------
-        branches : str or list(str, str, str, ...)
-            The branches which will be in the new storage.
+        columns : str or list(str, str, str, ...)
+            The columns which will be in the new storage.
         index : 1-D array-like
             The indices of the rows (and corresponding weights, targets etc.)
             for the new storage.
@@ -582,9 +694,9 @@ class HEPDataStorage(object):
         new_labels = {}
         new_root_dic = copy.deepcopy(self._root_dict)
 
-        if branches is not None:
-            branches = data_tools.to_list(branches)
-            new_root_dic['branches'] = copy.deepcopy(branches)
+        if columns is not None:
+            columns = data_tools.to_list(columns)
+            new_root_dic['branches'] = copy.deepcopy(columns)
 
         new_targets = copy.deepcopy(self.get_targets(index=index, inter=True))
         new_weights = copy.deepcopy(self.get_weights(index=index, inter=True))
@@ -602,7 +714,7 @@ class HEPDataStorage(object):
 
         return new_storage
 
-    def get_LabeledDataStorage(self, branches=None, index=None, random_state=None, shuffle=False):
+    def get_LabeledDataStorage(self, columns=None, index=None, random_state=None, shuffle=False):
         """Create and return an instance of class "LabeledDataStorage" from
         the REP repository.
 
@@ -612,14 +724,86 @@ class HEPDataStorage(object):
             Return a Labeled Data Storage instance created with the data
         """
         index = self._index if index is None else list(index)
-        new_lds = LabeledDataStorage(self.pandasDF(branches=branches, index=index),
+        new_lds = LabeledDataStorage(self.pandasDF(columns=columns, index=index),
                                      target=self.get_targets(index=index),
                                      sample_weight=self.get_weights(index=index),
                                      random_state=random_state, shuffle=shuffle)
         return new_lds
 
+
+    def make_folds(self, n_folds=10):
+        """Create train-test folds which can be accessed via
+        :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
+
+        Parameters
+        ----------
+        n_folds : int > 1
+            The number of folds to be created from the data. If you want, for
+            example, a simple 2/3-1/3 split, just specify n_folds = 3 and
+            just take one fold.
+        """
+        if n_folds <= 1:
+            self.logger.error("Wrong number of folds. Set to default 10")
+            n_folds = 10
+            meta_config.error_occured()
+
+        self._fold_index = []
+
+        # split indices of shuffled list
+        length = len(self)
+        temp_indeces = [int(round(length/n_folds)) * i for i in range(n_folds)]
+        temp_indeces.append(length)  # add last index. len(index) = n_folds + 1
+
+        # get a copy of index and shuffle it
+        temp_shuffled = copy.deepcopy(self._make_index())
+        random.shuffle(temp_shuffled)
+        for i in range(n_folds):
+            self._fold_index.append(temp_shuffled[temp_indeces[i]:temp_indeces[i + 1]])
+
+    def get_fold(self, fold):
+        """Return the specified fold: train and test data as instance of
+        :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
+
+        Parameters
+        ----------
+        fold : int
+            The number of the fold to return. From 0 to n_folds - 1
+        Return
+        ------
+        out : tuple(HEPDataStorage, HEPDataStorage)
+            Return the *train* and the *test* data in a HEPDataStorage
+        """
+        assert self._fold_index is not None, "Tried to get a fold but data has no folds. First create them (make_folds())"
+        assert isinstance(fold, int) and fold<len(self._fold_index), "your value of fold is not valid"
+        train_index = []
+        for i, index_slice in enumerate(self._fold_index):
+            if i == fold:
+                test_index = copy.deepcopy(index_slice)
+            else:
+                train_index += copy.deepcopy(index_slice)
+        n_folds = len(self._fold_index)
+        test_DS = self.copy_storage(index=test_index)
+        test_DS._fold_status = (fold, n_folds)
+        test_DS._fold_name = "test set fold " + str(fold) + " of " + str(n_folds)
+        train_DS = self.copy_storage(index=train_index)
+        train_DS._fold_status = (fold, n_folds)
+        train_DS._fold_name = "train set fold " + str(fold) + " of " + str(n_folds)
+        return train_DS, test_DS
+
+
+    def get_n_folds(self):
+        """Return how many folds are currently availabe or 0 if no folds
+        have been created
+
+        Return
+        ------
+        out : int
+            The number of folds which are currently available.
+        """
+        return 0 if self._fold_index is None else len(self._fold_index)
+
     def plot(self, figure=None, title=None, data_name=None, std_save=True,
-             log_y_axes=False, branches=None, index=None, sample_weights=None,
+             log_y_axes=False, columns=None, index=None, sample_weights=None,
              data_labels=None, see_all=False, hist_settings=None, weights_as_events=False):
         """Draw histograms of the data.
 
@@ -649,8 +833,8 @@ class HEPDataStorage(object):
             "standard" parameters as specified in *meta_config*.
         log_y_axes : boolean
             If True, the y-axes will be scaled logarithmically.
-        branches : str or list(str, str, str, ...)
-            The branches of the data to be plotted. If None, all are plotted.
+        columns : str or list(str, str, str, ...)
+            The columns of the data to be plotted. If None, all are plotted.
         index : list(int, int, int, ...)
             A list of indeces to be plotted. If None, all are plotted.
         sample_weights : list containing weights
@@ -687,7 +871,7 @@ class HEPDataStorage(object):
             hist_settings = dict(meta_config.DEFAULT_HIST_SETTINGS, **hist_settings)
 
         # create data
-        data_plot = self.pandasDF(branches=branches, index=index, weights_as_events=weights_as_events)
+        data_plot = self.pandasDF(columns=columns, index=index, weights_as_events=weights_as_events)
         columns = data_plot.columns.values
         self.logger.debug("plot columns from pandasDataFrame: " + str(columns))
         if weights_as_events >= 1:
@@ -740,12 +924,12 @@ class HEPDataStorage(object):
             plt.title(column)
         plt.legend()
 
-        if std_save:
+        if std_save and out_imported:
             out.save_fig(out_figure, **meta_config.DEFAULT_SAVE_FIG)
         return out_figure
 
     def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
-        """Plots two branches against each other to see the distribution.
+        """Plots two columns against each other to see the distribution.
 
         The dots size is proportional to the weights, so you have a good
         overview on the data and the weights.
@@ -765,21 +949,39 @@ class HEPDataStorage(object):
         assert len(weights) == len(self), "Wrong length of weigths"
         size = [dot_size*weight for weight in weights]
         temp_label = data_tools.obj_to_string([i for i in self._name])
-        plt.scatter(self.pandasDF(branches=x_branch),
-                    self.pandasDF(branches=y_branch), s=size, c=color,
+        plt.scatter(self.pandasDF(columns=x_branch),
+                    self.pandasDF(columns=y_branch), s=size, c=color,
                     alpha=0.5, label=temp_label)
-        plt.xlabel(self.get_labels(branches=x_branch, as_list=True))
-        plt.ylabel(self.get_labels(branches=y_branch, as_list=True))
+        plt.xlabel(self.get_labels(columns=x_branch, as_list=True))
+        plt.ylabel(self.get_labels(columns=y_branch, as_list=True))
         plt.legend()
 
         return out_figure
 
 # TODO: add correlation matrix
 
+if __name__ == '__main__':
+    n_tested = 0
+
+    b = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [51, 52, 53]])
+    a = pd.DataFrame(b, columns=['one', 'two', 'three'], index=[1,2,11,22,33])
+    c = copy.deepcopy(a)
+    storage = HEPDataStorage(a, index=[1,2,11,22], target=[1,1,1,0], sample_weights=[1,2,1,0.5],
+                             data_name="my_data", data_name_addition="and addition")
+    n_tested += 1
+    d = a.loc[[1,2,11,22]]
+    pd1 = storage.pandasDF()
+    pd2 = storage.pandasDF(weights_as_events=2)
+    scaled_w = storage.get_weights(weights_as_events=2)
+    t1 = all(pd1 == d.reset_index(drop=True))
+    t2 = len(pd2) == 18 and all(scaled_w == np.ones(len(pd2)))
+    works = t1 and t2
+    print "DataFrame works:", works
 
 
 
 
+    print "Selftest finished, tested " + str(n_tested) + " functions."
 
 
 

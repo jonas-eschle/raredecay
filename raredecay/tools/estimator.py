@@ -37,6 +37,7 @@ from raredecay import meta_config
 
 # TODO: remove debugging
 debug1 = 0
+debug2 = 0
 
 if __name__ == '__main__':
     logger = None  # dev_tool.make_logger(__name__)
@@ -59,7 +60,7 @@ class Mayou(Classifier):
             bagging=None
         ),
         rdf=dict(
-            n_estimators=1000,  # 1600
+            n_estimators=200,  # 1600
             max_features= 'auto', # only 1 feature seems to be pretty good...
             max_depth=120,
             min_samples_split=250,
@@ -68,6 +69,7 @@ class Mayou(Classifier):
             max_leaf_nodes=None,
             bootstrap=False,
             oob_score=False,
+            n_jobs=1,
             class_weight=None,
             bagging=None
         ),
@@ -75,18 +77,19 @@ class Mayou(Classifier):
 #            n_estimators=50,
 #        ),
         nn=dict(
-            layers=[100, 50],
+            layers=[100, 100],
             hidden_activation='logistic',
             output_activation='linear',
-            input_noise=0.02,  # [0,1,2,3,4,5,10,20],
+            input_noise=0,  # [0,1,2,3,4,5,10,20],
             hidden_noise=0,
             input_dropout=0,
-            hidden_dropout=0,
+            hidden_dropout=0.05,
             decode_from=1,
             weight_l1=0.01,
             weight_l2=0.03,
             scaler='standard',
-            trainers=[{'optimize': 'nag', 'learning_rate': 0.1, 'min_improvement': 0.1}],
+            trainers=[{'optimize': 'adagrad', 'patience': 2, 'momentum': 0.5, 'nesterov': True,
+                       'learning_rate': 0.2, 'min_improvement': 0.01}],
             bagging=None
         ),
 #        ada=dict(
@@ -231,7 +234,6 @@ class Mayou(Classifier):
             # bagging over the instantiated estimators
             if isinstance(bagging, int) and bagging >= 1:
                 bagging = dict(self.__DEFAULT_BAG_CFG, n_estimators=bagging)
-                print "BAGGING!!!"
             if isinstance(bagging, dict):
             # TODO: implement multi-thread:
                 bagging.update({'base_estimator': clf})
@@ -284,14 +286,18 @@ class Mayou(Classifier):
             predictions[key] = val[:,1]
         return pd.DataFrame(predictions, index=index, columns=columns)
 
+    @profile
     def _factory_predict_proba(self, X):
 
         index = X.index
 
         # parallel on factory level -> good mixture of clfs (one uses lot of RAM, one cpu...)
         parallel_profile = 'threads-' + str(min([len(self._factory.items()), globals_.free_cpus()]))
-
+        print parallel_profile
+        parallel_profile = None
         # predict, return a dictionary
+        global debug2
+        debug2 += 1
         predictions = self._factory.predict_proba(X, parallel_profile=parallel_profile)
 
         # slice the arrays of predictions in the dict right
@@ -471,9 +477,9 @@ if __name__ == '__main__':
                                      subsample=0.5
                                      )
     #clf_stacking='nn'
-    clf = Mayou(bagging_base=None, bagging_stack=None, stacking=clf_stacking,
-                features_stack=branch_names,
-                transform=True, transform_pred=False)
+    clf = Mayou(base_estimators=None, bagging_base=None, bagging_stack=None, stacking=clf_stacking,
+                #features_stack=branch_names,
+                transform=True, transform_pred=True)
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))
@@ -486,20 +492,32 @@ if __name__ == '__main__':
 
 
     clf.fit(X_train, y_train, w_train)
+    global debug2
+    print "debug2 1=", debug2
     print "Predictions: ", clf.predict(X_test)
+    print "debug2 2=", debug2
     print "Probabilites", clf.predict_proba(X_test)
+    print "debug2 3=", debug2
     #report = clf.test_on(X_test, y_test, w_test)
     report = clf.test_on_lds(lds)
     report.roc().plot(new_plot=True)
+    print "debug2 4=", debug2
     print "\nROC AUC = ", report.compute_metric(RocAuc())
     print "\nOptimalAccuracy = ", report.compute_metric(OptimalAccuracy())
+    print "debug2 5=", debug2
     print "\nOptimalAMS = ", report.compute_metric(OptimalAMS())
+    print "debug2 6=", debug2
     print "score: ", clf.score(X_test, y_test, w_test)
+    print "debug2 7=", debug2
     feat_imp = report.feature_importance_shuffling()
+    print "debug2 8=", debug2
 
     report_stack = clf.stacker_test_on_lds(lds)
+    print "debug2 9=", debug2
     report_stack.feature_importance_shuffling().plot(new_plot=True)
+    print "debug2 10=", debug2
     report_stack.features_correlation_matrix().plot(new_plot=True)
+    print "debug2 11=", debug2
 
 #    report.features_correlation_matrix().plot(new_plot=True)
 
