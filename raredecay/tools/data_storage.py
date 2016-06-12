@@ -402,8 +402,11 @@ class HEPDataStorage(object):
         if weights_as_events >= 1:
             pass
         elif dev_tool.is_in_primitive(self._weights, (None, 1)):
-            normalize = False
             weights_out = self._weights
+            if normalize != 1 or normalize is not True:
+                weights_out = pd.Series(np.ones(length), index=index)
+            else:
+                normalize = False
         elif index is None:
             weights_out = self._weights
         else:
@@ -593,6 +596,9 @@ class HEPDataStorage(object):
             starting_row = len(data_out)
             data_out = data_out.append(pd.DataFrame(index=range(starting_row, n_rows), columns=data_out.columns))
 
+            #test
+            np_data = data_out.as_matrix()
+
             self.logger.info("Length of data was " + str(len(weights)) + ", new one will be " + str(sum(weights)))
             new_row = starting_row  # starting row for adding data == endrow of first dataframe
 
@@ -606,13 +612,16 @@ class HEPDataStorage(object):
                     continue  # there is no need to add extra data in this "special case"
                 else:
                     for tmp_ in range(1, weight):
-                        data_out.iloc[new_row] = data_out.iloc[row_ori]
+                        np_data[new_row] = np_data[row_ori]
+                        #data_out.iloc[new_row] = data_out.iloc[row_ori]
                         new_row += 1
             self.logger.info("data_out Dataframe created")
 
             assert new_row == n_rows, "They should be the same in the end"
             profile1.create_stats()
             profile1.print_stats()
+            #test
+            data_out = pd.DataFrame(np_data)
 
         # reassign branch names after conversation.
         # And pandas has naming "problems" if only 1 branch
@@ -842,28 +851,37 @@ class HEPDataStorage(object):
             elif weights_as_events is False and weights_as_events_2 > 0:
                 ratio_1 /= min_weight_2
 
-                ratio_1 /= min((ratio_1, ratio_2))
-                ratio_2 /= min((ratio_1, ratio_2))
+                min_ratio = min((ratio_1, ratio_2))
+                ratio_1 /= min_ratio
+                ratio_2 /= min_ratio
 
-                normalize_1 = ratio_1 * weights_as_events_2
-                weights_as_events_2 = int(np.round(ratio_2 * weights_as_events) + 0.00005)
+                scale_factor = weights_as_events_2 / ratio_2  # scale to weights_as_events
+
+                normalize_1 = ratio_1 * scale_factor
+                weights_as_events_2 = int(np.round(ratio_2 * scale_factor) + 0.00005)
+                print "normalize_1", normalize_1
 
             elif weights_as_events > 0 and weights_as_events_2 is False:
                 ratio_2 /= min_weight_1
 
-                ratio_1 /= min((ratio_1, ratio_2))
-                ratio_2 /= min((ratio_1, ratio_2))
+                min_ratio = min((ratio_1, ratio_2))
+                ratio_1 /= min_ratio
+                ratio_2 /= min_ratio
 
-                weights_as_events = int(np.round(ratio_1 * weights_as_events) + 0.00005)
-                normalize_2 = ratio_2 * weights_as_events
+                scale_factor = weights_as_events / ratio_1  # scale to weights_as_events
+
+                weights_as_events = int(np.round(ratio_1 * scale_factor) + 0.00005)
+                normalize_2 = ratio_2 * scale_factor
+                print "normalize_2", normalize_2
 
             else:
                 # equalize the additional factor from the weights_to_events (division by min(weight))
                 ratio_1 /= min_weight_2
                 ratio_2 /= min_weight_1
 
-                ratio_1 /= min((ratio_1, ratio_2))
-                ratio_2 /= min((ratio_1, ratio_2))
+                min_ratio = min((ratio_1, ratio_2))
+                ratio_1 /= min_ratio
+                ratio_2 /= min_ratio
 
                 max_converter = max((weights_as_events, weights_as_events_2))
                 weights_as_events = int(np.round(ratio_1 * max_converter) + 0.00005)
