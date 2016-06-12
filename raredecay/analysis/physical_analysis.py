@@ -221,7 +221,7 @@ def reweightCV(cfg, logger):
 
         if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
             assert len(reweight_mc) == len(reweight_mc_reweighted), "Something bad happend somehow..."
-            reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index(), concat=True)
+            reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index())
         logger.info("fold " + str(fold) + "finished")
 
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):

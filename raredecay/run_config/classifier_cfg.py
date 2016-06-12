@@ -194,11 +194,11 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 hyper_cfg = dict(
-    optimize_clf='nn',
+    optimize_clf='xgb',
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
     n_evaluations=1,
     n_folds=5,
-    n_fold_checks=3
+    n_fold_checks=1
 )
 
 #------------------------------------------------------------------------------

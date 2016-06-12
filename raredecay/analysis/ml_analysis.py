@@ -377,7 +377,7 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
     ----------
     reweight_data_mc : :class:`HEPDataStorage`
         The Monte-Carlo data, which has to be "fitted" to the real data.
-    reweight_data_real : :class:`HEPDataStorage` (depreceated: root-dict)
+    reweight_data_real : :class:`HEPDataStorage`
         Same as *reweight_data_mc* but for the real data.
     columns : list of strings
         The columns/features/branches you want to use for the reweighting.

@@ -406,6 +406,7 @@ if __name__ == '__main__':
     from rep.metaml import FoldingClassifier
     from rep.report.metrics import RocAuc, significance, ams, OptimalAccuracy, OptimalAMS
     from sklearn.svm import NuSVC
+    from sklearn.naive_bayes import GaussianNB
 
     from root_numpy import root2array, rec2array
 
@@ -426,14 +427,14 @@ if __name__ == '__main__':
     w = np.ones(n_tot)
 
     if higgs_data:
-
-#        missing energy magnitude, missing energy phi,
-#        jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,
-#        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,
-#        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,
-#        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,
-#        m_jj, m_jjj, m_lv, m_jlv, m_bb, m_wbb,
-        branch_names = """lepton pT, lepton eta, lepton phi,
+        branch_names = """
+        missing energy magnitude, missing energy phi,
+        jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,
+        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,
+        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,
+        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,
+        m_jj, m_jjj, m_lv, m_jlv, m_bb, m_wbb,
+        lepton pT, lepton eta, lepton phi,
         m_wwbb""".split(",")
         branch_names = [c.strip() for c in branch_names]
         branch_names = (b.replace(" ", "_") for b in branch_names)
@@ -480,6 +481,8 @@ if __name__ == '__main__':
     clf = Mayou(base_estimators=None, bagging_base=None, bagging_stack=None, stacking=clf_stacking,
                 #features_stack=branch_names,
                 transform=True, transform_pred=True)
+    clf = SklearnClassifier(GaussianNB())
+    clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1., bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))
@@ -509,7 +512,7 @@ if __name__ == '__main__':
     print "debug2 6=", debug2
     print "score: ", clf.score(X_test, y_test, w_test)
     print "debug2 7=", debug2
-    feat_imp = report.feature_importance_shuffling()
+    feat_imp = report.feature_importance_shuffling().plot(new_plot=True)
     print "debug2 8=", debug2
 
     report_stack = clf.stacker_test_on_lds(lds)
