@@ -208,7 +208,7 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=75,  # stage 1 to optimize
+    n_estimators=[2,2],  #75,  # stage 1 to optimize
     min_child_weight=0,  # stage 2 to optimize
     max_depth=6,  # stage 2 to optimize
     gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
@@ -274,7 +274,7 @@ cfg_nn = dict(
     weight_l1=[0.01, 0.01],
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'adagrad', 'patience': 7, 'learning_rate': 0.1, 'min_improvement': 0.01,
+    trainers=[{'optimize': 'rprop', 'patience': 7, 'learning_rate': 0.1, 'min_improvement': 0.01,
                'momentum':0.5, 'nesterov':True, 'loss': 'xe'}],
 )
 #==============================================================================

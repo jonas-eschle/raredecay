@@ -9,6 +9,7 @@ from __future__ import division, absolute_import
 
 import copy
 import warnings
+import cProfile as profile
 
 import pandas as pd
 import numpy as np
@@ -16,6 +17,7 @@ import matplotlib.pyplot as plt
 import math
 import random
 from collections import deque
+import itertools
 
 from root_numpy import root2rec
 from rep.data.storage import LabeledDataStorage
@@ -349,9 +351,11 @@ class HEPDataStorage(object):
 
         Parameters
         ----------
-        normalize : boolean
-            If True, the weights will be normalized to 1 (the average is 1).
+        normalize : boolean or float > 0
+            If True, the weights will be normalized to 1 (the mean is 1).
             No effect, if weights_as_events is True.
+            If a float is provided, the mean of the weights will be equal
+            to *normalize*. So *True* and *1* will yield the same results.
         index : 1-D list
             List of index to get the weights from.
         weights_as_events : int >= 1 or False, None
@@ -411,14 +415,15 @@ class HEPDataStorage(object):
             weights_out = pd.Series(np.ones(length))
 
 
-        elif normalize:
+        elif normalize or normalize > 0:  # explicit is better then implicit
             eps = 0.00001
             counter = 0
-            while not (1-eps < weights_out.mean() and weights_out.mean() < 1 + eps):
-                weights_out *= weights_out.size/weights_out.sum()
+            normalize = 1 if normalize is True else normalize
+            while not (normalize - eps < weights_out.mean() and weights_out.mean() < normalize + eps):
+                weights_out *= normalize/weights_out.mean()
                 counter += 1
-                if counter > 100:  # to prevent endless loops
-                    self.logger.error("Could not normalize weights. Mean(weights): " + str(weights_out.mean()))
+                if counter > 10:  # to prevent endless loops
+                    self.logger.error("Could not normalize weights. Mean(weights): " + str(weights_out.mean()) + " of " + str(normalize))
                     meta_config.error_occured()
                     break
         return weights_out
@@ -491,8 +496,8 @@ class HEPDataStorage(object):
                 if w < 0:
                     has_negative = True
                     # rescale to [1, 0], mirror, multiply. Every neg weight is at
-                    # least 0.2 as big as the min of positives
-                    weights.iloc[i] = min_w * 0.2 * (1.0005 - float(w)/min_neg_w)
+                    # least 0.5 as big as the min of positives
+                    weights.iloc[i] = min_w * 0.5 * (1.0005 - float(w)/min_neg_w)
 
         if min_weight is not None:
             if min_weight == 0:
@@ -590,6 +595,9 @@ class HEPDataStorage(object):
 
             self.logger.info("Length of data was " + str(len(weights)) + ", new one will be " + str(sum(weights)))
             new_row = starting_row  # starting row for adding data == endrow of first dataframe
+
+            profile1 = profile.Profile()
+            profile1.enable()
             for row_ori in xrange(starting_row):
                 weight = weights.iloc[row_ori]
                 if new_row %3000 == 0:
@@ -597,12 +605,15 @@ class HEPDataStorage(object):
                 if weight == 1:
                     continue  # there is no need to add extra data in this "special case"
                 else:
-                    for tmp_ in xrange(1, weight):
+                    for tmp_ in range(1, weight):
                         data_out.iloc[new_row] = data_out.iloc[row_ori]
                         new_row += 1
             self.logger.info("data_out Dataframe created")
 
             assert new_row == n_rows, "They should be the same in the end"
+            profile1.create_stats()
+            profile1.print_stats()
+
         # reassign branch names after conversation.
         # And pandas has naming "problems" if only 1 branch
         data_out.columns = columns
@@ -685,7 +696,7 @@ class HEPDataStorage(object):
         else:
             self._label_dic = data_labels
 
-    def get_targets(self, index=None, weights_as_events=False, min_weight=None, **kwargs):
+    def get_targets(self, index=None, weights_as_events=False, min_weight=None):
         """Return the targets of the data **as a numpy array**."""
 
         index = self._index if index is None else list(index)
@@ -721,7 +732,7 @@ class HEPDataStorage(object):
             weights = self._scale_weights(index, weights_as_events=weights_as_events,
                                           cast_int=True, min_weight=min_weight)
             assert len(weights) == len(out_targets), "wrong length of weights and targets"
-            for weight, target in weights, out_targets:
+            for weight, target in itertools.izip(weights, out_targets):
                 if weight == 1:
                     continue
                 else:
@@ -747,9 +758,9 @@ class HEPDataStorage(object):
             target = pd.Series(target, index=self._index, copy=True)
         self._target = target
 
-    def make_dataset(self, second_storage=None, index=None, columns=None,
-                     weights_as_events=False, min_weight=None, weights_ratio=0,
-                     shuffle=False):
+    def make_dataset(self, second_storage=None, index=None, index_2=None, columns=None,
+                     weights_as_events=False, weights_as_events_2=False,
+                     min_weight=None, weights_ratio=0, shuffle=False):
 
         """Create data, targets and weights of the instance (and another one)
 
@@ -768,10 +779,8 @@ class HEPDataStorage(object):
             will be concatenated and returned as one.
         index : list(int, int, int, ...)
             The index for the **calling** (the *first*) storage instance.
-            To change the indeces of the second_storage, use the
-            :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.copy_storage`
-            method in the second_storage instance before passing it as
-            argument (pass the copy instead).
+        index_2 : list(int, int, int, ...)
+            The index for the (optional) **second storage instance**.
         columns : list(str, str, str, ...)
             The columns to be used of **both** data-storages.
         weights_as_events : int
@@ -781,7 +790,11 @@ class HEPDataStorage(object):
             To scale the weights to events, the weights get divided by the
             lowest weight. If a min_weights is provided *and* it is lower
             then the smallest weight, the min_weight will be used instead.
+
+        ..note:: If weights_ratio is provided, this parameter is ignored.
         weights_ratio : float >= 0
+            Only works if a second data storage is provided and assumes
+            that the two storages can be seen as the two different targets.
             If zero, nothing happens. If it is bigger than zero, it
             represents the ratio of the sum of the weights from the first
             to the second storage. If set to 1, they both are equally
@@ -794,45 +807,94 @@ class HEPDataStorage(object):
         # initialize values
         if shuffle:
              warnings.warn("Shuffle not yet implemented!!")
-        weights_as_events_1 = weights_as_events
-        weights_as_events_2 = weights_as_events
 
+        normalize_1 = 1
+        normalize_2 = 1
+
+        # set min_weight and get some later needed variables
         if second_storage is not None:
-            assert isinstance(second_storage, HEPDataStorage)
-
-        if weights_ratio > 0 and second_storage is not None:
             weights_1 =self.get_weights(index=index)
-            weights_2 = second_storage.get_weights()
+            weights_2 = second_storage.get_weights(index=index_2)
             min_weight_1 = float(min(weights_1))
             min_weight_2 = float(min(weights_2))
+            min_w1_w2 = min((min_weight_1, min_weight_2))
+            if min_weight is not None:
+                min_weight = min((min_w1_w2, min_weight))
+
+        if weights_ratio > 0 and second_storage is not None:
+            min_weight = None  # ignore if weigths_ratio > 0
+
             sum_weight_1 = float(sum(weights_1))
             sum_weight_2 = float(sum(weights_2))
 
             ratio_1 = weights_ratio * sum_weight_2 / sum_weight_1
+            self.logger.info("ratio_1 = " + str(ratio_1))
             if ratio_1 >= 1:
                 ratio_2 = 1.0
             else:
                 ratio_2 = 1.0 / ratio_1
                 ratio_1 = 1.0
 
-            if min_weight_1 >= min_weight_2:
-                equalize_1 = 1.
-                equalize_2 = min_weight_1 / min_weight_2
+            if weights_as_events is False and weights_as_events_2 is False:
+                normalize_1 = ratio_1
+                normalize_2 = ratio_2
+
+            elif weights_as_events is False and weights_as_events_2 > 0:
+                ratio_1 /= min_weight_2
+
+                ratio_1 /= min((ratio_1, ratio_2))
+                ratio_2 /= min((ratio_1, ratio_2))
+
+                normalize_1 = ratio_1 * weights_as_events_2
+                weights_as_events_2 = int(np.round(ratio_2 * weights_as_events) + 0.00005)
+
+            elif weights_as_events > 0 and weights_as_events_2 is False:
+                ratio_2 /= min_weight_1
+
+                ratio_1 /= min((ratio_1, ratio_2))
+                ratio_2 /= min((ratio_1, ratio_2))
+
+                weights_as_events = int(np.round(ratio_1 * weights_as_events) + 0.00005)
+                normalize_2 = ratio_2 * weights_as_events
+
             else:
-                equalize_2 = 1.
-                equalize_1 = min_weight_2 / min_weight_1
+                # equalize the additional factor from the weights_to_events (division by min(weight))
+                ratio_1 /= min_weight_2
+                ratio_2 /= min_weight_1
 
-            weights_as_events_1 = ratio_1 * equalize_1 * weights_as_events
-            weights_as_events_2 = ratio_2 * equalize_2 * weights_as_events
+                ratio_1 /= min((ratio_1, ratio_2))
+                ratio_2 /= min((ratio_1, ratio_2))
 
-            weights_as_events_1 = int(np.ceil(weights_as_events_1) + 0.00005)
-            weights_as_events_2 = int(np.ceil(weights_as_events_2) + 0.00005)
-
-
-
-
+                max_converter = max((weights_as_events, weights_as_events_2))
+                weights_as_events = int(np.round(ratio_1 * max_converter) + 0.00005)
+                weights_as_events_2 = int(np.round(ratio_2 * max_converter) + 0.00005)
 
 
+        data = self.pandasDF(columns=columns, index=index, min_weight=min_weight,
+                             weights_as_events=weights_as_events)
+        if second_storage is None:
+            targets = self.get_targets(index=index, min_weight=min_weight,
+                                       weights_as_events=weights_as_events)
+        weights = self.get_weights(index=index, min_weight=min_weight,
+                                   weights_as_events=weights_as_events, normalize=normalize_1)
+
+        if second_storage is not None:
+            assert isinstance(second_storage, HEPDataStorage), "Wrong type, has to be a HEPDataStorage"
+            length_1 = len(data)
+            data_2 = second_storage.pandasDF(columns=columns, index=index_2,
+                                             min_weight=min_weight,
+                                             weights_as_events=weights_as_events_2)
+            length_2 = len(data_2)
+            data = pd.concat((data, data_2), ignore_index=True, copy=False)
+
+            targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
+
+            weights_2 = second_storage.get_weights(index=index_2, min_weight=min_weight,
+                                                   weights_as_events=weights_as_events_2,
+                                                   normalize=normalize_2)
+            weights = np.concatenate((weights, weights_2))
+
+        return data, targets, weights
 
     def copy_storage(self, columns=None, index=None):
         """Return a copy of self with only some of the columns (and therefore

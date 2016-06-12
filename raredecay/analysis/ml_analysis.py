@@ -61,9 +61,33 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
                   weight_original=None, weight_target=None, conv_ori_weights=False,
-                  conv_tar_weights=False):
+                  conv_tar_weights=False, weights_ratio=0):
     """Return the concatenated data, weights and labels for classifier training
     """
+    # TODO: remove hack
+    print "_make_data: HAAAAAACCCCKKK"
+    conv_ori_weights = 2
+    conv_tar_weights = 2
+    weights_ratio = 1
+
+    data_out = original_data.make_dataset(target_data, columns=features, weights_as_events=conv_ori_weights,
+                                          weights_as_events_2=conv_tar_weights, weights_ratio=weights_ratio)
+    print "in _make_data. length of weights:", len(data_out[2])
+    w_0 = [w for i, w in enumerate(data_out[2]) if data_out[1][i] == 0]
+    w_1 = [w for i, w in enumerate(data_out[2]) if data_out[1][i] == 1]
+    length_0 = len(w_0)
+    length_1 = len(w_1)
+    sum_0 = sum(w_0)
+    sum_1 = sum(w_1)
+
+    print "mean w_0", np.mean(w_0)
+    print "mean w_1", np.mean(w_1)
+    print "in _make_data. sum of weight_1:", sum_0
+    print "in _make_data. sum of weight_2:", sum_1
+    print " in _make_data. should be equal:", length_0 * np.mean(w_0), "=", length_1 * np.mean(w_1)
+    print "in _make_data. Counter of targets, should be equal", Counter(data_out[1])
+    return data_out
+
     min_weight = None
     if (original_data is not None) and (target_data is not None) and conv_ori_weights >= 1 and conv_tar_weights >= 1:
         if dev_tool.is_in_primitive(weight_original, None):
