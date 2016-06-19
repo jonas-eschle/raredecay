@@ -210,33 +210,42 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
 
     if optimize_features:
         selected_features = features[:]
+        assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
+
+        # starting feature selection
         out.add_output(["Performing feature selection of classifier", clf, "of the features", features],
                        obj_separator=" ", title="Feature selection")
         original_clf = FoldingClassifier(clf, n_folds=n_folds,
                                 parallel_profile=parallel_profile)
 
-        roc_auc = OrderedDict()
-        assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
+        # "loop-initialization"
+        clf = copy.deepcopy(original_clf)
+        #clf.features = selected_features
+        clf.fit(data[selected_features], label, weights)
+        report = clf.test_on(data[selected_features], label, weights)
+        max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+        roc_auc = OrderedDict({'all features': round(max_auc, 4)})
+        out.save_fig(figure="feature importance " + str(clf_name))
+        report.feature_importance_shuffling().plot()
+        out.save_fig(figure="feature correlation " + str(clf_name))
+        report.features_correlation_matrix().plot()
+
         # do-while python-style (with if-break inside)
         while len(selected_features) > 1:
-            clf = copy.deepcopy(original_clf)
-            difference = 0
-            clf.features = selected_features
-            clf.fit(data[selected_features], label, weights)
-            report = clf.test_on(data[selected_features], label, weights)
-            max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
-            if len(roc_auc) == 0:
-                roc_auc['all features'] = round(max_auc, 4)
 
+            # initialize variable
+            difference = 1  # just a surely small initialisation
+
+            # iterate through the features and remove the ith each time
             for i, feature in enumerate(selected_features):
-                clf = copy.deepcopy(original_clf)
+                clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
                 temp_features = selected_features[:]
-                del temp_features[i]  # remove ith feature to test
-                clf.features = temp_features
+                del temp_features[i]  # remove ith feature for testing
+                #clf.features = temp_features
                 clf.fit(data[temp_features], label, weights)
                 report = clf.test_on(data[temp_features], label, weights)
                 temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
-                if max_auc - temp_auc > difference:
+                if max_auc - temp_auc < difference:
                     difference = max_auc - temp_auc
                     temp_dict = {feature: round(temp_auc, 4)}
 
@@ -245,6 +254,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
             else:
                 roc_auc.update(temp_dict)
                 selected_features.remove(temp_dict.keys()[0])
+                max_auc = temp_dict.values()[0]
 
         out.add_output(["ROC AUC if the feature was removed", roc_auc,
                         "next feature", temp_dict],
@@ -578,7 +588,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
-             conv_ori_weights=False, conv_tar_weights=False,
+             conv_ori_weights=False, conv_tar_weights=False, weights_ratio=0,
              config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
@@ -660,7 +670,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     data_name = curve_name + ", " + original_data.get_name() + " and " + target_data.get_name()
 
     data, label, weights = _make_data(original_data, target_data, features=features,
-                                     weight_target=weight_target,
+                                     weight_target=weight_target, weights_ratio=weights_ratio,
                                      weight_original=weight_original,
                                      target_from_data=take_target_from_data,
                                      conv_ori_weights=conv_ori_weights,

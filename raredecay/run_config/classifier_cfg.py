@@ -212,12 +212,12 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=75,  #75,  # stage 1 to optimize
+    n_estimators=6,  #75,  # stage 1 to optimize
     min_child_weight=0,  # stage 2 to optimize
     max_depth=6,  # stage 2 to optimize
     gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
     subsample=0.8, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
-    colsample=0.7 # stage 4, only take several colons for training
+    colsample=1 # stage 4, only take several colons for training
     # no loss regularization available so far...
 )
 

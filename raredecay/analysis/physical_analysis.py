@@ -237,10 +237,10 @@ def reweightCV(cfg, logger):
         data1, data2 = reweight_mc_reweighted.get_fold(0)
         ml_ana.data_ROC(data1, data2, curve_name="mc reweight vs mc reweight")
         ml_ana.data_ROC(data1, data2, curve_name="mc reweight conv vs mc reweight conv",
-                        conv_ori_weights=1, conv_tar_weights=1)
+                        conv_ori_weights=2, conv_tar_weights=2, weights_ratio=1)
 
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_mc_reweighted, curve_name="mc reweight all conv=5 vs mc reweight all",
-                        conv_ori_weights=5, conv_tar_weights=False)
+                        conv_ori_weights=5, conv_tar_weights=False, weights_ratio=1)
         #ml_ana.data_ROC(reweight_mc_reweighted, reweight_m
         #                curve_name="mc reweight vs mc reweight weights as events", conv_tar_weights=3)
         reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
@@ -249,7 +249,7 @@ def reweightCV(cfg, logger):
                                     data_name="normal weights", weights_as_events=False)
         reweight_real.plot(figure="weights as events vs normal weights", data_name="real data", weights_as_events=False)
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
-                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=2)
+                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=2, weights_ratio=1)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
