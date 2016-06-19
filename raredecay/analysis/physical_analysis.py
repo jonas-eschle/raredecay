@@ -88,7 +88,8 @@ def hyper_optimization(cfg, logger):
     clf = cfg.hyper_cfg['optimize_clf']
     config_clf = getattr(cfg, 'cfg_' + clf)
     ml_ana.optimize_hyper_parameters(original_data, target_data, features=cfg.opt_features,
-                                     clf=clf, config_clf=config_clf)
+                                     clf=clf, config_clf=config_clf,
+                                     optimize_features=cfg.hyper_cfg.get('optimize_features', False))
 
     original_data.plot(figure="data comparison", title="data comparison", columns=cfg.opt_features)
     target_data.plot(figure="data comparison", columns=cfg.opt_features)

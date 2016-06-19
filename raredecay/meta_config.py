@@ -178,6 +178,7 @@ DEFAULT_CLF_KNN = dict(
 #  Hyper parameter optimization
 #------------------------------------------------------------------------------
 
+max_difference_feature_selection = 0.05  # the biggest difference allowed in auc when removing features
 DEFAULT_HYPER_GENERATOR = 'subgrid'
 
 #==============================================================================

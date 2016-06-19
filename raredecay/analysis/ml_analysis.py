@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from collections import Counter
+from collections import Counter, OrderedDict
 
 import hep_ml.reweight
 from rep.metaml import ClassifiersFactory
@@ -110,7 +110,32 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
 def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
                               features=None, optimize_features=False,
                               take_target_from_data=False, train_best=False):
-    """Optimize the hyperparameters of a classifier"""
+    """Optimize the hyperparameters of a classifier or do feature selection
+
+    Parameters
+    ----------
+    original_data : HEPDataStorage
+        The original data
+    target_data : HEPDataStorage
+        The target data
+    clf : str {'xgb, 'rdf, 'erf', 'gb', 'ada', 'nn'}
+        The name of the classifier
+    config_clf : dict
+        The configuration of the classifier
+    features : list(str, str, str,...)
+        List of strings containing the features/columns to be used for the
+        hyper-optimization or feature selection.
+    optimize_features : Boolean
+        If True, feature selection will be done instead of hyperparameter-
+        optimization
+    take_target_from_data : Boolean
+        If True, the target-labeling (the y) will be taken from the data
+        directly and not created. Otherwise, 0 will be assumed for the
+        original_data and 1 for the target_data.
+    train_best : boolean
+        If True, train the best classifier (if hyperparameter-optimization is
+        done) on the full dataset.
+    """
 
     # initialize variables and setting defaults
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
@@ -119,21 +144,41 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     n_checks = cfg.hyper_cfg['n_fold_checks']
     n_folds = cfg.hyper_cfg['n_folds']
     generator_type = cfg.hyper_cfg.get('generator', meta_config.DEFAULT_HYPER_GENERATOR)
-    parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
+
+    # parallelize on the lowest level if possible (uses less RAM)
+    if clf in ('xgb', 'rdf', 'erf'):
+        parallel_profile = None
+    else:
+        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
 
     # Create parameter for clf and hyper-search
-    grid_param = {}
-    list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
-    for key, val in config_clf.items():
-        if isinstance(val, (list, np.ndarray, pd.Series)):
-            if key not in list_param or isinstance(val[0], list):
-                val = data_tools.to_list(val)
-                grid_param[key] = config_clf.pop(key)
+    if not dev_tool.is_in_primitive(config_clf.get('features', None)):
+        features = config_clf.get('features', None)
+    if optimize_features:
+        if features is None:
+            features = original_data.columns
+            meta_config.warning_occured()
+            logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
+                           "Features for feature-optimization will be taken from data.")
+
+    # We do not need to create more data than we well test on
+    else:
+        grid_param = {}
+        list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
+        for key, val in config_clf.items():
+            if isinstance(val, (list, np.ndarray, pd.Series)):
+                if key not in list_param or isinstance(val[0], list):
+                    val = data_tools.to_list(val)
+                    grid_param[key] = config_clf.pop(key)
+
+    features = data_tools.to_list(features)
+    if optimize_features:
+        grid_param = features
+
 
     assert grid_param != {}, "No values for optimization found"
 
-    # rederict print output (from hyperparameter-optimizer)
-    out.IO_to_string()
+
 
     # initialize data
     data, label, weights = _make_data(original_data, target_data, features=features,
@@ -142,72 +187,117 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     # initialize classifier
     if clf == 'xgb':
         clf_name = "XGBoost"
-        config_clf.update(nthreads=1)
+        config_clf.update(nthreads=globals_.free_cpus())
         clf = XGBoostClassifier(**config_clf)
     elif clf == 'rdf':
         clf_name = "Random Forest"
         config_clf.update(n_jobs=globals_.free_cpus())  # needs less RAM if parallelized this way
-        parallel_profile=None
         clf = SklearnClassifier(RandomForestClassifier(**config_clf))
     elif clf == 'gb':
         clf_name = "GradientBoosting classifier"
         clf = SklearnClassifier(GradientBoostingClassifier(**config_clf))
     elif clf == 'nn':
         clf_name = "Theanets Neural Network"
-        parallel_profile=None if meta_config.use_gpu else parallel_profile
+        parallel_profile = None if meta_config.use_gpu else parallel_profile
         clf = TheanetsClassifier(**config_clf)
     elif clf == 'erf':
         clf_name = "Extra Random Forest"
+        config_clf.update(n_jobs=globals_.free_cpus())
         clf = SklearnClassifier(ExtraTreesClassifier(**config_clf))
     elif clf == 'ada':
         clf_name = "AdaBoost classifier"
         clf = SklearnClassifier(AdaBoostClassifier(**config_clf))
 
+    if optimize_features:
+        selected_features = features[:]
+        out.add_output(["Performing feature selection of classifier", clf, "of the features", features],
+                       obj_separator=" ", title="Feature selection")
+        original_clf = FoldingClassifier(clf, n_folds=n_folds,
+                                parallel_profile=parallel_profile)
 
-    if generator_type == 'regression':
-        generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
-    elif generator_type == 'subgrid':
-        generator = SubgridParameterOptimizer(grid_param, n_evaluations=n_eval)
-    elif generator_type == 'random':
-        generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
+        roc_auc = OrderedDict()
+        assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
+        # do-while python-style (with if-break inside)
+        while len(selected_features) > 1:
+            clf = copy.deepcopy(original_clf)
+            difference = 0
+            clf.features = selected_features
+            clf.fit(data[selected_features], label, weights)
+            report = clf.test_on(data[selected_features], label, weights)
+            max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+            if len(roc_auc) == 0:
+                roc_auc['all features'] = round(max_auc, 4)
+
+            for i, feature in enumerate(selected_features):
+                clf = copy.deepcopy(original_clf)
+                temp_features = selected_features[:]
+                del temp_features[i]  # remove ith feature to test
+                clf.features = temp_features
+                clf.fit(data[temp_features], label, weights)
+                report = clf.test_on(data[temp_features], label, weights)
+                temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+                if max_auc - temp_auc > difference:
+                    difference = max_auc - temp_auc
+                    temp_dict = {feature: round(temp_auc, 4)}
+
+            if difference >= meta_config.max_difference_feature_selection:
+                break
+            else:
+                roc_auc.update(temp_dict)
+                selected_features.remove(temp_dict.keys()[0])
+
+        out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                        "next feature", temp_dict],
+                       subtitle="Feature selection results")
+
     else:
-        raise ValueError(str(generator) + " not a valid, implemented generator")
-    scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
-    grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
+        # rederict print output (from hyperparameter-optimizer)
+        out.IO_to_string()
 
-    # Search for hyperparameters
-    logger.info("starting " + clf_name + " hyper optimization")
-    grid_finder.fit(data, label, weights)
-    logger.info(clf_name + " hyper optimization finished")
-    grid_finder.params_generator.print_results()
+        if generator_type == 'regression':
+            generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
+        elif generator_type == 'subgrid':
+            generator = SubgridParameterOptimizer(grid_param, n_evaluations=n_eval)
+        elif generator_type == 'random':
+            generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
+        else:
+            raise ValueError(str(generator) + " not a valid, implemented generator")
+        scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
+        grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
+
+        # Search for hyperparameters
+        logger.info("starting " + clf_name + " hyper optimization")
+        grid_finder.fit(data, label, weights)
+        logger.info(clf_name + " hyper optimization finished")
+        grid_finder.params_generator.print_results()
 
 
-    if train_best:
-        # Train the best and plot reports
-        X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(data, label, weights,
-                                                                             test_size=0.25)
-        best_est = grid_finder.fit_best_estimator(X_train, y_train, w_train)
-        report = best_est.test_on(X_test, y_test, w_test)
+        if train_best:
+            # Train the best and plot reports
+            X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(data, label, weights,
+                                                                                 test_size=0.25)
+            best_est = grid_finder.fit_best_estimator(X_train, y_train, w_train)
+            report = best_est.test_on(X_test, y_test, w_test)
 
-        # plots
-        try:
-            name1 = "Learning curve of best classifier"
-            out.save_fig(name1, **save_fig_cfg)
-            report.roc().plot(title=name1)
-            name2 = str("Feature correlation matrix of " + original_data.get_name() +
-                        " and " + target_data.get_name())
-            out.save_fig(name2, **save_ext_fig_cfg)
-            report.features_correlation_matrix().plot(title=name2)
-            name3 = "Learning curve of best classifier"
-            out.save_fig(name3, **save_fig_cfg)
-            report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name3)
-            name4 = "Feature importance of best classifier"
-            out.save_fig(name4, **save_fig_cfg)
-            report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name4)
-        except:
-            logger.error("Could not plot hyper optimization " + clf_name + " plots")
+            # plots
+            try:
+                name1 = "Learning curve of best classifier"
+                out.save_fig(name1, **save_fig_cfg)
+                report.roc().plot(title=name1)
+                name2 = str("Feature correlation matrix of " + original_data.get_name() +
+                            " and " + target_data.get_name())
+                out.save_fig(name2, **save_ext_fig_cfg)
+                report.features_correlation_matrix().plot(title=name2)
+                name3 = "Learning curve of best classifier"
+                out.save_fig(name3, **save_fig_cfg)
+                report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name3)
+                name4 = "Feature importance of best classifier"
+                out.save_fig(name4, **save_fig_cfg)
+                report.feature_importance_shuffling().plot(title=name4)
+            except:
+                logger.error("Could not plot hyper optimization " + clf_name + " plots")
 
-    out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
+        out.IO_to_sys(subtitle=clf_name + " hyperparameter/feature optimization")
 
 
 def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',

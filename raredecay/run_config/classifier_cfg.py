@@ -185,20 +185,24 @@ data = dict(
 #==============================================================================
 # CLASSIFIER TRAINING BEGIN
 #==============================================================================
+
+# define features used during optimization process (if not explicitly specified in classifier)
 opt_features = ['B_PT', 'nTracks', 'nSPDHits',
-               'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
-              #'B_IPCHI2_OWNPV',
+              'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
+              'B_IPCHI2_OWNPV',
                 'l1_PT', 'l1_IPCHI2_OWNPV',
-               # 'B_ENDVERTEX_CHI2',
-              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+                'B_ENDVERTEX_CHI2',
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
 
 hyper_cfg = dict(
-    optimize_clf='xgb',
-    generator='regression',  # how to search the hyperspace {'subgrid', 'regression'}
-    n_evaluations=1,
-    n_folds=5,
-    n_fold_checks=1
+    optimize_clf='xgb',  # the name of the classifier to optimize. Has to be exactly what follows 'cfg_'
+    generator='regression',  # how to search the hyperspace {'subgrid', 'regression', 'random}
+                             # or the feature space {'backwards'}
+    optimize_features=True,
+    n_evaluations=2,  # how many points in hyperspace to look at
+    n_folds=2,  # split the data in n_folds
+    n_fold_checks=1  # how many folds to create and check on. n_fold_checks <= n_folds
 )
 
 #------------------------------------------------------------------------------
@@ -208,7 +212,7 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=[2,2],  #75,  # stage 1 to optimize
+    n_estimators=75,  #75,  # stage 1 to optimize
     min_child_weight=0,  # stage 2 to optimize
     max_depth=6,  # stage 2 to optimize
     gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
@@ -254,12 +258,12 @@ cfg_erf = dict(
 )
 
 from sklearn.tree import ExtraTreeClassifier
-from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import ExtraTreesClassifier, RandomForestClassifier
 
 cfg_ada = dict(
-    n_estimators=range(10, 500, 30),
+    n_estimators=[50,100],
     learning_rate=0.1,
-    base_estimator=ExtraTreesClassifier(n_estimators=300, n_jobs=6),
+    base_estimator=RandomForestClassifier(n_estimators=3, max_features=0.6),
 )
 
 cfg_nn = dict(
