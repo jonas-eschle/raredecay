@@ -256,9 +256,14 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
                 selected_features.remove(temp_dict.keys()[0])
                 max_auc = temp_dict.values()[0]
 
-        out.add_output(["ROC AUC if the feature was removed", roc_auc,
-                        "next feature", temp_dict],
-                       subtitle="Feature selection results")
+        if len(selected_features) > 1:
+            out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                            "next feature", temp_dict],
+                            subtitle="Feature selection results")
+        else:
+            out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                            "All features removed, loop stopped removing because, no feature was left"],
+                            subtitle="Feature selection results")
 
     else:
         # rederict print output (from hyperparameter-optimizer)

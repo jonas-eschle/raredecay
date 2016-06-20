@@ -191,8 +191,11 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
               'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
               'B_IPCHI2_OWNPV',
                 'l1_PT', 'l1_IPCHI2_OWNPV',
+                'l1_TRACK_TCHI2NDOF',
                 'B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+
+              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF',
+
               ]
 
 hyper_cfg = dict(
@@ -200,7 +203,7 @@ hyper_cfg = dict(
     generator='regression',  # how to search the hyperspace {'subgrid', 'regression', 'random}
                              # or the feature space {'backwards'}
     optimize_features=True,
-    n_evaluations=2,  # how many points in hyperspace to look at
+    n_evaluations=10,  # how many points in hyperspace to look at
     n_folds=2,  # split the data in n_folds
     n_fold_checks=1  # how many folds to create and check on. n_fold_checks <= n_folds
 )
@@ -212,7 +215,7 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=6,  #75,  # stage 1 to optimize
+    n_estimators=75,  #75,  # stage 1 to optimize
     min_child_weight=0,  # stage 2 to optimize
     max_depth=6,  # stage 2 to optimize
     gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
