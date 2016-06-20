@@ -15,18 +15,19 @@ def readme():
 try:
     git_version = subprocess.check_output(["git", "-C",
                         "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
-            "describe"])
+                        "describe"])
     git_version = git_version.partition('-')
+    git_version = str(git_version[0])
 except:
     git_version = 'unknown'
-
+#git_version = '0.9.5'
 
 setup(name='raredecay',
       version=git_version,  # '0.8.5',
       description='A package for analysis of rare particle decays with ml',
       long_description=readme(),
       classifiers=[
-        'Development Status :: 8 - Alpha',
+        'Development Status :: 9 - Alpha',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='particle physics analysis machine learning reweight',
@@ -37,6 +38,9 @@ setup(name='raredecay',
       install_requires=[
           #'hep_ml',
           #'rep',
+	      #'nose_parameterized'
+    	  #'root_numpy'
+	      #'rootpy'
       ],
       packages=['raredecay',
                 'raredecay.analysis',
@@ -44,4 +48,5 @@ setup(name='raredecay',
                 'raredecay.tools',
       ],
       include_package_data=True,
-      zip_safe=False)
+      zip_safe=False
+      )

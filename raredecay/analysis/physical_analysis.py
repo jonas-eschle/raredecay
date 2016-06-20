@@ -88,10 +88,11 @@ def hyper_optimization(cfg, logger):
     clf = cfg.hyper_cfg['optimize_clf']
     config_clf = getattr(cfg, 'cfg_' + clf)
     ml_ana.optimize_hyper_parameters(original_data, target_data, features=cfg.opt_features,
-                                     clf=clf, config_clf=config_clf)
+                                     clf=clf, config_clf=config_clf,
+                                     optimize_features=cfg.hyper_cfg.get('optimize_features', False))
 
-    original_data.plot(figure="data comparison", title="data comparison", branches=cfg.opt_features)
-    target_data.plot(figure="data comparison", branches=cfg.opt_features)
+    original_data.plot(figure="data comparison", title="data comparison", columns=cfg.opt_features)
+    target_data.plot(figure="data comparison", columns=cfg.opt_features)
 
 
 
@@ -132,17 +133,17 @@ def reweight(cfg, logger, rootfile_to_add=None):
 
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
-                                            branches=cfg.reweight_branches,
+                                            columns=cfg.reweight_branches,
                                             meta_cfg=cfg.reweight_meta_cfg,
                                             **cfg.reweight_cfg)
     new_weights = ml_ana.reweight_weights(reweight_data=reweight_apply,
-                                          branches=cfg.reweight_branches,
+                                          columns=cfg.reweight_branches,
                                           reweighter_trained=gb_reweighter)
     reweight_apply.plot(figure="Data for reweights apply", data_name="gb weights")
     out.save_fig(plt.figure("New weights"))
     plt.hist(reweight_apply.get_weights(), bins=30, log=True)
 
-    new_weights = ml_ana.reweight_weights(reweight_data=reweight_mc, branches=cfg.reweight_branches,
+    new_weights = ml_ana.reweight_weights(reweight_data=reweight_mc, columns=cfg.reweight_branches,
                             reweighter_trained=gb_reweighter)
     reweight_real.plot(figure="Data self reweighted", data_name="gb weights")
     reweight_mc.plot(figure="Data self reweighted", data_name="after reweighting")
@@ -194,13 +195,13 @@ def reweightCV(cfg, logger):
         reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
                                              reweight_data_mc=train_mc,
                                              reweight_data_real=train_real,
-                                             branches=cfg.reweight_branches,
+                                             columns=cfg.reweight_branches,
                                              **cfg.reweight_cfg)
 
         logger.info("reweighting fold " + str(fold) + "finished")
         # reweighter = ''  # load from pickle file
         new_weights = ml_ana.reweight_weights(test_mc, reweighter,
-                                              branches=cfg.reweight_branches)
+                                              columns=cfg.reweight_branches)
         if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
             plt.figure("new weights of fold " + str(fold))
             plt.hist(new_weights,bins=40, log=True)
@@ -221,7 +222,7 @@ def reweightCV(cfg, logger):
 
         if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
             assert len(reweight_mc) == len(reweight_mc_reweighted), "Something bad happend somehow..."
-            reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index(), concat=True)
+            reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index())
         logger.info("fold " + str(fold) + "finished")
 
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
@@ -236,10 +237,10 @@ def reweightCV(cfg, logger):
         data1, data2 = reweight_mc_reweighted.get_fold(0)
         ml_ana.data_ROC(data1, data2, curve_name="mc reweight vs mc reweight")
         ml_ana.data_ROC(data1, data2, curve_name="mc reweight conv vs mc reweight conv",
-                        conv_ori_weights=1, conv_tar_weights=1)
+                        conv_ori_weights=2, conv_tar_weights=2, weights_ratio=1)
 
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_mc_reweighted, curve_name="mc reweight all conv=5 vs mc reweight all",
-                        conv_ori_weights=5, conv_tar_weights=False)
+                        conv_ori_weights=5, conv_tar_weights=False, weights_ratio=1)
         #ml_ana.data_ROC(reweight_mc_reweighted, reweight_m
         #                curve_name="mc reweight vs mc reweight weights as events", conv_tar_weights=3)
         reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
@@ -248,7 +249,7 @@ def reweightCV(cfg, logger):
                                     data_name="normal weights", weights_as_events=False)
         reweight_real.plot(figure="weights as events vs normal weights", data_name="real data", weights_as_events=False)
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
-                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=2)
+                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=2, weights_ratio=1)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
@@ -360,11 +361,11 @@ def reweight_comparison(cfg, logger):
     # TODO: remove
     gb_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
-                                            branches=cfg.reweight_branches,
+                                            columns=cfg.reweight_branches,
                                             meta_cfg=cfg.reweight_meta_cfg,
                                             **cfg.reweight_cfg)
     #gb_reweighter = 'gb_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, branches=cfg.reweight_branches,
+    ml_ana.reweight_weights(reweight_mc, columns=cfg.reweight_branches,
                             reweighter_trained=gb_reweighter)
     reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
     reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
@@ -393,7 +394,7 @@ def reweight_comparison(cfg, logger):
 
 
 
-    ml_ana.reweight_weights(reweight_data=reweight_apply, branches=cfg.reweight_branches,
+    ml_ana.reweight_weights(reweight_data=reweight_apply, columns=cfg.reweight_branches,
                             reweighter_trained=gb_reweighter)
     reweight_apply.plot(figure="Data for reweights apply", data_name="gb weights")
     out.save_fig(plt.figure("New weights on new dataset"))
@@ -417,15 +418,15 @@ def reweight_comparison(cfg, logger):
     bins_reweighter = ml_ana.reweight_mc_real(reweight_data_mc=reweight_mc,
                                             reweight_data_real=reweight_real,
                                             reweighter='bins',
-                                            branches=['B_PT', 'nTracks', 'nSPDHits'
+                                            columns=['B_PT', 'nTracks', 'nSPDHits'
                                             #, 'h1_TRACK_TCHI2NDOF'
                                             ],
                                             meta_cfg=cfg.reweight_meta_cfg_bins)
     #bins_reweighter = 'bins_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits'
+    ml_ana.reweight_weights(reweight_mc, bins_reweighter, columns=['B_PT', 'nTracks', 'nSPDHits'
                                             #, 'h1_TRACK_TCHI2NDOF'
                                             ],)
-    ml_ana.reweight_weights(reweight_apply, bins_reweighter, branches=['B_PT', 'nTracks', 'nSPDHits'
+    ml_ana.reweight_weights(reweight_apply, bins_reweighter, columns=['B_PT', 'nTracks', 'nSPDHits'
                                             #, 'h1_TRACK_TCHI2NDOF'
                                             ],)
     reweight_mc.plot(figure="binned reweighting",

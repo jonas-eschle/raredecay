@@ -43,7 +43,7 @@ import cPickle as pickle
 PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 1  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+n_cpu_max = 2  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu)
 
 #------------------------------------------------------------------------------
@@ -178,6 +178,8 @@ DEFAULT_CLF_KNN = dict(
 #  Hyper parameter optimization
 #------------------------------------------------------------------------------
 
+max_difference_feature_selection = 0.08  # the biggest difference to 'all features'
+                                         # allowed in auc when removing features
 DEFAULT_HYPER_GENERATOR = 'subgrid'
 
 #==============================================================================

@@ -21,7 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from collections import Counter
+from collections import Counter, OrderedDict
 
 import hep_ml.reweight
 from rep.metaml import ClassifiersFactory
@@ -61,9 +61,15 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
                   weight_original=None, weight_target=None, conv_ori_weights=False,
-                  conv_tar_weights=False):
+                  conv_tar_weights=False, weights_ratio=0):
     """Return the concatenated data, weights and labels for classifier training
     """
+# TODO: remove lower part
+    data_out = original_data.make_dataset(target_data, columns=features, weights_as_events=conv_ori_weights,
+                                          weights_as_events_2=conv_tar_weights, weights_ratio=weights_ratio)
+
+    return data_out
+
     min_weight = None
     if (original_data is not None) and (target_data is not None) and conv_ori_weights >= 1 and conv_tar_weights >= 1:
         if dev_tool.is_in_primitive(weight_original, None):
@@ -77,13 +83,13 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
     #assert len(weight_original) == len(original_data), "Original weights have wrong length"
 
     if target_data is None:
-        data = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
+        data = original_data.pandasDF(columns=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
         weights = weight_original
         label = original_data.get_targets(weights_as_events=conv_ori_weights, min_weight=min_weight)
     else:
         # concatenate the original and target data
-        original = original_data.pandasDF(branches=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
-        target = target_data.pandasDF(branches=features, weights_as_events=conv_tar_weights, min_weight=min_weight)
+        original = original_data.pandasDF(columns=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
+        target = target_data.pandasDF(columns=features, weights_as_events=conv_tar_weights, min_weight=min_weight)
         data = pd.concat([original, target])
 
         # take weights from data if not explicitly specified
@@ -104,7 +110,32 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
 def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
                               features=None, optimize_features=False,
                               take_target_from_data=False, train_best=False):
-    """Optimize the hyperparameters of a classifier"""
+    """Optimize the hyperparameters of a classifier or do feature selection
+
+    Parameters
+    ----------
+    original_data : HEPDataStorage
+        The original data
+    target_data : HEPDataStorage
+        The target data
+    clf : str {'xgb, 'rdf, 'erf', 'gb', 'ada', 'nn'}
+        The name of the classifier
+    config_clf : dict
+        The configuration of the classifier
+    features : list(str, str, str,...)
+        List of strings containing the features/columns to be used for the
+        hyper-optimization or feature selection.
+    optimize_features : Boolean
+        If True, feature selection will be done instead of hyperparameter-
+        optimization
+    take_target_from_data : Boolean
+        If True, the target-labeling (the y) will be taken from the data
+        directly and not created. Otherwise, 0 will be assumed for the
+        original_data and 1 for the target_data.
+    train_best : boolean
+        If True, train the best classifier (if hyperparameter-optimization is
+        done) on the full dataset.
+    """
 
     # initialize variables and setting defaults
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
@@ -113,21 +144,41 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     n_checks = cfg.hyper_cfg['n_fold_checks']
     n_folds = cfg.hyper_cfg['n_folds']
     generator_type = cfg.hyper_cfg.get('generator', meta_config.DEFAULT_HYPER_GENERATOR)
-    parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
+
+    # parallelize on the lowest level if possible (uses less RAM)
+    if clf in ('xgb', 'rdf', 'erf'):
+        parallel_profile = None
+    else:
+        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
 
     # Create parameter for clf and hyper-search
-    grid_param = {}
-    list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
-    for key, val in config_clf.items():
-        if isinstance(val, (list, np.ndarray, pd.Series)):
-            if key not in list_param or isinstance(val[0], list):
-                val = data_tools.to_list(val)
-                grid_param[key] = config_clf.pop(key)
+    if not dev_tool.is_in_primitive(config_clf.get('features', None)):
+        features = config_clf.get('features', None)
+    if optimize_features:
+        if features is None:
+            features = original_data.columns
+            meta_config.warning_occured()
+            logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
+                           "Features for feature-optimization will be taken from data.")
+
+    # We do not need to create more data than we well test on
+    else:
+        grid_param = {}
+        list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
+        for key, val in config_clf.items():
+            if isinstance(val, (list, np.ndarray, pd.Series)):
+                if key not in list_param or isinstance(val[0], list):
+                    val = data_tools.to_list(val)
+                    grid_param[key] = config_clf.pop(key)
+
+    features = data_tools.to_list(features)
+    if optimize_features:
+        grid_param = features
+
 
     assert grid_param != {}, "No values for optimization found"
 
-    # rederict print output (from hyperparameter-optimizer)
-    out.IO_to_string()
+
 
     # initialize data
     data, label, weights = _make_data(original_data, target_data, features=features,
@@ -136,72 +187,132 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     # initialize classifier
     if clf == 'xgb':
         clf_name = "XGBoost"
-        config_clf.update(nthreads=1)
+        config_clf.update(nthreads=globals_.free_cpus())
         clf = XGBoostClassifier(**config_clf)
     elif clf == 'rdf':
         clf_name = "Random Forest"
         config_clf.update(n_jobs=globals_.free_cpus())  # needs less RAM if parallelized this way
-        parallel_profile=None
         clf = SklearnClassifier(RandomForestClassifier(**config_clf))
     elif clf == 'gb':
         clf_name = "GradientBoosting classifier"
         clf = SklearnClassifier(GradientBoostingClassifier(**config_clf))
     elif clf == 'nn':
         clf_name = "Theanets Neural Network"
-        parallel_profile=None if meta_config.use_gpu else parallel_profile
+        parallel_profile = None if meta_config.use_gpu else parallel_profile
         clf = TheanetsClassifier(**config_clf)
     elif clf == 'erf':
         clf_name = "Extra Random Forest"
+        config_clf.update(n_jobs=globals_.free_cpus())
         clf = SklearnClassifier(ExtraTreesClassifier(**config_clf))
     elif clf == 'ada':
         clf_name = "AdaBoost classifier"
         clf = SklearnClassifier(AdaBoostClassifier(**config_clf))
 
+    if optimize_features:
+        selected_features = features[:]
+        assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
 
-    if generator_type == 'regression':
-        generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
-    elif generator_type == 'subgrid':
-        generator = SubgridParameterOptimizer(grid_param, n_evaluations=n_eval)
-    elif generator_type == 'random':
-        generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
+        # starting feature selection
+        out.add_output(["Performing feature selection of classifier", clf, "of the features", features],
+                       obj_separator=" ", title="Feature selection")
+        original_clf = FoldingClassifier(clf, n_folds=n_folds,
+                                parallel_profile=parallel_profile)
+
+        # "loop-initialization"
+        clf = copy.deepcopy(original_clf)
+        #clf.features = selected_features
+        clf.fit(data[selected_features], label, weights)
+        report = clf.test_on(data[selected_features], label, weights)
+        max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+        roc_auc = OrderedDict({'all features': round(max_auc, 4)})
+        out.save_fig(figure="feature importance " + str(clf_name))
+        report.feature_importance_shuffling().plot()
+        out.save_fig(figure="feature correlation " + str(clf_name))
+        report.features_correlation_matrix().plot()
+
+        # do-while python-style (with if-break inside)
+        while len(selected_features) > 1:
+
+            # initialize variable
+            difference = 1  # just a surely small initialisation
+
+            # iterate through the features and remove the ith each time
+            for i, feature in enumerate(selected_features):
+                clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
+                temp_features = selected_features[:]
+                del temp_features[i]  # remove ith feature for testing
+                #clf.features = temp_features
+                clf.fit(data[temp_features], label, weights)
+                report = clf.test_on(data[temp_features], label, weights)
+                temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+                if max_auc - temp_auc < difference:
+                    difference = max_auc - temp_auc
+                    temp_dict = {feature: round(temp_auc, 4)}
+
+            if difference >= meta_config.max_difference_feature_selection:
+                break
+            else:
+                roc_auc.update(temp_dict)
+                selected_features.remove(temp_dict.keys()[0])
+                max_auc = temp_dict.values()[0]
+
+        if len(selected_features) > 1:
+            out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                            "next feature", temp_dict],
+                            subtitle="Feature selection results")
+        else:
+            out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                            "All features removed, loop stopped removing because, no feature was left"],
+                            subtitle="Feature selection results")
+
     else:
-        raise ValueError(str(generator) + " not a valid, implemented generator")
-    scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
-    grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
+        # rederict print output (from hyperparameter-optimizer)
+        out.IO_to_string()
 
-    # Search for hyperparameters
-    logger.info("starting " + clf_name + " hyper optimization")
-    grid_finder.fit(data, label, weights)
-    logger.info(clf_name + " hyper optimization finished")
-    grid_finder.params_generator.print_results()
+        if generator_type == 'regression':
+            generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
+        elif generator_type == 'subgrid':
+            generator = SubgridParameterOptimizer(grid_param, n_evaluations=n_eval)
+        elif generator_type == 'random':
+            generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
+        else:
+            raise ValueError(str(generator) + " not a valid, implemented generator")
+        scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
+        grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
+
+        # Search for hyperparameters
+        logger.info("starting " + clf_name + " hyper optimization")
+        grid_finder.fit(data, label, weights)
+        logger.info(clf_name + " hyper optimization finished")
+        grid_finder.params_generator.print_results()
 
 
-    if train_best:
-        # Train the best and plot reports
-        X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(data, label, weights,
-                                                                             test_size=0.25)
-        best_est = grid_finder.fit_best_estimator(X_train, y_train, w_train)
-        report = best_est.test_on(X_test, y_test, w_test)
+        if train_best:
+            # Train the best and plot reports
+            X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(data, label, weights,
+                                                                                 test_size=0.25)
+            best_est = grid_finder.fit_best_estimator(X_train, y_train, w_train)
+            report = best_est.test_on(X_test, y_test, w_test)
 
-        # plots
-        try:
-            name1 = "Learning curve of best classifier"
-            out.save_fig(name1, **save_fig_cfg)
-            report.roc().plot(title=name1)
-            name2 = str("Feature correlation matrix of " + original_data.get_name() +
-                        " and " + target_data.get_name())
-            out.save_fig(name2, **save_ext_fig_cfg)
-            report.features_correlation_matrix().plot(title=name2)
-            name3 = "Learning curve of best classifier"
-            out.save_fig(name3, **save_fig_cfg)
-            report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name3)
-            name4 = "Feature importance of best classifier"
-            out.save_fig(name4, **save_fig_cfg)
-            report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name4)
-        except:
-            logger.error("Could not plot hyper optimization " + clf_name + " plots")
+            # plots
+            try:
+                name1 = "Learning curve of best classifier"
+                out.save_fig(name1, **save_fig_cfg)
+                report.roc().plot(title=name1)
+                name2 = str("Feature correlation matrix of " + original_data.get_name() +
+                            " and " + target_data.get_name())
+                out.save_fig(name2, **save_ext_fig_cfg)
+                report.features_correlation_matrix().plot(title=name2)
+                name3 = "Learning curve of best classifier"
+                out.save_fig(name3, **save_fig_cfg)
+                report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name3)
+                name4 = "Feature importance of best classifier"
+                out.save_fig(name4, **save_fig_cfg)
+                report.feature_importance_shuffling().plot(title=name4)
+            except:
+                logger.error("Could not plot hyper optimization " + clf_name + " plots")
 
-    out.IO_to_sys(subtitle="XGBoost hyperparameter optimization")
+        out.IO_to_sys(subtitle=clf_name + " hyperparameter/feature optimization")
 
 
 def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
@@ -217,7 +328,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         The target data for the training. If None, only the original_data will
         be used for the training.
     features : list(str, str, str...)
-        List with features/branches to use in training.
+        List with features/columns to use in training.
     validation : int >= 1 or HEPDataStorage
         You can either do cross-validation or give a testsample for the data.
 
@@ -292,7 +403,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         lds_test = LabeledDataStorage(data=data, target=label, sample_weight=weights)  # folding-> same data for train and test
 
     elif isinstance(validation, data_storage.HEPDataStorage):
-        lds_test = validation.get_LabeledDataStorage(branches=features)
+        lds_test = validation.get_LabeledDataStorage(columns=features)
     elif validation is None:
         make_plots = False
     elif isinstance(validation, list) and len(validation) in (1, 2):
@@ -355,7 +466,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     return clf, clf_score if clf_score is not None else clf
 
 
-def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
+def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
                      reweighter='gb', reweight_saveas=None, meta_cfg=None,
                      weights_mc=None, weights_real=None):
     """Return a trained reweighter from a (mc/real) distribution comparison.
@@ -377,9 +488,9 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     ----------
     reweight_data_mc : :class:`HEPDataStorage`
         The Monte-Carlo data, which has to be "fitted" to the real data.
-    reweight_data_real : :class:`HEPDataStorage` (depreceated: root-dict)
+    reweight_data_real : :class:`HEPDataStorage`
         Same as *reweight_data_mc* but for the real data.
-    branches : list of strings
+    columns : list of strings
         The columns/features/branches you want to use for the reweighting.
     reweighter : {'gb', 'bins'}
         Specify which reweighter to be used
@@ -420,21 +531,21 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, branches=None,
     # logging and writing output
     msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
-    # TODO: branches = reweight_data_mc.get_branches() if branches is None else branches
+    # TODO: columns = reweight_data_mc.columns if columns is None else columns
     out.add_output(msg + ["\nData used:\n", reweight_data_mc.get_name(), " and ",
-                   reweight_data_real.get_name(), "\nBranches used for the reweighter training:\n",
-                    branches], section="Training the reweighter", obj_separator=" ")
+                   reweight_data_real.get_name(), "\ncolumns used for the reweighter training:\n",
+                    columns], section="Training the reweighter", obj_separator=" ")
 
     # do the reweighting
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
-    reweighter.fit(original=reweight_data_mc.pandasDF(branches=branches),
-                   target=reweight_data_real.pandasDF(branches=branches),
+    reweighter.fit(original=reweight_data_mc.pandasDF(columns=columns),
+                   target=reweight_data_real.pandasDF(columns=columns),
                    original_weight=reweight_data_mc.get_weights(),
                    target_weight=reweight_data_real.get_weights())
     return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
 
-def reweight_weights(reweight_data, reweighter_trained, branches=None,
+def reweight_weights(reweight_data, reweighter_trained, columns=None,
                      normalize=True, add_weights_to_data=True):
     """Adds (or only returns) new weights to the data by applying a given
     reweighter on the data.
@@ -465,7 +576,7 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
     """
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(branches=branches),
+    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
                                         original_weight=reweight_data.get_weights())
 
     # write to output
@@ -482,7 +593,7 @@ def reweight_weights(reweight_data, reweighter_trained, branches=None,
 
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
-             conv_ori_weights=False, conv_tar_weights=False,
+             conv_ori_weights=False, conv_tar_weights=False, weights_ratio=0,
              config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
     """ Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
@@ -564,7 +675,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     data_name = curve_name + ", " + original_data.get_name() + " and " + target_data.get_name()
 
     data, label, weights = _make_data(original_data, target_data, features=features,
-                                     weight_target=weight_target,
+                                     weight_target=weight_target, weights_ratio=weights_ratio,
                                      weight_original=weight_original,
                                      target_from_data=take_target_from_data,
                                      conv_ori_weights=conv_ori_weights,

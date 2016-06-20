@@ -169,7 +169,7 @@ def is_pickle(data_to_check):
 
 
 def to_list(data_in):
-    """Convert the data into a list. Does not pack objects into a new one.
+    """Convert the data into a list. Does not pack lists into a new one.
 
     If your input is, for example, a string or a list of strings, or a
     tuple filled with strings, you have, in general, a problem:
@@ -239,7 +239,7 @@ def to_pandas(data_in, logger=None, indices=None, columns=None, dtype=None):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
         data_in = pd.DataFrame(data_in)
-    elif type(data_in) is pd.core.frame.DataFrame:
+    elif isinstance(data_in, pd.DataFrame):
         pass
     else:
         raise TypeError("Could not convert data to pandas. Data: " + data_in)
@@ -313,5 +313,12 @@ def try_unpickle(file_to_unpickle):
 
 if __name__ == '__main__':
     print "running selftest"
-
+    root_dict = dict(
+        filenames='/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root',
+        branches=['B_PT', 'nTracks'],
+        treename='DecayTree',
+        selection='B_PT > 10000'
+        )
+    df1 = to_pandas(root_dict)
+    print df1
     print "selftest completed!"
