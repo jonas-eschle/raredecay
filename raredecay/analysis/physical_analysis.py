@@ -176,7 +176,7 @@ def reweightCV(cfg, logger):
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     # TODO: remove, debug: reweight_real = reweight_real.copy_storage(index=range(6600))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_mc_reweighted = reweight_mc.copy_storage()  # produces an error: copy.deepcopy(reweight_mc)
+    reweight_mc_reweighted = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))  # produces an error: copy.deepcopy(reweight_mc)
 
     reweight_real.make_folds(n_folds=n_folds)
     reweight_mc.make_folds(n_folds=n_folds)
@@ -184,32 +184,44 @@ def reweightCV(cfg, logger):
     out.add_output(["Start reweighting cross-validated with", n_folds,
                     "fold of the data and do", n_checks, "checks on it."],
                     subtitle="cross-validation", obj_separator=" ")
+
+    # iterate through different folds
     for fold in range(n_checks):
-
-
+        # get train and test data
         train_real, test_real = reweight_real.get_fold(fold)
         train_mc, test_mc = reweight_mc.get_fold(fold)
+
+        # plot the first fold as example (the first one surely exists)
         if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
             train_real.plot(figure="Reweighter trainer, example, fold " + str(fold))
             train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold))
+
+        # train reweighter on training data
         reweighter = ml_ana.reweight_mc_real(meta_cfg=cfg.reweight_meta_cfg,
                                              reweight_data_mc=train_mc,
                                              reweight_data_real=train_real,
                                              columns=cfg.reweight_branches,
                                              **cfg.reweight_cfg)
-
         logger.info("reweighting fold " + str(fold) + "finished")
+
         # reweighter = ''  # load from pickle file
+
+        # use reweighter on the test data_set
         new_weights = ml_ana.reweight_weights(test_mc, reweighter,
                                               columns=cfg.reweight_branches)
+
+        # plot one for example of the new weights
         if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
             plt.figure("new weights of fold " + str(fold))
             plt.hist(new_weights,bins=40, log=True)
+
+        # treat reweighted mc data as if it were real data target(1)
         test_mc.set_targets(1)
+        # train clf on real and mc and see where it classifies the reweighted mc
         clf, score_gb[fold] = ml_ana.classify(train_mc, train_real, validation=test_mc,
                                             curve_name="mc reweighted as real",
                                             plot_title="fold " + str(fold) + " reweighted validation",
-                                            conv_ori_weights=20)
+                                            conv_ori_weights=False, weights_ratio=1)
 
         # Get the max and min for "calibration" of the possible score for the reweighted data by
         # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
@@ -219,7 +231,7 @@ def reweightCV(cfg, logger):
         tmp_, score_max[fold] = ml_ana.classify(clf=clf, validation=test_real, curve_name="real as real")
 
 
-
+        # collect all the new weights to get a really cross-validated reweighted dataset
         if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
             assert len(reweight_mc) == len(reweight_mc_reweighted), "Something bad happend somehow..."
             reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index())
@@ -230,55 +242,53 @@ def reweightCV(cfg, logger):
         reweight_real.make_folds(3)
         real_train, real_test = reweight_real.get_fold(0)
         real_test.set_targets(1)
-        tmp_, score = ml_ana.classify(reweight_mc_reweighted, real_train, validation=real_test,
-                        plot_title="real/mc reweight trained, validate on real", conv_ori_weights=3)
-        out.add_output(["Score (recall): ", score], subtitle="Clf trained on real/mc reweight, test on real")
-        reweight_mc_reweighted.make_folds(2)
-        data1, data2 = reweight_mc_reweighted.get_fold(0)
-        ml_ana.data_ROC(data1, data2, curve_name="mc reweight vs mc reweight")
-        ml_ana.data_ROC(data1, data2, curve_name="mc reweight conv vs mc reweight conv",
-                        conv_ori_weights=2, conv_tar_weights=2, weights_ratio=1)
 
-        ml_ana.data_ROC(reweight_mc_reweighted, reweight_mc_reweighted, curve_name="mc reweight all conv=5 vs mc reweight all",
-                        conv_ori_weights=5, conv_tar_weights=False, weights_ratio=1)
+        # train on reweighted and real data and classify test real data
+        tmp_, score = ml_ana.classify(reweight_mc_reweighted, real_train, validation=real_test,
+                        plot_title="real/mc reweight trained, validate on real", weights_ratio=1)
+        out.add_output(["Score (recall): ", score], subtitle="Clf trained on real/mc reweight, test on real")
+
+#        # test how good two mc can be distinguished (comparison for conv_weights_to_events vs normal)
+#        reweight_mc_reweighted.make_folds(2)
+#        data1, data2 = reweight_mc_reweighted.get_fold(0)
+#        ml_ana.data_ROC(data1, data2, curve_name="mc reweight vs mc reweight")
+#        ml_ana.data_ROC(data1, data2, curve_name="mc reweight conv vs mc reweight conv",
+#                        conv_ori_weights=2, conv_tar_weights=2, weights_ratio=1)
+#
+#        ml_ana.data_ROC(reweight_mc_reweighted, reweight_mc_reweighted,
+#                        curve_name="mc reweight all conv=5 vs mc reweight all",
+#                        conv_ori_weights=5, conv_tar_weights=False, weights_ratio=1)
         #ml_ana.data_ROC(reweight_mc_reweighted, reweight_m
         #                curve_name="mc reweight vs mc reweight weights as events", conv_tar_weights=3)
+
+        # compare weights_as_events vs normal weights
         reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
                                     data_name="weights as events", weights_as_events=1)
         reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
                                     data_name="normal weights", weights_as_events=False)
         reweight_real.plot(figure="weights as events vs normal weights", data_name="real data", weights_as_events=False)
+
+        # normal KFold "how-well-distinguishable". Pay attention: Do not overfit your clf!
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
-                        curve_name="mc reweighted", n_folds=n_folds, conv_ori_weights=2, weights_ratio=1)
+                        curve_name="mc reweighted vs real", n_folds=n_folds, conv_ori_weights=2, weights_ratio=1)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
 
         logger.info("Finished data_ROC, starting second data_ROC")
 
-        # TODO: remove HACK
-        reweight_mc_reweighted.make_folds(6)
-        test1, train1 = reweight_mc_reweighted.get_fold(0)
-        test1.make_folds(2)
-        test2, test1 = test1.get_fold(0)
-        train1.make_folds(2)
-        train2, train1 = train1.get_fold(0)
-
-        ml_ana.classify(train1, train2, validation=[test1, test2],
-                        plot_title="test conv weights in classify (expect 0.5 auc)",
-                        conv_ori_weights=1, conv_tar_weights=1, conv_vali_weights=1)
-
-        nfol = 10
-        reweight_real.make_folds(n_folds=nfol)
-        reweight_mc_reweighted.make_folds(n_folds=nfol)
-        for i in range(3):
-            mc_train, mc_test = reweight_mc_reweighted.get_fold(i)
-            real_train, real_test = reweight_real.get_fold(i)
-            #mc_test.set_weights(sample_weights=None)
-            #mc_train.set_weights(sample_weights=None)
-            ml_ana.classify(reweight_mc_reweighted, real_train, validation=[mc_test, real_test],
-                            plot_title="trained with mc reweighted, real; tested on mc, real, fold: " + str(i),
-                            curve_name="mc vs real, trained by mc reweighted, real")
+# TODO: old and not required?
+#        nfol = 10
+#        reweight_real.make_folds(n_folds=nfol)
+#        reweight_mc_reweighted.make_folds(n_folds=nfol)
+#        for i in range(3):
+#            mc_train, mc_test = reweight_mc_reweighted.get_fold(i)
+#            real_train, real_test = reweight_real.get_fold(i)
+#            #mc_test.set_weights(sample_weights=None)
+#            #mc_train.set_weights(sample_weights=None)
+#            ml_ana.classify(reweight_mc_reweighted, real_train, validation=[mc_test, real_test],
+#                            plot_title="trained with mc reweighted, real; tested on mc, real, fold: " + str(i),
+#                            curve_name="mc vs real, trained by mc reweighted, real")
 
 
         out.save_fig(figure="New weights of total mc")

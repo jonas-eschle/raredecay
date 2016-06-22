@@ -369,7 +369,7 @@ class OutputHandler(object):
 
         # set meta-config variables
         meta_config.MULTIPROCESSING = meta_config.MULTITHREAD and meta_config.MULTIPROCESSING
-        if (meta_config.n_cpu_max is None):
+        if (meta_config.n_cpu_max in (None, -1)):
             meta_config.n_cpu_max = multiprocessing.cpu_count()
         if not meta_config.MULTITHREAD:
             meta_config.n_cpu_max = 1

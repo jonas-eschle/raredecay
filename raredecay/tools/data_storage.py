@@ -9,7 +9,7 @@ from __future__ import division, absolute_import
 
 import copy
 import warnings
-import cProfile as profile
+#import cProfile as profile
 
 import pandas as pd
 import numpy as np
@@ -602,8 +602,6 @@ class HEPDataStorage(object):
             self.logger.info("Length of data was " + str(len(weights)) + ", new one will be " + str(sum(weights)))
             new_row = starting_row  # starting row for adding data == endrow of first dataframe
 
-            profile1 = profile.Profile()
-            profile1.enable()
             for row_ori in xrange(starting_row):
                 weight = weights.iloc[row_ori]
                 if new_row %3000 == 0:
@@ -618,8 +616,6 @@ class HEPDataStorage(object):
             self.logger.info("data_out Dataframe created")
 
             assert new_row == n_rows, "They should be the same in the end"
-            profile1.create_stats()
-            profile1.print_stats()
             #test
             data_out = pd.DataFrame(np_data)
 

@@ -22,8 +22,9 @@ except:
     git_version = 'unknown'
 #git_version = '0.9.5'
 
+
 setup(name='raredecay',
-      version=git_version,  # '0.8.5',
+      version=git_version,
       description='A package for analysis of rare particle decays with ml',
       long_description=readme(),
       classifiers=[
@@ -38,9 +39,12 @@ setup(name='raredecay',
       install_requires=[
           #'hep_ml',
           #'rep',
+	  #'sklearn>=0.17.1'
 	      #'nose_parameterized'
     	  #'root_numpy'
 	      #'rootpy'
+	#'seaborn'
+	#'memory_profiler'  # for developement, can be removed later
       ],
       packages=['raredecay',
                 'raredecay.analysis',

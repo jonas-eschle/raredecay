@@ -317,7 +317,8 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
 
 def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
              make_plots=True, plot_title=None, curve_name=None, target_from_data=False,
-             conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False):
+             conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False,
+             weights_ratio=0):
     """Training and testing a classifier or distinguish a dataset
 
     Parameters
@@ -376,8 +377,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
-                                                       conv_ori_weights=conv_ori_weights,
-                                                       conv_tar_weights=conv_tar_weights)
+                                          conv_ori_weights=conv_ori_weights,
+                                          conv_tar_weights=conv_tar_weights,
+                                          weights_ratio=weights_ratio)
         data_name = original_data.get_name()
         if target_data is not None:
             data_name += " and " + target_data.get_name()
