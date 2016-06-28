@@ -246,14 +246,22 @@ def reweightCV(cfg, logger):
         # train on reweighted and real data and classify test real data
         tmp_, score = ml_ana.classify(reweight_mc_reweighted, real_train, validation=real_test,
                         plot_title="real/mc reweight trained, validate on real", weights_ratio=1)
-        out.add_output(["Score (recall): ", score], subtitle="Clf trained on real/mc reweight, test on real")
+        tmp_, max_score = ml_ana.classify(reweight_mc, real_train, validation=real_test,
+                        plot_title="real/mc NOT reweight trained, validate on real", weights_ratio=1)
+        out.add_output(["Score reweighted (recall, lower means better): ", score,
+                        "\n No reweighting score: ", max_score],
+                        subtitle="Clf trained on real/mc reweight, tested on real",
+                        to_end=True)
 
-#        # test how good two mc can be distinguished (comparison for conv_weights_to_events vs normal)
-#        reweight_mc_reweighted.make_folds(2)
-#        data1, data2 = reweight_mc_reweighted.get_fold(0)
-#        ml_ana.data_ROC(data1, data2, curve_name="mc reweight vs mc reweight")
-#        ml_ana.data_ROC(data1, data2, curve_name="mc reweight conv vs mc reweight conv",
-#                        conv_ori_weights=2, conv_tar_weights=2, weights_ratio=1)
+        # test how good two mc can be distinguished (comparison for conv_weights_to_events vs normal)
+        reweight_mc_reweighted.make_folds(2)
+        data1, data2 = reweight_mc_reweighted.get_fold(0)
+        ml_ana.data_ROC(data1, data2, curve_name="mc reweight vs mc reweight")
+        ml_ana.data_ROC(data1, data2, curve_name="mc reweight conv vs mc reweight conv",
+                        conv_ori_weights=None, conv_tar_weights=None, weights_ratio=1)
+
+        data1.plot(figure="split mc into 2 parts", title="Distributions should be the 'same'")
+        data2.plot(figure="split mc into 2 parts")
 #
 #        ml_ana.data_ROC(reweight_mc_reweighted, reweight_mc_reweighted,
 #                        curve_name="mc reweight all conv=5 vs mc reweight all",
@@ -263,19 +271,19 @@ def reweightCV(cfg, logger):
 
         # compare weights_as_events vs normal weights
         reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
-                                    data_name="weights as events", weights_as_events=1)
+                                    data_name="weights as events", weights_as_events=False)
         reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
                                     data_name="normal weights", weights_as_events=False)
         reweight_real.plot(figure="weights as events vs normal weights", data_name="real data", weights_as_events=False)
 
         # normal KFold "how-well-distinguishable". Pay attention: Do not overfit your clf!
         ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
-                        curve_name="mc reweighted vs real", n_folds=n_folds, conv_ori_weights=2, weights_ratio=1)
+                        curve_name="mc reweighted vs real", n_folds=n_folds, conv_ori_weights=False, weights_ratio=1)
+        ml_ana.data_ROC(reweight_mc, reweight_real, classifier='xgb',
+                        curve_name="mc vs real (max)", n_folds=n_folds, conv_ori_weights=False, weights_ratio=1)
         reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
                            data_name="mc reweighted")
         reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
-
-        logger.info("Finished data_ROC, starting second data_ROC")
 
 # TODO: old and not required?
 #        nfol = 10

@@ -594,7 +594,24 @@ class HEPDataStorage(object):
                                           cast_int=True, min_weight=min_weight)
             n_rows = sum(weights)
             starting_row = len(data_out)
-            data_out = data_out.append(pd.DataFrame(index=range(starting_row, n_rows), columns=data_out.columns))
+            try:
+                data_out = data_out.append(pd.DataFrame(index=range(starting_row, n_rows),
+                                                    columns=data_out.columns))
+            except MemoryError as error:
+                meta_config.error_occured()
+                self.logger.critical("Memory error occured during conversion of weights to events" +
+                                     "\nMost propably you have very large/small weights" +
+                                     "\nExtended problem report:" +
+                                     "\nWeights_as_events = " + str(weights_as_events) +
+                                     "\nmin_weight (parameter) = " + str(min_weight) +
+                                     "\nSelf._weights: " +
+                                     "\n  min = " + str(np.min(self._weights)) +
+                                     "\n  max = " + str(np.max(self._weights)) +
+                                     "\n  mean = " + str(np.mean(self._weights)) +
+                                     "\n Number of total new events (the critical part!): " +
+                                     str(n_rows)
+                                     )
+                raise error
 
             #test
             np_data = data_out.as_matrix()
@@ -840,7 +857,7 @@ class HEPDataStorage(object):
                 ratio_2 = 1.0 / ratio_1
                 ratio_1 = 1.0
 
-            if weights_as_events is False and weights_as_events_2 is False:
+            if weights_as_events in (False, None) and weights_as_events_2 in (False, None):
                 normalize_1 = ratio_1
                 normalize_2 = ratio_2
 

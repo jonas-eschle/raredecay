@@ -37,6 +37,7 @@ class OutputHandler(object):
             self._path_to_be_overriden = None
             self.output = ""
             self.end_output = ""
+            self._loud_end_output = ""
             self.logger = None
             self._logger_cfg = None
             self._figures = {}
@@ -248,7 +249,7 @@ class OutputHandler(object):
         subtitle_f = ('-', '-')
         section_f = ('', '=')
         for name, form in ((title, title_f), (subtitle, subtitle_f), (section, section_f)):
-            temp_out = self._make_title(name, form)
+            temp_out += self._make_title(name, form)
 
         # Concatenation of the objects
         for word in data_out:
@@ -267,8 +268,11 @@ class OutputHandler(object):
             temp_out += obj_separator if word is not data_out[-1] else data_separator
 
         # print and add to output collector
-        if do_print and (not to_end):
-            sys.stdout.write(temp_out)
+        if do_print:
+            if to_end:
+                self._loud_end_output += temp_out
+            else:
+                sys.stdout.write(temp_out)
         if to_end:
             self.end_output += temp_out
         else:
@@ -390,6 +394,10 @@ class OutputHandler(object):
         self.add_output("\n\n", title="END OF RUN", do_print=False)
         self.add_output(["randint", randint], title="Different parameters",
             obj_separator=" : ", do_print=False)
+
+        # print the output which should be printed at the end of the run
+        sys.stdout.write(self._loud_end_output)
+        del self._loud_end_output
         self.output += self.end_output
 
         # add current version (if available)

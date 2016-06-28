@@ -43,7 +43,7 @@ import cPickle as pickle
 PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 2  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu)
 
 #------------------------------------------------------------------------------
@@ -143,9 +143,9 @@ DEFAULT_LOGGER_CFG = dict(
 #------------------------------------------------------------------------------
 
 DEFAULT_CLF_XGB = dict(
-    n_estimators=10,
-    eta=0.02,  # learning-rate
-    max_depth=6,
+    n_estimators=75,
+    eta=0.1,  # learning-rate
+    max_depth=4,
     subsample=0.8
 )
 
