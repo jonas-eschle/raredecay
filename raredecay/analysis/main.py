@@ -5,6 +5,10 @@ Created on Mon Mar 21 21:27:14 2016
 @author: mayou
 
 Main routine to start the analysis. It contains as few statements as possible.
+
+To start a certain run, just uncomment the right one below the
+"if name == 'main' statement". If you want, you can also enter the name of
+the your configuration file.
 """
 from __future__ import division, absolute_import
 
@@ -39,7 +43,7 @@ def main_run(run_mode, cfg_file=None):
         from raredecay.tools.dev_tool import play_sound
         play_sound()
     except:
-        print "BEEEEEP"
+        print "BEEEEEP FINISHED!"
     raw_input(["Run finished, press Enter to show the plots"])
     plt.show()
 

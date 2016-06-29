@@ -62,55 +62,19 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
                   weight_original=None, weight_target=None, conv_ori_weights=False,
                   conv_tar_weights=False, weights_ratio=0):
-    """Return the concatenated data, weights and labels for classifier training
+    """Return the concatenated data, weights and labels for classifier training.
+    Equivalent to the make_dataset method of HEPDataStorage. Still available
+    for compability reasons.
     """
-# TODO: remove lower part
     data_out = original_data.make_dataset(target_data, columns=features, weights_as_events=conv_ori_weights,
                                           weights_as_events_2=conv_tar_weights, weights_ratio=weights_ratio)
-
     return data_out
-
-    min_weight = None
-    if (original_data is not None) and (target_data is not None) and conv_ori_weights >= 1 and conv_tar_weights >= 1:
-        if dev_tool.is_in_primitive(weight_original, None):
-            weight_original = original_data.get_weights()
-        if dev_tool.is_in_primitive(weight_target, None):
-            weight_target = target_data.get_weights()
-        min_weight = min(min(weight_original), min(weight_target))
-
-    if dev_tool.is_in_primitive(weight_original, None) or conv_ori_weights >= 1:
-            weight_original = original_data.get_weights(weights_as_events=conv_ori_weights, min_weight=min_weight)
-    #assert len(weight_original) == len(original_data), "Original weights have wrong length"
-
-    if target_data is None:
-        data = original_data.pandasDF(columns=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
-        weights = weight_original
-        label = original_data.get_targets(weights_as_events=conv_ori_weights, min_weight=min_weight)
-    else:
-        # concatenate the original and target data
-        original = original_data.pandasDF(columns=features, weights_as_events=conv_ori_weights, min_weight=min_weight)
-        target = target_data.pandasDF(columns=features, weights_as_events=conv_tar_weights, min_weight=min_weight)
-        data = pd.concat([original, target])
-
-        # take weights from data if not explicitly specified
-        if dev_tool.is_in_primitive(weight_target, None) or conv_ori_weights >= 1:
-            weight_target = target_data.get_weights(weights_as_events=conv_tar_weights, min_weight=min_weight)
-        #assert len(weight_target) == len(target_data), "Target weights have wrong length"
-        weights = np.concatenate((weight_original, weight_target))
-
-        if target_from_data:  # if "original" and "target" are "mixed"
-            label = np.concatenate((original_data.get_targets(weights_as_events=conv_ori_weights, min_weight=min_weight),
-                                    target_data.get_targets(weights_as_events=conv_tar_weights, min_weight=min_weight)))
-        else:
-            label = np.concatenate((np.zeros(len(original)), np.ones(len(target))))
-
-    return data, label, weights
 
 
 def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
                               features=None, optimize_features=False,
                               take_target_from_data=False, train_best=False):
-    """Optimize the hyperparameters of a classifier or do feature selection
+    """Optimize the hyperparameters of a classifier or perform feature selection
 
     Parameters
     ----------
@@ -209,7 +173,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         clf = SklearnClassifier(AdaBoostClassifier(**config_clf))
 
     if optimize_features:
-        selected_features = features[:]
+        selected_features = copy.deepcopy(features)  # explicit is better than implicit
         assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
 
         # starting feature selection
@@ -218,9 +182,8 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         original_clf = FoldingClassifier(clf, n_folds=n_folds,
                                 parallel_profile=parallel_profile)
 
-        # "loop-initialization"
-        clf = copy.deepcopy(original_clf)
-        #clf.features = selected_features
+        # "loop-initialization", get score for all features
+        clf = copy.deepcopy(original_clf)  # required, the features attribute can not be changed somehow
         clf.fit(data[selected_features], label, weights)
         report = clf.test_on(data[selected_features], label, weights)
         max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
@@ -234,7 +197,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         while len(selected_features) > 1:
 
             # initialize variable
-            difference = 1  # just a surely small initialisation
+            difference = 1  #a surely big initialisation
 
             # iterate through the features and remove the ith each time
             for i, feature in enumerate(selected_features):
@@ -260,13 +223,14 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
             out.add_output(["ROC AUC if the feature was removed", roc_auc,
                             "next feature", temp_dict],
                             subtitle="Feature selection results")
+        # if all features were removed
         else:
             out.add_output(["ROC AUC if the feature was removed", roc_auc,
                             "All features removed, loop stopped removing because, no feature was left"],
                             subtitle="Feature selection results")
 
     else:
-        # rederict print output (from hyperparameter-optimizer)
+        # rederict print output (for the hyperparameter-optimizer from rep)
         out.IO_to_string()
 
         if generator_type == 'regression':
@@ -485,6 +449,7 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
     * Gradient Boosted reweighting:
        uses several decision trees to reweight the bins. Slower, but more
        accurat. Very useful in higher dimensions.
+       But be aware, that you can easily screw up things by overfitting.
 
     Parameters
     ----------
@@ -537,6 +502,17 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
     out.add_output(msg + ["\nData used:\n", reweight_data_mc.get_name(), " and ",
                    reweight_data_real.get_name(), "\ncolumns used for the reweighter training:\n",
                     columns], section="Training the reweighter", obj_separator=" ")
+
+    if columns is None:
+        # use the intesection of both colomns
+        common_cols = set(reweight_data_mc.columns)
+        common_cols.intersection_update(reweight_data_real.columns)
+        columns = list(common_cols)
+        if columns != reweight_data_mc.columns or columns != reweight_data_real.columns:
+            logger.warning("No columns specified for reweighting, took intersection" +
+                           " of both dataset, as it's columns are not equal." +
+                           "\nTherefore some columns were not used!")
+            meta_config.warning_occured()
 
     # do the reweighting
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
@@ -592,7 +568,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
         reweight_data.set_weights(new_weights)
     return new_weights
 
-
+# TODO: continue cleaning up the code from here down
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
              conv_ori_weights=False, conv_tar_weights=False, weights_ratio=0,

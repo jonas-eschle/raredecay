@@ -5,11 +5,18 @@ Created on Fri Apr  1 15:32:17 2016
 @author: mayou
 
 | This module provides the meta-configuration.
-| Mostly, you do not need to change this file.
-| It contains:
- - (package-)global default variables for all modules
- - Debug-options which change some implementation on a basic level
- - Global configurations like the endings of specific files etc.
+| Mostly, you do not need to change this file or only some small parts of it.
+| Things you may want to change include whether to
+    - promt for a addition to the file name
+    - number of cores to use
+    - path for pickle-files
+    - default configuration for classifiers, figure saving and more
+| It contains furthermore:
+ - (package-)global default variables for all modules.
+ - Debug-options which change some implementation on a basic level like protocols.
+ - Global configurations like the endings of specific file-types etc.
+
+The explanation to the variables is available as a comment behind each.
 
 Variables:
 ---------
@@ -40,17 +47,18 @@ import cPickle as pickle
 # General run parameters
 #------------------------------------------------------------------------------
 
-PROMPT_FOR_COMMENT=True  # let you add a small extension to the run/file name and the run comment
+PROMPT_FOR_COMMENT=True  # let you add an extension to the run/file name
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
-use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu)
+use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
+                # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
 
 #------------------------------------------------------------------------------
 #  Datatype ending variables
 #------------------------------------------------------------------------------
 
-
+# The ending of a certain variable type. Change with caution and good reason.
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
@@ -60,12 +68,15 @@ ROOT_DATATYPE = "root"  # default 'root'
 
 # folder where the pickled objects are stored
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
+# folder where the git-directory is located. Can be an empty string
 GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay"
 
 #------------------------------------------------------------------------------
 #  Debug related options
 #------------------------------------------------------------------------------
 
+# This options should not directly affect the behaviour (except of speed etc)
+# IF the right environment is used. Don't touch until you have good reasons to do.
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
 SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
 
@@ -77,12 +88,14 @@ SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
 #  Limits for auto-methods
 #------------------------------------------------------------------------------
 
+# If a folder already exists and no overwrite is in use, a new folder (with a
+# trailing number) will be created. There can be set a limit to prevent a full
+# disk in case of an endless loop-error or similar.
 MAX_AUTO_FOLDERS = 10000  # max number of auto-generated folders by initialize
 NO_PROMPT_ASSUME_YES = False  # no userinput required, assumes yes (e.g. when overwritting files)
 MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (like not able to save figure etc.)
-MAX_FIGURES = 5000
-
-
+                        # Criticals will end the run anyway.
+MAX_FIGURES = 1000  # max number of figures to be plotted
 
 #==============================================================================
 # DEFAULT SETTINGS for different things
@@ -92,29 +105,35 @@ MAX_FIGURES = 5000
 #  Output and plot configurations
 #------------------------------------------------------------------------------
 
-
 # available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
 # You may add additional key-value pairs or just change some values
+
+# The name of the folders created inside the run-folder
 DEFAULT_OUTPUT_FOLDERS = dict(
-    log="log",
-    plots="plots",
-    results="results",
-    config="config"
+    log="log",  # contains the logger informations
+    plots="plots",  # contains all the plots
+    results="results",  # contains the written output
+    config="config"  # NOT YET IMPLEMENTED, but cound contain the config file used
 )
 
+# The default histogram settings used for some plots
 DEFAULT_HIST_SETTINGS = dict(
-    bins=40,
-    normed=True,
+    bins=40,  # default: 40
+    normed=True,  # default: True, useful for shape comparison of distributions
     alpha=0.5  # transparency [0.0, 1.0]
 )
 
+# Default configuration for most of the figures for save_fig from OutputHandler()
 DEFAULT_SAVE_FIG = dict(
-    file_format=['png', 'svg'],
-    to_pickle=True,
-    plot=True,
+    file_format=['png', 'svg'],  # default: ['png', 'svg'], the file formats
+                                 # to be saved to. For implementations, see OutputHandler()
+    to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
+    plot=True,  # whether to plot the figure. If False, the figure will only be saved
     #save_cfg=None
 )
 
+# Default configuration for additional figures (plots you mostly do not care
+# about but may be happy to have them saved somewhere)
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
     to_pickle=True,
@@ -122,7 +141,15 @@ DEFAULT_EXT_SAVE_FIG = dict(
     #save_cfg=None
 )
 
-
+# A logger writes some stuff during the run just for the control of the
+# correct execution. The log will be written to console, to file, or both.
+# Each message has a level ranging from the lowest (most unimportant) 'debug'
+# to 'critical'. You can specify which level (+ the more important one) will
+# appear where.
+# Example: you can set console to 'error'. and file to 'info'. This way you
+# collect also seemingly unneccesary informations (which are maybe later nice
+# to check if a variable was meaningful) but on the screen you will only see
+# if an error or critical occurs.
 DEFAULT_LOGGER_CFG = dict(
     logging_mode='console',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'
@@ -142,11 +169,17 @@ DEFAULT_LOGGER_CFG = dict(
 #  Classifier configurations
 #------------------------------------------------------------------------------
 
+# Some modules use classifiers for different tasks where it is mostly not
+# important to have a fully optimized classifier but just a "good enough" one.
+# Like in the data_ROC where you can see how well two datasets differ from
+# each other.
+# Changing this default values will surely affect your results (over- or
+# underfitting for example), but is mostly not required at all.
 DEFAULT_CLF_XGB = dict(
-    n_estimators=75,
-    eta=0.1,  # learning-rate
-    max_depth=4,
-    subsample=0.8
+    n_estimators=75,  # default 75
+    eta=0.1,  # default 0.1, learning-rate
+    max_depth=4,  # default 4
+    subsample=0.8  # default 0.8
 )
 
 DEFAULT_CLF_TMVA = dict(
@@ -178,23 +211,28 @@ DEFAULT_CLF_KNN = dict(
 #  Hyper parameter optimization
 #------------------------------------------------------------------------------
 
-max_difference_feature_selection = 0.08  # the biggest difference to 'all features'
+# The backwards feature selection uses first all features and determines the ROC AUC.
+# Then it removes one feature at a time, the one which yields the smallest difference
+# to the 'all_features' roc auc is then removed. This continues until the smallest
+# score difference is bigger then max_difference_feature_selection.
+max_difference_feature_selection = 0.08  # the biggest score difference to 'all features'
                                          # allowed in auc when removing features
-DEFAULT_HYPER_GENERATOR = 'subgrid'
+DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace search
 
 #==============================================================================
 # END OF CONFIGURABLE PARAMETERS - DO NOT CHANGE WHAT IS BELOW
 #==============================================================================
 
-
+# DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE
+# DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE
+# DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE
 
 
 #==============================================================================
-# START INTERNE CONFIGURATION - DO NOT CHANGE
+# START INTERNAL CONFIGURATION - DO NOT CHANGE
 #==============================================================================
 
-run_config = None
-
+run_config = None  # manipulated by OutputHandler()
 
 #------------------------------------------------------------------------------
 # parallel profile
@@ -223,6 +261,4 @@ def warning_occured():
 
 
 if __name__ == '__main__':
-    print "selftest of meta_config started"
-    if DEFAULT_CLF_XGB.has_key(nthreads):
-        raise ValueError("Do not specify threads. Use the parallel-profile")
+    pass
