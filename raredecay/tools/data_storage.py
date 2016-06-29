@@ -826,6 +826,9 @@ class HEPDataStorage(object):
         shuffle : boolean
             If True, the dataset will be shuffled before returned
          """
+         # TODO1: implement take_target_from_data
+         # TODO2: make it recursive. second storage can be a list and get
+         # data via make_dataset (or similar... difficult with ratio etc...)
         # initialize values
         if shuffle:
              warnings.warn("Shuffle not yet implemented!!")

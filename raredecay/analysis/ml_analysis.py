@@ -63,11 +63,30 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
                   weight_original=None, weight_target=None, conv_ori_weights=False,
                   conv_tar_weights=False, weights_ratio=0):
     """Return the concatenated data, weights and labels for classifier training.
-    Equivalent to the make_dataset method of HEPDataStorage. Still available
-    for compability reasons.
+
+     Differs to only *make_dataset* from the HEPDataStorage by providing the
+     possibility of using other weights.
     """
+    # make temporary weights if specific weights are given as parameters
+    temp_ori_weights = None
+    temp_tar_weights = None
+    if not dev_tool.is_in_primitive(weight_original, None):
+        temp_ori_weights = original_data.get_weights()
+        original_data.set_weights(weight_original)
+    if not dev_tool.is_in_primitive(weight_target, None):
+        temp_tar_weights = target_data.get_weights()
+        target_data.set_weights(weight_target)
+
+    # create the data, target and weights
     data_out = original_data.make_dataset(target_data, columns=features, weights_as_events=conv_ori_weights,
                                           weights_as_events_2=conv_tar_weights, weights_ratio=weights_ratio)
+
+    # reassign weights if specific weights have been used
+    if not dev_tool.is_in_primitive(temp_ori_weights, None):
+        original_data.set_weights(temp_ori_weights)
+    if not dev_tool.is_in_primitive(temp_tar_weights, None):
+        original_data.set_weights(temp_tar_weights)
+
     return data_out
 
 
@@ -578,6 +597,14 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
 
     Learn to distinguish between monte-carl data (original) and real data
     (target) and report (plot) the ROC and the AUC.
+
+    The original and the target data are concatenated, mixed and split up
+    into n folds. A classifier gets trainer on the train data set and
+    validated on the test data for n folds.
+
+    .. note:: This method of finding how well two datasets are separabel is
+    good in general but has its problems if you have only a few data or
+    comparably big (or wide spread) weights.
 
     Parameters
     ----------
