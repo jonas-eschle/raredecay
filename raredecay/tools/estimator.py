@@ -286,7 +286,7 @@ class Mayou(Classifier):
             predictions[key] = val[:,1]
         return pd.DataFrame(predictions, index=index, columns=columns)
 
-    @profile
+    #@profile
     def _factory_predict_proba(self, X):
 
         index = X.index
@@ -405,6 +405,7 @@ if __name__ == '__main__':
 
     from rep.metaml import FoldingClassifier
     from rep.report.metrics import RocAuc, significance, ams, OptimalAccuracy, OptimalAMS
+    from raredecay.tools.metrics import punzi_fom, precision_measure
     from sklearn.svm import NuSVC
     from sklearn.naive_bayes import GaussianNB
 
@@ -450,6 +451,9 @@ if __name__ == '__main__':
                             branch_names)
         backgr = pd.DataFrame(rec2array(backgr), columns=branch_names)
 
+        signal = signal[:5000]
+        backgr = backgr[:5000]
+
         # for sklearn data is usually organised
         # into one 2D array of shape (n_samples x n_features)
         # containing all the data and one array of categories
@@ -473,16 +477,18 @@ if __name__ == '__main__':
 
 
     lds = LabeledDataStorage(X_test, y_test, w_test)
+
+    # CLASSIFIER
     #clf = SklearnClassifier(RandomForestClassifier())
     clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,
                                      subsample=0.5
                                      )
     #clf_stacking='nn'
-    clf = Mayou(base_estimators=None, bagging_base=None, bagging_stack=None, stacking=clf_stacking,
+    clf = Mayou(base_estimators=None, bagging_base=10, bagging_stack=None, stacking=clf_stacking,
                 #features_stack=branch_names,
-                transform=True, transform_pred=True)
-    clf = SklearnClassifier(GaussianNB())
-    clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1., bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))
+                transform=False, transform_pred=False)
+    #clf = SklearnClassifier(GaussianNB())
+    #clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1., bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))
     #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))
@@ -509,6 +515,11 @@ if __name__ == '__main__':
     print "\nOptimalAccuracy = ", report.compute_metric(OptimalAccuracy())
     print "debug2 5=", debug2
     print "\nOptimalAMS = ", report.compute_metric(OptimalAMS())
+    report.metrics_vs_cut(ams).plot(new_plot=True, title="ams")
+    print "\npunzi_fom = "
+    report.metrics_vs_cut(punzi_fom).plot(new_plot=True, title="punzi fom")
+    print "\nprecision measure = "
+    report.metrics_vs_cut(precision_measure).plot(new_plot=True, title="precision measure")
     print "debug2 6=", debug2
     print "score: ", clf.score(X_test, y_test, w_test)
     print "debug2 7=", debug2

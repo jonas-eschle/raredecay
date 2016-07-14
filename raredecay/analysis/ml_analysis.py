@@ -199,7 +199,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         out.add_output(["Performing feature selection of classifier", clf, "of the features", features],
                        obj_separator=" ", title="Feature selection")
         original_clf = FoldingClassifier(clf, n_folds=n_folds,
-                                parallel_profile=parallel_profile)
+                                         parallel_profile=parallel_profile)
 
         # "loop-initialization", get score for all features
         clf = copy.deepcopy(original_clf)  # required, the features attribute can not be changed somehow
@@ -216,14 +216,13 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         while len(selected_features) > 1:
 
             # initialize variable
-            difference = 1  #a surely big initialisation
+            difference = 1  # a surely big initialisation
 
             # iterate through the features and remove the ith each time
             for i, feature in enumerate(selected_features):
                 clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
                 temp_features = selected_features[:]
                 del temp_features[i]  # remove ith feature for testing
-                #clf.features = temp_features
                 clf.fit(data[temp_features], label, weights)
                 report = clf.test_on(data[temp_features], label, weights)
                 temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]

@@ -146,10 +146,31 @@ def make_list_fill_var(to_check, length=0, var=None):
 
 
 def is_in_primitive(test_object, allowed_primitives=None):
-    """Fixes the pandas.Series "bug/stupidity" that ("==" can be replaced by
-    "is"): "array([1,4,5]) == None" is not defined (it is clearly False)
-    This way you can test safely for a primitive type. If the object is a list
-    , array or similar, it returns 'False'.
+    """Actually "equivalent" to: 'test_object is allowed_primitives' resp.
+    'test_object in allowed_primitives' but also works for arrays etc.
+
+    There is a problem (designproblem?!) with certain container types when
+    comparing them to a certain value, e.g. None and you create an expression
+    with 'container is None' and the container (as it is a container) is not
+    None, then the expression is not defined. The code tries to make
+    elementwise comparison.
+    This method allows to fix this error by doing a REAL comparison. E.g.
+    if the test_object is ANY container and the allowed_primitives is None,
+    it will always be False.
+
+    Parameters
+    ----------
+    test_object : any python-object
+        The object you want to test whether it is one of the
+        allowed_primitives.
+    allowed_primitives : object or list(obj, obj, obj,...)
+        Has to be testable as 'is obj'. If test_object is any of the
+        allowed_primitives, True will be returned.
+
+    out : boolean
+        Returns True if test_object is any of the allowed_primitives,
+        otherwise False.
+    ---
     """
     flag = False
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):

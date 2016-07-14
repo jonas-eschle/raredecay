@@ -720,12 +720,15 @@ class HEPDataStorage(object):
 
     def get_targets(self, index=None, weights_as_events=False, min_weight=None):
         """Return the targets of the data **as a numpy array**."""
-
+        # assing defaults
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
+        # get targets via internal method
         out_targets = self._get_targets(index=index, weights_as_events=weights_as_events,
                                         min_weight=min_weight)
+
+        # create targets if targets are "simpel" for output
         if dev_tool.is_in_primitive(out_targets, (-1, 0, 1, None)):
             if self._target is None:
                 self.logger.warning("Target list consists of None!")
@@ -735,6 +738,7 @@ class HEPDataStorage(object):
 
     def _get_targets(self, index=None, weights_as_events=False, min_weight=None):
         """Return targets as pandas Series, crashes the index if weights_as_events!"""
+        # assign defaults
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
@@ -782,6 +786,7 @@ class HEPDataStorage(object):
 
     def make_dataset(self, second_storage=None, index=None, index_2=None, columns=None,
                      weights_as_events=False, weights_as_events_2=False,
+                     targets_from_data=False,
                      min_weight=None, weights_ratio=0, shuffle=False):
 
         """Create data, targets and weights of the instance (and another one)
@@ -921,7 +926,11 @@ class HEPDataStorage(object):
             length_2 = len(data_2)
             data = pd.concat((data, data_2), ignore_index=True, copy=False)
 
-            targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
+            if targets_from_data:
+                targets_1 = self.get_targets()
+                targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
+            else:
+                targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
 
             weights_2 = second_storage.get_weights(index=index_2, min_weight=min_weight,
                                                    weights_as_events=weights_as_events_2,
@@ -979,9 +988,16 @@ class HEPDataStorage(object):
                                      random_state=random_state, shuffle=shuffle)
         return new_lds
 
-
     def make_folds(self, n_folds=10):
         """Create train-test folds which can be accessed via
+        :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
+
+        Split the data into n folds (for usage in KFold validaten etc.).
+        Then every fold consists of a train dataset, which consists of
+        n-1/n part of the data and a test dataset, which consists of 1/n part
+        of the whole data.
+        The folds will be created as *HEPDataStorage*.
+        To get a certain fold (train-test pair), use
         :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
 
         Parameters

@@ -186,11 +186,11 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(  # GB reweighter configuration
-        n_estimators=25,  # 80
-        max_depth=4,  # 6 or number of features
+        n_estimators=26,  # 80
+        max_depth=5,  # 6 or number of features
         learning_rate=0.1,  # 0.1
         min_samples_leaf=200,  # 200
-        loss_regularization=10.0,  #
+        loss_regularization=5.0,  #
         gb_args=dict(
             subsample=0.8, # 0.8
             #random_state=43,

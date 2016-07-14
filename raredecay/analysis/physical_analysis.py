@@ -261,10 +261,10 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
 
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
         logger.info("Starting data_ROC at the end of reweightCV")
-
-        scores1 = np.ones(n_checks)
-        reweight_real.make_folds(n_folds=n_folds)
-        for fold in range(n_checks):
+        n_classify_checks = 3
+        scores1 = np.ones(n_classify_checks)
+        reweight_real.make_folds(n_folds=n_classify_checks)
+        for fold in range(n_classify_checks):
             #create data
             real_train, real_test = reweight_real.get_fold(fold)
             real_test.set_targets(1)
@@ -280,7 +280,7 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         out.add_output(["Score reweighted (recall, lower means better): ",
                         str(round(np.mean(scores1), 4)) + " +- " + str(round(np.std(scores1), 4)),
                         "No reweighting score: ", round(score1_max, 4),
-                        "Scores1:", round(scores1, 4)],
+                        "Scores1:", [round(i, 4) for i in scores1]],
                         subtitle="Clf trained on real/mc reweight, tested on real",
                         to_end=True)
 #
