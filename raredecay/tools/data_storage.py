@@ -659,6 +659,10 @@ class HEPDataStorage(object):
 
         elif self._data_type == 'array':
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
+        elif self._data_type == 'df':
+# TODO: apply selection of columns            pass  # it is already a dataframe
+        else:
+            raise NotImplementedError("Unknown/not yet implemented data type)
 
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
         data = data if index is None else data.loc[index]
