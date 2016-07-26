@@ -59,7 +59,17 @@ def run(run_mode, cfg_file=None):
     elif run_mode == "simple_plot":
         simple_plot(cfg, logger)
     elif run_mode == "reweightCV":
-        reweightCV(cfg, logger)
+        import numpy as np
+        scores = []
+        scores_mean = []
+        for i in range(1):
+            score = reweightCV(cfg, logger, make_plot=True, minimal=False)
+            scores.append(score)
+            scores_mean.append(np.mean(score))
+        scores_mean = np.array(scores_mean)
+        out.add_output(["Score of several CVreweighting:", scores], to_end=True)
+        out.add_output(["Score mean:", np.mean(scores), "+- (measurements, NOT mean)",
+                        np.std(scores)], to_end=True)
     elif run_mode == "reweight":
         reweight(cfg, logger)
     elif run_mode == "hyper_optimization":
@@ -177,10 +187,14 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         The metric is the recall (or accuracy) of a classifier
           - trained on train real/ full mc reweighted
           - tested on leftout real test dataset
+
+        This is done with a 2/3-train 1/3 test data split (only the real one)
+        and performed 3 times.
     """
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_tools, data_storage
+    # TODO: remove line below (not necessary anymore?)
     from raredecay.globals_ import out
     import matplotlib.pyplot as plt
     import numpy as np
@@ -233,24 +247,27 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
                                               columns=cfg.reweight_branches)
 
         # plot one for example of the new weights
-        if (fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False):
+        if ((fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False)) and make_plot:
             plt.figure("new weights of fold " + str(fold))
             plt.hist(new_weights,bins=40, log=True)
 
-        # treat reweighted mc data as if it were real data target(1)
-        test_mc.set_targets(1)
-        # train clf on real and mc and see where it classifies the reweighted mc
-        clf, score_gb[fold] = ml_ana.classify(train_mc, train_real, validation=test_mc,
-                                            curve_name="mc reweighted as real",
-                                            plot_title="fold " + str(fold) + " reweighted validation",
-                                            conv_ori_weights=False, weights_ratio=1)
+        if not minimal:
+            # treat reweighted mc data as if it were real data target(1)
+            test_mc.set_targets(1)
+            # train clf on real and mc and see where it classifies the reweighted mc
+            clf, score_gb[fold] = ml_ana.classify(train_mc, train_real, validation=test_mc,
+                                                curve_name="mc reweighted as real",
+                                                plot_title="fold " + str(fold) + " reweighted validation",
+                                                conv_ori_weights=False, weights_ratio=1)
 
-        # Get the max and min for "calibration" of the possible score for the reweighted data by
-        # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
-        test_mc.set_weights(1)
-        tmp_, score_min[fold] = ml_ana.classify(clf=clf, validation=test_mc, curve_name="mc as real")
-        test_real.set_targets(1)
-        tmp_, score_max[fold] = ml_ana.classify(clf=clf, validation=test_real, curve_name="real as real")
+            # Get the max and min for "calibration" of the possible score for the reweighted data by
+            # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
+            test_mc.set_weights(1)
+            tmp_, score_min[fold] = ml_ana.classify(clf=clf, validation=test_mc,
+                                                    curve_name="mc as real")
+            test_real.set_targets(1)
+            tmp_, score_max[fold] = ml_ana.classify(clf=clf, validation=test_real,
+                                                    curve_name="real as real")
 
 
         # collect all the new weights to get a really cross-validated reweighted dataset
@@ -259,10 +276,18 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
             reweight_mc_reweighted.set_weights(new_weights, index=test_mc.get_index())
         logger.info("fold " + str(fold) + "finished")
 
+        # end of for loop
+
+    # final scoring
     if cfg.reweight_cv_cfg.get('total_roc', False) and (n_folds == n_checks):
         logger.info("Starting data_ROC at the end of reweightCV")
-        n_classify_checks = 3
+        n_classify_checks = 10
         scores1 = np.ones(n_classify_checks)
+        scores1_max = np.ones(n_classify_checks)
+        probas_mc = []
+        probas_reweighted = []
+        weights_mc = []
+        weights_reweighted = []
         reweight_real.make_folds(n_folds=n_classify_checks)
         for fold in range(n_classify_checks):
             #create data
@@ -270,13 +295,30 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
             real_test.set_targets(1)
 
             # train on reweighted and real data and classify test real data
-            tmp_, score1 = ml_ana.classify(reweight_mc_reweighted, real_train, validation=real_test,
+            tmp_, score1, pred_reweighted = ml_ana.classify(reweight_mc_reweighted, real_train, validation=real_test,
                                            plot_title="real/mc reweight trained, validate on real",
-                                           weights_ratio=1)
+                                           weights_ratio=1, get_predictions=True)
+            probas_reweighted.append(pred_reweighted['proba'])
+            weights_reweighted.append(pred_reweighted['weights'])
             scores1[fold] = score1
-        tmp_, score1_max = ml_ana.classify(reweight_mc, real_train, validation=real_test,
+
+            tmp_, score1_max, pred_mc = ml_ana.classify(reweight_mc, real_train, validation=real_test,
                                            plot_title="real/mc NOT reweight trained, validate on real",
-                                           weights_ratio=1)
+                                           weights_ratio=1, get_predictions=True)
+            probas_mc.append(pred_mc['proba'])
+            weights_mc.append(pred_mc['weights'])
+            scores1_max[fold] = score1_max
+        score1_max = np.mean(scores1_max)
+        probas_reweighted = np.concatenate(probas_reweighted)
+        weights_reweighted = np.concatenate(weights_reweighted)
+        probas_mc = np.concatenate(probas_mc)
+        weights_mc = np.concatenate(weights_mc)
+        plt.figure("plot of probability distributions")
+        plt.title("probability comparison")
+        plt.hist(probas_mc[:, 0], bins=30, weights=weights_mc, label="probas training with mc")
+        plt.hist(probas_reweighted[:, 0], bins=30, weights=weights_reweighted,
+                 label="probas training with reweighted mc")
+        plt.legend()
         out.add_output(["Score reweighted (recall, lower means better): ",
                         str(round(np.mean(scores1), 4)) + " +- " + str(round(np.std(scores1), 4)),
                         "No reweighting score: ", round(score1_max, 4),
@@ -291,30 +333,34 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         #                curve_name="mc reweight vs mc reweight weights as events", conv_tar_weights=3)
 
         # compare weights_as_events vs normal weights
-        reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
-                                    data_name="weights as events", weights_as_events=False)
-        reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
-                                    data_name="normal weights", weights_as_events=False)
-        reweight_real.plot(figure="weights as events vs normal weights", data_name="real data", weights_as_events=False)
+#        reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
+#                                    data_name="weights as events", weights_as_events=False)
+#        reweight_mc_reweighted.plot(figure="weights as events vs normal weights",
+#                                    data_name="normal weights", weights_as_events=False)
+#        reweight_real.plot(figure="weights as events vs normal weights", data_name="real data", weights_as_events=False)
 
-        # normal KFold "how-well-distinguishable". Pay attention: Do not overfit your clf!
-        ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
-                        curve_name="mc reweighted vs real", n_folds=n_folds, conv_ori_weights=False, weights_ratio=1)
-        ml_ana.data_ROC(reweight_mc, reweight_real, classifier='xgb',
-                        curve_name="mc vs real (max)", n_folds=n_folds, conv_ori_weights=False, weights_ratio=1)
-        reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
-                           data_name="mc reweighted")
-        reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
+        if not minimal:
+            # normal KFold "how-well-distinguishable". Pay attention: Do not overfit your clf!
+            ml_ana.data_ROC(reweight_mc_reweighted, reweight_real, classifier='xgb',
+                            curve_name="mc reweighted vs real", n_folds=n_folds, conv_ori_weights=False, weights_ratio=1)
+            ml_ana.data_ROC(reweight_mc, reweight_real, classifier='xgb',
+                            curve_name="mc vs real (max)", n_folds=n_folds, conv_ori_weights=False, weights_ratio=1)
+            if make_plot:
+                reweight_real.plot(figure="real vs mc reweighted CV", title="Real data vs CV reweighted Monte-Carlo",
+                                   data_name="mc reweighted")
+                reweight_mc_reweighted.plot(figure="real vs mc reweighted CV", data_name="real")
 
+        if make_plot:
+            out.save_fig(figure="New weights of total mc")
+            plt.hist(reweight_mc_reweighted.get_weights(), bins=30, log=True)
+    if not minimal:
+        out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification")
+        score_list = [("GBReweighted: ", score_gb), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
+        for name, score in score_list:
+            mean, std = round(np.mean(score), 4), round(np.std(score), 4)
+            out.add_output(["Average score " + name + str(mean) + " +- " + str(std)])
 
-        out.save_fig(figure="New weights of total mc")
-        plt.hist(reweight_mc_reweighted.get_weights(), bins=30)
-    out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification")
-    score_list = [("GBReweighted: ", score_gb), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
-    for name, score in score_list:
-        mean, std = round(np.mean(score), 4), round(np.std(score), 4)
-        out.add_output(["Average score " + name + str(mean) + " +- " + str(std)])
-
+    return scores1
 
 
 def simple_plot(cfg, logger):

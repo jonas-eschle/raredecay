@@ -300,7 +300,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
 def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
              make_plots=True, plot_title=None, curve_name=None, target_from_data=False,
              conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False,
-             weights_ratio=0):
+             weights_ratio=0, get_predictions=False):
     """Training and testing a classifier or distinguish a dataset
 
     Parameters
@@ -338,6 +338,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
           data instead of assigned accordingly (original:1, target:0).
         | If no target_data is provided, the targets/labels will be taken
           from the original_data anyway.
+    get_predictions : boolean
+        If True, return a dictionary containing the prediction probabilities, the
+        true y-values and maybe, in the futur, even more.
 
     Returns
     -------
@@ -353,6 +356,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     # initialize variables and data
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+    predictions = {}
 
     plot_title = "classify" if plot_title is None else plot_title
     if (original_data is None) and (target_data is not None):
@@ -416,6 +420,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             # score returns accuracy; if only one label present, it is the same as recall
             y_true = lds_test.get_targets()
             y_pred = clf.predict(lds_test.get_data())
+            y_pred_proba = clf.predict_proba(lds_test.get_data())
+            if get_predictions:
+                predictions['proba'] = y_pred_proba
+                predictions['y_true'] = y_true
+                predictions['weights'] = lds_test.get_weights(allow_nones=True)
             w_test = lds_test.get_weights()
             clf_score = clf.score(lds_test.get_data(), y_true, w_test)
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)#, sample_weight=w_test)
@@ -446,6 +455,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
             out.save_fig(plt.figure("Learning curve" + plot_name), save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " + plot_name)
+
+    if clf_score is None:
+        return clf
+    elif get_predictions:
+        return clf, clf_score, predictions
 
     return clf, clf_score if clf_score is not None else clf
 
@@ -532,7 +546,8 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
                            "\nTherefore some columns were not used!")
             meta_config.warning_occured()
 
-    # do the reweighting
+    # train the reweighter
+    hep_ml.reweight.BinsReweighter()
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
     reweighter.fit(original=reweight_data_mc.pandasDF(columns=columns),
                    target=reweight_data_real.pandasDF(columns=columns),
@@ -576,11 +591,11 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
                                         original_weight=reweight_data.get_weights())
 
     # write to output
-    out.add_output(["Using the reweighter:\n", reweighter_trained, "\nto reweight ",
+    out.add_output(["Using the reweighter:\n", reweighter_trained, "\n to reweight ",
                     reweight_data.get_name()], obj_separator="")
 
     if normalize:
-        for i in range(3):  # enhance precision
+        for i in range(1):  # enhance precision
             new_weights *= new_weights.size/new_weights.sum()
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
