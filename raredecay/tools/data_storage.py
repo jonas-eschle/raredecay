@@ -661,8 +661,9 @@ class HEPDataStorage(object):
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
         elif self._data_type == 'df':
 # TODO: apply selection of columns            pass  # it is already a dataframe
+            pass
         else:
-            raise NotImplementedError("Unknown/not yet implemented data type)
+            raise NotImplementedError("Unknown/not yet implemented data type")
 
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
         data = data if index is None else data.loc[index]
@@ -993,7 +994,7 @@ class HEPDataStorage(object):
         return new_lds
 
     def make_folds(self, n_folds=10):
-        """Create train-test folds which can be accessed via
+        """Create shuffled train-test folds which can be accessed via
         :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
 
         Split the data into n folds (for usage in KFold validaten etc.).

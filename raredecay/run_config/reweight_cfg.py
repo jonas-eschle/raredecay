@@ -12,7 +12,7 @@ from root_numpy import root2array
 
 # the name of the run and the output folder
 RUN_NAME = 'ReweightingCV gb'
-run_message = str("Test-run" +
+run_message = str("hyper-parameter test on K*" +
                 " ")
 #==============================================================================
 # PATHES BEGIN
@@ -105,6 +105,50 @@ cut_sWeight_B2KpiLL_real = dict(
 
 )
 
+
+# B-> K* reweighting
+all_Kstar_branches = ['B0_PT',
+                      'B0_ETA',
+                      'B0_ENDVERTEX_CHI2',
+                      'nSPDHits',
+#                      'Kst_PT',
+#                      'JPs_PT',
+#                      'M1_PT',
+#                      'M2_PT',
+#                      'B0_IPCHI2_OWNPV',
+#                      'B0_FDCHI2_OWNPV',
+#                      'B0_DIRA_OWNPV'
+
+                    ]
+test_branches = [ 'B0_IPCHI2_OWNPV',
+                 'B0FDCHI2_OWNPV',
+                 'B0_DIRA_OWNPV'
+                    ]
+
+cut_Kstarmumu_mc = dict(
+    filenames=DATA_PATH+'../Kstar/Bd2KstJPs_MM.root',
+    treename='DecayTuple',
+    branches=all_Kstar_branches
+)
+
+cut_sWeight_Kstarmumu_real = dict(
+    filenames=DATA_PATH+'../Kstar/MM_LPT_sWeight.root',
+    treename='DecayTree',
+    branches=all_Kstar_branches
+)
+sWeights_Kstarmumu = dict(
+    filenames=DATA_PATH+'../Kstar/MM_LPT_sWeight.root',
+    treename='DecayTree',
+    branches=['Cut_nsig_KstJPsMM_sw']
+)
+
+cut_Kstaree_mc = dict(
+    filenames=DATA_PATH+'../Kstar/TODO',
+    treename='TODO',
+    branches=all_Kstar_branches
+)
+
+
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------
@@ -136,15 +180,46 @@ B2K1Jpsi_mc_cut = dict(
     data_name_addition="cut"
 )
 
+# B -> K* reweighting
+
+B2Kstarmumu_mc_cut = dict(
+    data=cut_Kstarmumu_mc,
+    sample_weights=None,
+    data_name="B->K* MM monte-carlo",
+    data_name_addition="cut"
+)
+
+B2Kstarmumu_real_cut_sweighted = dict(
+    data=cut_sWeight_Kstarmumu_real,
+    sample_weights=root2array(**sWeights_Kstarmumu),
+    data_name="B->K* MM real",
+    data_name_addition="cut & sweighted"
+)
+
+B2Kstaree_mc_std = dict(
+    data="ToDo",
+    sample_weights=None,
+    data_name="B->K* EE MC",
+    data_name_addition="cut"
+)
+
 
 #------------------------------------------------------------------------------
 # collection of all data
 #------------------------------------------------------------------------------
 # this dictionary will finally be used in the code
 data = dict(
-    reweight_mc=B2K1Jpsi_mc_cut,
-    reweight_real=B2KpiLL_real_cut_sweighted,
-    reweight_apply=Bu2K1ee_mc_std
+
+# B -> K* configuration
+    reweight_mc=B2Kstarmumu_mc_cut,
+    reweight_real=B2Kstarmumu_real_cut_sweighted,
+    reweight_apply=B2Kstaree_mc_std
+
+
+# B -> K1 configuration
+#    reweight_mc=B2K1Jpsi_mc_cut,
+#    reweight_real=B2KpiLL_real_cut_sweighted,
+#    reweight_apply=Bu2K1ee_mc_std
 )
 
 #==============================================================================
@@ -172,35 +247,45 @@ reweight_cv_cfg = dict(
 #------------------------------------------------------------------------------
 
 # branches to use for the reweighting
-reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                     'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+
+Kstar_reweight_branches = ['B0_PT',
+                      'B0_ETA',
+                      'B0_ENDVERTEX_CHI2',
+                      'nSPDHits',
+                      #'',
+
+                    ]
+
+K1_reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
+                     #'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
                       #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
                       #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
+reweight_branches = Kstar_reweight_branches #Kstar_reweight_branches
 
 # start configuration for gradient boosted reweighter
 
 reweight_cfg = dict(
-    reweighter='gb',  # can also be a pickled reweighter or 'bins' resp 'gb'
+    reweighter='gb',  # can be a pickled reweighter or 'bins' resp 'gb'
     reweight_saveas='gb_reweighter1'  # if you want to save your reweighter
 )
 reweight_meta_cfg = dict(
     gb=dict(  # GB reweighter configuration
-        n_estimators=26,  # 80
-        max_depth=5,  # 6 or number of features
+        n_estimators=20,  # 25
+        max_depth=3,  # 6 or number of features
         learning_rate=0.1,  # 0.1
         min_samples_leaf=200,  # 200
-        loss_regularization=5.0,  #
+        loss_regularization=7.0,  #
         gb_args=dict(
-            subsample=0.8, # 0.8
+            subsample=0.6, # 0.8
             #random_state=43,
             min_samples_split=200  # 200
 
         )
     ),
     bins=dict(  # Bins reweighter configuration
-        n_bins=20,
-        n_neighs=3
+        n_bins=15,
+        n_neighs=1
     )
 ).get(reweight_cfg.get('reweighter'))  # Don't change!
 
@@ -221,13 +306,13 @@ hist_cfg_std = dict(
 )
 
 save_fig_cfg = dict(
-    file_format=None,
+    file_format=['png', 'svg'],
     plot=True
 )
 
 save_ext_fig_cfg = dict(
-    file_format=None,
-    plot=False
+    file_format=['png', 'svg'],
+    plot=True
 )
 
 #==============================================================================

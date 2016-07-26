@@ -60,16 +60,16 @@ class Mayou(Classifier):
             bagging=None
         ),
         rdf=dict(
-            n_estimators=200,  # 1600
+            n_estimators=1600,  # 1600
             max_features= 'auto', # only 1 feature seems to be pretty good...
-            max_depth=120,
+            max_depth=200,
             min_samples_split=250,
             min_samples_leaf=150,
             min_weight_fraction_leaf=0.,
             max_leaf_nodes=None,
             bootstrap=False,
             oob_score=False,
-            n_jobs=1,
+            n_jobs=7,
             class_weight=None,
             bagging=None
         ),
@@ -416,7 +416,7 @@ if __name__ == '__main__':
     higgs_data = True
     primitiv = False
 
-    n_ones, n_zeros = 5000, 5000
+    n_ones, n_zeros = 20000, 20000
     n_tot = n_ones + n_zeros
 
     branch_names = ['two', 'one']
@@ -428,12 +428,13 @@ if __name__ == '__main__':
     w = np.ones(n_tot)
 
     if higgs_data:
+
+#                jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,
+#        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,
+#        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,
+#        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,
         branch_names = """
         missing energy magnitude, missing energy phi,
-        jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,
-        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,
-        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,
-        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,
         m_jj, m_jjj, m_lv, m_jlv, m_bb, m_wbb,
         lepton pT, lepton eta, lepton phi,
         m_wwbb""".split(",")
@@ -451,8 +452,8 @@ if __name__ == '__main__':
                             branch_names)
         backgr = pd.DataFrame(rec2array(backgr), columns=branch_names)
 
-        signal = signal[:5000]
-        backgr = backgr[:5000]
+        signal = signal[:20000]
+        backgr = backgr[:20000]
 
         # for sklearn data is usually organised
         # into one 2D array of shape (n_samples x n_features)
@@ -479,17 +480,17 @@ if __name__ == '__main__':
     lds = LabeledDataStorage(X_test, y_test, w_test)
 
     # CLASSIFIER
-    #clf = SklearnClassifier(RandomForestClassifier())
-    clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,
-                                     subsample=0.5
-                                     )
+    clf_stacking = SklearnClassifier(RandomForestClassifier(n_estimators=5000, bootstrap=False, n_jobs=7))
+    #clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,
+    #                                 subsample=0.5
+    #                                 )
     #clf_stacking='nn'
-    clf = Mayou(base_estimators=None, bagging_base=10, bagging_stack=None, stacking=clf_stacking,
-                #features_stack=branch_names,
+    clf = Mayou(base_estimators={'xgb': None}, bagging_base=None, bagging_stack=8, stacking=clf_stacking,
+                features_stack=branch_names,
                 transform=False, transform_pred=False)
     #clf = SklearnClassifier(GaussianNB())
     #clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1., bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))
-    #clf = XGBoostClassifier(n_estimators=350, eta=0.1, nthreads=8)
+    #clf = XGBoostClassifier(n_estimators=400, eta=0.1, nthreads=6)
     #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
     #clf = SklearnClassifier(NuSVC(cache_size=1000000))
     #clf = SklearnClassifier(clf)

@@ -51,7 +51,7 @@ PROMPT_FOR_COMMENT=True  # let you add an extension to the run/file name
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
-use_gpu = True  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
+use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
                 # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
 
 #------------------------------------------------------------------------------
