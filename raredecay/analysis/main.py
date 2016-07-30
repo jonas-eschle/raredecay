@@ -38,7 +38,7 @@ def main_run(run_mode, cfg_file=None):
         run(run_mode, cfg_file=cfg_file)
         # show()
 
-    # to hear/see whether the analysis has finished
+    # to hear/see whether the analysis has finishedd
     try:
         from raredecay.tools.dev_tool import play_sound
         play_sound()

@@ -203,17 +203,43 @@ B2Kstaree_mc_std = dict(
     data_name_addition="cut"
 )
 
+# Reweighting metric testing
+import pandas as pd
+import numpy as np
+testing_size = 15000
+mc_testing = dict(
+    data=pd.DataFrame({'0': np.random.normal(size=testing_size),
+                       '1': np.random.normal(size=testing_size),
+                       '2': np.random.normal(size=testing_size),
+                       '3': np.random.normal(size=testing_size)}),
+    sample_weights=None,
+    data_name="mc gaussian dist",
+    data_name_addition=""
+)
+real_testing = dict(
+    data=pd.DataFrame({'0': np.random.normal(loc=0.0, scale=1.1, size=testing_size),
+                       '1': np.random.normal(loc=0.0, scale=1.1, size=testing_size),
+                       '2': np.random.normal(loc=0.0, scale=1.1, size=testing_size),
+                       '3': np.random.normal(loc=0.0, scale=1.1, size=testing_size)}),
+    sample_weights=None,
+    data_name="real gaussian dist",
+    data_name_addition=""
+)
 
 #------------------------------------------------------------------------------
 # collection of all data
 #------------------------------------------------------------------------------
 # this dictionary will finally be used in the code
 data = dict(
+#
+    reweight_mc=mc_testing,
+    reweight_real=real_testing,
+    reweight_apply=B2Kstaree_mc_std
 
 # B -> K* configuration
-    reweight_mc=B2Kstarmumu_mc_cut,
-    reweight_real=B2Kstarmumu_real_cut_sweighted,
-    reweight_apply=B2Kstaree_mc_std
+#    reweight_mc=B2Kstarmumu_mc_cut,
+#    reweight_real=B2Kstarmumu_real_cut_sweighted,
+#    reweight_apply=B2Kstaree_mc_std
 
 
 # B -> K1 configuration
@@ -261,7 +287,7 @@ K1_reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
                       #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
                       #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
-reweight_branches = Kstar_reweight_branches #Kstar_reweight_branches
+reweight_branches = ['0', '1']  #Kstar_reweight_branches
 
 # start configuration for gradient boosted reweighter
 
@@ -272,12 +298,12 @@ reweight_cfg = dict(
 reweight_meta_cfg = dict(
     gb=dict(  # GB reweighter configuration
         n_estimators=20,  # 25
-        max_depth=3,  # 6 or number of features
+        max_depth=4,  # 6 or number of features
         learning_rate=0.1,  # 0.1
         min_samples_leaf=200,  # 200
-        loss_regularization=7.0,  #
+        loss_regularization=7.0001,  #
         gb_args=dict(
-            subsample=0.6, # 0.8
+            subsample=0.7, # 0.8
             #random_state=43,
             min_samples_split=200  # 200
 

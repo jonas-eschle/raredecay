@@ -36,6 +36,7 @@ from rep.estimators.theanets import TheanetsClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
+from rep.estimators.interface import Classifier
 
 # scoring and validation
 from rep.metaml.folding import FoldingClassifier
@@ -78,8 +79,11 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
         target_data.set_weights(weight_target)
 
     # create the data, target and weights
-    data_out = original_data.make_dataset(target_data, columns=features, weights_as_events=conv_ori_weights,
-                                          weights_as_events_2=conv_tar_weights, weights_ratio=weights_ratio)
+    data_out = original_data.make_dataset(target_data, columns=features,
+                                          targets_from_data=target_from_data,
+                                          weights_as_events=conv_ori_weights,
+                                          weights_as_events_2=conv_tar_weights,
+                                          weights_ratio=weights_ratio)
 
     # reassign weights if specific weights have been used
     if not dev_tool.is_in_primitive(temp_ori_weights, None):
@@ -322,7 +326,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             The target-label will be taken from it, so ensure that they are
             not None! To use two datasets, you can also use a list of
             **maximum** two datastorages.
-    clf : str {'xgb'} or rep-classifier
+    clf : str {'xgb', 'rdf'} or REP-classifier
         The classifier to be used for the training and predicting. If you don't
         pass a classifier (with *fit*, *predict* and *predict_proba* at least),
         an XGBoost classifier will be used.
@@ -351,6 +355,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         of instance :py:class:`~rep.metaml.folding.FoldingClassifier()`!
     out : float (only if validation is not None)
         Return the score (recall or roc auc) of the validation.
+    out : dict  (only if *get_predictions* is True)
+        Return a dict containing the predictions, probability and more.
+
+        - 'y_pred' : predictions of the classifier
+        - 'y_proba' : prediciton probabilities
+        - 'y_true' : the true labels of the data (if available)
+        - 'weights' : the weights of the corresponding predicitons
     """
     logger.info("Starting classify with " + str(clf))
     # initialize variables and data
@@ -363,6 +374,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
+                                          target_from_data=target_from_data,
                                           conv_ori_weights=conv_ori_weights,
                                           conv_tar_weights=conv_tar_weights,
                                           weights_ratio=weights_ratio)
@@ -374,12 +386,17 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         clf_name = 'XGBoost classifier'
         clf = XGBoostClassifier(**dict(meta_config.DEFAULT_CLF_XGB, nthreads=globals_.free_cpus()))
         is_parallel = True
-    if clf == 'rdf':
+    elif clf == 'rdf':
         clf_name = "RandomForest classifier"
         cfg_clf = meta_config.DEFAULT_CLF_RDF,
         cfg_clf = dict(n_jobs=globals_.free_cpus(), random_state=globals_.randint+432)
         clf = SklearnClassifier(RandomForestClassifier(**cfg_clf))
         is_parallel = True
+    elif isinstance(clf, Classifier):
+        is_parallel = True
+    else:
+        raise ValueError('Not a valid classifier or string for a clf')
+
 
     if isinstance(validation, (float, int, long)) and validation > 1:
         if is_parallel:
@@ -392,22 +409,23 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
     elif isinstance(validation, data_storage.HEPDataStorage):
         lds_test = validation.get_LabeledDataStorage(columns=features)
-    elif validation is None:
+    elif validation in (None, False):
         make_plots = False
+        clf_score = None
     elif isinstance(validation, list) and len(validation) in (1, 2):
         data_val, target_val, weights_val = _make_data(validation[0], validation[1],
                                                        conv_ori_weights=conv_vali_weights,
                                                        conv_tar_weights=conv_vali_weights)
         lds_test = LabeledDataStorage(data=data_val, target=target_val, sample_weight=weights_val)
     else:
-        raise ValueError("Validation method " + validation + " not a valid choice")
+        raise ValueError("Validation method " + str(validation) + " not a valid choice")
 
     # train the classifier
     if original_data is not None:
         clf.fit(data, label, weights)  # if error "1 not in list" or similar occurs: no valid targets (None?)
 
     # test the classifier
-    if validation is not None:
+    if validation not in (None, False):
         report = ClassificationReport({clf_name: clf}, lds_test)
         n_classes = len(set(lds_test.get_targets()))
         if n_classes == 2:
@@ -422,7 +440,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             y_pred = clf.predict(lds_test.get_data())
             y_pred_proba = clf.predict_proba(lds_test.get_data())
             if get_predictions:
-                predictions['proba'] = y_pred_proba
+                predictions['y_proba'] = y_pred_proba
+                predictions['y_pred'] = y_pred
                 predictions['y_true'] = y_true
                 predictions['weights'] = lds_test.get_weights(allow_nones=True)
             w_test = lds_test.get_weights()
@@ -460,8 +479,10 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         return clf
     elif get_predictions:
         return clf, clf_score, predictions
+    else:
+        return clf, clf_score
 
-    return clf, clf_score if clf_score is not None else clf
+    #return clf, clf_score if clf_score is not None else clf
 
 
 def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
@@ -834,12 +855,23 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
         report.prediction[key + ", AUC = " + str(round(factory_auc.get(key), 4))] = report.prediction.pop(key)
     report.roc(physical_notion=False).plot(title="ROC curve for comparison of " + data_name)
     plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
-    # factory extended plots
-    out.save_fig(plt.figure("feature importance shuffled " + data_name), **save_ext_fig_cfg)
-    report.feature_importance_shuffling().plot()
 
-    out.save_fig(plt.figure("correlation matrix " + data_name), **save_ext_fig_cfg)
-    report.features_correlation_matrix_by_class().plot(title="Correlation matrix of data " + data_name)
+    # factory extended plots
+    try:
+        out.save_fig(plt.figure("feature importance shuffled " + data_name), **save_ext_fig_cfg)
+        report.feature_importance_shuffling().plot()
+    except AttributeError:
+        meta_config.error_occured()
+        logger.error("could not determine feature_importance_shuffling in Data_ROC")
+
+    try:
+        out.save_fig(plt.figure("correlation matrix " + data_name), **save_ext_fig_cfg)
+        report.features_correlation_matrix_by_class().plot(title="Correlation matrix of data " + data_name)
+    except AttributeError:
+        meta_config.error_occured()
+        logger.error("could not determine features_correltaion_matrix_by_class in Data_ROC")
+
+
 
     out.save_fig(plt.figure("features pdf " + data_name), **save_ext_fig_cfg)
     report.features_pdf().plot(title="Features pdf of data: " + data_name)
