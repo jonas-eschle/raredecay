@@ -392,6 +392,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         cfg_clf = dict(n_jobs=globals_.free_cpus(), random_state=globals_.randint+432)
         clf = SklearnClassifier(RandomForestClassifier(**cfg_clf))
         is_parallel = True
+    elif clf == 'nn':
+        clf_name = "Theanets Neural Network"
+        cfg_clf = dict(meta_config.DEFAULT_CLF_NN, random_state=globals_.randint+1817)
+        clf = TheanetsClassifier(**cfg_clf)
+        is_parallel = True
     elif isinstance(clf, Classifier):
         is_parallel = True
     else:

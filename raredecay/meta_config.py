@@ -50,7 +50,7 @@ import cPickle as pickle
 PROMPT_FOR_COMMENT=True  # let you add an extension to the run/file name
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 3  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
                 # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
 
@@ -176,10 +176,13 @@ DEFAULT_LOGGER_CFG = dict(
 # Changing this default values will surely affect your results (over- or
 # underfitting for example), but is mostly not required at all.
 DEFAULT_CLF_XGB = dict(
-    n_estimators=75,  # default 75
-    eta=0.2,  # default 0.1, learning-rate
-    max_depth=3,  # default 4
-    subsample=0.8  # default 0.8
+    n_estimators=500,  # default 75
+    eta=0.01,  # default 0.1, learning-rate
+    min_child_weight=8,  # #0 stage 2 to optimize
+    max_depth=3,  # #6 stage 2 to optimize
+    gamma=4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
+    subsample=0.5, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    colsample=1
 )
 
 DEFAULT_CLF_TMVA = dict(
@@ -203,6 +206,22 @@ DEFAULT_CLF_GB = dict(
 DEFAULT_CLF_ADA = dict(
     n_estimators=200,
     learning_rate=0.2
+)
+
+DEFAULT_CLF_NN= dict(
+    layers=[300, 100],
+    hidden_activation='logistic',
+    output_activation='linear',
+    input_noise=0,  # [0,1,2,3,4,5,10,20],
+    hidden_noise=0,
+    input_dropout=0,
+    hidden_dropout=0.03,
+    decode_from=1,
+    weight_l1=0.01,
+    weight_l2=0.01,
+    scaler='standard',
+    trainers=[{'optimize': 'adagrad', 'patience': 15, 'learning_rate': 0.1, 'min_improvement': 0.01,
+               'momentum':0.5, 'nesterov':True, 'loss': 'xe'}],
 )
 
 DEFAULT_CLF_KNN = dict(
