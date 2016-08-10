@@ -198,7 +198,11 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     from raredecay.globals_ import out
     import matplotlib.pyplot as plt
     import numpy as np
+    import pandas as pd
+    import seaborn as sns
     import copy
+
+    from rep.estimators import XGBoostClassifier
 
 
     out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
@@ -243,8 +247,8 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         # reweighter = ''  # load from pickle file
 
         # use reweighter on the test data_set
-        new_weights = ml_ana.reweight_weights(test_mc, reweighter,
-                                              columns=cfg.reweight_branches)
+        #logger.warning("hack active in physical analysis, cvreweighting")
+        new_weights = ml_ana.reweight_weights(test_mc, reweighter, columns=cfg.reweight_branches)
 
         # plot one for example of the new weights
         if ((fold == 0) or cfg.reweight_cv_cfg.get('plot_all', False)) and make_plot:
@@ -288,26 +292,154 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         probas_reweighted = []
         weights_mc = []
         weights_reweighted = []
+
+
+        real_pred = []
+        real_test_index = []
+        real_mc_pred = []
+
+                # test by using a distribution over the whole field
+
+        # get maximum of branches
+# TODO: implement max/min function to HEPDS
+        real_df = reweight_real.pandasDF()
+        mc_df = reweight_mc.pandasDF()
+        max_mc = mc_df.max()
+        max_real = real_df.max()
+        min_mc = mc_df.min()
+        min_real = real_df.min()
+        max_tot = np.array([max(i) for i in zip(max_real, max_mc)])
+        min_tot = np.array([min(i) for i in zip(min_real, min_mc)])
+        columns = mc_df.columns.values
+
+        # clear up memory
+        del real_df, mc_df
+        # train clf
+        reweight_real.make_folds(2)
+        reweight_real_one, reweight_real_two = reweight_real.get_fold(0)
+        reweight_real_one.set_targets(0)
+        reweight_real_two.set_targets(1)
+        clf_uniform = ml_ana.classify(reweight_real_one,
+                                      reweight_real_two,
+                                      weights_ratio=1, clf='nn', validation=False)
+
+
+
+
+        calibration_multiplier = 100  # multiply size_df for calibration run (because over the whole space)
+        n_runs = 10000
+        extrema_adder = 2.0
+        diff_add = (max_tot - min_tot) * extrema_adder
+        max_tot += diff_add
+        min_tot -= diff_add
+
+        max_fix = copy.deepcopy(max_tot)
+        min_fix = copy.deepcopy(min_tot)
+
+        score_dist1 = []
+
+        for n_run in range(n_runs + 1):  # for calibration over whole space
+            test_dist = {}
+            max_tot = copy.deepcopy(max_fix)
+            min_tot = copy.deepcopy(min_fix)
+            size_df = 2000  # reset every run (calbration_multiplier may kick in)
+
+            # vary extrema randomly
+            rnd = []
+            for maxi, mini in zip(max_tot, min_tot):
+                rnd.append(np.random.uniform(low=mini, high=maxi, size=2))
+            if n_run == 0:  # start with biggest run (to prevent memory error)
+                size_df *= calibration_multiplier
+            else:
+                max_tot = np.array(map(max, rnd))
+                min_tot = np.array(map(min, rnd))
+
+            for i, col in enumerate(columns):
+                # TODO: may implement rnd value for min, max
+                min_local = min_tot[i]
+                max_local = max_tot[i]
+                test_dist[col] = np.random.uniform(low=min_local, high=max_local, size=size_df)
+            test_dist = pd.DataFrame(test_dist)
+            test_dist = data_storage.HEPDataStorage(data=test_dist, target=1,
+                                                    data_name="uniform test distribution")
+            tmp_, score_uniform1 = ml_ana.classify(validation=test_dist, clf=clf_uniform,
+                                                   plot_title="uniform dists",
+                                                   curve_name="test_dist")
+            if n_run == 0:
+                out.add_output(["calibration (whole space) dist testing:",
+                        score_uniform1], to_end=True)
+            else:
+                score_dist1.append(score_uniform1)
+        score_dist1 = np.array(score_dist1)
+        out.add_output(["mean of dist testing:",
+                        score_dist1.mean(), "+-", score_dist1.std()], to_end=True)
+        #out.add_output(["max, min", max_tot, min_tot], to_end=True)
+
         reweight_real.make_folds(n_folds=n_classify_checks)
         for fold in range(n_classify_checks):
             #create data
             real_train, real_test = reweight_real.get_fold(fold)
             real_test.set_targets(1)
 
+
             # train on reweighted and real data and classify test real data
             tmp_, score1, pred_reweighted = ml_ana.classify(reweight_mc_reweighted, real_train, validation=real_test,
-                                           plot_title="real/mc reweight trained, validate on real",
-                                           weights_ratio=1, get_predictions=True)
-            probas_reweighted.append(pred_reweighted['proba'])
+                                           plot_title="real/mc reweight trained, validate on uniform dist",
+                                           weights_ratio=1, get_predictions=True, clf='xgb')
+            probas_reweighted.append(pred_reweighted['y_proba'])
             weights_reweighted.append(pred_reweighted['weights'])
             scores1[fold] = score1
+
+            real_pred.extend(pred_reweighted['y_pred'])
+            real_test_index.extend(real_test.get_index())
 
             tmp_, score1_max, pred_mc = ml_ana.classify(reweight_mc, real_train, validation=real_test,
                                            plot_title="real/mc NOT reweight trained, validate on real",
                                            weights_ratio=1, get_predictions=True)
-            probas_mc.append(pred_mc['proba'])
+            probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])
             scores1_max[fold] = score1_max
+
+            real_mc_pred.extend(pred_mc['y_pred'])
+
+
+        # do it really
+        reweight_real.set_targets(targets=real_pred, index=real_test_index)
+        tmp_, score_rdf_pred1 = ml_ana.classify(reweight_real, target_from_data=True, clf='rdf',
+                                           plot_title="prediction of real as target, try to distinguish, rdf",
+                                           weights_ratio=1)
+
+        clf_bad = XGBoostClassifier(n_estimators=100, max_depth=4)
+        tmp_, score_pred1 = ml_ana.classify(reweight_real, target_from_data=True, clf=clf_bad,
+                                           plot_title="prediction of real as target, try to distinguish, xgb",
+                                           weights_ratio=1)
+
+        tp_real = reweight_real.pandasDF()
+        tp_real = tp_real[np.array(real_pred)==1]
+        fp_real = reweight_real.pandasDF()
+        fp_real = fp_real[np.array(real_pred)==0]
+        col = reweight_real.columns
+        plt.figure("Scatter plot of tp/fp of gaussian 'real'")
+        plt.scatter(x=tp_real[col[0]], y=tp_real[col[1]], c='b')
+        plt.scatter(x=fp_real[col[0]], y=fp_real[col[1]], c='r')
+        plt.legend()
+
+        clf_bad2 = XGBoostClassifier(n_estimators=3)
+        reweight_real.set_targets(targets=real_mc_pred, index=real_test_index)
+        tmp_, score_mc_pred1 = ml_ana.classify(reweight_real, target_from_data=True,
+                                               clf=clf_bad2, validation=3,
+                                               plot_title="mc not rew pred of real as target, 3 validation, distinguish, xgb",
+                                               weights_ratio=1)
+        # permutation method, shuffle the targets
+        np.random.shuffle(real_pred)
+        reweight_real.set_targets(targets=real_pred)
+        tmp_, score_shuffled_pred1 = ml_ana.classify(reweight_real, target_from_data=True,
+                                           plot_title="prediction of real as target, SHUFFLED, try to distinguish",
+                                           weights_ratio=1)
+
+
+        reweight_real.set_targets(targets=1, index=real_test_index)
+
         score1_max = np.mean(scores1_max)
         probas_reweighted = np.concatenate(probas_reweighted)
         weights_reweighted = np.concatenate(weights_reweighted)
@@ -354,11 +486,11 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
             out.save_fig(figure="New weights of total mc")
             plt.hist(reweight_mc_reweighted.get_weights(), bins=30, log=True)
     if not minimal:
-        out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification")
+        out.add_output("", subtitle="Cross validation reweight report", section="Precision scores of classification on reweighted mc")
         score_list = [("GBReweighted: ", score_gb), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
         for name, score in score_list:
             mean, std = round(np.mean(score), 4), round(np.std(score), 4)
-            out.add_output(["Average score " + name + str(mean) + " +- " + str(std)])
+            out.add_output(["Classify the target, average score " + name + str(mean) + " +- " + str(std)])
 
     return scores1
 

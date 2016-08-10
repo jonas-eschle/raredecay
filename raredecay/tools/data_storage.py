@@ -458,7 +458,7 @@ class HEPDataStorage(object):
                 self._weights = 1
                 return
             else:
-                sample_weights = pd.Series(np.ones(len(index), index=index))
+                sample_weights = pd.Series(np.ones(len(index)), index=index)
         #    else:
         #        sample_weights = np.ones(length)
         else:
@@ -660,8 +660,8 @@ class HEPDataStorage(object):
         elif self._data_type == 'array':
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
         elif self._data_type == 'df':
-# TODO: apply selection of columns            pass  # it is already a dataframe
-            pass
+            if columns is not None:
+                data = data[columns]
         else:
             raise NotImplementedError("Unknown/not yet implemented data type")
 
@@ -775,18 +775,20 @@ class HEPDataStorage(object):
         return out_targets
 
 
-    def set_targets(self, targets):
+    def set_targets(self, targets, index=None):
         """Set the targets of the data. Either a list-like object or
         {-1, 0, 1, None}"""
 
         if not dev_tool.is_in_primitive(targets, (-1, 0, 1, None)):
             assert len(self) == len(targets), "Invalid targets"
-        self._set_target(targets)
+        self._set_target(target=targets, index=index)
 
-    def _set_target(self, target):
+    def _set_target(self, target, index=None):
         """Set the target. Attention with Series, index must be the same as data-index"""
+        index = self._index if dev_tool.is_in_primitive(index) else index
         if isinstance(target, (list, np.ndarray, pd.Series)):
-            target = pd.Series(target, index=self._index, copy=True)
+            target = pd.Series(target, index=index, copy=True)
+            target.sort_index(inplace=True)
         self._target = target
 
     def make_dataset(self, second_storage=None, index=None, index_2=None, columns=None,

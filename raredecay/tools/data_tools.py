@@ -13,8 +13,10 @@ import numpy as np
 import cPickle as pickle
 
 from root_numpy import root2array, array2tree
-from ROOT import TObject
-from rootpy.io import root_open
+
+# both produce error (27.07.2016) when importing them if run from main. No problem when run as main...
+#from ROOT import TObject
+#from rootpy.io import root_open
 
 from raredecay.tools import dev_tool
 from raredecay import meta_config
