@@ -168,14 +168,37 @@ B2K1Jpsi_mc_cut_reweighted = dict(
 )
 
 
+# Reweighting metric testing
+import pandas as pd
+import numpy as np
+testing_size = 15000
+mc_testing = dict(
+    data=pd.DataFrame({'0': np.random.normal(size=testing_size),
+                       '1': np.random.normal(size=testing_size),
+                       '2': np.random.normal(size=testing_size),
+                       '3': np.random.normal(size=testing_size)}),
+    sample_weights=None,
+    data_name="mc gaussian dist",
+    data_name_addition=""
+)
+real_testing = dict(
+    data=pd.DataFrame({'0': np.random.normal(loc=0.1, scale=1.1, size=testing_size),
+                       '1': np.random.normal(loc=0.1, scale=1.1, size=testing_size),
+                       '2': np.random.normal(loc=0.1, scale=1.1, size=testing_size),
+                       '3': np.random.normal(loc=0.1, scale=1.1, size=testing_size)}),
+    sample_weights=None,
+    data_name="real gaussian dist",
+    data_name_addition=""
+)
+
 #------------------------------------------------------------------------------
 # collection of all data
 #------------------------------------------------------------------------------
 # this dictionary will finally be used in the code
 data = dict(
     #hyper_target=B2KpiLL_real_signal,
-    hyper_target=B2K1Jpsi_mc_cut_reweighted,
-    hyper_original=B2KpiLL_real_cut_background
+    hyper_target=mc_testing,  #B2K1Jpsi_mc_cut_reweighted,
+    hyper_original=real_testing  #B2KpiLL_real_cut_background
 )
 
 #==============================================================================
@@ -187,7 +210,7 @@ data = dict(
 #==============================================================================
 
 # define features used during optimization process (if not explicitly specified in classifier)
-opt_features = ['B_PT', 'nTracks', 'nSPDHits',
+K1_features = ['B_PT', 'nTracks', 'nSPDHits',
               'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
               'B_IPCHI2_OWNPV',
                 'l1_PT', 'l1_IPCHI2_OWNPV',
@@ -198,14 +221,17 @@ opt_features = ['B_PT', 'nTracks', 'nSPDHits',
 
               ]
 
+gaussian_features = ['0', '1', '2', '3']
+opt_features = gaussian_features
+
 hyper_cfg = dict(
     optimize_clf='xgb',  # the name of the classifier to optimize. Has to be exactly what follows 'cfg_'
-    generator='regression',  # how to search the hyperspace {'subgrid', 'regression', 'random}
+    generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression', 'random}
                              # or the feature space {'backwards'}
-    optimize_features=True,
-    n_evaluations=10,  # how many points in hyperspace to look at
-    n_folds=2,  # split the data in n_folds
-    n_fold_checks=1  # how many folds to create and check on. n_fold_checks <= n_folds
+    optimize_features=False,
+    n_evaluations=80,  # how many points in hyperspace to look at
+    n_folds=10,  # split the data in n_folds
+    n_fold_checks=8  # how many folds to create and check on. n_fold_checks <= n_folds
 )
 
 #------------------------------------------------------------------------------
@@ -215,11 +241,11 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=75,  #75,  # stage 1 to optimize
-    min_child_weight=0,  # stage 2 to optimize
-    max_depth=6,  # stage 2 to optimize
-    gamma=0.5,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
-    subsample=0.8, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    n_estimators=25,  #75,  # stage 1 to optimize
+    min_child_weight=8,  # #0 stage 2 to optimize
+    max_depth=3,  # #6 stage 2 to optimize
+    gamma=4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
+    subsample=0.5, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
     colsample=1 # stage 4, only take several colons for training
     # no loss regularization available so far...
 )

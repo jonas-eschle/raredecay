@@ -292,7 +292,7 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         probas_reweighted = []
         weights_mc = []
         weights_reweighted = []
-        reweight_real.make_folds(n_folds=n_classify_checks)
+
 
         real_pred = []
         real_test_index = []
@@ -315,14 +315,20 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         # clear up memory
         del real_df, mc_df
         # train clf
-        clf_uniform = ml_ana.classify(reweight_mc_reweighted, reweight_real,
-                                      weights_ratio=1, clf='xgb', validation=False)
+        reweight_real.make_folds(2)
+        reweight_real_one, reweight_real_two = reweight_real.get_fold(0)
+        reweight_real_one.set_targets(0)
+        reweight_real_two.set_targets(1)
+        clf_uniform = ml_ana.classify(reweight_real_one,
+                                      reweight_real_two,
+                                      weights_ratio=1, clf='nn', validation=False)
 
 
 
-        size_df = 100000
-        n_runs = 30
-        extrema_adder = 0.01
+
+        calibration_multiplier = 100  # multiply size_df for calibration run (because over the whole space)
+        n_runs = 10000
+        extrema_adder = 2.0
         diff_add = (max_tot - min_tot) * extrema_adder
         max_tot += diff_add
         min_tot -= diff_add
@@ -330,17 +336,23 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         max_fix = copy.deepcopy(max_tot)
         min_fix = copy.deepcopy(min_tot)
 
-        for n_run in range(n_runs):
+        score_dist1 = []
+
+        for n_run in range(n_runs + 1):  # for calibration over whole space
             test_dist = {}
             max_tot = copy.deepcopy(max_fix)
             min_tot = copy.deepcopy(min_fix)
+            size_df = 2000  # reset every run (calbration_multiplier may kick in)
 
             # vary extrema randomly
             rnd = []
             for maxi, mini in zip(max_tot, min_tot):
                 rnd.append(np.random.uniform(low=mini, high=maxi, size=2))
-            max_tot = np.array(map(max, rnd))
-            min_tot = np.array(map(min, rnd))
+            if n_run == 0:  # start with biggest run (to prevent memory error)
+                size_df *= calibration_multiplier
+            else:
+                max_tot = np.array(map(max, rnd))
+                min_tot = np.array(map(min, rnd))
 
             for i, col in enumerate(columns):
                 # TODO: may implement rnd value for min, max
@@ -353,13 +365,17 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
             tmp_, score_uniform1 = ml_ana.classify(validation=test_dist, clf=clf_uniform,
                                                    plot_title="uniform dists",
                                                    curve_name="test_dist")
-            out.add_output(["uniform testing, scores:", score_uniform1], to_end=True)
-            out.add_output(["max, min", max_tot, min_tot], to_end=True)
+            if n_run == 0:
+                out.add_output(["calibration (whole space) dist testing:",
+                        score_uniform1], to_end=True)
+            else:
+                score_dist1.append(score_uniform1)
+        score_dist1 = np.array(score_dist1)
+        out.add_output(["mean of dist testing:",
+                        score_dist1.mean(), "+-", score_dist1.std()], to_end=True)
+        #out.add_output(["max, min", max_tot, min_tot], to_end=True)
 
-
-
-# HACK active, use uniform set
-
+        reweight_real.make_folds(n_folds=n_classify_checks)
         for fold in range(n_classify_checks):
             #create data
             real_train, real_test = reweight_real.get_fold(fold)
