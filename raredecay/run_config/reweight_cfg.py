@@ -313,7 +313,7 @@ reweight_meta_cfg = dict(
         n_bins=15,
         n_neighs=1
     )
-).get(reweight_cfg.get('reweighter'))  # Don't change!
+).get(reweight_cfg.get('reweighter', None))  # Don't change!
 
 
 #==============================================================================

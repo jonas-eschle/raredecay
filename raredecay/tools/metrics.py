@@ -10,11 +10,24 @@ import math as mt
 import numpy as np
 
 
+def rnd_dist():
+    """Test reweighting by classify several random distributions. Not yet
+    known how to interpret outcome correctly"""
+    pass
+
+
+def train_similar():
+    """Train clf on mc reweighted/real, test on real. Minimize score.
+    """
+    pass
+# TODO: implement stuff!
+
+
 def punzi_fom(n_signal, n_background, n_sigma=5):
     """Return the Punzi Figure of Merit metric: S / (sqrt(B) + n_sigma/2)
 
     The Punzi FoM is mostly used for the detection of rare decays to prevent
-    the metric of cutting out all the background and leaving us with only a
+    the metric of cutting off all the background and leaving us with only a
     very few signals.
 
     Parameters

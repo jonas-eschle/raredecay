@@ -490,9 +490,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     #return clf, clf_score if clf_score is not None else clf
 
 
-def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
-                     reweighter='gb', reweight_saveas=None, meta_cfg=None,
-                     weights_mc=None, weights_real=None):
+def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
+                   reweighter='gb', reweight_saveas=None, meta_cfg=None,
+                   weights_mc=None, weights_real=None):
     """Return a trained reweighter from a (mc/real) distribution comparison.
 
     | Reweighting a distribution is a "making them the same" by changing the \
@@ -573,7 +573,8 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
             meta_config.warning_occured()
 
     # train the reweighter
-    hep_ml.reweight.BinsReweighter()
+# TODO: remove next line, accidentialy inserted?
+    # hep_ml.reweight.BinsReweighter()
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
     reweighter.fit(original=reweight_data_mc.pandasDF(columns=columns),
                    target=reweight_data_real.pandasDF(columns=columns),
@@ -584,11 +585,11 @@ def reweight_mc_real(reweight_data_mc, reweight_data_real, columns=None,
 
 def reweight_weights(reweight_data, reweighter_trained, columns=None,
                      normalize=True, add_weights_to_data=True):
-    """Adds (or only returns) new weights to the data by applying a given
-    reweighter on the data.
+    """Add (or only return) new weights to the data by applying a given
+    reweighter on the reweight_data.
 
     Can be seen as a wrapper for the
-    :func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
+    :py:func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
     Additional functionality:
      * Takes a trained reweighter as argument, but can also unpickle one
        from a file.
@@ -627,12 +628,218 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
         reweight_data.set_weights(new_weights)
     return new_weights
 
+def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=True,
+                   columns=None, reweighter='gb', meta_cfg=None,
+                   add_weights_to_data=True, mcreweighted_as_real_score=False):
+    """Reweight data by "itself" for *scoring* and hyper-parameters via
+    Kfolding to avoid bias.
+
+    .. warning::
+       Do NOT use for the real reweighting process!
+
+
+    If you want to figure out the hyper-parameters for a reweighting process
+    or just want to find out how good the reweighter works, you may want to
+    apply this to the data itself. This means:
+
+    - train a reweighter on mc/real
+    - apply it to get new weights for mc
+    - compare the mc/real distribution
+
+    The problem arises with biasing your reweighter. As in classification
+    tasks, where you split your data into train/test sets for Kfolds, you
+    want to do the same here. Therefore:
+
+    - split the mc data into (n_folds-1)/n_folds (training)
+    - train the reweighter on the training mc/complete real (if
+      mcreweighted_as_real_score is True, the real data will be folded too
+      for unbiasing the score)
+    - reweight the leftout mc test-fold
+    - do this n_folds times
+    - getting unbiased weights
+
+    The parameters are more or less the same as for the
+    :py:func:`~raredecay.analysis.ml_analysis.reweight_train` and
+    :py:func:`~raredecay.analysis.ml_analysis.reweight_weights`
+
+    Parameters
+    ----------
+    reweight_data_mc : :class:`HEPDataStorage`
+        The Monte-Carlo data, which has to be "fitted" to the real data.
+    reweight_data_real : :class:`HEPDataStorage`
+        Same as *reweight_data_mc* but for the real data.
+    n_folds : int >= 1
+        The number of folds to split the data. Usually, the more folds the
+        "better" reweighting.
+
+        If n_folds = 1, the data will be reweighted directly and the benefit
+        of Kfolds and the unbiasing *disappears*
+    make_plot : boolean or str
+        If True, an example data plot as well as the final weights will be
+        plotted.
+
+        If 'all', all the data folds will be plotted.
+
+        If False, no plots at all will be made.
+
+    columns : list of strings
+        The columns/features/branches you want to use for the reweighting.
+    reweighter : {'gb', 'bins'}
+        Specify which reweighter to be used
+    reweight_saveas : string
+        To save a trained reweighter in addition to return it. The value
+        is the file(path +)name. The full name will be
+         PICKLE_PATH + reweight_saveas + .pickle
+        (.pickle is only added if not yet contained in "reweight_saveas")
+    meta_cfg : dict
+        Contains the parameters for the bins/gb-reweighter. See also
+        :func:`~hep_ml.reweight.BinsReweighter` and
+        :func:`~hep_ml.reweight.GBReweighter`.
+    add_weights_to_data : boolean
+        If True, the new weights will be added (in place) to the mc data and
+        returned. Otherwise, the weights will only be returned.
+    mcreweighted_as_real_score : boolean or str
+        If a string, it has to be an implemented classifier in *classify*.
+        If true, the default ('xgb' most probably) will be used.
+
+        If not False, calculate and print the score. This scoring is based on a
+        clf, which was trained on the not reweighted mc and real data and
+        tested on the reweighted mc, and then predicts how many it "thinks"
+        are real datapoints.
+
+        Intuitively, a classifiers learns to distinguish between mc and real
+        and then classifies mc reweighted data labeled as real; he says, how
+        "real" the reweighted data looks like. So a higher score is better.
+        Drawback of this method is, it is completely blind to over-fitting
+        of the reweighter. To get a relation, the classifier also predicts
+        the mc (which should be an under limit) as well as the real data
+        (which should be an upper limit).
+
+        Even dough this scoring sais not a lot about how well the reweighting
+        worked, we can say, that if the score is higher than the real one,
+        it has somehow over-fitted (if a classifier cannot classify, say,
+        more than 70% of the real data as real, it should not be able to
+        classify more than 70% of the reweighted mc as real. Reweighted mc
+        should not "look more real" than real data)
+
+    """
+    out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
+                   title="Reweighting Kfold", obj_separator="")
+    # create variables
+    assert n_folds >= 1 and isinstance(n_folds, int), "n_folds has to be >= 1, its currently" + str(n_folds)
+    assert isinstance(reweight_data_mc, data_storage.HEPDataStorage), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_mc))
+    assert isinstance(reweight_data_real, data_storage.HEPDataStorage), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_real))
+    if isinstance(mcreweighted_as_real_score, str):
+        score_clf = mcreweighted_as_real_score
+        mcreweighted_as_real_score = True
+    elif mcreweighted_as_real_score:
+        score_clf = 'xgb'
+
+    new_weights_all = []
+    new_weights_index = []
+
+    if mcreweighted_as_real_score:
+        scores = np.ones(n_folds)
+        score_min = np.ones(n_folds)
+        score_max = np.ones(n_folds)
+
+
+    # split data to folds and loop over them
+    reweight_data_mc.make_folds(n_folds=n_folds)
+    reweight_data_real.make_folds(n_folds=n_folds)
+    logger.info("Data created, starting folding")
+    for fold in range(n_folds):
+
+        # create train/test data
+        if n_folds > 1:
+            train_real, test_real = reweight_data_real.get_fold(fold)
+        else:
+            train_real = test_real = reweight_data_real.get_fold(fold)
+        if n_folds > 1:
+            train_mc, test_mc = reweight_data_mc.get_fold(fold)
+        else:
+            train_mc = test_mc = reweight_data_mc
+
+        if mcreweighted_as_real_score:
+            old_mc_weights = test_mc.get_weights()
+
+        # plot the first fold as example (the first one surely exists)
+        if ((fold == 0) and make_plot) or make_plot == 'all':
+            train_real.plot(figure="Reweighter trainer, example, fold " + str(fold))
+            train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold))
+
+        # train reweighter on training data
+        reweighter_trained = reweight_train(reweight_data_mc=train_mc,
+                                            reweight_data_real=train_real,
+                                            columns=columns, reweighter=reweighter,
+                                            meta_cfg=meta_cfg)
+        logger.info("reweighting fold " + str(fold) + "finished")
+
+        new_weights = reweight_weights(reweight_data=test_mc, columns=columns,
+                                       reweighter_trained=reweighter_trained,
+                                       add_weights_to_data=True)  # fold only, not full data
+        # plot one for example of the new weights
+        if (((fold == 0) and make_plot) or make_plot == 'all') and n_folds > 1:
+            plt.figure("new weights of fold " + str(fold))
+            plt.hist(new_weights,bins=40, log=True)
+
+        if mcreweighted_as_real_score:
+            # treat reweighted mc data as if it were real data target(1)
+            test_mc.set_targets(1)
+            # train clf on real and mc and see where it classifies the reweighted mc
+            clf, scores[fold] = classify(train_mc, train_real, validation=test_mc,
+                                         curve_name="mc reweighted as real",
+                                         plot_title="fold " + str(fold) + " reweighted validation",
+                                         weights_ratio=1, clf=score_clf)
+
+            # Get the max and min for "calibration" of the possible score for the reweighted data by
+            # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
+            test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
+            tmp_, score_min[fold] = classify(clf=clf, validation=test_mc,
+                                             curve_name="mc as real")
+            test_real.set_targets(1)
+            tmp_, score_max[fold] = classify(clf=clf, validation=test_real,
+                                             curve_name="real as real")
+
+
+        # collect all the new weights to get a really cross-validated reweighted dataset
+        new_weights_all.append(new_weights)
+        new_weights_index.append(test_mc.get_index())
+
+        logger.info("fold " + str(fold) + "finished")
+        # end of for-loop
+
+    #concatenate weights and index
+    if n_folds == 1:
+        new_weights_all = np.array(new_weights_all)
+        new_weights_index = np.array(new_weights_index)
+    else:
+        new_weights_all = np.concatenate(new_weights_all)
+        new_weights_index = np.concatenate(new_weights_index)
+    if add_weights_to_data:
+        reweight_data_mc.set_weights(new_weights_all, index=new_weights_index)
+
+    # create score
+    if mcreweighted_as_real_score:
+        out.add_output("", subtitle="Kfold reweight report", section="Precision scores of classification on reweighted mc")
+        score_list = [("Reweighted: ", scores), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
+        for name, score in score_list:
+            mean, std = round(np.mean(score), 4), round(np.std(score), 4)
+            out.add_output(["Classify the target, average score " + name + str(mean) + " +- " + str(std)])
+
+    return new_weights_all
+
+
+
+
 # TODO: continue cleaning up the code from here down
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
              conv_ori_weights=False, conv_tar_weights=False, weights_ratio=0,
              config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
-    """ Return the ROC AUC; useful to find out, how well two datasets can be
+    """.. caution:: This method is maybe outdated and should be used with caution!
+
+    Return the ROC AUC; useful to find out, how well two datasets can be
     distinguished.
 
     Learn to distinguish between monte-carl data (original) and real data
