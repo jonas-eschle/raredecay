@@ -721,6 +721,8 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
         more than 70% of the real data as real, it should not be able to
         classify more than 70% of the reweighted mc as real. Reweighted mc
         should not "look more real" than real data)
+    out : numpy array
+        Return the new weights
 
     """
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
@@ -833,8 +835,6 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
             out.add_output(["Classify the target, average score " + name + str(mean) + " +- " + str(std)])
 
     return new_weights_all
-
-
 
 
 # TODO: continue cleaning up the code from here down

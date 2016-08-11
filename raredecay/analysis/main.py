@@ -27,10 +27,6 @@ def main_run(run_mode, cfg_file=None):
 
     print "starting main, run: " + run_mode
 
-# TODO: remove lower part? no default should be used...
-#    if run_mode is None:
-#        run_mode = "reweight_comparison"
-#        print "Run mode was None, set to default " + run_mode
     # possible loop over method
     n_executions = 1
     for i in range(n_executions):

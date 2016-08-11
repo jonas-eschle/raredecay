@@ -26,7 +26,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
                   clf_pred='rdf', make_plots=True):
     """Train clf on mc reweighted/real, test on real. Minimize score.
 
-
+    Finding out, how similar two distributions are, can be
 
     Parameters
     ----------
@@ -139,11 +139,6 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         output['score_mc_pred'] = score_mc_pred
 
     return output
-
-
-
-
-# TODO: implement stuff!
 
 
 def punzi_fom(n_signal, n_background, n_sigma=5):
