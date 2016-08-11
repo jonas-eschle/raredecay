@@ -176,12 +176,12 @@ DEFAULT_LOGGER_CFG = dict(
 # Changing this default values will surely affect your results (over- or
 # underfitting for example), but is mostly not required at all.
 DEFAULT_CLF_XGB = dict(
-    n_estimators=500,  # default 75
-    eta=0.01,  # default 0.1, learning-rate
+    n_estimators=75,  # default 75
+    eta=0.1,  # default 0.1, learning-rate
     min_child_weight=8,  # #0 stage 2 to optimize
     max_depth=3,  # #6 stage 2 to optimize
     gamma=4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
-    subsample=0.5, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    subsample=0.8, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
     colsample=1
 )
 

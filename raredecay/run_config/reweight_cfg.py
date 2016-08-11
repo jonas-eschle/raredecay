@@ -245,7 +245,9 @@ data = dict(
 # B -> K1 configuration
     reweight_mc=B2K1Jpsi_mc_cut,
     reweight_real=B2KpiLL_real_cut_sweighted,
-    reweight_apply=Bu2K1ee_mc_std
+    reweight_apply=Bu2K1ee_mc_std,
+    reweight2_mc=None,
+    reweight2_real=None
 )
 
 #==============================================================================
@@ -288,6 +290,7 @@ K1_reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
                       #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
 reweight_branches = K1_reweight_branches  #['0', '1']  #Kstar_reweight_branches
+reweight2_branches = None
 
 # start configuration for gradient boosted reweighter
 
@@ -297,7 +300,7 @@ reweight_cfg = dict(
 )
 reweight_meta_cfg = dict(
     gb=dict(  # GB reweighter configuration
-        n_estimators=200,  # 25
+        n_estimators=20,  # 25
         max_depth=3,  # 6 or number of features
         learning_rate=0.1,  # 0.1
         min_samples_leaf=200,  # 200

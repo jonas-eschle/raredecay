@@ -473,7 +473,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
         if binary_test:
             out.save_fig(plt.figure(plot_title + ", ROC " + plot_name), save_fig_cfg)
-            report.roc(physical_notion=True).plot(title="ROC curve of" + clf_name + " on data:" +
+            report.roc(physics_notion=True).plot(title="ROC curve of" + clf_name + " on data:" +
                                                    data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
@@ -819,6 +819,11 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
     if add_weights_to_data:
         reweight_data_mc.set_weights(new_weights_all, index=new_weights_index)
 
+    if make_plot:
+        out.save_fig(figure="New weights of total mc")
+        plt.hist(new_weights_all, bins=30, log=True)
+        plt.title("New weights of reweighting with Kfold")
+
     # create score
     if mcreweighted_as_real_score:
         out.add_output("", subtitle="Kfold reweight report", section="Precision scores of classification on reweighted mc")
@@ -1037,7 +1042,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
         meta_report.prediction[meta_name] = meta_report.prediction.pop('clf')
         meta_report.estimators[meta_name] = meta_report.estimators.pop('clf')
         out.save_fig(plt.figure("ROC Voting meta-classifier" + data_name), save_fig_cfg)
-        meta_report.roc(physical_notion=False).plot(title="ROC curve of meta-classifier." +
+        meta_report.roc(physics_notion=False).plot(title="ROC curve of meta-classifier." +
                                data_name + "\nROC AUC = " + str(meta_auc))
         plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
 
@@ -1065,7 +1070,7 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
     # curve_name += "AUC = " + str(round(ROC_AUC, 3))
     for key, val in report.prediction.items():
         report.prediction[key + ", AUC = " + str(round(factory_auc.get(key), 4))] = report.prediction.pop(key)
-    report.roc(physical_notion=False).plot(title="ROC curve for comparison of " + data_name)
+    report.roc(physics_notion=False).plot(title="ROC curve for comparison of " + data_name)
     plt.plot([0, 1], [0, 1], 'k--')  # the fifty-fifty line
 
     # factory extended plots

@@ -193,8 +193,7 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     """
 
     import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools import data_tools, data_storage
-    # TODO: remove line below (not necessary anymore?)
+    from raredecay.tools import data_tools, data_storage, metrics
     from raredecay.globals_ import out
     import matplotlib.pyplot as plt
     import numpy as np
@@ -208,7 +207,7 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
     # initialize variables
     n_folds = cfg.reweight_cv_cfg['n_folds']
-    #n_checks = min([cfg.reweight_cv_cfg['n_checks'], n_folds])
+    n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
 #    score_gb = np.ones(n_checks)
 #    score_min = np.ones(n_checks)
 #    score_max = np.ones(n_checks)
@@ -216,12 +215,15 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     # initialize data
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_mc_reweighted = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))  # produces an error: copy.deepcopy(reweight_mc)
+    #reweight_mc_reweighted = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))  # produces an error: copy.deepcopy(reweight_mc)
 
     ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
                           meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
                           reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
-                          mcreweighted_as_real_score=True)
+                          mcreweighted_as_real_score=True, n_folds=n_folds)
+    scores = metrics.train_similar(mc_data=reweight_mc, real_data=reweight_real, test_max=True,
+                                   n_folds=n_folds, n_checks=n_checks, test_predictions=True)
+    out.add_output(['scores dict of train_similar', scores], title='Train similar report', to_end=True)
 
 #    reweight_real.make_folds(n_folds=n_folds)
 #    reweight_mc.make_folds(n_folds=n_folds)
