@@ -464,7 +464,7 @@ class HEPDataStorage(object):
         else:
             sample_weights = pd.Series(sample_weights, index=index, dtype='f8')
 
-        if len(self) == length or index is None:
+        if len(self) == length and index is None:
             self._weights = sample_weights
         else:
             if dev_tool.is_in_primitive(self._weights, (None, 1)):
