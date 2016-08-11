@@ -24,9 +24,50 @@ def rnd_dist():
 def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
                   test_max=True, old_mc_weights=1, test_predictions=False,
                   clf_pred='rdf', make_plots=True):
-    """Train clf on mc reweighted/real, test on real. Minimize score.
+    """Score for reweighting. Train clf on mc reweighted/real, test on real.
+    Minimize score.
 
-    Finding out, how similar two distributions are, can be
+    Enter two datasets and evaluate the score described below. Return a
+    dictionary containing the different scores. The test_predictions is
+    another scoring, which is built upon the train_similar method.
+    
+    Scoring method description
+    --------------------------
+    
+    **Idea**:
+    A clf is trained on the reweighted mc as well as on the real data of a
+    certain decay. Therefore, the classifier learns to distinguish between
+    Monte-Carlo data and real data. Then we let the classifier predict some
+    real data (an unbiased test set) and see, how many he is able to classify
+    as real events. The lower the score, the less differences he was able to
+    learn from the train data therefore the more similar the train data
+    therefore the better the reweighting.
+    
+    **Advandages**: It is quite difficult to cheat on this method. Most of all
+    it is robust to single high-weight events (which mcreweighted_as_real is
+    not) and, in general, seems to be the best scoring so far.
+    
+    **Disadvantages**: If you insert a gaussian shaped 1.0 as mc and a gaussian
+    shaped 1.1 as real, the score will be badly (around 0.33). So far, this was
+    only observed for "artificial" distributions (even dough, of course, we
+    do not know if it affects real distributions aswell partly)
+    
+    Output explanation
+    ------------------
+    The return is a dictionary containing several values. Of course, only the
+    values, which are set to be evaluated, are contained. The keys are:
+    
+    - '**score**' : The average of all train_similar scores (as we use KFolding, 
+      there will be n_folds scores). *The* score.
+    - '**score_std**' : The std of a single score, just for curiosity
+    - '**score_max**' : The (average of all) "maximum" score. Actually the
+      train_similar score but
+      with mc instead of *reweighted* mc. Should be higher then the
+      reweighted score.
+    - '**score_max_std**' : The std of a single score, just for curiosity
+    - '**score_pred**' : The score of the test_predictions method.
+    - '**score_mc_pred**' : The score of the test_predictions method but on the
+      predictions of the mc instead of the *reweighted* mc.
 
     Parameters
     ----------
@@ -43,19 +84,27 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         The name of a classifier to be used in
         :py:func:`~raredecay.analysis.ml_analysis.classify`.
     test_max : boolean
-        If true, test for the "maximum value" by training also on mc/real
+        If true, test for the "maximum value" by training also on mc/real 
+        (instead of *reweighted* mc/real)
         and test on real. The score for only mc should be higher than for
         reweighted mc/real. It *should* most probably but does not have to
         be!
     old_mc_weights : array-like or 1
         If *test_max* is True, the weights for mc before reweighting will be
-        taken to be *old_mc_weights*. The default is 1.
+        taken to be *old_mc_weights*, the weights the mc distribution had 
+        before the reweighting. The default is 1.
     test_predictions : boolean
         If true, try to distinguish the predictions. Advanced feature and not
         yet really discoverd how to interpret. Gives very high ROC somehow.
     clf_pred : str
-        The classifier to be used to distinguish the predictions.
-
+        The classifier to be used to distinguish the predictions. Required for
+        the *test_predictions*.
+    
+    Return
+    ------
+    out : dict
+        A dictionary conaining the different scores. Description see above.
+    
     """
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
@@ -109,16 +158,16 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
             real_mc_pred.extend(pred_mc['y_pred'])
 
 
-    output['score'] = scores.mean()
-    output['score_std'] = scores.std()
+    output['score'] = np.round(scores.mean(), 4)
+    output['score_std'] = np.round(scores.std(), 4)
 
     out.add_output(["Score train_similar (recall, lower means better): ",
-                    str(round(output['score'], 4)) + " +- " + str(round(output['score_std'], 4)),
-                    "Scores:", [round(i, 4) for i in scores]],
+                    str(round(output['score'], 4)) + " +- " + str(round(output['score_std'], 4))],
+                    # TODO: remove? not required actually: "Scores:", [round(i, 4) for i in scores]],
                     subtitle="Clf trained on real/mc reweight, tested on real")
     if test_max:
-        output['score_max'] = scores_max.mean()
-        output['score_max_std'] = scores_max.std()
+        output['score_max'] = np.round(scores_max.mean(), 4)
+        output['score_max_std'] = np.round(scores_max.std(), 4)
         out.add_output(["No reweighting score: ", round(output['score_max'], 4),])
 
     if test_predictions:
@@ -127,7 +176,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         tmp_, score_pred = ml_ana.classify(real_data, target_from_data=True, clf=clf_pred,
                                            plot_title="train on predictions reweighted/real, real as target",
                                            weights_ratio=1, validation=n_checks, make_plots=make_plots)
-        output['score_pred'] = score_pred
+        output['score_pred'] = round(score_pred, 4)
 
     if test_predictions and test_max:
         # test on the mc/real predictions
@@ -136,7 +185,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
                                               validation=n_checks,
                                               plot_title="mc not rew/real pred, real as target",
                                               weights_ratio=1, make_plots=make_plots)
-        output['score_mc_pred'] = score_mc_pred
+        output['score_mc_pred'] = np.round(score_mc_pred, 4)
 
     return output
 

@@ -75,23 +75,12 @@ Bu2K1ee_mc = dict(
     branches=all_branches
 )
 
-Bu2K1Jpsi_mc = dict(
-    filenames=DATA_PATH+'original_data/Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
-    treename='Bd2K1LL/DecayTree',
-    branches=all_branches
-)
 
 cut_Bu2K1Jpsi_mc = dict(
     filenames=DATA_PATH+'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
     treename='DecayTree',
     branches=all_branches
 
-)
-
-B2KpiLL_real = dict(
-    filenames=DATA_PATH+'original_data/B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
-    treename='Bd2K1LL/DecayTree',
-    branches=all_branches
 )
 
 cut_B2KpiLL_real = dict(
@@ -108,67 +97,13 @@ cut_sWeight_B2KpiLL_real = dict(
 )
 
 
-# B-> K* reweighting
-all_Kstar_branches = ['B0_PT',
-                      'B0_ETA',
-                      'B0_ENDVERTEX_CHI2',
-                      'nSPDHits',
-#                      'Kst_PT',
-#                      'JPs_PT',
-#                      'M1_PT',
-#                      'M2_PT',
-#                      'B0_IPCHI2_OWNPV',
-#                      'B0_FDCHI2_OWNPV',
-#                      'B0_DIRA_OWNPV'
-
-                    ]
-test_branches = [ 'B0_IPCHI2_OWNPV',
-                 'B0FDCHI2_OWNPV',
-                 'B0_DIRA_OWNPV'
-                    ]
-
-cut_Kstarmumu_mc = dict(
-    filenames=DATA_PATH+'../Kstar/Bd2KstJPs_MM.root',
-    treename='DecayTuple',
-    branches=all_Kstar_branches
-)
-
-cut_sWeight_Kstarmumu_real = dict(
-    filenames=DATA_PATH+'../Kstar/MM_LPT_sWeight.root',
-    treename='DecayTree',
-    branches=all_Kstar_branches
-)
-sWeights_Kstarmumu = dict(
-    filenames=DATA_PATH+'../Kstar/MM_LPT_sWeight.root',
-    treename='DecayTree',
-    branches=['Cut_nsig_KstJPsMM_sw']
-)
-
-cut_Kstaree_mc = dict(
-    filenames=DATA_PATH+'../Kstar/TODO',
-    treename='TODO',
-    branches=all_Kstar_branches
-)
-
-
 #------------------------------------------------------------------------------
 # data in the HEPDataStorage-format (dicts containing all the parameters)
 #------------------------------------------------------------------------------
 
-#B2KpiLL_real_cut = dict(
-#    data=cut_sWeight_B2KpiLL_real,
-#    target=1,
-#    data_name="B->KpiLL real data",
-#    data_name_addition="cut",
-#)
 
 # gradient boosted reweighting
-Bu2K1ee_mc_std = dict(
-    data=Bu2K1ee_mc,
-    sample_weights=None,
-    data_name="Bu->K1ee monte-carlo"
-)
-
+# good example with weights added from the rood file
 B2KpiLL_real_cut_sweighted = dict(
     data=cut_sWeight_B2KpiLL_real,
     sample_weights=root2array(**dict(cut_sWeight_B2KpiLL_real, branches=['signal_sw'])),
@@ -182,30 +117,9 @@ B2K1Jpsi_mc_cut = dict(
     data_name_addition="cut"
 )
 
-# B -> K* reweighting
 
-B2Kstarmumu_mc_cut = dict(
-    data=cut_Kstarmumu_mc,
-    sample_weights=None,
-    data_name="B->K* MM monte-carlo",
-    data_name_addition="cut"
-)
-
-B2Kstarmumu_real_cut_sweighted = dict(
-    data=cut_sWeight_Kstarmumu_real,
-    sample_weights=root2array(**sWeights_Kstarmumu),
-    data_name="B->K* MM real",
-    data_name_addition="cut & sweighted"
-)
-
-B2Kstaree_mc_std = dict(
-    data="None so far",
-    sample_weights=None,
-    data_name="B->K* EE MC",
-    data_name_addition="cut"
-)
-
-# Reweighting metric testing
+# Reweighting metric testing, interesting to test functions by using artificial
+# distributions
 import pandas as pd
 import numpy as np
 testing_size = 15000
@@ -234,22 +148,13 @@ real_testing = dict(
 # TODO: select which data to use
 # this dictionary will finally be used in the code
 data = dict(
-#
-#    reweight_mc=mc_testing,
-#    reweight_real=real_testing,
-#    reweight_apply=B2Kstaree_mc_std
-
-# B -> K* configuration
-#    reweight_mc=B2Kstarmumu_mc_cut,
-#    reweight_real=B2Kstarmumu_real_cut_sweighted,
-#    reweight_apply=B2Kstaree_mc_std
 
 
 # B -> K1 configuration
     reweight_mc=B2K1Jpsi_mc_cut,
     reweight_real=B2KpiLL_real_cut_sweighted,
-    reweight_apply=Bu2K1ee_mc_std,
-    reweight2_mc=None,
+    reweight_apply=None,  # 
+    reweight2_mc=None,  # not used, just as an example
     reweight2_real=None
 )
 
@@ -265,49 +170,47 @@ data = dict(
 #------------------------------------------------------------------------------
 # ONLY FOR CV-RUN BEGIN
 #------------------------------------------------------------------------------
-
+# this is the place to change the scripts behaviour
 reweight_cv_cfg = dict(
     n_folds=10,
     n_checks=10,
-    plot_all=False,  # If True, all data (Folds and weights) are plotted. If False, only one example is
-    #outdated: total_roc=True  # computes the ROC of all the reweighted samples. Only works if n_folds=n_checks
+    make_plot=True,  # True: makes plot, False: makes no plots, 'all': plots all folds, not only examples
+    total_roc=True  # computes the ROC of all the reweighted samples. Default is True.
 )
 
 #------------------------------------------------------------------------------
 # GENERAL REWEIGHTING PARAMETERS
 #------------------------------------------------------------------------------
 
-# branches to use for the reweighting
+# branches to use for the reweighting training
 
-Kstar_reweight_branches = ['B0_PT',
-                      'B0_ETA',
-                      'B0_ENDVERTEX_CHI2',
-                      'nSPDHits',
-                      #'',
-
-                    ]
-
-K1_reweight_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                     'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
+K1_reweight_branches = ['B_PT',
+                        'nTracks',
+                        'nSPDHits',
+                        'B_FDCHI2_OWNPV',
+                        'B_DIRA_OWNPV'
                       #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
                       #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
               ]
-reweight_branches = K1_reweight_branches  #['0', '1']  #Kstar_reweight_branches
-reweight2_branches = None
+reweight_branches = K1_reweight_branches  
+reweight2_branches = None  # just for demo
 
 # start configuration for gradient boosted reweighter
+# this are the parameters for the reweighting.
 
 reweight_cfg = dict(
-    reweighter='gb',  # can be a pickled reweighter or 'bins' resp 'gb'
-    reweight_saveas='gb_reweighter1'  # if you want to save your reweighter
+    reweighter='gb',  # can be a pickled reweighter or 'bins' resp 'gb'. You may change it to bins for testing
+    reweight_saveas='gb_reweighter1'  # if you want to save your reweighter, otherwise None
 )
+
+# This is the place to change the reweighter configuration
 reweight_meta_cfg = dict(
     gb=dict(  # GB reweighter configuration
         n_estimators=20,  # 25
         max_depth=3,  # 6 or number of features
         learning_rate=0.1,  # 0.1
         min_samples_leaf=200,  # 200
-        loss_regularization=7.0001,  #
+        loss_regularization=7.0,  #
         gb_args=dict(
             subsample=0.6, # 0.8
             #random_state=43,
@@ -331,6 +234,7 @@ reweight_meta_cfg = dict(
 # PLOT CONFIGURATIONS BEGIN
 #==============================================================================
 
+# hist cfg mostly not usable. Others should have effect, but not mandatory
 hist_cfg_std = dict(
     bins=40,
     normed=True,
@@ -356,6 +260,7 @@ save_ext_fig_cfg = dict(
 # LOGGER CONFIGURATION BEGIN
 #==============================================================================
 
+# the logger configuration. Feel free to change the things.
 logger_cfg = dict(
     logging_mode='both',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'
@@ -366,7 +271,7 @@ logger_cfg = dict(
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time
     # or instead make a new one each run
-    log_file_name='AAlastRun',
+    log_file_name='Logfile',
     # the beginning ofthe name of the logfile, like 'project1'
     log_file_dir=None  # will be set automatically
 )
@@ -379,7 +284,7 @@ logger_cfg = dict(
 
 
 #==============================================================================
-# SELFTEST BEGIN
+# SELFTEST BEGIN, OUTDATED! 
 #==============================================================================
 def _selftest_system():
     """Test the configuration regarding the system-relevant parameters"""

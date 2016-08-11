@@ -306,6 +306,22 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
              conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False,
              weights_ratio=0, get_predictions=False):
     """Training and testing a classifier or distinguish a dataset
+    
+    Classify is a multi-purpose function which does most of the things around
+    machine-learning. It can be used for:
+    
+    - Training a clf.
+        A quite simple task. You give some data, specify a clf and set
+        validation to False (not mandatory actually, but pay attention if 
+        validation is set to an integer)
+    - Predict data.
+        Use either a pre-trained (see above) classifier or specify one with a
+        string and give in some data to the validation and no to the
+        original_data or target_data. Set get_predictions to True and you're
+        done.
+    - Get a ROC curve of two datasets.
+        Specify the two input data (original_data and target_data) and use
+        cross-validation by setting validation to the number of folds
 
     Parameters
     ----------
@@ -352,9 +368,12 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         Return the trained classifier.
     .. note::
         If validation was choosen to be KFold, the returned classifier well be
-        of instance :py:class:`~rep.metaml.folding.FoldingClassifier()`!
+        instance of :py:class:`~rep.metaml.folding.FoldingClassifier()`!
     out : float (only if validation is not None)
-        Return the score (recall or roc auc) of the validation.
+        Return the score (recall or roc auc) of the validation. If only one
+        class (sort of labels, mostly if data for validation is provided) is
+        given, the recall will be computed. Otherwise the ROC-AUC (like for
+        cross-validation)
     out : dict  (only if *get_predictions* is True)
         Return a dict containing the predictions, probability and more.
 

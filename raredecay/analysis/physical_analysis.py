@@ -91,7 +91,93 @@ def test(cfg):
 
 
 def rafael1(cfg, logger, out):
-    out.add_output(["hello", "world"])
+
+
+    """Test reweighting with CV and get reports on the performance
+
+    To find the optimal parameters for the reweighting (most of all for the
+    gradient boosted reweighter) it is crucial to reweight and test in a
+    cross-validated way. There are several "metrics" to test the reweighting.
+
+    Parameters
+    ----------
+    cfg : python-file
+        The configuration file
+    logger : a python logger
+        The logger to be used. Should not be changed actually
+    out : instance of output class
+        The right instance which is placed in the meta-config
+    """
+
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.tools import data_storage, metrics
+
+    out.add_output("Starting the run", title="Reweighting Cross-Validated")
+    # initialize variables
+    n_folds = cfg.reweight_cv_cfg['n_folds']
+    n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
+    
+    # just some "administrative variables, irrelevant
+    plot_all = cfg.reweight_cv_cfg['make_plot']
+    make_plots = True if plot_all in (True, 'all') else False
+
+    # initialize data
+    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
+    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
+
+    # do the Kfold reweighting. This reweights the data with Kfolding and returns
+    # the weights. If add_weights_to_data is True, the weights will automatically be
+    # added to the reweight_data_mc (or here, reweight_mc). To get an estimate
+    # wheter it has over-fitted, you can get the mcreweighted_as_real_score.
+    # This trains a clf on mc/real and tests it on mc, mc reweighted, real
+    # but both labeled with the same target as the real data in training 
+    # The mc reweighted score should therefore lie in between the mc and the
+    # real score.
+    ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
+                          meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
+                          reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
+                          mcreweighted_as_real_score=True, n_folds=n_folds, make_plot=make_plots)
+                          
+    # To get a good estimation for the reweighting quality, the
+    # train_similar score can be used. Its the one with training on
+    # mc reweighted/real and test on real, quite robust.
+    # Test_max is nice to know too even dough it can also be set to False if
+    # testing the same distribution over and over again, as it is the same for
+    # the same distributions (actually, it's just doing the score without the
+    # weights).
+    # test_predictions is an additional score I tried but so far I is not
+    # reliable or understandable at all. The output, the scores dictionary,
+    # is better described in the docs of the train_similar
+    scores = metrics.train_similar(mc_data=reweight_mc, real_data=reweight_real, test_max=True,
+                                   n_folds=n_folds, n_checks=n_checks, test_predictions=False,
+                                   make_plots=make_plots)
+                                   
+    # We can of course also test the normal ROC curve. This is weak to overfitting
+    # but anyway (if not overfitting) a nice measure. You insert two datasets
+    # and do the normal cross-validation on it. It's quite a multi-purpose
+    # function depending on what validation is. If it is an integer, it means:
+    # do cross-validation with n(=validation) folds. 
+    ml_ana.classify(original_data=reweight_mc, target_data=reweight_real,
+                    validation=10, make_plots=make_plots,
+                    plot_title="",  # you can set an addition to the title. The
+                                    # name of the data will be contained anyway
+                    curve_name="mc reweighted/real")  # name of the curve; the legend
+                    
+    # an example to add output with the most importand parameters. The first
+    # one can also be a single object instead of a list. do_print means
+    # printing it also to the console instead of only saving it to the output
+    # file. To_end is sometimes quite useful, as it prints (and saves) the
+    # arguments at the end of the file. So the important results are possibly
+    # printed to the end
+    out.add_output(['score:', scores['score'], "+-", scores['score_std']], do_print=True,
+                   title='Train similar report', to_end=True)
+    if scores.get('score_max', False):
+        out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+                       do_print=True, to_end=True)
+                       
+    return scores['score']  # may you want to take the mean of several scorings, as it
+                            # may vary around +-0.02. Ask for implementation or make it
+                            # by implementing it into the if-elif statement at the beginning
 
 
 def hyper_optimization(cfg, logger):
@@ -171,7 +257,7 @@ def reweight(cfg, logger, rootfile_to_add=None):
 
 
 
-def reweightCV(cfg, logger, make_plot=True, minimal=False):
+def reweightCV(cfg, logger, out):
     """Test reweighting with CV and get reports on the performance
 
     To find the optimal parameters for the reweighting (most of all for the
@@ -184,24 +270,12 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
         The configuration file
     logger : a python logger
         The logger to be used. Should not be changed actually
-    make_plot : Boolean
-        If True, the function will plot a lot of information like ROC curves,
-        binned data and more. Otherwise, no plots will be made at all.
-    minimal : Boolean
-        If True, only a minimalistic check will be performed.
-
-        The crossover reweighting creates the weights as always.
-        The metric is the recall (or accuracy) of a classifier
-          - trained on train real/ full mc reweighted
-          - tested on leftout real test dataset
-
-        This is done with a 2/3-train 1/3 test data split (only the real one)
-        and performed 3 times.
+    out : instance of output class
+        The right instance which is placed in the meta-config
     """
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import data_tools, data_storage, metrics
-    from raredecay.globals_ import out
     import matplotlib.pyplot as plt
     import numpy as np
     import pandas as pd
@@ -215,6 +289,9 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     # initialize variables
     n_folds = cfg.reweight_cv_cfg['n_folds']
     n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
+    
+    plot_all = cfg.reweight_cv_cfg['make_plot']
+    make_plots = True if plot_all in (True, 'all') else False
 #    score_gb = np.ones(n_checks)
 #    score_min = np.ones(n_checks)
 #    score_max = np.ones(n_checks)
@@ -223,15 +300,53 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     #reweight_mc_reweighted = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))  # produces an error: copy.deepcopy(reweight_mc)
-    if make_plot:
-        make_plot = cfg.reweight_cv_cfg.get('plot_all', True)
+
+    # do the Kfold reweighting. This reweights the data with Kfolding and returns
+    # the weights. If add_weights_to_data is True, the weights will automatically be
+    # added to the reweight_data_mc (or here, reweight_mc). To get an estimate
+    # wheter it has over-fitted, you can get the mcreweighted_as_real_score.
+    # This trains a clf on mc/real and tests it on mc, mc reweighted, real
+    # but both labeled with the same target as the real data in training 
+    # The mc reweighted score should therefore lie in between the mc and the
+    # real score.
     ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
                           meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
                           reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
-                          mcreweighted_as_real_score=True, n_folds=n_folds)
+                          mcreweighted_as_real_score=True, n_folds=n_folds, make_plot=make_plots)
+                          
+    # To get a good estimation for the reweighting quality, the
+    # train_similar score can be used. Its the one with training on
+    # mc reweighted/real and test on real, quite robust.
+    # Test_max is nice to know too even dough it can also be set to False if
+    # testing the same distribution over and over again, as it is the same for
+    # the same distributions (actually, it's just doing the score without the
+    # weights).
+    # test_predictions is an additional score I tried but so far I is not
+    # reliable or understandable at all. The output, the scores dictionary,
+    # is better described in the docs of the train_similar
     scores = metrics.train_similar(mc_data=reweight_mc, real_data=reweight_real, test_max=True,
-                                   n_folds=n_folds, n_checks=n_checks, test_predictions=True)
-    out.add_output(['scores dict of train_similar', scores], title='Train similar report', to_end=True)
+                                   n_folds=n_folds, n_checks=n_checks, test_predictions=False,
+                                   make_plots=make_plots)
+                                   
+    # We can of course also test the normal ROC curve. This is weak to overfitting
+    # but anyway (if not overfitting) a nice measure. You insert two datasets
+    # and do the normal cross-validation on it. It's quite a multi-purpose
+    # function depending on what validation is. If it is an integer, it means:
+    # do cross-validation with n(=validation) folds. 
+    ml_ana.classify(original_data=reweight_mc, target_data=reweight_real,
+                    validation=10, make_plots=make_plots)
+                    
+    # an example to add output with the most importand parameters. The first
+    # one can also be a single object instead of a list. do_print means
+    # printing it also to the console instead of only saving it to the output
+    # file. To_end is sometimes quite useful, as it prints (and saves) the
+    # arguments at the end of the file. So the important results are possibly
+    # printed to the end
+    out.add_output(['score:', scores['score'], "+-", scores['score_std']], do_print=True,
+                   title='Train similar report', to_end=True)
+    if scores.get('score_max', False):
+        out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+                       do_print=True, to_end=True)
 
 #    reweight_real.make_folds(n_folds=n_folds)
 #    reweight_mc.make_folds(n_folds=n_folds)
