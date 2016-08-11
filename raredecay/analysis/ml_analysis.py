@@ -454,10 +454,10 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)#, sample_weight=w_test)
             class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
             out.add_output(class_rep, section="Classification report " + clf_name)
-            out.add_output(["accuracy with sklearn (NO WEIGHTS!): ", clf_name, ", ", curve_name, ": ", clf_score2],
+            out.add_output(["accuracy NO WEIGHTS! (just for curiosity): ", clf_name, ", ", curve_name, ": ", clf_score2],
                            obj_separator="", subtitle="Report of classify")
             out.add_output(["recall of ", clf_name, ", ", curve_name, ": ", clf_score],
-                           obj_separator="", subtitle="Report of classify")
+                           obj_separator="")
             binary_test = False
             plot_name = clf_name + ", recall = " + str(clf_score)
         else:

@@ -19,7 +19,8 @@ DEFAULT_CFG_FILE = dict(
     simple_plot=__CFG_PATH + 'simple_plot1_cfg',
     test=__CFG_PATH + 'reweight1_comparison_cfg',
     reweight_comparison=__CFG_PATH + 'reweight1_comparison_cfg',
-    hyper_optimization=__CFG_PATH + 'classifier_cfg'
+    hyper_optimization=__CFG_PATH + 'classifier_cfg',
+    rafael1=__CFG_PATH + 'rafael_cfg'
 )
 
 
@@ -74,6 +75,8 @@ def run(run_mode, cfg_file=None):
         reweight(cfg, logger)
     elif run_mode == "hyper_optimization":
         hyper_optimization(cfg, logger)
+    elif run_mode == 'rafael1':
+        rafael1(cfg=cfg, logger=logger, out=out)
     else:
         raise ValueError("Runmode " + str(run_mode) + " not a valid choice")
 
@@ -85,6 +88,10 @@ def run(run_mode, cfg_file=None):
 def test(cfg):
     """just a test-function"""
     print "empty test function"
+
+
+def rafael1(cfg, logger, out):
+    out.add_output(["hello", "world"])
 
 
 def hyper_optimization(cfg, logger):
@@ -216,7 +223,8 @@ def reweightCV(cfg, logger, make_plot=True, minimal=False):
     reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
     reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
     #reweight_mc_reweighted = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))  # produces an error: copy.deepcopy(reweight_mc)
-
+    if make_plot:
+        make_plot = cfg.reweight_cv_cfg.get('plot_all', True)
     ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
                           meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
                           reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),

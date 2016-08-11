@@ -188,7 +188,7 @@ class OutputHandler(object):
         self._figures = {}
 
     def add_output(self, data_out, to_end=False, title=None, subtitle=None,
-                   section=None, obj_separator="\n", data_separator="\n\n",
+                   section=None, obj_separator=" ", data_separator="\n\n",
                    do_print=True, force_newline=True):
         """A method to collect the output and format it nicely.
 
