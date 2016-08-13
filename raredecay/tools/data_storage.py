@@ -934,8 +934,11 @@ class HEPDataStorage(object):
             data = pd.concat((data, data_2), ignore_index=True, copy=False)
 
             if targets_from_data:
+                if weights_as_events or weights_as_events_2:
+                    warnings.warn("targets_from_data for weights_to_events not working yet! most probably...")
                 targets_1 = self.get_targets()
-                targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
+                targets_2 = second_storage.get_targets()
+                targets = np.concatenate(targets_1, targets_2)
             else:
                 targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
 

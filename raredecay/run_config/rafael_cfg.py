@@ -61,6 +61,9 @@ OUTPUT_CFG = dict(
 #------------------------------------------------------------------------------
 
 # probably TODO, adjust for your data
+# you can specify any branches you like here. To use only several ones for the
+# reweighting/clf training, it is best to specify it in the method you call, it
+# should mostly be possible to provide it as an argument.
 all_branches = ['B_PT', 'nTracks', 'nSPDHits'
               , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
               ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
