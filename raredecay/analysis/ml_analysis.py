@@ -147,6 +147,11 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
             meta_config.warning_occured()
             logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
                            "Features for feature-optimization will be taken from data.")
+            # count maximal combinations of parameters
+            max_checks = 1
+            for n_params in grid_param.iteritems:
+                max_checks *= len(n_params)
+            n_checks = min(n_checks, max_checks)
 
     # We do not need to create more data than we well test on
     else:
@@ -161,6 +166,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     features = data_tools.to_list(features)
     if optimize_features:
         grid_param = features
+
+    #TODO: insert time estimation
+
+
 
 
     assert grid_param != {}, "No values for optimization found"
@@ -306,13 +315,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
              conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False,
              weights_ratio=0, get_predictions=False):
     """Training and testing a classifier or distinguish a dataset
-    
+
     Classify is a multi-purpose function which does most of the things around
     machine-learning. It can be used for:
-    
+
     - Training a clf.
         A quite simple task. You give some data, specify a clf and set
-        validation to False (not mandatory actually, but pay attention if 
+        validation to False (not mandatory actually, but pay attention if
         validation is set to an integer)
     - Predict data.
         Use either a pre-trained (see above) classifier or specify one with a

@@ -213,7 +213,7 @@ class OutputHandlerExt(AbstractOutputHandler):
 
     def save_fig(self, figure, plot=True, **kwargs):
         """Dummy save method, plots only"""
-        if plot and isinstance(figure, (int, str)):
+        if plot:
             figure = plt.figure(figure)
 
     def initialize(self, output_path=None, logger_cfg=None, **kwargs):
@@ -263,6 +263,9 @@ class OutputHandlerInt(AbstractOutputHandler):
     """A class that can handle different kind of outputs and save them to file.
 
     """
+
+
+
     IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
     _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.' '/']
     _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
@@ -322,7 +325,7 @@ class OutputHandlerInt(AbstractOutputHandler):
             Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`
         """
         self._pickle_folder = self._pickle_folder or to_pickle
-        if isinstance(figure, (int, str)):
+        if isinstance(figure, str):
             figure = plt.figure(figure)
 
         file_format = ['png', 'svg'] if file_format is None else file_format

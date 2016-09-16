@@ -36,6 +36,8 @@ def run(run_mode, cfg_file=None):
     cfg = importlib.import_module(raredecay.meta_config.run_config)
 
     # initialize
+    from raredecay.globals_ import set_output_handler
+    set_output_handler(internal=True)
     from raredecay.globals_ import out
     out.initialize(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
     out.add_output(["config file used", str(raredecay.meta_config.run_config)],
@@ -116,7 +118,7 @@ def rafael1(cfg, logger, out):
     # initialize variables
     n_folds = cfg.reweight_cv_cfg['n_folds']
     n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
-    
+
     # just some "administrative variables, irrelevant
     plot_all = cfg.reweight_cv_cfg['make_plot']
     make_plots = True if plot_all in (True, 'all') else False
@@ -130,14 +132,14 @@ def rafael1(cfg, logger, out):
     # added to the reweight_data_mc (or here, reweight_mc). To get an estimate
     # wheter it has over-fitted, you can get the mcreweighted_as_real_score.
     # This trains a clf on mc/real and tests it on mc, mc reweighted, real
-    # but both labeled with the same target as the real data in training 
+    # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
     ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
                           meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
                           reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
                           mcreweighted_as_real_score=True, n_folds=n_folds, make_plot=make_plots)
-                          
+
     # To get a good estimation for the reweighting quality, the
     # train_similar score can be used. Its the one with training on
     # mc reweighted/real and test on real, quite robust.
@@ -151,18 +153,18 @@ def rafael1(cfg, logger, out):
     scores = metrics.train_similar(mc_data=reweight_mc, real_data=reweight_real, test_max=True,
                                    n_folds=n_folds, n_checks=n_checks, test_predictions=False,
                                    make_plots=make_plots)
-                                   
+
     # We can of course also test the normal ROC curve. This is weak to overfitting
     # but anyway (if not overfitting) a nice measure. You insert two datasets
     # and do the normal cross-validation on it. It's quite a multi-purpose
     # function depending on what validation is. If it is an integer, it means:
-    # do cross-validation with n(=validation) folds. 
+    # do cross-validation with n(=validation) folds.
     ml_ana.classify(original_data=reweight_mc, target_data=reweight_real,
                     validation=10, make_plots=make_plots,
                     plot_title="",  # you can set an addition to the title. The
                                     # name of the data will be contained anyway
                     curve_name="mc reweighted/real")  # name of the curve; the legend
-                    
+
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
     # printing it also to the console instead of only saving it to the output
@@ -174,10 +176,15 @@ def rafael1(cfg, logger, out):
     if scores.get('score_max', False):
         out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
                        do_print=True, to_end=True)
-                       
+
     return scores['score']  # may you want to take the mean of several scorings, as it
                             # may vary around +-0.02. Ask for implementation or make it
                             # by implementing it into the if-elif statement at the beginning
+
+
+def clf_mayou(cfg, logger):
+  """Test a setup of clf involving bagging and stacking"""
+  pass
 
 
 def hyper_optimization(cfg, logger):
@@ -289,7 +296,7 @@ def reweightCV(cfg, logger, out):
     # initialize variables
     n_folds = cfg.reweight_cv_cfg['n_folds']
     n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
-    
+
     plot_all = cfg.reweight_cv_cfg['make_plot']
     make_plots = True if plot_all in (True, 'all') else False
 #    score_gb = np.ones(n_checks)
@@ -306,14 +313,14 @@ def reweightCV(cfg, logger, out):
     # added to the reweight_data_mc (or here, reweight_mc). To get an estimate
     # wheter it has over-fitted, you can get the mcreweighted_as_real_score.
     # This trains a clf on mc/real and tests it on mc, mc reweighted, real
-    # but both labeled with the same target as the real data in training 
+    # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
     ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
                           meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
                           reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
                           mcreweighted_as_real_score=True, n_folds=n_folds, make_plot=make_plots)
-                          
+
     # To get a good estimation for the reweighting quality, the
     # train_similar score can be used. Its the one with training on
     # mc reweighted/real and test on real, quite robust.
@@ -327,15 +334,15 @@ def reweightCV(cfg, logger, out):
     scores = metrics.train_similar(mc_data=reweight_mc, real_data=reweight_real, test_max=True,
                                    n_folds=n_folds, n_checks=n_checks, test_predictions=False,
                                    make_plots=make_plots)
-                                   
+
     # We can of course also test the normal ROC curve. This is weak to overfitting
     # but anyway (if not overfitting) a nice measure. You insert two datasets
     # and do the normal cross-validation on it. It's quite a multi-purpose
     # function depending on what validation is. If it is an integer, it means:
-    # do cross-validation with n(=validation) folds. 
+    # do cross-validation with n(=validation) folds.
     ml_ana.classify(original_data=reweight_mc, target_data=reweight_real,
                     validation=10, make_plots=make_plots)
-                    
+
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
     # printing it also to the console instead of only saving it to the output

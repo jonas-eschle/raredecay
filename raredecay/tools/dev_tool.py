@@ -81,6 +81,13 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     if log_file_dir is None:
         import raredecay.globals_
         log_file_dir = raredecay.globals_.out.get_logger_path()
+        if not isinstance(log_file_dir, str):
+            # set logging only to console; if 'file' was selected, no console,
+            # set logging to console with level 'critical'
+            if logging_mode == 'file':
+                log_level_console='critical'
+            logging_mode = 'console'
+
     logger = logging.getLogger(module_name)
     logger.setLevel(logging.DEBUG)
     # may be changed due to performance issues, does not have to log everything

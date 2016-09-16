@@ -229,9 +229,9 @@ hyper_cfg = dict(
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression', 'random}
                              # or the feature space {'backwards'}
     optimize_features=False,
-    n_evaluations=80,  # how many points in hyperspace to look at
-    n_folds=10,  # split the data in n_folds
-    n_fold_checks=8  # how many folds to create and check on. n_fold_checks <= n_folds
+    n_evaluations=16,  # how many points in hyperspace to look at
+    n_folds=3,  # split the data in n_folds
+    n_fold_checks=3  # how many folds to create and check on. n_fold_checks <= n_folds
 )
 
 #------------------------------------------------------------------------------
@@ -241,7 +241,7 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=25,  #75,  # stage 1 to optimize
+    n_estimators=range(2,25),  #75,  # stage 1 to optimize
     min_child_weight=8,  # #0 stage 2 to optimize
     max_depth=3,  # #6 stage 2 to optimize
     gamma=4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative

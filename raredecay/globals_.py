@@ -59,7 +59,15 @@ from raredecay import meta_config
 # Output handler. Contains methods "initialize" and "finalize"
 #==============================================================================
 
-out = output.OutputHandler()
+out = None
+
+
+def set_output_handler(internal=True):
+  global out
+  if internal:
+    out = output.OutputHandlerInt()
+  else:
+    out = output.OutputHandlerExt()
 
 #==============================================================================
 # Random integer generator for pseudo random generator (or other things)
