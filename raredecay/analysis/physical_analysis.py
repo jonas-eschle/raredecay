@@ -197,9 +197,17 @@ def hyper_optimization(cfg, logger):
 
     clf = cfg.hyper_cfg['optimize_clf']
     config_clf = getattr(cfg, 'cfg_' + clf)
+
+    n_eval = cfg.hyper_cfg['n_evaluations']
+    n_checks = cfg.hyper_cfg['n_fold_checks']
+    n_folds = cfg.hyper_cfg['n_folds']
+    generator_type = cfg.hyper_cfg.get('generator')
+
     ml_ana.optimize_hyper_parameters(original_data, target_data, features=cfg.opt_features,
                                      clf=clf, config_clf=config_clf,
-                                     optimize_features=cfg.hyper_cfg.get('optimize_features', False))
+                                     optimize_features=cfg.hyper_cfg.get('optimize_features', False),
+                                     n_eval=n_eval, n_checks=n_checks, n_folds=n_folds,
+                                     generator_type=generator_type)
 
     original_data.plot(figure="data comparison", title="data comparison", columns=cfg.opt_features)
     target_data.plot(figure="data comparison", columns=cfg.opt_features)

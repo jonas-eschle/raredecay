@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import timeit
 from collections import Counter, OrderedDict
 
 import hep_ml.reweight
@@ -94,8 +95,9 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
     return data_out
 
 
-def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
+def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eval,
                               features=None, optimize_features=False,
+                              n_checks=10, n_folds=10, generator_type=None,
                               take_target_from_data=False, train_best=False):
     """Optimize the hyperparameters of a classifier or perform feature selection
 
@@ -109,12 +111,26 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         The name of the classifier
     config_clf : dict
         The configuration of the classifier
+    n_eval : int > 1 or str "hh...hh:mm"
+        How many evaluations should be done; how many points in the
+        hyperparameter-space should be tested. This can either be an integer,
+        which then represents the number of evaluations done or a string in the
+        format of "hours:minutes" (e.g. "3:25", "1569:01" (quite long...),
+        "0:12"), which represents the approximat time it should take for the
+        hyperparameter-search (**not** the exact upper limit)
     features : list(str, str, str,...)
         List of strings containing the features/columns to be used for the
         hyper-optimization or feature selection.
     optimize_features : Boolean
         If True, feature selection will be done instead of hyperparameter-
         optimization
+    n_checks : int >= 1
+        Number of checks on *each* KFolded dataset will be done. For example,
+        you split your data into 10 folds, but may only want to train/test on
+        3 different ones.
+    n_folds : int > 1
+        How many folds you want to split your data in when doing train/test
+        sets to measure the performance of the classifier.
     take_target_from_data : Boolean
         If True, the target-labeling (the y) will be taken from the data
         directly and not created. Otherwise, 0 will be assumed for the
@@ -127,16 +143,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     # initialize variables and setting defaults
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
-    n_eval = cfg.hyper_cfg['n_evaluations']
-    n_checks = cfg.hyper_cfg['n_fold_checks']
-    n_folds = cfg.hyper_cfg['n_folds']
-    generator_type = cfg.hyper_cfg.get('generator', meta_config.DEFAULT_HYPER_GENERATOR)
-
-    # parallelize on the lowest level if possible (uses less RAM)
-    if clf in ('xgb', 'rdf', 'erf'):
-        parallel_profile = None
-    else:
-        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
+    config_clf_cp = copy.deepcopy(config_clf)
 
     # Create parameter for clf and hyper-search
     if not dev_tool.is_in_primitive(config_clf.get('features', None)):
@@ -147,13 +154,8 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
             meta_config.warning_occured()
             logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
                            "Features for feature-optimization will be taken from data.")
-            # count maximal combinations of parameters
-            max_checks = 1
-            for n_params in grid_param.iteritems:
-                max_checks *= len(n_params)
-            n_checks = min(n_checks, max_checks)
 
-    # We do not need to create more data than we well test on
+
     else:
         grid_param = {}
         list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
@@ -163,6 +165,57 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
                     val = data_tools.to_list(val)
                     grid_param[key] = config_clf.pop(key)
 
+
+
+        # count maximal combinations of parameters
+        max_eval = 1
+        for n_params in grid_param.itervalues():
+            max_eval *= len(n_params)
+
+        # get a time estimation and extrapolate to get n_eval
+        if isinstance(n_eval, str) and meta_config.n_cpu_max * 2 < max_eval:
+            n_eval = n_eval.split(":")
+            assert len(n_eval) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
+            available_time = 3600 * int(n_eval[0]) + 60 * int(n_eval[1])
+
+            start_timer_test = timeit.default_timer()
+            elapsed_time = 1
+            min_elapsed_time = 15 + 0.005 * available_time  # to get an approximate extrapolation
+            n_eval_tmp = meta_config.n_cpu_max
+            n_checks_tmp = 1  #time will be multiplied by actual n_checks
+            #call hyper_optimization with parameters for "one" run and measure time
+            out.add_output(data_out="", subtitle="Test run for time estimation only!")
+            # do-while loop
+            while True:
+                start_timer = timeit.default_timer()
+                config_clf_cp1 = copy.deepcopy(config_clf_cp)
+                optimize_hyper_parameters(original_data, target_data, clf=clf, config_clf=config_clf_cp1,
+                                          n_eval=n_eval_tmp, n_folds=n_folds, n_checks=n_checks_tmp,
+                                          features=features, generator_type=generator_type,
+                                          optimize_features=False, train_best=False,
+                                          take_target_from_data=take_target_from_data)
+                elapsed_time = timeit.default_timer() - start_timer
+                if elapsed_time > min_elapsed_time:
+                    break
+                elif n_checks_tmp < n_checks:  # for small datasets, increase n_checks for testing
+                    n_checks_tmp = n_checks
+                else:
+                    n_eval_tmp *= np.ceil(min_elapsed_time / elapsed_time)  # if time to small, increase n_rounds
+
+            elapsed_time *= np.ceil(float(n_checks) / n_checks_tmp)  # time for "one round"
+            test_time = timeit.default_timer() - start_timer_test
+            n_eval = (int((available_time * 0.98 - test_time) / elapsed_time)) * n_eval_tmp  # we did just one
+            if n_eval < 1:
+                n_eval = meta_config.n_cpu_max
+            out.add_output(["Time for one round:", elapsed_time, "Number of evaluations:", n_eval])
+
+        elif isinstance(n_eval, str):
+            n_eval = max_eval
+
+        n_eval = min(n_eval, max_eval)
+
+
+    # We do not need to create more data than we well test on
     features = data_tools.to_list(features)
     if optimize_features:
         grid_param = features
@@ -174,6 +227,11 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
 
     assert grid_param != {}, "No values for optimization found"
 
+    # parallelize on the lowest level if possible (uses less RAM)
+    if clf in ('xgb', 'rdf', 'erf'):
+        parallel_profile = None
+    else:
+        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
 
 
     # initialize data

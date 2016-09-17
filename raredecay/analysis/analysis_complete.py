@@ -11,4 +11,8 @@ import raredecay.run_config.config as cfg
 from raredecay.globals_ import set_output_handler
 set_output_handler(internal=False)
 from raredecay.globals_ import out
-print out
+out.initialize()
+out.add_output("test1")
+out.add_output("test2_silent")
+print ["1111111111111111"] * 9999999
+out.finalize()
