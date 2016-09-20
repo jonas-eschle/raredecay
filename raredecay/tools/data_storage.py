@@ -332,14 +332,6 @@ class HEPDataStorage(object):
 
 # TODO: implement pickleable data?
 
-    def get_rootdict(self, return_index=False):
-        """Return the root-dictionary if available, else None"""
-        warnings.warn("will be removed. Use obj.data instead", FutureWarning)
-        if return_index:
-            return self._root_dict, self._index
-        else:
-            return self._root_dict
-
     @property
     def labels(self):
         return self._label_dic.get(self.columns)
@@ -392,7 +384,6 @@ class HEPDataStorage(object):
         # TODO: maybe remove:
         #weights_out = data_tools.to_ndarray(weights_out)
         return weights_out
-
 
     def _get_weights(self, index=None,  normalize=True, weights_as_events=False, min_weight=None):
         # initialize values
@@ -447,7 +438,6 @@ class HEPDataStorage(object):
 
         self._set_weights(sample_weights=sample_weights, index=index)
 
-
     def _set_weights(self, sample_weights, index=None):
         """Set the weights"""
         index = self._index if index is None else index
@@ -470,8 +460,6 @@ class HEPDataStorage(object):
             if dev_tool.is_in_primitive(self._weights, (None, 1)):
                 self._weights = pd.Series(np.ones(len(self)), index=self._index)
             self._weights.update(sample_weights)
-
-
 
     def _scale_weights(self, index=None, weights_as_events=False, cast_int=True, min_weight=None):
         """Scale the weights to have minimum *weights_as_events* or min_weight"""
@@ -714,7 +702,6 @@ class HEPDataStorage(object):
         assert isinstance(data_labels, dict), "Not a dictionary"
         self._set_data_labels(data_labels=data_labels, add_label=add_label)
 
-
     def _set_data_labels(self, data_labels, add_label=True):
         """Update the data labels"""
 
@@ -773,7 +760,6 @@ class HEPDataStorage(object):
             out_targets = pd.Series(out_targets)
 
         return out_targets
-
 
     def set_targets(self, targets, index=None):
         """Set the targets of the data. Either a list-like object or
@@ -1165,7 +1151,7 @@ class HEPDataStorage(object):
                 assert safety < meta_config.MAX_FIGURES, "stuck in an endless while loop"
                 if figure not in self.__figure_dic.keys():
                     x_limits_col = {}
-                    self.__figure_dic.update({figure: x_limits_col})
+                    self.__figure_dic.update({figure: x_limits_col, 'title': ""})
                     break
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}

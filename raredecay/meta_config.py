@@ -208,7 +208,7 @@ DEFAULT_CLF_ADA = dict(
     learning_rate=0.2
 )
 
-DEFAULT_CLF_NN= dict(
+DEFAULT_CLF_NN = dict(
     layers=[300, 100],
     hidden_activation='logistic',
     output_activation='linear',
@@ -228,6 +228,26 @@ DEFAULT_CLF_KNN = dict(
     n_neigh = 5
 )
 
+# default clf config collection
+DEFAULT_CLF_CONFIG = dict(
+    xgb=DEFAULT_CLF_XGB,
+    tmva=DEFAULT_CLF_TMVA,
+    gb=DEFAULT_CLF_GB,
+    ada=DEFAULT_CLF_ADA,
+    nn=DEFAULT_CLF_NN,
+    knn=DEFAULT_CLF_KNN,
+    nn=DEFAULT_CLF_NN
+)
+
+# default clf names collection
+DEFAULT_CLF_NAME = dict(
+    xgb='XGBoost clf',
+    tmva='TMVA clf',
+    gb='Gradient Boosted Trees clf',
+    ada='AdaBoost over Trees clf',
+    nn='Theanets Neural Network clf',
+    knn='K-Nearest Neighbour clf'
+)
 #------------------------------------------------------------------------------
 #  Hyper parameter optimization
 #------------------------------------------------------------------------------

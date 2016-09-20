@@ -11,8 +11,21 @@ import raredecay.run_config.config as cfg
 from raredecay.globals_ import set_output_handler
 set_output_handler(internal=False)
 from raredecay.globals_ import out
-out.initialize()
-out.add_output("test1")
-out.add_output("test2_silent")
-print ["1111111111111111"] * 9999999
-out.finalize()
+
+from raredecay.tools import dev_tool
+logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
+out.make_me_a_logger()  # creates a logger inside of "out"
+
+import raredecay.analysis.ml_analysis as ml_ana
+
+
+def output_handler(func):
+    """Decorator for output handling"""
+    out.initialize()
+
+    out.finalize()
+
+def reweightingKFold():
+    out.initialize()
+
+    out.finalize()

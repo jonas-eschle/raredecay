@@ -38,6 +38,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from rep.estimators.interface import Classifier
+from sklearn.base import BaseEstimator
 
 # scoring and validation
 from rep.metaml.folding import FoldingClassifier
@@ -56,9 +57,8 @@ from raredecay.globals_ import out
 # import configuration
 import importlib
 from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
-logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
-
+#cfg = importlib.import_module(meta_config.run_config)
+logger = dev_tool.make_logger(__name__, meta_config.DEFAULT_LOGGER_CFG)  #**cfg.logger_cfg)
 
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
@@ -93,6 +93,114 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
         original_data.set_weights(temp_tar_weights)
 
     return data_out
+
+
+def make_clf(clf, n_cpu=None):
+    """Return a classifier-dict. Takes a str, config-dict or clf-dict or clf
+
+    Parameters
+    ----------
+    clf : dict or str or sklearn/REP-classifier
+        There are several ways to pass the classifier to the function.
+
+        - Pure classifier: You can pass a simple classifier to the method and
+
+
+    Returns
+    -------
+    out : dict
+        A dictionary containing the name ('name') of the classifier as well
+        as the classifier itself ('clf'). Additionally, there are more values
+        that can be contained:
+
+        - **parallel_profile**: the parallel-profile (for different REP-functions)
+          which is set according to the n_cpus entered as well as the n_cpus
+          used. If n cpus should be used, the classifier takes, the profile
+          will be None. If the classifier is using only 1 cpu, the profile will
+          be 'threads-n' with n = n_cpus.
+        - **n_cpus**: The number of cpus used in the classifier.
+    """
+    #TODO: write function below
+    output = {}
+    serial_clf = False
+    # test if input is classifier, create dict
+    if isinstance(clf, BaseEstimator):
+        clf = {'clf': clf}
+
+    # if clf is a string only, create dict with only the type specified
+    if isinstance(clf, str):
+        clf = {'clf_type': clf}
+
+    assert isinstance(clf, dict), "Wrong data format of classifier..."
+
+    if isinstance(clf.get('n_cpu'), int) and n_cpu is None:
+        n_cpu = clf['n_cpu']
+    n_cpu = 1 if n_cpu is None else n_cpu
+    if n_cpu == -1:
+        n_cpu = globals_.free_cpus()
+
+    # if input is dict containing a clf, make sure it's a Sklearn one
+    if isinstance(clf, dict) and len(clf) == 1 and isinstance(clf.values()[0], BaseEstimator):
+        key, value = clf.popitem()
+        clf['name'] = key
+        clf['clf'] = value
+    if isinstance(clf, dict) and isinstance(clf.get('clf'), BaseEstimator):
+        classifier = clf['clf']
+        if not isinstance(classifier, Classifier):
+            classifier = SklearnClassifier(clf=classifier)
+        output['clf'] = classifier
+        output['name'] = clf.get('name', clf.get('type', "Classifier"))
+
+    else:
+        default_clf = dict(
+            clf_type=clf['clf_type'],
+            name=meta_config.DEFAULT_CLF_NAME[clf],
+            config=meta_config.DEFAULT_CLF_CONFIG[clf],
+
+        )
+
+        clf = dict(default_clf, **clf)
+
+        if clf['clf_type'] == 'xgb':
+            # update config dict with parallel-variables and random state
+            clf['config'].update(dict(nthreads=n_cpu, random_state=globals_.randint+4))  # overwrite entries
+            clf_tmp = XGBoostClassifier(**clf.pop('config'))
+        if clf['clf_type'] == 'tmva':
+            serial_clf = True
+            clf = TMVAClassifier(**clf.pop('config'))
+        if clf['clf_type'] == 'gb':
+            serial_clf = True
+            clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'rdf':
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
+            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'ada':
+            serial_clf = True
+            clf['config'].update(dict(random_state=globals_.randint+43))
+            clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
+                                    random_state=globals_.randint + 29), **clf.pop('config')))
+        if clf['clf_type'] == 'knn':
+            clf['config'].update(dict(random_state=globals_.randint+919, n_jobs=n_cpu))
+            clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'rdf':
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
+            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'nn':
+            clf['config'].update(dict(random_state=globals_.randint+43))
+            clf = TheanetsClassifier(**clf.pop('config'))
+
+        # assign classifier to output dict
+        output['clf'] = clf_tmp
+        output['name'] = clf['name']
+        # add parallel information
+        if serial_clf and n_cpu > 1:
+            output['n_cpu'] = 1
+            output['parallel_profile'] = 'Threads-' + str(n_cpu)
+        else:
+            output['n_cpu'] = n_cpu
+            output['parallel_profile'] = None
+
+        return output
 
 
 def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eval,
@@ -141,9 +249,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
     """
 
     # initialize variables and setting defaults
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  # leave out?, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  # leave out?, **cfg.save_ext_fig_cfg)
     config_clf_cp = copy.deepcopy(config_clf)
+    config_clf = copy.deepcopy(config_clf)  # otherwise the original dict will be modified
 
     # Create parameter for clf and hyper-search
     if not dev_tool.is_in_primitive(config_clf.get('features', None)):
@@ -198,7 +307,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
                 if elapsed_time > min_elapsed_time:
                     break
                 elif n_checks_tmp < n_checks:  # for small datasets, increase n_checks for testing
-                    n_checks_tmp = n_checks
+                    n_checks_tmp = min(n_checks, np.ceil(min_elapsed_time / elapsed_time))
                 else:
                     n_eval_tmp *= np.ceil(min_elapsed_time / elapsed_time)  # if time to small, increase n_rounds
 
@@ -451,8 +560,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     """
     logger.info("Starting classify with " + str(clf))
     # initialize variables and data
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  #, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  #, **cfg.save_ext_fig_cfg)
     predictions = {}
 
     plot_title = "classify" if plot_title is None else plot_title
@@ -708,7 +817,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
                     reweight_data.get_name()], obj_separator="")
 
     if normalize:
-        for i in range(1):  # enhance precision
+        for i in range(1):  # old... remove? TODO
             new_weights *= new_weights.size/new_weights.sum()
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
@@ -721,7 +830,8 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
     Kfolding to avoid bias.
 
     .. warning::
-       Do NOT use for the real reweighting process!
+       Do NOT use for the real reweighting process! (except if you really want
+       to reweight the data "by itself")
 
 
     If you want to figure out the hyper-parameters for a reweighting process
@@ -920,6 +1030,8 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
             mean, std = round(np.mean(score), 4), round(np.std(score), 4)
             out.add_output(["Classify the target, average score " + name + str(mean) + " +- " + str(std)])
 
+    new_weights_all = pd.Series(new_weights_all, index=new_weights_index)
+
     return new_weights_all
 
 
@@ -927,7 +1039,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
              conv_ori_weights=False, conv_tar_weights=False, weights_ratio=0,
-             config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
+             config_clf=None, take_target_from_data=False, **kwargs):
     """.. caution:: This method is maybe outdated and should be used with caution!
 
     Return the ROC AUC; useful to find out, how well two datasets can be
@@ -1000,8 +1112,8 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
 #==============================================================================
 
     # initialize variables and setting defaults
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  #, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  #, **cfg.save_ext_fig_cfg)
 
     curve_name = 'data' if curve_name is None else curve_name
     if classifier is None:

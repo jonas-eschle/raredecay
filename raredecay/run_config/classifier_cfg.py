@@ -113,7 +113,7 @@ cut_bg_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut_data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='DecayTree',
     branches=all_branches,
-    selection='B_M > 1'
+    selection=None  #'B_M > 1'
 
 )
 
@@ -197,8 +197,8 @@ real_testing = dict(
 # this dictionary will finally be used in the code
 data = dict(
     #hyper_target=B2KpiLL_real_signal,
-    hyper_target=mc_testing,  #B2K1Jpsi_mc_cut_reweighted,
-    hyper_original=real_testing  #B2KpiLL_real_cut_background
+    hyper_target=B2K1Jpsi_mc_cut,
+    hyper_original=B2KpiLL_real_cut_background
 )
 
 #==============================================================================
@@ -222,16 +222,16 @@ K1_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 gaussian_features = ['0', '1', '2', '3']
-opt_features = gaussian_features
+opt_features = K1_features
 
 hyper_cfg = dict(
     optimize_clf='xgb',  # the name of the classifier to optimize. Has to be exactly what follows 'cfg_'
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression', 'random}
                              # or the feature space {'backwards'}
     optimize_features=False,
-    n_evaluations="01:30",  # how many points in hyperspace to look at
+    n_evaluations="00:01",  # how many points in hyperspace to look at
     n_folds=10,  # split the data in n_folds
-    n_fold_checks=7  # how many folds to create and check on. n_fold_checks <= n_folds
+    n_fold_checks=1  # how many folds to create and check on. n_fold_checks <= n_folds
 )
 
 #------------------------------------------------------------------------------

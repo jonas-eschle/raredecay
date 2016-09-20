@@ -38,10 +38,16 @@ class AbstractOutputHandler(object):
         self._IO_string = ""
         self.logger = None
         self._logger_cfg = None
-
+        self._is_initialized = False
         # start timer and log current time
         self._start_timer = timeit.default_timer()
         self._start_time = time.strftime("%c")
+
+    def _check_initialization(self, return_error=False):
+        if not self._is_initialized and not return_error:
+            self.initialize()
+        elif not self._is_initialized and return_error:
+            raise Exception("OutputHandler not initialized! You have to initialize it first")
 
     def get_logger_path(self):
         return None
@@ -156,6 +162,7 @@ class AbstractOutputHandler(object):
         # initialize defaults
         assert isinstance(obj_separator, str), (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
         assert isinstance(data_separator, str), (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
+        self._check_initialization()
 
         data_out = dev_tool.make_list_fill_var(data_out)
         temp_out = ""
@@ -211,8 +218,11 @@ class OutputHandlerExt(AbstractOutputHandler):
     def __init__(self):
         super(self.__class__, self).__init__()
 
+
+
     def save_fig(self, figure, plot=True, **kwargs):
         """Dummy save method, plots only"""
+        self._check_initialization()
         if plot and isinstance(figure, (int, str)):
             figure = plt.figure(figure)
 
@@ -230,7 +240,10 @@ class OutputHandlerExt(AbstractOutputHandler):
         if not meta_config.MULTITHREAD:
             meta_config.n_cpu_max = 1
 
+        self._is_initialized = True
+
     def finalize(self):
+        self._check_initialization(return_error=True)
         """Finalize an external called run"""
         from raredecay.globals_ import randint  # here to avoid circular dependencies
 
@@ -256,8 +269,10 @@ class OutputHandlerExt(AbstractOutputHandler):
             obj_separator=" : ")
         self.add_output(["Warnings encountered during run", meta_config._warning_count],
             obj_separator=" : ")
-
-        return self.output
+        output = copy.deepcopy(self.output)
+        del self.output, self._loud_end_output, self.end_output
+        self._is_initialized = False
+        return output
 
 class OutputHandlerInt(AbstractOutputHandler):
     """A class that can handle different kind of outputs and save them to file.
@@ -468,6 +483,8 @@ class OutputHandlerInt(AbstractOutputHandler):
             meta_config.n_cpu_max = multiprocessing.cpu_count()
         if not meta_config.MULTITHREAD:
             meta_config.n_cpu_max = 1
+
+        self._is_initialized = True
 
     def finalize(self):
         """Finalize the run: save output and information to file.

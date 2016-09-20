@@ -59,7 +59,7 @@ from raredecay import meta_config
 # Output handler. Contains methods "initialize" and "finalize"
 #==============================================================================
 
-out = None
+out = output.OutputHandlerExt()
 
 
 def set_output_handler(internal=True):
