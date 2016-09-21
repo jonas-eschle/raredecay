@@ -236,7 +236,7 @@ DEFAULT_CLF_CONFIG = dict(
     ada=DEFAULT_CLF_ADA,
     nn=DEFAULT_CLF_NN,
     knn=DEFAULT_CLF_KNN,
-    nn=DEFAULT_CLF_NN
+    rdf=DEFAULT_CLF_RDF
 )
 
 # default clf names collection
@@ -246,7 +246,8 @@ DEFAULT_CLF_NAME = dict(
     gb='Gradient Boosted Trees clf',
     ada='AdaBoost over Trees clf',
     nn='Theanets Neural Network clf',
-    knn='K-Nearest Neighbour clf'
+    knn='K-Nearest Neighbour clf',
+    rdf='Random Forest clf'
 )
 #------------------------------------------------------------------------------
 #  Hyper parameter optimization

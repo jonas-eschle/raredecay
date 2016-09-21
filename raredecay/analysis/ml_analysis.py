@@ -921,6 +921,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
         Return the new weights
 
     """
+    output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
                    title="Reweighting Kfold", obj_separator="")
     # create variables
@@ -1025,14 +1026,20 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
     # create score
     if mcreweighted_as_real_score:
         out.add_output("", subtitle="Kfold reweight report", section="Precision scores of classification on reweighted mc")
-        score_list = [("Reweighted: ", scores), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
-        for name, score in score_list:
+        score_list = [("Reweighted: ", scores, 'score_reweighted'),
+                      ("mc as real (min): ", score_min, 'score_min'),
+                      ("real as real (max): ", score_max, 'score_max')]
+
+        for name, score, key in score_list:
             mean, std = round(np.mean(score), 4), round(np.std(score), 4)
-            out.add_output(["Classify the target, average score " + name + str(mean) + " +- " + str(std)])
+            out.add_output(["Classify the target, average score " + name + str(mean) +
+                            " +- " + str(std)], to_end=True)
+            output[key] = mean
 
     new_weights_all = pd.Series(new_weights_all, index=new_weights_index)
 
-    return new_weights_all
+    output['weights'] = new_weights_all
+    return output
 
 
 # TODO: continue cleaning up the code from here down

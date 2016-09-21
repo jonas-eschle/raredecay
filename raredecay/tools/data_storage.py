@@ -427,14 +427,28 @@ class HEPDataStorage(object):
 
         Parameters
         ----------
-        sample_weights : 1-D array or list or int {1}
-            The new weights for the dataset.
+        sample_weights : 1-D array-like or list or int {1} (or str/dict for root-trees)
+            The new weights for the dataset. If the data is a root-tree file,
+            a string (naming the branche) or a whole root-dict can be given,
+            pointing to the weights stored.
         index : 1-D array or list or None
             The indeces for the weights to be set
         """
         index = self._index if index is None else index
         length = len(self) if index is None else len(index)
-        assert dev_tool.is_in_primitive(sample_weights, (None, 1)) or len(sample_weights) == length, "Invalid weights"
+
+        if isinstance(sample_weights, (str, dict)) and self._data_type == 'root':
+            assert isinstance(self._data, dict), "data should be root-dict but is no more..."
+            tmp_root = copy.deepcopy(self._data)
+            if isinstance(sample_weights, str):
+                sample_weights = {'branches': sample_weights}
+            tmp_root.update(sample_weights)
+            branche = tmp_root['branches']
+            assert (isinstance(branche, list) and len(branche) == 1) or isinstance(branche, str), "Can only be one branche"
+            sample_weights = data_tools.to_ndarray(tmp_root)
+
+
+        assert dev_tool.is_in_primitive(sample_weights, (None, 1)) or len(sample_weights) <= length, "Invalid weights"
 
         self._set_weights(sample_weights=sample_weights, index=index)
 

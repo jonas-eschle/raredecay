@@ -17,6 +17,7 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 out.make_me_a_logger()  # creates a logger inside of "out"
 
 import raredecay.analysis.ml_analysis as ml_ana
+import raredecay.analysis.physical_analysis as phys_ana
 
 
 def output_handler(func):

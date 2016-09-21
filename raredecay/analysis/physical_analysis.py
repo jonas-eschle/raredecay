@@ -67,12 +67,10 @@ def run(run_mode, cfg_file=None):
         scores_mean = []
         for i in range(1):
             score = _reweightCV_int(cfg, logger, out)
-            scores.append(score)
-            scores_mean.append(np.mean(score))
-        scores_mean = np.array(scores_mean)
-        out.add_output(["Score of several CVreweighting:", scores], to_end=True)
-        out.add_output(["Score mean:", np.mean(scores), "+- (measurements, NOT mean)",
-                        np.std(scores)], to_end=True)
+#            scores.append(score)
+#        out.add_output(["Score of several CVreweighting:", scores], to_end=True)
+#        out.add_output(["Score mean:", np.mean(scores), "+- (measurements, NOT mean)",
+#                        np.std(scores)], to_end=True)
     elif run_mode == "reweight":
         _reweight_int(cfg, logger)
     elif run_mode == "hyper_optimization":
@@ -182,9 +180,86 @@ def rafael1(cfg, logger, out):
                             # by implementing it into the if-elif statement at the beginning
 
 
-def clf_mayou(cfg, logger):
-  """Test a setup of clf involving bagging and stacking"""
-  pass
+def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
+    """Test a setup of clf involving bagging and stacking"""
+    #import raredecay.analysis.ml_analysis as ml_ana
+    import pandas as pd
+
+    from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
+    from rep.metaml.folding import FoldingClassifier
+    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, ExtraTreesClassifier
+    from sklearn.ensemble import AdaBoostClassifier, VotingClassifier, BaggingClassifier
+    from rep.estimators.theanets import TheanetsClassifier
+    from sklearn.tree import DecisionTreeClassifier
+    from sklearn.linear_model import LogisticRegression
+    from rep.metaml.cache import CacheClassifier
+
+    from rep.report.metrics import RocAuc
+
+    from stacked_generalizer import StackedGeneralizer
+
+#    data1.make_folds(n_folds)
+#    data2.make_folds(n_folds)
+
+    print "hi"
+    #for i in range(n_folds):
+    xgb_clf = XGBoostClassifier(n_estimators=2, eta=0.1, max_depth=4, nthreads=8)
+    xgb_folded = FoldingClassifier(base_estimator=xgb_clf, stratified=True, parallel_profile='threads-2')
+    xgb_bagged = BaggingClassifier(base_estimator=xgb_folded, n_estimators=n_base_clf, bootstrap=False)
+    xgb_bagged = CacheClassifier(name='xgb_bagged1', clf= xgb_bagged)
+
+    rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=4, n_jobs=8))
+    rdf_folded = FoldingClassifier(base_estimator=rdf_clf, stratified=True, parallel_profile='threads-2')
+    rdf_bagged = BaggingClassifier(base_estimator=rdf_folded, n_estimators=n_base_clf, bootstrap=False)
+    rdf_bagged = CacheClassifier(name='rdf_bagged1', clf= rdf_bagged)
+
+    gb_clf = SklearnClassifier(GradientBoostingClassifier(n_estimators=6))
+    gb_folded = FoldingClassifier(base_estimator=gb_clf, stratified=True, parallel_profile='threads-2')
+    gb_bagged = BaggingClassifier(base_estimator=gb_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=5)
+    gb_bagged = CacheClassifier(name='gb_bagged1', clf= gb_bagged)
+
+    lr_stacker = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag'))
+
+    stacker = lr_stacker
+
+    stacker = FoldingClassifier(base_estimator=stacker, n_folds=n_folds,
+                                stratified=True, parallel_profile='threads-10')
+#        train1, test1 = data1.get_fold(i)
+#        train2, test2 = data1.get_fold(i)
+#
+#        t_data, t_targets, t_weights =
+    data, targets, weights = data1.make_dataset(data2, weights_ratio=1)
+    xgb_bagged.fit(data, targets, weights)
+    rdf_bagged.fit(data, targets, weights)
+    gb_bagged.fit(data, targets, weights)
+
+    xgb_report = stacker.test_on(data, targets, weights)
+    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
+    print "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+
+    rdf_report = stacker.test_on(data, targets, weights)
+    rdf_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
+    print "roc auc:" + str(rdf_report.compute_metric(metric=RocAuc()))
+
+    gb_report = stacker.test_on(data, targets, weights)
+    gb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
+    print "roc auc:" + str(gb_report.compute_metric(metric=RocAuc()))
+
+    xgb_proba = xgb_bagged.predict_proba(data)[:, 1]
+    rdf_proba = rdf_bagged.predict_proba(data)[:, 1]
+    gb_proba = gb_bagged.predict_proba(data)[:, 1]
+
+    base_predict = pd.DataFrame({'xgb': xgb_proba,
+                                 'rdf': rdf_proba,
+                                 'gb': gb_proba
+                                 })
+    print base_predict
+
+    stacker.fit(base_predict, targets, weights)
+    report = stacker.test_on(base_predict, targets, weights)
+    report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
+    print "roc auc:" + str(report.compute_metric(metric=RocAuc()))
+
 
 
 def _hyper_optimization_int(cfg, logger, out):
@@ -194,6 +269,11 @@ def _hyper_optimization_int(cfg, logger, out):
     original_data = data_storage.HEPDataStorage(**cfg.data['hyper_original'])
     target_data = data_storage.HEPDataStorage(**cfg.data['hyper_target'])
 
+#HACK
+    clf_mayou(data1=original_data, data2=target_data)
+    print "hack in use, physical analysis; _hyper_optimization_int"
+    return
+#HACK END
     #original_data.plot()
 
     clf = cfg.hyper_cfg['optimize_clf']
@@ -374,10 +454,13 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
-    new_weights = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
+    Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
                                         meta_cfg=reweight_cfg, columns=columns,
                                         reweighter=reweighter, mcreweighted_as_real_score=scoring,
                                         n_folds=n_folds, make_plot=make_plots)
+    new_weights = Kfold_output.pop('weights')
+    if scoring:
+        output['mcreweighted_as_real_score'] = Kfold_output
 
     # To get a good estimation for the reweighting quality, the
     # train_similar score can be used. Its the one with training on
@@ -582,4 +665,5 @@ def reweight_comparison(cfg, logger):
 
 # temporary:
 if __name__ == '__main__':
-    run(1)
+    print "hello world 1"
+    clf_mayou(1,2,3)
