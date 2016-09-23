@@ -203,24 +203,25 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 
     print "hi"
     #for i in range(n_folds):
-    xgb_clf = XGBoostClassifier(n_estimators=2, eta=0.1, max_depth=4, nthreads=8)
+    xgb_clf = XGBoostClassifier(n_estimators=200, eta=0.1, max_depth=4, nthreads=8)
     xgb_folded = FoldingClassifier(base_estimator=xgb_clf, stratified=True, parallel_profile='threads-2')
     xgb_bagged = BaggingClassifier(base_estimator=xgb_folded, n_estimators=n_base_clf, bootstrap=False)
     xgb_bagged = CacheClassifier(name='xgb_bagged1', clf= xgb_bagged)
 
-    rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=4, n_jobs=8))
+    rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=400, n_jobs=8))
     rdf_folded = FoldingClassifier(base_estimator=rdf_clf, stratified=True, parallel_profile='threads-2')
     rdf_bagged = BaggingClassifier(base_estimator=rdf_folded, n_estimators=n_base_clf, bootstrap=False)
     rdf_bagged = CacheClassifier(name='rdf_bagged1', clf= rdf_bagged)
 
-    gb_clf = SklearnClassifier(GradientBoostingClassifier(n_estimators=6))
+    gb_clf = SklearnClassifier(GradientBoostingClassifier(n_estimators=76))
     gb_folded = FoldingClassifier(base_estimator=gb_clf, stratified=True, parallel_profile='threads-2')
     gb_bagged = BaggingClassifier(base_estimator=gb_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=5)
     gb_bagged = CacheClassifier(name='gb_bagged1', clf= gb_bagged)
 
     lr_stacker = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag'))
+    xgb_stacker = XGBoostClassifier(n_estimators=200, eta=0.1, max_depth=4, nthreads=8)
 
-    stacker = lr_stacker
+    stacker = xgb_stacker
 
     stacker = FoldingClassifier(base_estimator=stacker, n_folds=n_folds,
                                 stratified=True, parallel_profile='threads-10')

@@ -824,7 +824,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
     return new_weights
 
 def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=True,
-                   columns=None, reweighter='gb', meta_cfg=None,
+                   columns=None, reweighter='gb', meta_cfg=None, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
     """Reweight data by "itself" for *scoring* and hyper-parameters via
     Kfolding to avoid bias.
@@ -928,11 +928,8 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
     assert n_folds >= 1 and isinstance(n_folds, int), "n_folds has to be >= 1, its currently" + str(n_folds)
     assert isinstance(reweight_data_mc, data_storage.HEPDataStorage), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_mc))
     assert isinstance(reweight_data_real, data_storage.HEPDataStorage), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_real))
-    if isinstance(mcreweighted_as_real_score, str):
-        score_clf = mcreweighted_as_real_score
-        mcreweighted_as_real_score = True
-    elif mcreweighted_as_real_score:
-        score_clf = 'xgb'
+
+
 
     new_weights_all = []
     new_weights_index = []
