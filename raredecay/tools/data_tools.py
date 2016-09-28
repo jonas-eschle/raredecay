@@ -15,8 +15,8 @@ import cPickle as pickle
 from root_numpy import root2array, array2tree
 
 # both produce error (27.07.2016) when importing them if run from main. No problem when run as main...
-#from ROOT import TObject
-#from rootpy.io import root_open
+
+
 
 from raredecay.tools import dev_tool
 from raredecay import meta_config
@@ -36,7 +36,10 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         A one-dimensional numpy array that contains the data.
     branch_name : str
         The name of the branche resp. the name in the dtype of the array.
+
     """
+    from rootpy.io import root_open
+    from ROOT import TObject
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
     if isinstance(rootfile, dict):

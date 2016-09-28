@@ -21,6 +21,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
+import timeit
 from collections import Counter, OrderedDict
 
 import hep_ml.reweight
@@ -37,6 +38,7 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from rep.estimators.interface import Classifier
+from sklearn.base import BaseEstimator
 
 # scoring and validation
 from rep.metaml.folding import FoldingClassifier
@@ -55,9 +57,8 @@ from raredecay.globals_ import out
 # import configuration
 import importlib
 from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
-logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
-
+#cfg = importlib.import_module(meta_config.run_config)
+logger = dev_tool.make_logger(__name__, meta_config.DEFAULT_LOGGER_CFG)  #**cfg.logger_cfg)
 
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
@@ -94,8 +95,117 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
     return data_out
 
 
-def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
+def make_clf(clf, n_cpu=None, dict_only=False):
+    """Return a classifier-dict. Takes a str, config-dict or clf-dict or clf
+
+    Parameters
+    ----------
+    clf : dict or str or sklearn/REP-classifier
+        There are several ways to pass the classifier to the function.
+
+        - Pure classifier: You can pass a simple classifier to the method and
+
+
+    Returns
+    -------
+    out : dict
+        A dictionary containing the name ('name') of the classifier as well
+        as the classifier itself ('clf'). Additionally, there are more values
+        that can be contained:
+
+        - **parallel_profile**: the parallel-profile (for different REP-functions)
+          which is set according to the n_cpus entered as well as the n_cpus
+          used. If n cpus should be used, the classifier takes, the profile
+          will be None. If the classifier is using only 1 cpu, the profile will
+          be 'threads-n' with n = n_cpus.
+        - **n_cpus**: The number of cpus used in the classifier.
+    """
+    #TODO: write function below
+    output = {}
+    serial_clf = False
+    # test if input is classifier, create dict
+    if isinstance(clf, BaseEstimator):
+        clf = {'clf': clf}
+
+    # if clf is a string only, create dict with only the type specified
+    if isinstance(clf, str):
+        clf = {'clf_type': clf}
+
+    assert isinstance(clf, dict), "Wrong data format of classifier..."
+
+    if isinstance(clf.get('n_cpu'), int) and n_cpu is None:
+        n_cpu = clf['n_cpu']
+    n_cpu = 1 if n_cpu is None else n_cpu
+    if n_cpu == -1:
+        n_cpu = globals_.free_cpus()
+
+    # if input is dict containing a clf, make sure it's a Sklearn one
+    if isinstance(clf, dict) and len(clf) == 1 and isinstance(clf.values()[0], BaseEstimator):
+        key, value = clf.popitem()
+        clf['name'] = key
+        clf['clf'] = value
+    if isinstance(clf, dict) and isinstance(clf.get('clf'), BaseEstimator):
+        classifier = clf['clf']
+        if not isinstance(classifier, Classifier):
+            classifier = SklearnClassifier(clf=classifier)
+        output['clf'] = classifier
+        output['name'] = clf.get('name', clf.get('type', "Classifier"))
+
+    else:
+        default_clf = dict(
+            clf_type=clf['clf_type'],
+            name=meta_config.DEFAULT_CLF_NAME[clf],
+            config=meta_config.DEFAULT_CLF_CONFIG[clf],
+
+        )
+
+        clf = dict(default_clf, **clf)
+
+        if clf['clf_type'] == 'xgb':
+            # update config dict with parallel-variables and random state
+            clf['config'].update(dict(nthreads=n_cpu, random_state=globals_.randint+4))  # overwrite entries
+            clf_tmp = XGBoostClassifier(**clf.pop('config'))
+        if clf['clf_type'] == 'tmva':
+            serial_clf = True
+            clf = TMVAClassifier(**clf.pop('config'))
+        if clf['clf_type'] == 'gb':
+            serial_clf = True
+            clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'rdf':
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
+            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'ada':
+            serial_clf = True
+            clf['config'].update(dict(random_state=globals_.randint+43))
+            clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
+                                    random_state=globals_.randint + 29), **clf.pop('config')))
+        if clf['clf_type'] == 'knn':
+            clf['config'].update(dict(random_state=globals_.randint+919, n_jobs=n_cpu))
+            clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'rdf':
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
+            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
+        if clf['clf_type'] == 'nn':
+            clf['config'].update(dict(random_state=globals_.randint+43))
+            clf = TheanetsClassifier(**clf.pop('config'))
+
+        # assign classifier to output dict
+        output['clf'] = clf_tmp
+        output['name'] = clf['name']
+        # add parallel information
+        if serial_clf and n_cpu > 1:
+            output['n_cpu'] = 1
+            output['parallel_profile'] = 'Threads-' + str(n_cpu)
+        else:
+            output['n_cpu'] = n_cpu
+            output['parallel_profile'] = None
+
+        return output
+
+
+def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eval,
                               features=None, optimize_features=False,
+                              n_checks=10, n_folds=10, generator_type=None,
                               take_target_from_data=False, train_best=False):
     """Optimize the hyperparameters of a classifier or perform feature selection
 
@@ -109,12 +219,26 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
         The name of the classifier
     config_clf : dict
         The configuration of the classifier
+    n_eval : int > 1 or str "hh...hh:mm"
+        How many evaluations should be done; how many points in the
+        hyperparameter-space should be tested. This can either be an integer,
+        which then represents the number of evaluations done or a string in the
+        format of "hours:minutes" (e.g. "3:25", "1569:01" (quite long...),
+        "0:12"), which represents the approximat time it should take for the
+        hyperparameter-search (**not** the exact upper limit)
     features : list(str, str, str,...)
         List of strings containing the features/columns to be used for the
         hyper-optimization or feature selection.
     optimize_features : Boolean
         If True, feature selection will be done instead of hyperparameter-
         optimization
+    n_checks : int >= 1
+        Number of checks on *each* KFolded dataset will be done. For example,
+        you split your data into 10 folds, but may only want to train/test on
+        3 different ones.
+    n_folds : int > 1
+        How many folds you want to split your data in when doing train/test
+        sets to measure the performance of the classifier.
     take_target_from_data : Boolean
         If True, the target-labeling (the y) will be taken from the data
         directly and not created. Otherwise, 0 will be assumed for the
@@ -125,18 +249,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
     """
 
     # initialize variables and setting defaults
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
-    n_eval = cfg.hyper_cfg['n_evaluations']
-    n_checks = cfg.hyper_cfg['n_fold_checks']
-    n_folds = cfg.hyper_cfg['n_folds']
-    generator_type = cfg.hyper_cfg.get('generator', meta_config.DEFAULT_HYPER_GENERATOR)
-
-    # parallelize on the lowest level if possible (uses less RAM)
-    if clf in ('xgb', 'rdf', 'erf'):
-        parallel_profile = None
-    else:
-        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  # leave out?, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  # leave out?, **cfg.save_ext_fig_cfg)
+    config_clf_cp = copy.deepcopy(config_clf)
+    config_clf = copy.deepcopy(config_clf)  # otherwise the original dict will be modified
 
     # Create parameter for clf and hyper-search
     if not dev_tool.is_in_primitive(config_clf.get('features', None)):
@@ -148,7 +264,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
             logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
                            "Features for feature-optimization will be taken from data.")
 
-    # We do not need to create more data than we well test on
+
     else:
         grid_param = {}
         list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
@@ -158,13 +274,73 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf,
                     val = data_tools.to_list(val)
                     grid_param[key] = config_clf.pop(key)
 
+
+
+        # count maximal combinations of parameters
+        max_eval = 1
+        for n_params in grid_param.itervalues():
+            max_eval *= len(n_params)
+
+        # get a time estimation and extrapolate to get n_eval
+        if isinstance(n_eval, str) and meta_config.n_cpu_max * 2 < max_eval:
+            n_eval = n_eval.split(":")
+            assert len(n_eval) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
+            available_time = 3600 * int(n_eval[0]) + 60 * int(n_eval[1])
+
+            start_timer_test = timeit.default_timer()
+            elapsed_time = 1
+            min_elapsed_time = 15 + 0.005 * available_time  # to get an approximate extrapolation
+            n_eval_tmp = meta_config.n_cpu_max
+            n_checks_tmp = 1  #time will be multiplied by actual n_checks
+            #call hyper_optimization with parameters for "one" run and measure time
+            out.add_output(data_out="", subtitle="Test run for time estimation only!")
+            # do-while loop
+            while True:
+                start_timer = timeit.default_timer()
+                config_clf_cp1 = copy.deepcopy(config_clf_cp)
+                optimize_hyper_parameters(original_data, target_data, clf=clf, config_clf=config_clf_cp1,
+                                          n_eval=n_eval_tmp, n_folds=n_folds, n_checks=n_checks_tmp,
+                                          features=features, generator_type=generator_type,
+                                          optimize_features=False, train_best=False,
+                                          take_target_from_data=take_target_from_data)
+                elapsed_time = timeit.default_timer() - start_timer
+                if elapsed_time > min_elapsed_time:
+                    break
+                elif n_checks_tmp < n_checks:  # for small datasets, increase n_checks for testing
+                    n_checks_tmp = min(n_checks, np.ceil(min_elapsed_time / elapsed_time))
+                else:
+                    n_eval_tmp *= np.ceil(min_elapsed_time / elapsed_time)  # if time to small, increase n_rounds
+
+            elapsed_time *= np.ceil(float(n_checks) / n_checks_tmp)  # time for "one round"
+            test_time = timeit.default_timer() - start_timer_test
+            n_eval = (int((available_time * 0.98 - test_time) / elapsed_time)) * n_eval_tmp  # we did just one
+            if n_eval < 1:
+                n_eval = meta_config.n_cpu_max
+            out.add_output(["Time for one round:", elapsed_time, "Number of evaluations:", n_eval])
+
+        elif isinstance(n_eval, str):
+            n_eval = max_eval
+
+        n_eval = min(n_eval, max_eval)
+
+
+    # We do not need to create more data than we well test on
     features = data_tools.to_list(features)
     if optimize_features:
         grid_param = features
 
+    #TODO: insert time estimation
+
+
+
 
     assert grid_param != {}, "No values for optimization found"
 
+    # parallelize on the lowest level if possible (uses less RAM)
+    if clf in ('xgb', 'rdf', 'erf'):
+        parallel_profile = None
+    else:
+        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
 
 
     # initialize data
@@ -306,13 +482,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
              conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False,
              weights_ratio=0, get_predictions=False):
     """Training and testing a classifier or distinguish a dataset
-    
+
     Classify is a multi-purpose function which does most of the things around
     machine-learning. It can be used for:
-    
+
     - Training a clf.
         A quite simple task. You give some data, specify a clf and set
-        validation to False (not mandatory actually, but pay attention if 
+        validation to False (not mandatory actually, but pay attention if
         validation is set to an integer)
     - Predict data.
         Use either a pre-trained (see above) classifier or specify one with a
@@ -384,8 +560,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     """
     logger.info("Starting classify with " + str(clf))
     # initialize variables and data
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  #, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  #, **cfg.save_ext_fig_cfg)
     predictions = {}
 
     plot_title = "classify" if plot_title is None else plot_title
@@ -641,20 +817,21 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
                     reweight_data.get_name()], obj_separator="")
 
     if normalize:
-        for i in range(1):  # enhance precision
+        for i in range(1):  # old... remove? TODO
             new_weights *= new_weights.size/new_weights.sum()
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
 
 def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=True,
-                   columns=None, reweighter='gb', meta_cfg=None,
+                   columns=None, reweighter='gb', meta_cfg=None, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
     """Reweight data by "itself" for *scoring* and hyper-parameters via
     Kfolding to avoid bias.
 
     .. warning::
-       Do NOT use for the real reweighting process!
+       Do NOT use for the real reweighting process! (except if you really want
+       to reweight the data "by itself")
 
 
     If you want to figure out the hyper-parameters for a reweighting process
@@ -744,17 +921,15 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
         Return the new weights
 
     """
+    output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
                    title="Reweighting Kfold", obj_separator="")
     # create variables
     assert n_folds >= 1 and isinstance(n_folds, int), "n_folds has to be >= 1, its currently" + str(n_folds)
     assert isinstance(reweight_data_mc, data_storage.HEPDataStorage), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_mc))
     assert isinstance(reweight_data_real, data_storage.HEPDataStorage), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_real))
-    if isinstance(mcreweighted_as_real_score, str):
-        score_clf = mcreweighted_as_real_score
-        mcreweighted_as_real_score = True
-    elif mcreweighted_as_real_score:
-        score_clf = 'xgb'
+
+
 
     new_weights_all = []
     new_weights_index = []
@@ -848,19 +1023,27 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10, make_plot=T
     # create score
     if mcreweighted_as_real_score:
         out.add_output("", subtitle="Kfold reweight report", section="Precision scores of classification on reweighted mc")
-        score_list = [("Reweighted: ", scores), ("mc as real (min): ", score_min), ("real as real (max): ", score_max)]
-        for name, score in score_list:
-            mean, std = round(np.mean(score), 4), round(np.std(score), 4)
-            out.add_output(["Classify the target, average score " + name + str(mean) + " +- " + str(std)])
+        score_list = [("Reweighted: ", scores, 'score_reweighted'),
+                      ("mc as real (min): ", score_min, 'score_min'),
+                      ("real as real (max): ", score_max, 'score_max')]
 
-    return new_weights_all
+        for name, score, key in score_list:
+            mean, std = round(np.mean(score), 4), round(np.std(score), 4)
+            out.add_output(["Classify the target, average score " + name + str(mean) +
+                            " +- " + str(std)], to_end=True)
+            output[key] = mean
+
+    new_weights_all = pd.Series(new_weights_all, index=new_weights_index)
+
+    output['weights'] = new_weights_all
+    return output
 
 
 # TODO: continue cleaning up the code from here down
 def data_ROC(original_data, target_data, features=None, classifier=None, meta_clf=True,
              curve_name=None, n_folds=3, weight_original=None, weight_target=None,
              conv_ori_weights=False, conv_tar_weights=False, weights_ratio=0,
-             config_clf=None, take_target_from_data=False, cfg=cfg, **kwargs):
+             config_clf=None, take_target_from_data=False, **kwargs):
     """.. caution:: This method is maybe outdated and should be used with caution!
 
     Return the ROC AUC; useful to find out, how well two datasets can be
@@ -933,8 +1116,8 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
 #==============================================================================
 
     # initialize variables and setting defaults
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG, **cfg.save_ext_fig_cfg)
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  #, **cfg.save_fig_cfg)
+    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  #, **cfg.save_ext_fig_cfg)
 
     curve_name = 'data' if curve_name is None else curve_name
     if classifier is None:
@@ -1123,4 +1306,5 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
 
     return out_auc
 
-
+if __name__ == "main":
+    print 'test'

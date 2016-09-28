@@ -30,10 +30,10 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     Enter two datasets and evaluate the score described below. Return a
     dictionary containing the different scores. The test_predictions is
     another scoring, which is built upon the train_similar method.
-    
+
     Scoring method description
     --------------------------
-    
+
     **Idea**:
     A clf is trained on the reweighted mc as well as on the real data of a
     certain decay. Therefore, the classifier learns to distinguish between
@@ -42,22 +42,22 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     as real events. The lower the score, the less differences he was able to
     learn from the train data therefore the more similar the train data
     therefore the better the reweighting.
-    
+
     **Advandages**: It is quite difficult to cheat on this method. Most of all
     it is robust to single high-weight events (which mcreweighted_as_real is
     not) and, in general, seems to be the best scoring so far.
-    
+
     **Disadvantages**: If you insert a gaussian shaped 1.0 as mc and a gaussian
     shaped 1.1 as real, the score will be badly (around 0.33). So far, this was
     only observed for "artificial" distributions (even dough, of course, we
     do not know if it affects real distributions aswell partly)
-    
+
     Output explanation
     ------------------
     The return is a dictionary containing several values. Of course, only the
     values, which are set to be evaluated, are contained. The keys are:
-    
-    - '**score**' : The average of all train_similar scores (as we use KFolding, 
+
+    - '**score**' : The average of all train_similar scores (as we use KFolding,
       there will be n_folds scores). *The* score.
     - '**score_std**' : The std of a single score, just for curiosity
     - '**score_max**' : The (average of all) "maximum" score. Actually the
@@ -84,14 +84,14 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         The name of a classifier to be used in
         :py:func:`~raredecay.analysis.ml_analysis.classify`.
     test_max : boolean
-        If true, test for the "maximum value" by training also on mc/real 
+        If true, test for the "maximum value" by training also on mc/real
         (instead of *reweighted* mc/real)
         and test on real. The score for only mc should be higher than for
         reweighted mc/real. It *should* most probably but does not have to
         be!
     old_mc_weights : array-like or 1
         If *test_max* is True, the weights for mc before reweighting will be
-        taken to be *old_mc_weights*, the weights the mc distribution had 
+        taken to be *old_mc_weights*, the weights the mc distribution had
         before the reweighting. The default is 1.
     test_predictions : boolean
         If true, try to distinguish the predictions. Advanced feature and not
@@ -99,12 +99,12 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     clf_pred : str
         The classifier to be used to distinguish the predictions. Required for
         the *test_predictions*.
-    
+
     Return
     ------
     out : dict
         A dictionary conaining the different scores. Description see above.
-    
+
     """
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
@@ -213,8 +213,8 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
     else:
         sqrt = mt.sqrt(n_background)
         term1 = n_sigma/2
-    out = n_signal / (sqrt + term1)
-    return out
+    output = n_signal / (sqrt + term1)
+    return output
 
 
 def precision_measure(n_signal, n_background):
@@ -224,5 +224,5 @@ def precision_measure(n_signal, n_background):
         sqrt = np.sqrt(np.array(n_signal + n_background))
     else:
         sqrt = mt.sqrt(n_signal + n_background)
-    out = n_signal / sqrt
-    return out
+    output = n_signal / sqrt
+    return output

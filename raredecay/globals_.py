@@ -54,12 +54,23 @@ import random
 
 from raredecay.tools import output
 from raredecay import meta_config
+from raredecay.run_config import config
 
 #==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
 #==============================================================================
 
-out = output.OutputHandler()
+out = output.OutputHandlerExt()
+
+cfg = config
+
+
+def set_output_handler(internal=True):
+  global out
+  if internal:
+    out = output.OutputHandlerInt()
+  else:
+    out = output.OutputHandlerExt()
 
 #==============================================================================
 # Random integer generator for pseudo random generator (or other things)

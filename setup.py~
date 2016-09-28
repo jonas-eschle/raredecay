@@ -25,7 +25,7 @@ except:
 
 setup(name='raredecay',
       version=git_version,
-      description='A package for analysis of rare particle decays with ml',
+      description='A package for analysis of rare particle decays with machine-learning algorithms',
       long_description=readme(),
       classifiers=[
         'Development Status :: 9 - Alpha',
@@ -37,12 +37,13 @@ setup(name='raredecay',
       author_email='mayou36@jonas.eschle.com',
       license='None',
       install_requires=[
-          #'hep_ml',
-          #'rep',
-	      #'nose_parameterized'
-    	  #'root_numpy'
-	      #'rootpy'
-	#'seaborn'
+          'hep_ml',
+          'rep',
+	  'sklearn>=0.17.1'
+	  'nose_parameterized'
+    	  'root_numpy'
+	  #'rootpy'
+	  'seaborn'
 	#'memory_profiler'  # for developement, can be removed later
       ],
       packages=['raredecay',

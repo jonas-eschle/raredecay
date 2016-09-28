@@ -49,7 +49,7 @@ if __name__ == '__main__':
     #main_run("reweight")
     #main_run("reweightCV")
     #main_run("simple_plot")
-    #main_run("hyper_optimization")
-    main_run("rafael1")
+    main_run("hyper_optimization")
+    #main_run("rafael1")
 
 

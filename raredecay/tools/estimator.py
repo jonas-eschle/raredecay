@@ -412,9 +412,9 @@ if __name__ == '__main__':
     from root_numpy import root2array, rec2array
 
 
-    folding = False
-    higgs_data = True
-    primitiv = False
+    folding = True
+    higgs_data = False
+    primitiv = True
 
     n_ones, n_zeros = 20000, 20000
     n_tot = n_ones + n_zeros

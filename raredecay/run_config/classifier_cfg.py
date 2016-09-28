@@ -16,7 +16,7 @@ from root_numpy import root2array
 
 # the name of the run and the output folder
 RUN_NAME = 'Classifier optimization'
-run_message = str("Test-run" +
+run_message = str("This could be your advertisement" +
                 " ")
 #==============================================================================
 # PATHES BEGIN
@@ -113,7 +113,7 @@ cut_bg_B2KpiLL_real = dict(
     filenames=DATA_PATH+'cut_data/CUT-B2KpiLL-Collision12-MagDown-Stripping20r0p3.root',
     treename='DecayTree',
     branches=all_branches,
-    selection='B_M > 1'
+    selection=None  #'B_M > 1'
 
 )
 
@@ -197,8 +197,8 @@ real_testing = dict(
 # this dictionary will finally be used in the code
 data = dict(
     #hyper_target=B2KpiLL_real_signal,
-    hyper_target=mc_testing,  #B2K1Jpsi_mc_cut_reweighted,
-    hyper_original=real_testing  #B2KpiLL_real_cut_background
+    hyper_target=B2K1Jpsi_mc_cut,
+    hyper_original=B2KpiLL_real_cut_background
 )
 
 #==============================================================================
@@ -222,16 +222,16 @@ K1_features = ['B_PT', 'nTracks', 'nSPDHits',
               ]
 
 gaussian_features = ['0', '1', '2', '3']
-opt_features = gaussian_features
+opt_features = K1_features
 
 hyper_cfg = dict(
     optimize_clf='xgb',  # the name of the classifier to optimize. Has to be exactly what follows 'cfg_'
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression', 'random}
                              # or the feature space {'backwards'}
     optimize_features=False,
-    n_evaluations=80,  # how many points in hyperspace to look at
+    n_evaluations=2,  # how many points in hyperspace to look at
     n_folds=10,  # split the data in n_folds
-    n_fold_checks=8  # how many folds to create and check on. n_fold_checks <= n_folds
+    n_fold_checks=10  # how many folds to create and check on. n_fold_checks <= n_folds
 )
 
 #------------------------------------------------------------------------------
@@ -241,11 +241,11 @@ import numpy as np
 
 cfg_xgb = dict(
     eta=0.2,  # stage 1, set high ~0.2 and lower at the end while increasing n_estimators
-    n_estimators=25,  #75,  # stage 1 to optimize
-    min_child_weight=8,  # #0 stage 2 to optimize
+    n_estimators=75,  #75,  # stage 1 to optimize
+    min_child_weight=range(1,200),  # #0 stage 2 to optimize
     max_depth=3,  # #6 stage 2 to optimize
-    gamma=4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
-    subsample=0.5, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    gamma=np.arange(0.01, 50, 0.001), #4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
+    subsample=np.arange(0, 0.99, 0.001), # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
     colsample=1 # stage 4, only take several colons for training
     # no loss regularization available so far...
 )
@@ -394,7 +394,7 @@ logger_cfg = dict(
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time
     # or instead make a new one each run
-    log_file_name='AAlastRun',
+    log_file_name='logfile_',
     # the beginning ofthe name of the logfile, like 'project1'
     log_file_dir=None  # will be set automatically
 )
