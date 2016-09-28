@@ -35,6 +35,7 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
 from __future__ import division, absolute_import
 
 import cPickle as pickle
+import multiprocessing
 
 
 #==============================================================================
@@ -53,6 +54,27 @@ MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
                 # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
+
+# set meta-config variables
+def set_parallel_profile(n_cpu=-1, gpu_in_use=False):
+    """Set the number of cpus and whether a gpu is in use or not"""
+    global MULTIPROCESSING, MULTITHREAD, n_cpu_max, use_gpu
+    MULTIPROCESSING = MULTITHREAD = True
+    if n_cpu == 1:
+        n_cpu_max = 1
+    elif n_cpu is None:
+        pass
+    elif isinstance(n_cpu, int):
+        if n_cpu > 1:
+            n_cpu_max = n_cpu
+        elif n_cpu < 0:
+            n_cpu_max = multiprocessing.cpu_count() + n_cpu + 1  # because -1 is "all cpus"
+        else:
+            raise ValueError("Invalid n_cpu argument: " + str(n_cpu))
+    else:
+        raise TypeError("Wrong n_cpu argument, type: " + str(type(n_cpu)) + " not allowed")
+
+    use_gpu = gpu_in_use if gpu_in_use is not None else use_gpu
 
 #------------------------------------------------------------------------------
 #  Datatype ending variables

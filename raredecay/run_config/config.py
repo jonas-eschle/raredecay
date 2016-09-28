@@ -2,8 +2,16 @@
 """
 Created on Fri Sep 16 13:44:43 2016
 
+The configuration file for external operations.
+
 @author: mayou
 """
+
+
+
+from raredecay import meta_config
+
+
 
 RUN_NAME = 'Classifier optimization'
 run_message = str("This could be your advertisement" +

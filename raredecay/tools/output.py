@@ -17,7 +17,6 @@ from abc import ABCMeta, abstractmethod
 
 import matplotlib.pyplot as plt
 import cPickle as pickle
-import multiprocessing
 
 from raredecay import meta_config
 from raredecay.tools import dev_tool, data_tools
@@ -233,12 +232,7 @@ class OutputHandlerExt(AbstractOutputHandler):
         logger_cfg = {} if logger_cfg is None else logger_cfg
         self._logger_cfg = dict(meta_config.DEFAULT_LOGGER_CFG, **logger_cfg)
 
-        # set meta-config variables
-        meta_config.MULTIPROCESSING = meta_config.MULTITHREAD and meta_config.MULTIPROCESSING
-        if (meta_config.n_cpu_max in (None, -1)):
-            meta_config.n_cpu_max = multiprocessing.cpu_count()
-        if not meta_config.MULTITHREAD:
-            meta_config.n_cpu_max = 1
+
 
         self._is_initialized = True
 
