@@ -16,7 +16,7 @@ from root_numpy import root2array
 
 # the name of the run and the output folder
 RUN_NAME = 'Classifier optimization'
-run_message = str("Test-run" +
+run_message = str("This could be your advertisement" +
                 " ")
 #==============================================================================
 # PATHES BEGIN
@@ -394,7 +394,7 @@ logger_cfg = dict(
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time
     # or instead make a new one each run
-    log_file_name='AAlastRun',
+    log_file_name='logfile_',
     # the beginning ofthe name of the logfile, like 'project1'
     log_file_dir=None  # will be set automatically
 )

@@ -26,7 +26,7 @@ run_config:
     Should not be changed during the run, only once in the begining.
 SUPPRESS_WRONG_SKLEARN_VERSION:
     This package was built for sklearn 0.17. With 0.18 there are some
-    module-name changes, which can crash the program.
+    module-name changes, which can cause a crash of the program.
 """
 
 #==============================================================================
@@ -275,6 +275,8 @@ DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace 
 #==============================================================================
 
 run_config = None  # manipulated by OutputHandler()
+
+loggers = {}
 
 #------------------------------------------------------------------------------
 # parallel profile

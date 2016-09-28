@@ -12,6 +12,11 @@ import pandas as pd
 import numpy as np
 import collections
 
+from raredecay import meta_config
+
+
+
+
 def syspath_append(verboise=False):
     """Adds the relevant path to the sys.path variable.
     options:
@@ -97,7 +102,7 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
                                   ": %(levelname)s - %(message)s")
     if logging_mode == 'both' or logging_mode == 'file':
         if overwrite_file:
-            timeStamp = 'temp'
+            timeStamp = 'logfile'
         else:
             timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
         log_file_dir += '' if log_file_dir.endswith('/') else '/'
@@ -113,8 +118,33 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
         ch.setFormatter(formatter)
         logger.addHandler(ch)
 
-    logger.info('Logger created succesfully')
+    # add logger to the loggers collection
+    meta_config.loggers[module_name] = logger
+    logger.info('Logger created succesfully, loggers: ' + str(meta_config.loggers))
     return logger
+
+
+def add_file_handler(logger, module_name, log_file_dir, log_level='info',
+                     overwrite_file=False):
+    """Add a filehandler to a logger to also direct the output to a file"""
+    from time import strftime
+    import logging
+
+    file_mode = 'w' if overwrite_file else None
+    formatter = logging.Formatter("%(asctime)s - " + module_name +
+                                  ": %(levelname)s - %(message)s")
+
+    if overwrite_file:
+        timeStamp = 'logfile'
+    else:
+        timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
+    log_file_dir += '' if log_file_dir.endswith('/') else '/'
+    log_file_fullname = log_file_dir + module_name
+    fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
+                                                    timeStamp), file_mode)
+    fh.setLevel(getattr(logging, log_level.upper()))
+    fh.setFormatter(formatter)
+    logger.addHandler(fh)
 
 
 def check_var(variable, allowed_range, default=None, logger=None):

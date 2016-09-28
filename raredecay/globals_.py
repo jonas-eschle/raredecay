@@ -54,12 +54,15 @@ import random
 
 from raredecay.tools import output
 from raredecay import meta_config
+from raredecay.run_config import config
 
 #==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
 #==============================================================================
 
 out = output.OutputHandlerExt()
+
+cfg = config
 
 
 def set_output_handler(internal=True):

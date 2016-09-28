@@ -95,7 +95,7 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
     return data_out
 
 
-def make_clf(clf, n_cpu=None):
+def make_clf(clf, n_cpu=None, dict_only=False):
     """Return a classifier-dict. Takes a str, config-dict or clf-dict or clf
 
     Parameters
@@ -1306,4 +1306,5 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
 
     return out_auc
 
-
+if __name__ == "main":
+    print 'test'

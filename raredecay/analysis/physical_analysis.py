@@ -12,6 +12,8 @@ import importlib
 
 import raredecay.meta_config
 
+from memory_profiler import profile
+
 __CFG_PATH = 'raredecay.run_config.'
 DEFAULT_CFG_FILE = dict(
     reweightCV=__CFG_PATH + 'reweight_cfg',
@@ -179,8 +181,8 @@ def rafael1(cfg, logger, out):
                             # may vary around +-0.02. Ask for implementation or make it
                             # by implementing it into the if-elif statement at the beginning
 
-
-def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
+@profile
+def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
     """Test a setup of clf involving bagging and stacking"""
     #import raredecay.analysis.ml_analysis as ml_ana
     import pandas as pd
@@ -200,66 +202,100 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 
 #    data1.make_folds(n_folds)
 #    data2.make_folds(n_folds)
+    output = {}
 
-    print "hi"
     #for i in range(n_folds):
-    xgb_clf = XGBoostClassifier(n_estimators=200, eta=0.1, max_depth=4, nthreads=8)
+    xgb_clf = XGBoostClassifier(n_estimators=350, eta=0.1, max_depth=4, nthreads=3)
     xgb_folded = FoldingClassifier(base_estimator=xgb_clf, stratified=True, parallel_profile='threads-2')
     xgb_bagged = BaggingClassifier(base_estimator=xgb_folded, n_estimators=n_base_clf, bootstrap=False)
+    xgb_bagged = SklearnClassifier(xgb_bagged)
     xgb_bagged = CacheClassifier(name='xgb_bagged1', clf= xgb_bagged)
 
-    rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=400, n_jobs=8))
+    rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=300, n_jobs=3))
     rdf_folded = FoldingClassifier(base_estimator=rdf_clf, stratified=True, parallel_profile='threads-2')
     rdf_bagged = BaggingClassifier(base_estimator=rdf_folded, n_estimators=n_base_clf, bootstrap=False)
-    rdf_bagged = CacheClassifier(name='rdf_bagged1', clf= rdf_bagged)
+    rdf_bagged = SklearnClassifier(rdf_bagged)
+    rdf_bagged = CacheClassifier(name='rdf_bagged1', clf=rdf_bagged)
 
-    gb_clf = SklearnClassifier(GradientBoostingClassifier(n_estimators=76))
-    gb_folded = FoldingClassifier(base_estimator=gb_clf, stratified=True, parallel_profile='threads-2')
+    gb_clf = SklearnClassifier(GradientBoostingClassifier(n_estimators=50))
+    gb_folded = FoldingClassifier(base_estimator=gb_clf, stratified=True, parallel_profile='threads-6')
     gb_bagged = BaggingClassifier(base_estimator=gb_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=5)
-    gb_bagged = CacheClassifier(name='gb_bagged1', clf= gb_bagged)
+    gb_bagged = SklearnClassifier(gb_bagged)
+    gb_bagged = CacheClassifier(name='gb_bagged1', clf=gb_bagged)
 
-    lr_stacker = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag'))
-    xgb_stacker = XGBoostClassifier(n_estimators=200, eta=0.1, max_depth=4, nthreads=8)
+    nn_clf = TheanetsClassifier(layers=[300, 100], hidden_dropout=0.03,
+                       trainers=[{'optimize': 'adadelta', 'patience': 7, 'learning_rate': 0.1, 'min_improvement': 0.01,
+                       'momentum':0.5, 'nesterov':True, 'loss': 'xe'}])
+    nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True)
+    nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False)
+    nn_bagged = CacheClassifier(name='nn_bagged1', clf=nn_bagged)
 
-    stacker = xgb_stacker
 
-    stacker = FoldingClassifier(base_estimator=stacker, n_folds=n_folds,
-                                stratified=True, parallel_profile='threads-10')
+    logit_stacker = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag'))
+    logit_stacker = FoldingClassifier(base_estimator=logit_stacker, n_folds=n_folds,
+                                   stratified=True, parallel_profile='threads-6')
+    logit_stacker = CacheClassifier(name='logit_stacker1', clf=logit_stacker)
+
+    xgb_stacker = XGBoostClassifier(n_estimators=400, eta=0.1, max_depth=4, nthreads=8)
+    xgb_stacker = FoldingClassifier(base_estimator=xgb_stacker, n_folds=n_folds,
+                                    stratified=True, parallel_profile='threads-6')
+    xgb_stacker = CacheClassifier(name='xgb_stacker1', clf=xgb_stacker)
+
+
 #        train1, test1 = data1.get_fold(i)
 #        train2, test2 = data1.get_fold(i)
 #
 #        t_data, t_targets, t_weights =
     data, targets, weights = data1.make_dataset(data2, weights_ratio=1)
+
     xgb_bagged.fit(data, targets, weights)
-    rdf_bagged.fit(data, targets, weights)
-    gb_bagged.fit(data, targets, weights)
+    xgb_report = xgb_bagged.test_on(data, targets, weights)
+    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
+    output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+    xgb_proba = xgb_report.prediction['clf'][:, 1]
+    del xgb_bagged, xgb_folded, xgb_clf, xgb_report
 
-    xgb_report = stacker.test_on(data, targets, weights)
-    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
-    print "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+#    rdf_bagged.fit(data, targets, weights)
+#    rdf_report = rdf_bagged.test_on(data, targets, weights)
+#    rdf_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC rdf_base classifier")
+#    output['rdf_base'] = "roc auc:" + str(rdf_report.compute_metric(metric=RocAuc()))
+#    rdf_proba = rdf_report.prediction['clf'][:, 1]
+#    del rdf_bagged, rdf_clf, rdf_folded, rdf_report
 
-    rdf_report = stacker.test_on(data, targets, weights)
-    rdf_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
-    print "roc auc:" + str(rdf_report.compute_metric(metric=RocAuc()))
+#    gb_bagged.fit(data, targets, weights)
+#    gb_report = gb_bagged.test_on(data, targets, weights)
+#    gb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC gb_base classifier")
+#    output['gb_base'] = "roc auc:" + str(gb_report.compute_metric(metric=RocAuc()))
+#    gb_proba = gb_report.prediction['clf'][:, 1]
+#    del gb_bagged, gb_clf, gb_folded, gb_report
 
-    gb_report = stacker.test_on(data, targets, weights)
-    gb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
-    print "roc auc:" + str(gb_report.compute_metric(metric=RocAuc()))
-
-    xgb_proba = xgb_bagged.predict_proba(data)[:, 1]
-    rdf_proba = rdf_bagged.predict_proba(data)[:, 1]
-    gb_proba = gb_bagged.predict_proba(data)[:, 1]
+    nn_bagged.fit(data, targets, weights)
+    nn_report = nn_bagged.test_on(data, targets, weights)
+    nn_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC nn_base classifier")
+    output['nn_base'] = "roc auc:" + str(nn_report.compute_metric(metric=RocAuc()))
+    nn_proba = nn_report.prediction['clf'][:, 1]
+    del nn_bagged, nn_clf, nn_folded, nn_report
 
     base_predict = pd.DataFrame({'xgb': xgb_proba,
-                                 'rdf': rdf_proba,
-                                 'gb': gb_proba
+#                                 'rdf': rdf_proba,
+                                 #'gb': gb_proba,
+                                 'nn': nn_proba
                                  })
-    print base_predict
 
-    stacker.fit(base_predict, targets, weights)
-    report = stacker.test_on(base_predict, targets, weights)
-    report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC stacked classifier")
-    print "roc auc:" + str(report.compute_metric(metric=RocAuc()))
+
+    xgb_stacker.fit(base_predict, targets, weights)
+    xgb_report = xgb_stacker.test_on(base_predict, targets, weights)
+    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_stacked classifier")
+    output['stacker_xgb'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+    del xgb_stacker, xgb_report
+
+    logit_stacker.fit(base_predict, targets, weights)
+    logit_report = logit_stacker.test_on(base_predict, targets, weights)
+    logit_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC logit_stacked classifier")
+    output['stacker_logit'] = "roc auc:" + str(logit_report.compute_metric(metric=RocAuc()))
+    del logit_stacker, logit_report
+
+    print output
 
 
 
