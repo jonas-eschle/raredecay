@@ -57,8 +57,8 @@ from raredecay.globals_ import out
 # import configuration
 import importlib
 from raredecay import meta_config
-#cfg = importlib.import_module(meta_config.run_config)
-logger = dev_tool.make_logger(__name__, meta_config.DEFAULT_LOGGER_CFG)  #**cfg.logger_cfg)
+cfg = importlib.import_module(meta_config.run_config)
+logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,

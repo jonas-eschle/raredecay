@@ -14,14 +14,12 @@ import cPickle as pickle
 
 from root_numpy import root2array, array2tree
 
-# both produce error (27.07.2016) when importing them if run from main. No problem when run as main...
+# both produce error (27.07.2016) when importing them if run from main.py. No problem when run as main...
 
 
 
 from raredecay.tools import dev_tool
 from raredecay import meta_config
-
-module_logger = dev_tool.make_logger(__name__, **meta_config.DEFAULT_LOGGER_CFG)
 
 
 def add_to_rootfile(rootfile, new_branch, branch_name=None):
@@ -54,7 +52,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         f.write("", TObject.kOverwrite)  # overwrite, does not create friends
 
 
-def format_data_weights(data_to_shape, weights, logger):
+def format_data_weights(data_to_shape, weights):
     """Format the data and the weights perfectly. Same length and more.
 
     Change the data to pandas.DataFrame and fill the weights with ones where
@@ -206,12 +204,10 @@ def to_list(data_in):
     return data_in
 
 
-def to_ndarray(data_in, logger=None, dtype=None, float_array=True):
+def to_ndarray(data_in, dtype=None, float_array=True):
     """Convert data to numpy array (containing only floats)
 
     """
-    if logger is None:
-        logger = module_logger
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
     # change numpy.void to normal floats
@@ -231,13 +227,11 @@ def to_ndarray(data_in, logger=None, dtype=None, float_array=True):
     return data_in
 
 
-def to_pandas(data_in, logger=None, indices=None, columns=None, dtype=None):
+def to_pandas(data_in, indices=None, columns=None, dtype=None):
     """Convert data from numpy or root to pandas dataframe.
 
     Convert data safely to pandas, whatever the format is.
     """
-    if logger is None:
-        logger = module_logger
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
     if is_list(data_in):
@@ -251,7 +245,7 @@ def to_pandas(data_in, logger=None, indices=None, columns=None, dtype=None):
     return data_in
 
 
-def adv_return(return_value, save_name=None, logger=None):
+def adv_return(return_value, save_name=None):
     """Save the value if save_name specified, otherwise just return input
 
     Can be wrapped around the return value. Without any arguments, the return
@@ -266,8 +260,6 @@ def adv_return(return_value, save_name=None, logger=None):
         | The (file-)name for the pickled file. File-extension will be added
         automatically if specified in *raredecay.meta_config*.
         | If *None* is passed, the object won't be pickled.
-    logger : python-logger
-        Can be passed to avoid using the module_logger but to use another one.
 
     Return
     ------
@@ -290,8 +282,6 @@ def adv_return(return_value, save_name=None, logger=None):
       (*the .pickle ending is not required but added automatically if omitted*)
      which returns the value and saves it.
     """
-    if logger is None:
-        logger = module_logger
     if save_name not in (None, False):
         if isinstance(save_name, str):
             save_name = meta_config.PICKLE_PATH + save_name
@@ -299,12 +289,14 @@ def adv_return(return_value, save_name=None, logger=None):
                 save_name += "." + meta_config.PICKLE_DATATYPE
             with open(str(save_name), 'wb') as f:
                 pickle.dump(return_value, f, meta_config.PICKLE_PROTOCOL)
-                logger.info(str(return_value) + " pickled to " + save_name)
+                print str(return_value) + " pickled to " + save_name
         else:
-            logger.error("Could not pickle data, name for file (" +
-                         str(save_name) + ") is not a string!" +
-                         "\n Therefore, the following data was only returned" +
-                         " but not saved! \n Data:" + str(return_value))
+            pass
+#HACK how to solve logger problem?
+#            logger.error("Could not pickle data, name for file (" +
+#                         str(save_name) + ") is not a string!" +
+#                         "\n Therefore, the following data was only returned" +
+#                         " but not saved! \n Data:" + str(return_value))
     return return_value
 
 

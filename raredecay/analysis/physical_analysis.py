@@ -223,8 +223,8 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
     gb_bagged = SklearnClassifier(gb_bagged)
     gb_bagged = CacheClassifier(name='gb_bagged1', clf=gb_bagged)
 
-    nn_clf = TheanetsClassifier(layers=[300, 100], hidden_dropout=0.03,
-                       trainers=[{'optimize': 'adadelta', 'patience': 7, 'learning_rate': 0.1, 'min_improvement': 0.01,
+    nn_clf = TheanetsClassifier(layers=[100, 100], hidden_dropout=0.03,
+                       trainers=[{'optimize': 'adagrad', 'patience': 5, 'learning_rate': 0.1, 'min_improvement': 0.01,
                        'momentum':0.5, 'nesterov':True, 'loss': 'xe'}])
     nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True)
     nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False)

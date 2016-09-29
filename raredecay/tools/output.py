@@ -6,7 +6,6 @@ Created on Sun May  1 12:06:06 2016
 """
 import os
 import sys
-import select
 import subprocess
 import warnings
 import timeit
@@ -212,11 +211,11 @@ class AbstractOutputHandler(object):
     def finalize():
         pass
 
+
 class OutputHandlerExt(AbstractOutputHandler):
 
     def __init__(self):
         super(self.__class__, self).__init__()
-
 
 
     def save_fig(self, figure, plot=True, **kwargs):

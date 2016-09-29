@@ -35,9 +35,8 @@ from raredecay import globals_
 from raredecay.tools import dev_tool
 from raredecay import meta_config
 
-# TODO: remove debugging
-debug1 = 0
-debug2 = 0
+
+
 
 if __name__ == '__main__':
     logger = None  # dev_tool.make_logger(__name__)

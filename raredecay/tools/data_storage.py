@@ -31,12 +31,12 @@ except ImportError:
     out_imported = False
 from raredecay import meta_config
 
-# TODO: import config not needed??
-# import configuration
-#import importlib
-#from raredecay import meta_config
-#cfg = importlib.import_module(meta_config.run_config)
-modul_logger = dev_tool.make_logger(__name__, **meta_config.DEFAULT_LOGGER_CFG)
+## TODO: import config not needed??
+## import configuration
+import importlib
+##from raredecay import meta_config
+cfg = importlib.import_module(meta_config.run_config)
+modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 class HEPDataStorage(object):
