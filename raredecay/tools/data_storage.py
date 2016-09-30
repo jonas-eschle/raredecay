@@ -739,8 +739,9 @@ class HEPDataStorage(object):
             if self._target is None:
                 self.logger.warning("Target list consists of None!")
             out_targets = dev_tool.make_list_fill_var([], length, self._target)
+            out_targets = pd.Series(out_targets, index=index)
 
-        return np.array(out_targets)
+        return out_targets
 
     def _get_targets(self, index=None, weights_as_events=False, min_weight=None):
         """Return targets as pandas Series, crashes the index if weights_as_events!"""
@@ -771,7 +772,7 @@ class HEPDataStorage(object):
                     weight -= 1  # one target is already contained in out_targets
                     temp_target.append([target] * weight)
             out_targets = out_targets.append(temp_target)
-            out_targets = pd.Series(out_targets)
+        out_targets = pd.Series(out_targets, index=index)
 
         return out_targets
 
@@ -998,7 +999,7 @@ class HEPDataStorage(object):
                                      random_state=random_state, shuffle=shuffle)
         return new_lds
 
-    def make_folds(self, n_folds=10):
+    def make_folds(self, n_folds=10, shuffle=True):
         """Create shuffled train-test folds which can be accessed via
         :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
 
@@ -1018,9 +1019,7 @@ class HEPDataStorage(object):
             just take one fold.
         """
         if n_folds <= 1:
-            self.logger.error("Wrong number of folds. Set to default 10")
-            n_folds = 10
-            meta_config.error_occured()
+            raise ValueError("Number of folds has to be higher then 1")
 
         self._fold_index = []
 
@@ -1029,11 +1028,12 @@ class HEPDataStorage(object):
         temp_indeces = [int(round(length/n_folds)) * i for i in range(n_folds)]
         temp_indeces.append(length)  # add last index. len(index) = n_folds + 1
 
-        # get a copy of index and shuffle it
-        temp_shuffled = copy.deepcopy(self._make_index())
-        random.shuffle(temp_shuffled)
+        # get a copy of index and shuffle it if True
+        temp_index = copy.deepcopy(self._make_index())
+        if shuffle:
+            random.shuffle(temp_index)
         for i in range(n_folds):
-            self._fold_index.append(temp_shuffled[temp_indeces[i]:temp_indeces[i + 1]])
+            self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
 
     def get_fold(self, fold):
         """Return the specified fold: train and test data as instance of

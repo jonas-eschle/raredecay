@@ -229,9 +229,9 @@ hyper_cfg = dict(
     generator='subgrid',  # how to search the hyperspace {'subgrid', 'regression', 'random}
                              # or the feature space {'backwards'}
     optimize_features=False,
-    n_evaluations=5,  # how many points in hyperspace to look at
+    n_evaluations=1,  # how many points in hyperspace to look at
     n_folds=10,  # split the data in n_folds
-    n_fold_checks=3  # how many folds to create and check on. n_fold_checks <= n_folds
+    n_fold_checks=1  # how many folds to create and check on. n_fold_checks <= n_folds
 )
 
 #------------------------------------------------------------------------------

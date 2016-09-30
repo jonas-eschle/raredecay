@@ -33,15 +33,16 @@ def run(run_mode, cfg_file=None):
         cfg_file = DEFAULT_CFG_FILE.get(run_mode, None)
         assert cfg_file is not None, "No (default) cfg-file found."
     raredecay.meta_config.run_config = cfg_file
+    raredecay.meta_config.NO_PROMPT_ASSUME_YES = False
+    raredecay.meta_config.PROMPT_FOR_COMMENT = True
+
 
     # import configuration-file
     cfg = importlib.import_module(raredecay.meta_config.run_config)
 
     # initialize
-    from raredecay.globals_ import set_output_handler
-    set_output_handler(internal=True)
     from raredecay.globals_ import out
-    out.initialize(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
+    out.initialize_save(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
     out.add_output(["config file used", str(raredecay.meta_config.run_config)],
                     section="Configuration", obj_separator=" : ", to_end=True)
 
@@ -181,11 +182,12 @@ def rafael1(cfg, logger, out):
                             # may vary around +-0.02. Ask for implementation or make it
                             # by implementing it into the if-elif statement at the beginning
 
-@profile
-def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
+#@profile
+def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     """Test a setup of clf involving bagging and stacking"""
     #import raredecay.analysis.ml_analysis as ml_ana
     import pandas as pd
+    import copy
 
     from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
     from rep.metaml.folding import FoldingClassifier
@@ -209,7 +211,15 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
     xgb_folded = FoldingClassifier(base_estimator=xgb_clf, stratified=True, parallel_profile='threads-2')
     xgb_bagged = BaggingClassifier(base_estimator=xgb_folded, n_estimators=n_base_clf, bootstrap=False)
     xgb_bagged = SklearnClassifier(xgb_bagged)
+    xgb_big_stacker = copy.deepcopy(xgb_bagged)
     xgb_bagged = CacheClassifier(name='xgb_bagged1', clf= xgb_bagged)
+    
+    
+    xgb_single = XGBoostClassifier(n_estimators=350, eta=0.1, max_depth=4, nthreads=3)
+    xgb_single = FoldingClassifier(base_estimator=xgb_single, stratified=True,
+                                   n_folds=10, parallel_profile='threads-2')
+    xgb_single = CacheClassifier(name='xgb_singled1', clf= xgb_single)                                   
+
 
     rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=300, n_jobs=3))
     rdf_folded = FoldingClassifier(base_estimator=rdf_clf, stratified=True, parallel_profile='threads-2')
@@ -223,11 +233,11 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
     gb_bagged = SklearnClassifier(gb_bagged)
     gb_bagged = CacheClassifier(name='gb_bagged1', clf=gb_bagged)
 
-    nn_clf = TheanetsClassifier(layers=[100, 100], hidden_dropout=0.03,
-                       trainers=[{'optimize': 'adagrad', 'patience': 5, 'learning_rate': 0.1, 'min_improvement': 0.01,
-                       'momentum':0.5, 'nesterov':True, 'loss': 'xe'}])
-    nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True)
-    nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False)
+    nn_clf = TheanetsClassifier(layers=[300, 300], hidden_dropout=0.03,
+                       trainers=[{'optimize': 'adagrad', 'patience': 5, 'learning_rate': 0.2, 'min_improvement': 0.1,
+                       'momentum':0.4, 'nesterov':True, 'loss': 'xe'}])
+    nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True, parallel_profile='threads-6')
+    nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=6)
     nn_bagged = CacheClassifier(name='nn_bagged1', clf=nn_bagged)
 
 
@@ -237,6 +247,8 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
     logit_stacker = CacheClassifier(name='logit_stacker1', clf=logit_stacker)
 
     xgb_stacker = XGBoostClassifier(n_estimators=400, eta=0.1, max_depth=4, nthreads=8)
+    #HACK
+    xgb_stacker = xgb_big_stacker
     xgb_stacker = FoldingClassifier(base_estimator=xgb_stacker, n_folds=n_folds,
                                     stratified=True, parallel_profile='threads-6')
     xgb_stacker = CacheClassifier(name='xgb_stacker1', clf=xgb_stacker)
@@ -254,6 +266,13 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=2):
     output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
     xgb_proba = xgb_report.prediction['clf'][:, 1]
     del xgb_bagged, xgb_folded, xgb_clf, xgb_report
+    
+    xgb_single.fit(data, targets, weights)
+    xgb_report = xgb_single.test_on(data, targets, weights)
+    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
+    output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+    xgb_proba = xgb_report.prediction['clf'][:, 1]
+    del xgb_single, xgb_report
 
 #    rdf_bagged.fit(data, targets, weights)
 #    rdf_report = rdf_bagged.test_on(data, targets, weights)
@@ -307,9 +326,9 @@ def _hyper_optimization_int(cfg, logger, out):
     target_data = data_storage.HEPDataStorage(**cfg.data['hyper_target'])
 
 #HACK
-    clf_mayou(data1=original_data, data2=target_data)
-    print "hack in use, physical analysis; _hyper_optimization_int"
-    return
+#    clf_mayou(data1=original_data, data2=target_data)
+#    print "hack in use, physical analysis; _hyper_optimization_int"
+#    return
 #HACK END
     #original_data.plot()
 
@@ -323,23 +342,30 @@ def _hyper_optimization_int(cfg, logger, out):
     optimize_features = cfg.hyper_cfg.get('optimize_features', False)
     features = cfg.opt_features
 
-    hyper_optimization(original_data=original_data, target_data=target_data,
-                       features=features, optimize_features=optimize_features,
-                       clf=clf, config_clf=config_clf, n_eval=n_eval,
-                       n_checks=n_checks, n_folds=n_folds, generator_type=generator_type)
+    if optimize_features:
+        hyper_optimization(original_data=original_data, target_data=target_data,
+                           features=features, optimize_features=True,
+                           clf=clf, config_clf=config_clf, n_eval=n_eval,
+                           n_checks=n_checks, n_folds=n_folds, generator_type=generator_type)
+    else:
+        hyper_optimization(original_data=original_data, target_data=target_data,
+                           features=features, optimize_features=False,
+                           clf=clf, config_clf=config_clf, n_eval=n_eval,
+                           n_checks=n_checks, n_folds=n_folds, generator_type=generator_type)
 
 
 
-def hyper_optimization(original_data, target_data, clf, config_clf, n_eval, features,
-                       n_checks=10, n_folds=10, generator_type="subgrid", optimize_features=False):
+def hyper_optimization(original_data, target_data, clf, config_clf, n_eval, features=None,
+                       n_checks=10, n_folds=10, generator_type='subgrid', take_targets_from_data=False):
     """Perform hyperparameter optimization in this module"""
     import raredecay.analysis.ml_analysis as ml_ana
 
     ml_ana.optimize_hyper_parameters(original_data, target_data, features=features,
                                      clf=clf, config_clf=config_clf,
-                                     optimize_features=optimize_features,
+                                     optimize_features=False,
                                      n_eval=n_eval, n_checks=n_checks, n_folds=n_folds,
-                                     generator_type=generator_type)
+                                     generator_type=generator_type,
+                                     take_target_from_data=take_targets_from_data)
 
     original_data.plot(figure="data comparison", title="data comparison", columns=features)
     target_data.plot(figure="data comparison", columns=features)
@@ -475,7 +501,7 @@ def _reweightCV_int(cfg, logger, out):
 
 
 def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=None, scoring=True,
-             columns=None, make_plots=True, apply_weights=True):
+             n_folds_scoring=10, columns=None, make_plots=True, apply_weights=True):
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
@@ -491,11 +517,14 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
+    if not apply_weights:
+        old_weights = mc_data.get_weights()
     Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
                                         meta_cfg=reweight_cfg, columns=columns,
                                         reweighter=reweighter, mcreweighted_as_real_score=scoring,
                                         n_folds=n_folds, make_plot=make_plots)
     new_weights = Kfold_output.pop('weights')
+    new_weights.sort_index()
     if scoring:
         output['mcreweighted_as_real_score'] = Kfold_output
 
@@ -510,16 +539,16 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # reliable or understandable at all. The output, the scores dictionary,
     # is better described in the docs of the train_similar
     scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
-                                   n_folds=n_folds, n_checks=n_folds, test_predictions=False,
-                                   make_plots=make_plots)
+                                   n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+                                   test_predictions=False, make_plots=make_plots)
 
     # We can of course also test the normal ROC curve. This is weak to overfitting
     # but anyway (if not overfitting) a nice measure. You insert two datasets
     # and do the normal cross-validation on it. It's quite a multi-purpose
     # function depending on what validation is. If it is an integer, it means:
     # do cross-validation with n(=validation) folds.
-    tmp_, classify_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                           validation=n_folds, make_plots=make_plots)
+    tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
+                                           validation=n_folds_scoring, make_plots=make_plots)
 
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
@@ -535,7 +564,9 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
 
     output['weights'] = new_weights
     output['train_similar'] = scores
-    output['roc_auc'] = classify_score
+    output['roc_auc'] = roc_auc_score
+    if not apply_weights:
+        mc_data.set_weights(old_weights)
 
     return output
 

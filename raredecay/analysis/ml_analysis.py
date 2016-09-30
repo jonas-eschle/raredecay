@@ -257,15 +257,14 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
     # Create parameter for clf and hyper-search
     if not dev_tool.is_in_primitive(config_clf.get('features', None)):
         features = config_clf.get('features', None)
-    if optimize_features:
-        if features is None:
-            features = original_data.columns
+    if features is None:
+        features = original_data.columns
+        if optimize_features:
             meta_config.warning_occured()
             logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
                            "Features for feature-optimization will be taken from data.")
-
-
-    else:
+                           
+    if not optimize_features:
         grid_param = {}
         list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
         for key, val in config_clf.items():
@@ -329,7 +328,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
     if optimize_features:
         grid_param = features
 
-    #TODO: insert time estimation
+    #TODO: insert time estimation for feature optimization
 
 
 
@@ -410,7 +409,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
                     difference = max_auc - temp_auc
                     temp_dict = {feature: round(temp_auc, 4)}
 
-            if difference >= meta_config.max_difference_feature_selection:
+            if difference >= max_difference:
                 break
             else:
                 roc_auc.update(temp_dict)
