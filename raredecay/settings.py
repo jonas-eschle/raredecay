@@ -13,6 +13,37 @@ from raredecay.run_config import config
 from raredecay import meta_config
 
 
+def initialize(file_path=None, run_name="Test run", overwrite_existing=False,
+               run_message="This is a test-run to test the package", verbosity=5,
+               logger_console_level='warning', logger_file_level='debug',
+               prompt_for_input=True, n_cpu=-1, gpu_in_use=False):
+    """Place before Imports! Initialize/change several parameters for the package"""
+    _init_user_input(prompt_for_input=prompt_for_input)
+    logger_file_level = None if file_path is None else logger_file_level
+    _init_configure_logger(console_level=logger_console_level,
+                           file_level=logger_file_level)
+    if file_path is not None:
+        _init_output_to_file(file_path=file_path, run_name=run_name,
+                             overwrite_existing=overwrite_existing,
+                             run_message=run_message)
+    else:
+        _init_output_to_file(file_path=None, run_name=run_name,
+                             prompt_for_input=prompt_for_input)
+
+
+def finalize():
+    """Finalize the run, (save figures and output) and return output"""
+    out = get_output_handler()
+    output = out.finalize()
+    return output
+
+
+def get_output_handler():
+    """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`"""
+    from raredecay.globals_ import out
+    return out
+
+
 def parallel_profile(n_cpu=-1, gpu_in_use=False):
     """Set the parallel profile, the n_cpu to use
 
@@ -41,23 +72,32 @@ def parallel_profile(n_cpu=-1, gpu_in_use=False):
     meta_config.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
 
 
-def init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
-                   run_message="This is a test-run to test the package"):
+def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
+                         run_message="This is a test-run to test the package", prompt_for_input=False):
     """Saves output to file"""
-    assert isinstance(file_path, str), "file_path has to be a string"
     assert isinstance(run_name, (str, int)), "run_name has to be a string or int"
-
-    file_path = str(file_path) if isinstance(file_path, int) else file_path
-    file_path += "" if file_path.endswith("/") else "/"
-
     config.RUN_NAME = str(run_name)
-    config.run_message = str(run_message)
-    config.OUTPUT_CFG['output_path'] = file_path
     config.OUTPUT_CFG['run_name'] = str(run_name)
-    config.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
+
+    if file_path is not None:
+        assert isinstance(file_path, str), "file_path has to be a string"
+
+        file_path = str(file_path) if isinstance(file_path, int) else file_path
+        file_path += "" if file_path.endswith("/") else "/"
+
+        config.run_message = str(run_message)
+        config.OUTPUT_CFG['output_path'] = file_path
+        config.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
+
+        out = get_output_handler()
+        out.initialize_save(logger_cfg=config.logger_cfg, **config.OUTPUT_CFG)
+    else:
+        out = get_output_handler()
+        out.initialize(run_name=run_name, prompt_for_comment=prompt_for_input)
 
 
-def init_configure_logger(console_level='critical', file_level='debug'):
+
+def _init_configure_logger(console_level='critical', file_level='debug'):
     """Call before imports! Set the logger-level
 
     The package contains several loggers which will print/save to file some
@@ -74,7 +114,8 @@ def init_configure_logger(console_level='critical', file_level='debug'):
         at all.
     """
     if console_level is None and file_level is None:
-        logging_mode = None
+        logging_mode = 'file'
+        console_level = 'critical'
     elif console_level is None:
         logging_mode = 'file'
     elif file_level is None:
@@ -92,7 +133,8 @@ def init_configure_logger(console_level='critical', file_level='debug'):
     config.logger_cfg['log_file_name'] = 'logfile_'
 
 
-def init_user_input(prompt_for_input=True):
+def _init_user_input(prompt_for_input=True):
     """If called, you will be asked for input to name the specific run"""
-    pass
+    meta_config.NO_PROMPT_ASSUME_YES = not prompt_for_input
+    meta_config.PROMPT_FOR_COMMENT = prompt_for_input
 

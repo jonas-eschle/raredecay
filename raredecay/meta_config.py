@@ -48,7 +48,7 @@ import multiprocessing
 # General run parameters
 #------------------------------------------------------------------------------
 
-PROMPT_FOR_COMMENT=True  # let you add an extension to the run/file name
+PROMPT_FOR_COMMENT=False  # let you add an extension to the run/file name
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
@@ -114,7 +114,7 @@ SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
 # trailing number) will be created. There can be set a limit to prevent a full
 # disk in case of an endless loop-error or similar.
 MAX_AUTO_FOLDERS = 10000  # max number of auto-generated folders by initialize
-NO_PROMPT_ASSUME_YES = False  # no userinput required, assumes yes (e.g. when overwritting files)
+NO_PROMPT_ASSUME_YES = True  # no userinput required, assumes yes (e.g. when overwritting files)
 MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (like not able to save figure etc.)
                         # Criticals will end the run anyway.
 MAX_FIGURES = 1000  # max number of figures to be plotted
@@ -150,7 +150,7 @@ DEFAULT_SAVE_FIG = dict(
     file_format=['png', 'svg'],  # default: ['png', 'svg'], the file formats
                                  # to be saved to. For implementations, see OutputHandler()
     to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
-    plot=True,  # whether to plot the figure. If False, the figure will only be saved
+    importance=2
     #save_cfg=None
 )
 
@@ -159,7 +159,7 @@ DEFAULT_SAVE_FIG = dict(
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
     to_pickle=True,
-    plot=True,
+    importance=4
     #save_cfg=None
 )
 
@@ -296,9 +296,25 @@ DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace 
 # START INTERNAL CONFIGURATION - DO NOT CHANGE
 #==============================================================================
 
-run_config = None  # manipulated by OutputHandler()
+run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
 
 loggers = {}
+
+verbosity = 5
+def set_verbosity(new_verbosity):
+    global verbosity
+    verbosity = round(new_verbosity)
+    _check_verbosity(verbosity)
+
+plot_verbosity = 5
+def set_plot_verbosity(new_plot_verbosity):
+    global plot_verbosity
+    plot_verbosity = round(new_plot_verbosity)
+    _check_verbosity(plot_verbosity)
+
+def _check_verbosity(verbosity):
+    if verbosity not in range(6):
+        raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
 
 #------------------------------------------------------------------------------
 # parallel profile

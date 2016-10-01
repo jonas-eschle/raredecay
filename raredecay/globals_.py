@@ -60,17 +60,17 @@ from raredecay.run_config import config
 # Output handler. Contains methods "initialize" and "finalize"
 #==============================================================================
 
-out = output.OutputHandlerExt()
+out = output.OutputHandler()
 
 cfg = config
+logger_cfg = cfg.logger_cfg  # only if not save_output
 
-
-def set_output_handler(internal=True):
-  global out
-  if internal:
-    out = output.OutputHandlerInt()
-  else:
-    out = output.OutputHandlerExt()
+#def set_output_handler(internal=True):
+#  global out
+#  if internal:
+#    out = output.OutputHandlerInt()
+#  else:
+#    out = output.OutputHandlerExt()
 
 #==============================================================================
 # Random integer generator for pseudo random generator (or other things)

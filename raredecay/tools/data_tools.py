@@ -22,6 +22,26 @@ from raredecay.tools import dev_tool
 from raredecay import meta_config
 
 
+def make_root_dict(path_to_rootfile, tree_name, branches):
+    """Returns a root_numpy compatible "root-dict" of a root-tree
+
+    Parameters
+    ----------
+    path_to_rootfile : str
+        The exact path to the root-tree including the filename. Example:
+        /home/user1/data/myRootTree1.root
+    tree_name : str
+        The name of the tree
+    branches : str or list[str, str, str,... ]
+        The branches of the tree to use
+    """
+    output = dict(
+    filenames=path_to_rootfile,
+    treename=tree_name,
+    branches=branches)
+    return output
+
+
 def add_to_rootfile(rootfile, new_branch, branch_name=None):
     """Adds a new branch to a given root file, overwrites.
 
