@@ -1059,10 +1059,10 @@ class HEPDataStorage(object):
         n_folds = len(self._fold_index)
         test_DS = self.copy_storage(index=test_index)
         test_DS._fold_status = (fold, n_folds)
-        test_DS.fold_name = "test set fold " + str(fold) + " of " + str(n_folds)
+        test_DS.fold_name = "test set fold " + str(fold + 1) + " of " + str(n_folds)  # + 1 human-readable
         train_DS = self.copy_storage(index=train_index)
         train_DS._fold_status = (fold, n_folds)
-        train_DS.fold_name = "train set fold " + str(fold) + " of " + str(n_folds)
+        train_DS.fold_name = "train set fold " + str(fold + 1) + " of " + str(n_folds)
         return train_DS, test_DS
 
 

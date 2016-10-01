@@ -150,7 +150,7 @@ DEFAULT_SAVE_FIG = dict(
     file_format=['png', 'svg'],  # default: ['png', 'svg'], the file formats
                                  # to be saved to. For implementations, see OutputHandler()
     to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
-    plot=True,  # whether to plot the figure. If False, the figure will only be saved
+    importance=2
     #save_cfg=None
 )
 
@@ -159,7 +159,7 @@ DEFAULT_SAVE_FIG = dict(
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
     to_pickle=True,
-    plot=True,
+    importance=4
     #save_cfg=None
 )
 
@@ -299,6 +299,22 @@ DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace 
 run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
 
 loggers = {}
+
+verbosity = 5
+def set_verbosity(new_verbosity):
+    global verbosity
+    verbosity = round(new_verbosity)
+    _check_verbosity(verbosity)
+
+plot_verbosity = 5
+def set_plot_verbosity(new_plot_verbosity):
+    global plot_verbosity
+    plot_verbosity = round(new_plot_verbosity)
+    _check_verbosity(plot_verbosity)
+
+def _check_verbosity(verbosity):
+    if verbosity not in range(6):
+        raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
 
 #------------------------------------------------------------------------------
 # parallel profile

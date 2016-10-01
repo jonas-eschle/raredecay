@@ -27,7 +27,7 @@ class OutputHandler(object):
 
     __SAVE_STDOUT = sys.stdout
     IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
-    _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.' '/']
+    _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.']
     _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
 
     def __init__(self):
@@ -58,8 +58,8 @@ class OutputHandler(object):
         elif not self._is_initialized and return_error:
             raise Exception("OutputHandler not initialized! You have to initialize it first")
 
-    def initialize_save(self, output_path, run_name=" ", output_folders=None,
-                        del_existing_folders=False, logger_cfg=None, **config_kw):
+    def initialize_save(self, output_path, run_name="", run_message="", output_folders=None,
+                        del_existing_folders=False, logger_cfg=None):
         """Initializes the run. Creates the neccesary folders.
 
         Parameter
@@ -134,6 +134,8 @@ class OutputHandler(object):
                                          gpu_in_use=meta_config.use_gpu)
 
         self._is_initialized = True
+        self.add_output(run_message, title="Run: " + self._run_name, importance=0,
+                        subtitle="Comments about the run")
 
 
     def initialize(self, run_name="", prompt_for_comment=False):
@@ -198,7 +200,8 @@ class OutputHandler(object):
             self.add_output(self._IO_string.getvalue(), **add_output_kwarg)
         return self._IO_string.getvalue()
 
-    def save_fig(self, figure, file_format=None, to_pickle=True, plot=True, **save_cfg):
+    def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
+                 **save_cfg):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
         certain figure at the end of the run.
 
@@ -217,6 +220,13 @@ class OutputHandler(object):
         figure : instance of :class:`matplotlib.figure.Figure` (e.g. returned
             by :func:`matplotlib.figure`)
             The figure to be saved.
+        importance : {0, 1, 2, 3, 4, 5}
+            Specify the importance level, ranging from 1 to 5, of the plot.
+            The higher the importance level, the more important.
+            If the importance level is *higher*
+            the more it will be plotted. If it is plotted depends on the
+            plot verbosity set (5 - importance_level < plot_verbosity).
+            Therefore, a 0 corresponds to "no plot" and a 5 means "always plot".
         file_format : str or list(str, str, str,...)
             The ending of the desired format, example: 'png' (default).
             If you don't want to save it, enter a blank list.
@@ -228,6 +238,7 @@ class OutputHandler(object):
         **save_cfg : keyword args
             Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`
         """
+        plot = 5 - round(importance) < meta_config.plot_verbosity  # to plot or not to plot
 
         if self._save_output:
             self._pickle_folder = self._pickle_folder or to_pickle
@@ -256,7 +267,7 @@ class OutputHandler(object):
                 figure = plt.figure(figure)
 
     def _figure_to_file(self):
-        """Write all figure from the _figures dictionary to file"""
+        """Write all figures from the _figures dictionary to file"""
 
         # check if there are figures to plot, else return
         if self._figures == {}:
@@ -326,9 +337,9 @@ class OutputHandler(object):
             out_str += "\n" + title_format[1] * len(title) + "\n"
         return out_str
 
-    def add_output(self, data_out, to_end=False, title=None, subtitle=None,
-                   section=None, obj_separator=" ", data_separator="\n\n",
-                   do_print=True, force_newline=True):
+    def add_output(self, data_out, to_end=False, importance=3, title=None,
+                   subtitle=None, section=None, obj_separator=" ",
+                   data_separator="\n\n", force_newline=True):
         """A method to collect the output and format it nicely.
 
         All the objects in data_out get converted to strings and concatenated
@@ -351,6 +362,11 @@ class OutputHandler(object):
             If True, the data will be added at the end of the file and not
             printed. For example all information which is not interesting in
             the run but maybe later, like configuration, version number etc.
+        importance : int {0, 1, 2, 3, 4, 5}
+            The importance of the output. The higher, the more likely it gets
+            printed (otherwise only saved). A 0 means "don't print, only save".
+            The decisive variable is the verbosity level. The lower the
+            verbosity level, the less likely the output will be printed.
         title : str
             The title of the data_out, like "roc auc of different classifiers".
             If None, no title will be set.
@@ -365,9 +381,6 @@ class OutputHandler(object):
             | Separates the data_outs from each other. Inserted at the end and
               creates a separation from the next call of add_output.
             | Default is a blank line as separation: '\n\n'.
-        do_print : boolean
-            If True, the data will not only be added to the output but
-            also printed when add_output is called.
         force_newline : boolean
             If true, the data_out will be written on a new line and not just
             concatenated to the data written before
@@ -376,6 +389,7 @@ class OutputHandler(object):
         assert isinstance(obj_separator, str), (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
         assert isinstance(data_separator, str), (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
         self._check_initialization()
+        do_print = 5 - round(importance) < meta_config.verbosity
 
         data_out = dev_tool.make_list_fill_var(data_out)
         temp_out = ""
@@ -420,56 +434,58 @@ class OutputHandler(object):
 
     def finalize(self):
 
+        #TODO remove?: self._check_initialization(return_error=True)
+
+
+
+        from raredecay.globals_ import randint  # here to avoid circular dependencies
+
+#==============================================================================
+#  write all the necessary things to the output
+#==============================================================================
+
+        self.add_output("\n", title="END OF RUN " + self._run_name, importance=4)
+        self.add_output(["randint", randint], title="Different parameters",
+            obj_separator=" : ", importance=1)
+
+        # print the output which should be printed at the end of the run
+        sys.stdout.write(self._loud_end_output)
+        self.output += self.end_output
+
+        # add current version (if available)
         if self._save_output:
-            from raredecay.globals_ import randint  # here to avoid circular dependencies
-
-    #==============================================================================
-    #  write all the necessary things to the output
-    #==============================================================================
-
-            self.add_output("\n", title="END OF RUN " + self._run_name, do_print=True)
-            self.add_output(["randint", randint], title="Different parameters",
-                obj_separator=" : ", do_print=False)
-
-            # print the output which should be printed at the end of the run
-            sys.stdout.write(self._loud_end_output)
-            self.output += self.end_output
-
-            # add current version (if available)
             try:
                 git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH, "describe"])
                 self.add_output(["Program version from Git", git_version], section="Git information",
-                                do_print=False, obj_separator=" : ")
+                                importance=0, obj_separator=" : ")
             except:
                 meta_config.error_occured()
                 self.logger.error("Could not get version number from git")
 
-            # time information
-            elapsed_time = timeit.default_timer() - self._start_timer
-            elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-            self.add_output(["Run startet at", self._start_time, "\nand lasted for",
-                             elapsed_time], section="Time information", obj_separator=" ")
+        # time information
+        elapsed_time = timeit.default_timer() - self._start_timer
+        elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
+        self.add_output(["Run startet at", self._start_time, "\nand lasted for",
+                         elapsed_time], section="Time information", obj_separator=" ")
 
-            output = copy.deepcopy(self.output)
+        # error information
+        self.add_output(["Errors encountered during run", meta_config._error_count],
+            obj_separator=" : ")
+        self.add_output(["Warnings encountered during run", meta_config._warning_count],
+            obj_separator=" : ")
 
+        output = copy.deepcopy(self.output)
 
+#==============================================================================
+#       save output to file
+#==============================================================================
+        if self._save_output:
 
-    #==============================================================================
-    #  save figures to file
-    #==============================================================================
-
+            # save figures to file
             self._figure_to_file()
 
-    #==============================================================================
-    #   copy the config file and save
-    #==============================================================================
-
-           # TODO: copy config file. Necessary?
-
-
-    #==============================================================================
-    #   write output to file
-    #==============================================================================
+            # Write output to file
+            #---------------------
 
             # remove leading blank lines
             for i in xrange(1,100):
@@ -485,16 +501,9 @@ class OutputHandler(object):
                 self.logger.error("Could not save output to file")
                 meta_config.error_occured()
                 warnings.warn("Could not save output. Check the logs!", RuntimeWarning)
-            #del temp_out_file  # block abuse
-            self.add_output(["Errors encountered during run", meta_config._error_count],
-                obj_separator=" : ")
-            self.add_output(["Warnings encountered during run", meta_config._warning_count],
-                obj_separator=" : ")
 
-    #==============================================================================
-    #    if a folder to overwrite exists, delete it and move the temp folder
-    #==============================================================================
 
+            # if a folder to overwrite exists, delete it and move the temp folder
             if self._path_to_be_overriden is not None:
                 if not meta_config.NO_PROMPT_ASSUME_YES:
                     stop_del = raw_input("ATTENTION! The folder " + self._path_to_be_overriden +
@@ -514,395 +523,5 @@ class OutputHandler(object):
             subprocess.call(['rm', path + 'run_NOT_finished'])
             subprocess.call(['touch', path + 'run_finished_succesfully'])  # .finished shows if the run finished
 
-        else:
-
-            self._check_initialization(return_error=True)
-            """Finalize an external called run"""
-            from raredecay.globals_ import randint  # here to avoid circular dependencies
-
-        #==============================================================================
-        #  write all the necessary things to the output
-        #==============================================================================
-            self.add_output("\n", title="END OF RUN " + self._run_name, do_print=True)
-            self.add_output(["randint", randint], title="Different parameters",
-                obj_separator=" : ", do_print=False)
-
-            # print the output which should be printed at the end of the run
-            sys.stdout.write(self._loud_end_output)
-            self.output += self.end_output
-
-            # time information
-            elapsed_time = timeit.default_timer() - self._start_timer
-            elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-            self.add_output(["Method called at", self._start_time, "\nand lasted for",
-                             elapsed_time], section="Time information", obj_separator=" ")
-
-            self.add_output(["Errors encountered during run", meta_config._error_count],
-                obj_separator=" : ")
-            self.add_output(["Warnings encountered during run", meta_config._warning_count],
-                obj_separator=" : ")
-            output = copy.deepcopy(self.output)
-
-            self._is_initialized = False
         del self.output, self._loud_end_output, self.end_output
         return output
-
-
-#class OutputHandlerExt(AbstractOutputHandler):
-#
-#
-##    def save_fig(self, figure, plot=True, **kwargs):
-##        """Dummy save method, plots only"""
-##        self._check_initialization()
-##        if plot and isinstance(figure, (int, str)):
-##            figure = plt.figure(figure)
-#
-#    def initialize(self, output_path=None, logger_cfg=None, **kwargs):
-#        """Initialization for external use, no folders created"""
-#
-#        # initialize defaults
-#        logger_cfg = {} if logger_cfg is None else logger_cfg
-#        self._logger_cfg = dict(meta_config.DEFAULT_LOGGER_CFG, **logger_cfg)
-#
-#
-#
-#        self._is_initialized = True
-#
-#    def finalize(self):
-#        self._check_initialization(return_error=True)
-#        """Finalize an external called run"""
-#        from raredecay.globals_ import randint  # here to avoid circular dependencies
-#
-##==============================================================================
-##  write all the necessary things to the output
-##==============================================================================
-#
-#        self.add_output(["randint", randint], title="Different parameters",
-#            obj_separator=" : ", do_print=False)
-#
-#        # print the output which should be printed at the end of the run
-#        sys.stdout.write(self._loud_end_output)
-#        del self._loud_end_output
-#        self.output += self.end_output
-#
-#        # time information
-#        elapsed_time = timeit.default_timer() - self._start_timer
-#        elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-#        self.add_output(["Method called at", self._start_time, "\nand lasted for",
-#                         elapsed_time], section="Time information", obj_separator=" ")
-#
-#        self.add_output(["Errors encountered during run", meta_config._error_count],
-#            obj_separator=" : ")
-#        self.add_output(["Warnings encountered during run", meta_config._warning_count],
-#            obj_separator=" : ")
-#        output = copy.deepcopy(self.output)
-#        del self.output, self._loud_end_output, self.end_output
-#        self._is_initialized = False
-#        return output
-
-#class OutputHandlerInt(AbstractOutputHandler):
-#    """A class that can handle different kind of outputs and save them to file.
-#
-#    """
-
-
-
-#    def __init__(self):
-#        super(self.__class__, self).__init__()
-#        self._output_path = None
-#        self._output_folders = None
-#        self._path_to_be_overriden = None
-#        self._figures = {}
-#        self._formats_used = set([])
-#        self._pickle_folder = False
-
-
-#    def get_logger_path(self):
-#        """Return the path for the log folder"""
-#        path_out = self._output_path + self._output_folders.get('log')
-#        path_out += '' if path_out.endswith('/') else '/'
-#        return path_out
-#
-#    def get_plots_path(self):
-#        """Return the path for the log folder"""
-#        path_out = self._output_path + self._output_folders.get('plots')
-#        path_out += '' if path_out.endswith('/') else '/'
-#        return path_out
-
-
-#    def save_fig(self, figure, file_format=None, to_pickle=True, plot=True, **save_cfg):
-#        """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
-#        certain figure at the end of the run.
-#
-#        To create and save a figure, you just enter an already created or a new
-#        figure as a parameter and specify the fileformats it should be saved
-#        to. The figure can also be pickled so that it can be re-plotted
-#        anytime.
-#
-#
-#        .. note:: The figure will be saved at the end of the run
-#            (by calling :py:meth:`~raredecay.tools.output.OutputHandler.finalize`)
-#            so any change you made until the end will be applied to the plot.
-#
-#        Parameter
-#        ---------
-#        figure : instance of :class:`matplotlib.figure.Figure` (e.g. returned
-#            by :func:`matplotlib.figure`)
-#            The figure to be saved.
-#        file_format : str or list(str, str, str,...)
-#            The ending of the desired format, example: 'png' (default).
-#            If you don't want to save it, enter a blank list.
-#        to_pickle : boolean
-#            If True, the plot will be saved to a pickle file.
-#        plot : boolean
-#            If True, the figure will be showed when calling *show()*. If
-#            False, the figure will only be saved but not plotted.
-#        **save_cfg : keyword args
-#            Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`
-#        """
-#        self._pickle_folder = self._pickle_folder or to_pickle
-#        if isinstance(figure, (int, str)):
-#            figure = plt.figure(figure)
-#
-#        file_format = ['png', 'svg'] if file_format is None else file_format
-#        if isinstance(file_format, str):
-#            file_format = [file_format]
-#        file_format = set(file_format)
-#        file_format.intersection_update(self.IMPLEMENTED_FORMATS)
-#        self._formats_used.update(file_format)
-#
-#        # change layout of figures
-##        figure.tight_layout()
-# #       figure.set_figheight(20)
-#  #      figure.set_figwidth(20)
-#
-#        # add figure to dict for later output to file
-#        figure_dict = {'figure': figure, 'file_format': file_format,
-#                       'to_pickle': to_pickle, 'plot': plot, 'save_cfg': save_cfg}
-#        self._figures[figure.canvas.get_window_title()] = figure_dict
-
-#    def _figure_to_file(self):
-#        """Write all figure from the _figures dictionary to file"""
-#
-#        # check if there are figures to plot, else return
-#        if self._figures == {}:
-#            self.logger.info("_figure_to_file called but nothing to plot")
-#            return None
-#
-#        # create folders if they don't exist already
-#        path = self.get_plots_path()
-#        for format_ in self._formats_used:
-#            assert isinstance(format_, str), "Format is not a string: " + str(format_)
-#            subprocess.call(['mkdir', '-p', path + format_])
-#        if self._pickle_folder:
-#            subprocess.call(['mkdir', '-p', path + meta_config.PICKLE_DATATYPE])
-#
-#        # save figures to file
-#        for fig_name, fig_dict in self._figures.iteritems():
-#            for char in self._REPLACE_CHAR:
-#                fig_name = fig_name.replace(char, "_")
-#            for extension in fig_dict.get('file_format'):
-#                file_path = path + extension + '/'
-#                file_name = file_path + fig_name + "." + extension
-#                try:
-#                    fig_dict['figure'].savefig(file_name, format=extension,
-#                                               **fig_dict.get('save_cfg'))
-#                except:
-#                    self.logger.error("Could not save figure")
-#                    meta_config.error_occured()
-#
-#            if fig_dict.get('to_pickle'):
-#                file_name = (path + meta_config.PICKLE_DATATYPE + '/' +
-#                             fig_name + "." + meta_config.PICKLE_DATATYPE)
-#                try:
-#                    with open(str(file_name), 'wb') as f:
-#                        pickle.dump(fig_dict.get('figure'), f, meta_config.PICKLE_PROTOCOL)
-#                except:
-#                    self.logger.error("Could not open file" + str(file_name) +
-#                                      " OR pickle the figure to it")
-#                    meta_config.error_occured()
-#
-#            # delete if it is not intended to be plotted
-#            if not fig_dict.get('plot'):
-#                plt.close(fig_dict.get('figure'))
-#        # clear the _figures dict
-#        self._figures = {}
-
-
-
-
-
-#    def initialize(self, output_path, run_name="test", output_folders=None,
-#                   del_existing_dir=False, logger_cfg=None, **config_kw):
-#        """Initializes the run. Creates the neccesary folders.
-#
-#        Parameter
-#        ---------
-#        Best Practice: enter a whole config file
-#
-#        output_path : str
-#            Absolute path to the folder where the run output folder will be
-#            created (named after the run) which will contain all the output
-#            folders (logfile, figures, output etc)
-#        run_name : str
-#            The name of the run and also of the output folder.
-#        output_folders : dict
-#            Contain the name of the folders for the different outputs. For the
-#            available keys
-#            see :py:const:`~raredecay.meta_config.__DEFAULT_OUTPUT_FOLDERS`.
-#        del_existing_dir : boolean
-#            If True, an already existing folder with the same name will be deleted.
-#            If False and the folder exists already, an exception will be raised.
-#        logger_cfg : dict
-#            The configuration for the logger, which will be created later. If
-#            not specified (or only a few arguments), the meta_config will be
-#            taken.
-#        """
-#        # initialize defaults
-#        logger_cfg = {} if logger_cfg is None else logger_cfg
-#        self._logger_cfg = dict(meta_config.DEFAULT_LOGGER_CFG, **logger_cfg)
-#
-#        assert isinstance(output_path, str), "output_path not a string"
-#        output_folders = {} if output_folders is None else output_folders
-#        self._output_folders = dict(meta_config.DEFAULT_OUTPUT_FOLDERS, **output_folders)
-#
-#        # make sure no blank spaces are left in the folder names
-#        for key, value in self._output_folders.iteritems():
-#            assert isinstance(value, str), "path is not a string: " + str(value)
-#            self._output_folders[key] = value.replace(" ", "_")
-#
-#
-#        # ask if you want to add something to the run_name (and folder name)
-#        if meta_config.PROMPT_FOR_COMMENT:
-#            temp_add = str(raw_input("Enter an (optional) extension to the run-name and press 'enter':\n"))
-#            run_name += " " + temp_add if temp_add != "" else ""
-#            #del temp_add
-#            # TODO: implement promt with timeout
-#
-#        # "clean" and correct the path-name
-#        for char in self._REPLACE_CHAR:
-#            run_name = run_name.replace(char, "_")
-#        output_path += run_name if output_path.endswith('/') else '/' + run_name
-#        self._output_path = os.path.expanduser(output_path)  # replaces ~ with /home/myUser
-#
-#        # find a non-existing folder
-#        temp_i = 1
-#        while os.path.isdir(self._output_path):
-#            if del_existing_dir:
-#                self._path_to_be_overriden = output_path
-#                self._path_to_be_overriden += '' if self._path_to_be_overriden.endswith('/') else '/'
-#            self._output_path = output_path + "_" + str(temp_i)
-#            temp_i += 1
-#            assert temp_i < meta_config.MAX_AUTO_FOLDERS, "possible endless loop when trying to create a non-existing folder"
-#        self._output_path += '' if output_path.endswith('/') else '/'
-#
-#        # create subfolders
-#        for value in self._output_folders.itervalues():
-#            subprocess.call(['mkdir', '-p', self._output_path + value])
-#        subprocess.call(['touch', self._output_path + 'run_NOT_finished'])  # show that ongoing run
-#
-#        # set meta-config variables
-#        meta_config.MULTIPROCESSING = meta_config.MULTITHREAD and meta_config.MULTIPROCESSING
-#        if (meta_config.n_cpu_max in (None, -1)):
-#            meta_config.n_cpu_max = multiprocessing.cpu_count()
-#        if not meta_config.MULTITHREAD:
-#            meta_config.n_cpu_max = 1
-#
-#        self._is_initialized = True
-
-#    def finalize(self):
-#        """Finalize the run: save output and information to file.
-#        """
-#        from raredecay.globals_ import randint  # here to avoid circular dependencies
-#
-##==============================================================================
-##  write all the necessary things to the output
-##==============================================================================
-#
-#        self.add_output("\n\n", title="END OF RUN", do_print=False)
-#        self.add_output(["randint", randint], title="Different parameters",
-#            obj_separator=" : ", do_print=False)
-#
-#        # print the output which should be printed at the end of the run
-#        sys.stdout.write(self._loud_end_output)
-#        del self._loud_end_output
-#        self.output += self.end_output
-#
-#        # add current version (if available)
-#        try:
-#            git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH, "describe"])
-#            self.add_output(["Program version from Git", git_version], section="Git information",
-#                            do_print=False, obj_separator=" : ")
-#        except:
-#            meta_config.error_occured()
-#            self.logger.error("Could not get version number from git")
-#
-#        # time information
-#        elapsed_time = timeit.default_timer() - self._start_timer
-#        elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-#        self.add_output(["Run startet at", self._start_time, "\nand lasted for",
-#                         elapsed_time], section="Time information", obj_separator=" ")
-#
-#
-#
-##==============================================================================
-##  save figures to file
-##==============================================================================
-#
-#        self._figure_to_file()
-#
-##==============================================================================
-##   copy the config file and save
-##==============================================================================
-#
-#       # TODO: copy config file. Necessary?
-#
-#
-##==============================================================================
-##   write output to file
-##==============================================================================
-#
-#        # remove leading blank lines
-#        for i in xrange(1,100):
-#            if not self.output.startswith("\n" * i):  # "break" condition
-#                self.output = self.output[i-1:]
-#                break
-#
-#        temp_out_file = self._output_path + self._output_folders.get('results') + '/output.txt'
-#        try:
-#            with open(temp_out_file, 'w') as f:
-#                f.write(self.output)
-#        except:
-#            self.logger.error("Could not save output to file")
-#            meta_config.error_occured()
-#            warnings.warn("Could not save output. Check the logs!", RuntimeWarning)
-#        #del temp_out_file  # block abuse
-#        self.add_output(["Errors encountered during run", meta_config._error_count],
-#            obj_separator=" : ")
-#        self.add_output(["Warnings encountered during run", meta_config._warning_count],
-#            obj_separator=" : ")
-#
-##==============================================================================
-##    if a folder to overwrite exists, delete it and move the temp folder
-##==============================================================================
-#
-#        if self._path_to_be_overriden is not None:
-#            if not meta_config.NO_PROMPT_ASSUME_YES:
-#                stop_del = raw_input("ATTENTION! The folder " + self._path_to_be_overriden +
-#                            " will be deleted and replaced with the output of the current run." +
-#                            "\nTo DELETE that folder and overwrite, press ENTER.\n\n" +
-#                            "If you want to keep the folder and save the current run under " +
-#                            self._output_path + ", please enter any input and press enter.\n\nYour input:")
-#            if stop_del == '':
-#                subprocess.call(['rm', '-r', self._path_to_be_overriden])
-#                subprocess.call(['mv', self._output_path, self._path_to_be_overriden])
-#                path = self._path_to_be_overriden
-#            else:
-#                path = self._output_path
-#        else:
-#            path = self._output_path
-#        print "All output saved under: " + path
-#        subprocess.call(['rm', path + 'run_NOT_finished'])
-#        subprocess.call(['touch', path + 'run_finished_succesfully'])  # .finished shows if the run finished
-
-

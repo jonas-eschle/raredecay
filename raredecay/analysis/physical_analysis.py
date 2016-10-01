@@ -51,8 +51,7 @@ def run(run_mode, cfg_file=None):
     logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
     out.make_me_a_logger()  # creates a logger inside of "out"
-    out.add_output(cfg.run_message, title="Run: "+cfg.RUN_NAME, do_print=False,
-                   subtitle="Comments about the run")
+
 
 #==============================================================================
 # Run initialized, start physical analysis
@@ -172,11 +171,11 @@ def rafael1(cfg, logger, out):
     # file. To_end is sometimes quite useful, as it prints (and saves) the
     # arguments at the end of the file. So the important results are possibly
     # printed to the end
-    out.add_output(['score:', scores['score'], "+-", scores['score_std']], do_print=True,
+    out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
                    title='Train similar report', to_end=True)
     if scores.get('score_max', False):
         out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                       do_print=True, to_end=True)
+                       importance=5, to_end=True)
 
     return scores['score']  # may you want to take the mean of several scorings, as it
                             # may vary around +-0.02. Ask for implementation or make it
@@ -213,12 +212,12 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     xgb_bagged = SklearnClassifier(xgb_bagged)
     xgb_big_stacker = copy.deepcopy(xgb_bagged)
     xgb_bagged = CacheClassifier(name='xgb_bagged1', clf= xgb_bagged)
-    
-    
+
+
     xgb_single = XGBoostClassifier(n_estimators=350, eta=0.1, max_depth=4, nthreads=3)
     xgb_single = FoldingClassifier(base_estimator=xgb_single, stratified=True,
                                    n_folds=10, parallel_profile='threads-2')
-    xgb_single = CacheClassifier(name='xgb_singled1', clf= xgb_single)                                   
+    xgb_single = CacheClassifier(name='xgb_singled1', clf= xgb_single)
 
 
     rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=300, n_jobs=3))
@@ -236,8 +235,8 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     nn_clf = TheanetsClassifier(layers=[300, 300], hidden_dropout=0.03,
                        trainers=[{'optimize': 'adagrad', 'patience': 5, 'learning_rate': 0.2, 'min_improvement': 0.1,
                        'momentum':0.4, 'nesterov':True, 'loss': 'xe'}])
-    nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True, parallel_profile='threads-6')
-    nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=6)
+    nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True, parallel_profile=None)  #'threads-6')
+    nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=1)
     nn_bagged = CacheClassifier(name='nn_bagged1', clf=nn_bagged)
 
 
@@ -266,7 +265,7 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
     xgb_proba = xgb_report.prediction['clf'][:, 1]
     del xgb_bagged, xgb_folded, xgb_clf, xgb_report
-    
+
     xgb_single.fit(data, targets, weights)
     xgb_report = xgb_single.test_on(data, targets, weights)
     xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
@@ -352,6 +351,10 @@ def _hyper_optimization_int(cfg, logger, out):
                            features=features, optimize_features=False,
                            clf=clf, config_clf=config_clf, n_eval=n_eval,
                            n_checks=n_checks, n_folds=n_folds, generator_type=generator_type)
+
+
+def feature_exploration(original_data, target_data, features=None, roc_auc=True):
+    pass
 
 
 
@@ -556,11 +559,11 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # file. To_end is sometimes quite useful, as it prints (and saves) the
     # arguments at the end of the file. So the important results are possibly
     # printed to the end
-    out.add_output(['score:', scores['score'], "+-", scores['score_std']], do_print=True,
+    out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
                    title='Train similar report', to_end=True)
     if scores.get('score_max', False):
         out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                       do_print=True, to_end=True)
+                       importance=5, to_end=True)
 
     output['weights'] = new_weights
     output['train_similar'] = scores

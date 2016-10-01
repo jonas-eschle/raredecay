@@ -204,9 +204,9 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
 
 def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eval,
-                              features=None, optimize_features=False,
-                              n_checks=10, n_folds=10, generator_type=None,
-                              take_target_from_data=False, train_best=False):
+                              features=None, optimize_features=False, max_difference=0.08,
+                              n_checks=10, n_folds=10, generator_type=None, feature_exploration=False,
+                              take_target_from_data=False, train_best=False, no_roc_auc_features=False):
     """Optimize the hyperparameters of a classifier or perform feature selection
 
     Parameters
@@ -263,7 +263,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
             meta_config.warning_occured()
             logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
                            "Features for feature-optimization will be taken from data.")
-                           
+
     if not optimize_features:
         grid_param = {}
         list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
@@ -279,6 +279,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
         max_eval = 1
         for n_params in grid_param.itervalues():
             max_eval *= len(n_params)
+        logger.i
 
         # get a time estimation and extrapolate to get n_eval
         if isinstance(n_eval, str) and meta_config.n_cpu_max * 2 < max_eval:
@@ -391,11 +392,16 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
         out.save_fig(figure="feature correlation " + str(clf_name))
         report.features_correlation_matrix().plot()
 
+        collected_scores = {feature: [] for feature in selected_features}
+        collected_scores['features_tot'] = []
+
         # do-while python-style (with if-break inside)
-        while len(selected_features) > 1:
+        while len(selected_features) > 1 and not no_roc_auc_features:
 
             # initialize variable
             difference = 1  # a surely big initialisation
+            n_features_left = len(selected_features)
+            collected_scores['features_tot'].append(n_features_left)
 
             # iterate through the features and remove the ith each time
             for i, feature in enumerate(selected_features):
@@ -405,26 +411,38 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
                 clf.fit(data[temp_features], label, weights)
                 report = clf.test_on(data[temp_features], label, weights)
                 temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+                collected_scores[feature].append(round(temp_auc, 4))
                 if max_auc - temp_auc < difference:
                     difference = max_auc - temp_auc
                     temp_dict = {feature: round(temp_auc, 4)}
 
-            if difference >= max_difference:
+            if difference >= max_difference or feature_exploration:
                 break
             else:
                 roc_auc.update(temp_dict)
                 selected_features.remove(temp_dict.keys()[0])
                 max_auc = temp_dict.values()[0]
 
-        if len(selected_features) > 1:
-            out.add_output(["ROC AUC if the feature was removed", roc_auc,
-                            "next feature", temp_dict],
-                            subtitle="Feature selection results")
-        # if all features were removed
-        else:
-            out.add_output(["ROC AUC if the feature was removed", roc_auc,
-                            "All features removed, loop stopped removing because, no feature was left"],
-                            subtitle="Feature selection results")
+        for key, value in collected_scores.items():
+            missing_values = len(collected_scores['features_tot']) - len(value)
+            if missing_values > 0:
+                collected_scores[key].extend([None] * missing_values)
+        temp_key, temp_val = collected_scores.popitem()
+        collected_scores = {'auc without ' + key: val for key, val in collected_scores}
+        collected_scores[temp_key] = temp_val
+        collected_scores = pd.DataFrame(collected_scores)
+        out.add_output(["The collected scores: ", collected_scores], importance=2)
+
+        if not feature_exploration:
+            if len(selected_features) > 1:
+                out.add_output(["ROC AUC if the next feature was removed", roc_auc,
+                                "\nNext feature: ", temp_dict],
+                                subtitle="Feature selection results")
+            # if all features were removed
+            else:
+                out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                                "All features removed, loop stopped removing because no feature was left"],
+                                subtitle="Feature selection results")
 
     else:
         # rederict print output (for the hyperparameter-optimizer from rep)
@@ -521,8 +539,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         The classifier to be used for the training and predicting. If you don't
         pass a classifier (with *fit*, *predict* and *predict_proba* at least),
         an XGBoost classifier will be used.
-    make_plots : boolean
-        If True, plots of the classification will be made.
     plot_title : str
         A part of the title of the plots.
     curve_name : str
@@ -562,6 +578,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  #, **cfg.save_fig_cfg)
     save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  #, **cfg.save_ext_fig_cfg)
     predictions = {}
+    make_plots = True
 
     plot_title = "classify" if plot_title is None else plot_title
     if (original_data is None) and (target_data is not None):
@@ -666,12 +683,12 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         report.estimators[plot_name] = report.estimators.pop(clf_name)
 
         if binary_test:
-            out.save_fig(plt.figure(plot_title + ", ROC " + plot_name), save_fig_cfg)
+            out.save_fig(plt.figure(plot_title + ", ROC " + plot_name), **save_fig_cfg)
             report.roc(physics_notion=True).plot(title="ROC curve of" + clf_name + " on data:" +
                                                    data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
-            out.save_fig(plt.figure("Learning curve" + plot_name), save_fig_cfg)
+            out.save_fig(plt.figure("Learning curve" + plot_name), **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " + plot_name)
 
     if clf_score is None:
@@ -1184,9 +1201,9 @@ def data_ROC(original_data, target_data, features=None, classifier=None, meta_cl
         factory.add_classifier(name, clf)
 
     out.add_output("The following classifiers were used to distinguish the data",
-                   subtitle="List of classifiers for data_ROC", do_print=False)
+                   subtitle="List of classifiers for data_ROC", importance=1)
     for key, val in factory.iteritems():
-        out.add_output([val], section=key, do_print=False)
+        out.add_output([val], section=key, importance=1)
 
 
 
