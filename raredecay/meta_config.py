@@ -119,6 +119,7 @@ MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (like not able
                         # Criticals will end the run anyway.
 MAX_FIGURES = 1000  # max number of figures to be plotted
 
+
 #==============================================================================
 # DEFAULT SETTINGS for different things
 #==============================================================================
@@ -150,7 +151,6 @@ DEFAULT_SAVE_FIG = dict(
     file_format=['png', 'svg'],  # default: ['png', 'svg'], the file formats
                                  # to be saved to. For implementations, see OutputHandler()
     to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
-    importance=2
     #save_cfg=None
 )
 
@@ -158,8 +158,7 @@ DEFAULT_SAVE_FIG = dict(
 # about but may be happy to have them saved somewhere)
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
-    to_pickle=True,
-    importance=4
+    to_pickle=True
     #save_cfg=None
 )
 

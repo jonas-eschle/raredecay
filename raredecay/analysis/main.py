@@ -36,13 +36,7 @@ def main_run(run_mode, cfg_file=None):
         # show()
 
     # to hear/see whether the analysis has finishedd
-    try:
-        from raredecay.tools.dev_tool import play_sound
-        play_sound()
-    except:
-        print "BEEEEEP, no sound could be played"
-    raw_input(["Run finished, press Enter to show the plots"])
-    plt.show()
+
 
 if __name__ == '__main__':
     #main_run("reweight_comparison")

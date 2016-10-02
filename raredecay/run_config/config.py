@@ -31,6 +31,12 @@ OUTPUT_CFG = dict(
     )
 )
 
+save_fig_cfg = dict(
+    file_format=['png', 'svg'],
+    to_pickle=True,
+    dpi=150
+)
+
 
 #==============================================================================
 # LOGGER CONFIGURATION BEGIN

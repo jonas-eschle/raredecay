@@ -192,8 +192,8 @@ class OutputHandler(object):
         to_output : boolean
             | If True, the collected output will be added to the output-file.
             | Additional keyword-arguments for the
-            :py:meth:`~raredecay.tools.output.add_output()` method can be
-            passed.
+            | :py:meth:`~raredecay.tools.output.add_output()` method can be
+            | passed.
         """
         sys.stdout = self.__SAVE_STDOUT
         if to_output:
@@ -432,7 +432,7 @@ class OutputHandler(object):
         else:
             self.output += temp_out
 
-    def finalize(self):
+    def finalize(self, show_plots=True, play_sound_at_end=False):
 
         #TODO remove?: self._check_initialization(return_error=True)
 
@@ -522,6 +522,18 @@ class OutputHandler(object):
             print "All output saved under: " + path
             subprocess.call(['rm', path + 'run_NOT_finished'])
             subprocess.call(['touch', path + 'run_finished_succesfully'])  # .finished shows if the run finished
+
+        if play_sound_at_end:
+            try:
+                from raredecay.tools.dev_tool import play_sound
+                play_sound()
+            except:
+                print "BEEEEEP, no sound could be played"
+
+        if show_plots:
+            if not meta_config.NO_PROMPT_ASSUME_YES:
+                raw_input(["Run finished, press Enter to show the plots"])
+            plt.show()
 
         del self.output, self._loud_end_output, self.end_output
         return output

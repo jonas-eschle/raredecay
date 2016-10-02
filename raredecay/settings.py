@@ -9,21 +9,24 @@ Contain methods to change settings in the whole package
 
 from __future__ import division, absolute_import
 
+import matplotlib.pyplot as plt
+
 from raredecay.run_config import config
 from raredecay import meta_config
 
 
-def initialize(file_path=None, run_name="Test run", overwrite_existing=False,
-               run_message="This is a test-run to test the package", verbosity=5,
+def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
+               run_message="This is a test-run to test the package", verbosity=3,
+               report_verbosity=3, prompt_for_input=False,
                logger_console_level='warning', logger_file_level='debug',
-               prompt_for_input=True, n_cpu=-1, gpu_in_use=False):
+               n_cpu=-1, gpu_in_use=False):
     """Place before Imports! Initialize/change several parameters for the package"""
     _init_user_input(prompt_for_input=prompt_for_input)
-    logger_file_level = None if file_path is None else logger_file_level
+    logger_file_level = None if output_path is None else logger_file_level
     _init_configure_logger(console_level=logger_console_level,
                            file_level=logger_file_level)
-    if file_path is not None:
-        _init_output_to_file(file_path=file_path, run_name=run_name,
+    if output_path is not None:
+        _init_output_to_file(file_path=output_path, run_name=run_name,
                              overwrite_existing=overwrite_existing,
                              run_message=run_message)
     else:
@@ -31,10 +34,19 @@ def initialize(file_path=None, run_name="Test run", overwrite_existing=False,
                              prompt_for_input=prompt_for_input)
 
 
-def finalize():
-    """Finalize the run, (save figures and output) and return output"""
+def finalize(show_plots=True, play_sound_at_end=False):
+    """Finalize the run, (save figures and output) and return output
+
+    Parameters
+    ----------
+    show_plots : boolean
+        If True, show the plots (*plt.show()*), if user prompt is activated,
+        you first have to press enter to show them.
+    play_sound_at_end : boolean
+        If true, a beep will be played at the end of the run
+    """
     out = get_output_handler()
-    output = out.finalize()
+    output = out.finalize(show_plots=show_plots, play_sound_at_end=play_sound_at_end)
     return output
 
 
@@ -91,6 +103,7 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
 
         out = get_output_handler()
         out.initialize_save(logger_cfg=config.logger_cfg, **config.OUTPUT_CFG)
+        out.make_me_a_logger()
     else:
         out = get_output_handler()
         out.initialize(run_name=run_name, prompt_for_comment=prompt_for_input)

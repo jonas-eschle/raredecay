@@ -12,6 +12,7 @@ import warnings
 #import cProfile as profile
 
 import pandas as pd
+import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
 import math
@@ -338,7 +339,8 @@ class HEPDataStorage(object):
 
 
 
-    def get_weights(self, index=None, normalize=True, weights_as_events=False, min_weight=None):
+    def get_weights(self, index=None, normalize=True, weights_as_events=False,
+                    min_weight=None):
         """Return the weights of the specified indeces or, if None, return all.
 
         Parameters
@@ -379,10 +381,12 @@ class HEPDataStorage(object):
         if dev_tool.is_in_primitive(weights_out, (None, 1)):
             weights_out = dev_tool.fill_list_var([], length, 1)
             weights_out = np.array(weights_out)
-        else:
-            weights_out = weights_out.as_matrix()
+            weights_out = pd.Series(data=weights_out, index=index)
+#        else:
+#            weights_out = weights_out.as_matrix()
         # TODO: maybe remove:
         #weights_out = data_tools.to_ndarray(weights_out)
+
         return weights_out
 
     def _get_weights(self, index=None,  normalize=True, weights_as_events=False, min_weight=None):
@@ -1077,6 +1081,45 @@ class HEPDataStorage(object):
         """
         return 0 if self._fold_index is None else len(self._fold_index)
 
+    def plot_correlation(self, second_storage=None, columns=None,
+                         method='pearson', plot_importance=5):
+        """Plot the feature correlation for the data (combined with other data)
+
+        Calculate the feature correlation, return it and plot them.
+
+        Parameters
+        ----------
+        second_storage : HEPDataStorage or None
+            If a second data-storage is provided, the data will be merged and
+            then the correlation will be calculated. Otherwise, only this
+            datas correlation will be calculated and plotted.
+        method : str {'pearson', 'kendall', 'spearman'}
+            The method to calculate the correlation.
+        plot_importance : int {1, 2, 3, 4, 5}
+            The higher the more likely it gets plotted. Depends on the
+            plot_verbosity. To make sure the correlation...
+            - *does* get plotted, chose 5
+            - does *not* get plotted, chose 1
+
+        Return
+        ------
+        out : pandas DataFrame
+            Return the feature-correlations in a pandas DataFrame
+        """
+        data, _tmp, _tmp2 = self.make_dataset(second_storage=second_storage,
+                                              shuffle=True, columns=columns)
+        del _tmp, _tmp2
+        correlation = data.corr(method=method)
+        corr_plot = sns.heatmap(correlation.T)
+
+        # turn the axis label
+        for item in corr_plot.get_yticklabels():
+            item.set_rotation(0)
+
+        for item in corr_plot.get_xticklabels():
+            item.set_rotation(90)
+
+
     def plot(self, figure=None, title=None, data_name=None, std_save=True,
              log_y_axes=False, columns=None, index=None, sample_weights=None,
              data_labels=None, see_all=False, hist_settings=None, weights_as_events=False):
@@ -1279,6 +1322,9 @@ if __name__ == '__main__':
     )
 
     storage2 = HEPDataStorage(**root_data)
+
+    storage2.plot_correlation()
+
     storage3 = storage2.copy_storage(index=[3,5,7,9], columns=['B_PT', 'nTracks'])
     df11 = storage3.pandasDF()
     df12 =  storage3.pandasDF(weights_as_events=3, min_weight=4)
@@ -1298,12 +1344,15 @@ if __name__ == '__main__':
     print "t21 = ", t21
     #print storage2.pandasDF().index.values
     #print "w3 = ", w3, "type:", type(w3)
+
+
+
     t22 = all(w3 == np.ones(39))
     #print "t22 =", t22
     works2 = t21 and t22
     works = works1 and works2
     print "DataFrame works:", works
-
+    plt.show()
 
 
 

@@ -18,11 +18,7 @@ __CFG_PATH = 'raredecay.run_config.'
 DEFAULT_CFG_FILE = dict(
     reweightCV=__CFG_PATH + 'reweight_cfg',
     reweight=__CFG_PATH + 'reweight_cfg',
-    simple_plot=__CFG_PATH + 'simple_plot1_cfg',
-    test=__CFG_PATH + 'reweight1_comparison_cfg',
-    reweight_comparison=__CFG_PATH + 'reweight1_comparison_cfg',
     hyper_optimization=__CFG_PATH + 'classifier_cfg',
-    rafael1=__CFG_PATH + 'rafael_cfg'
 )
 
 
@@ -59,26 +55,12 @@ def run(run_mode, cfg_file=None):
 
     if run_mode == "test":
         test(cfg, logger)
-    elif run_mode == "reweight_comparison":
-        reweight_comparison(cfg, logger)
-    elif run_mode == "simple_plot":
-        simple_plot(cfg, logger)
     elif run_mode == "reweightCV":
-        import numpy as np
-        scores = []
-        scores_mean = []
-        for i in range(1):
-            score = _reweightCV_int(cfg, logger, out)
-#            scores.append(score)
-#        out.add_output(["Score of several CVreweighting:", scores], to_end=True)
-#        out.add_output(["Score mean:", np.mean(scores), "+- (measurements, NOT mean)",
-#                        np.std(scores)], to_end=True)
+        score = _reweightCV_int(cfg, logger, out)
     elif run_mode == "reweight":
         _reweight_int(cfg, logger)
     elif run_mode == "hyper_optimization":
         _hyper_optimization_int(cfg, logger, out)
-    elif run_mode == 'rafael1':
-        rafael1(cfg=cfg, logger=logger, out=out)
     else:
         raise ValueError("Runmode " + str(run_mode) + " not a valid choice")
 
@@ -92,94 +74,7 @@ def test(cfg):
     print "empty test function"
 
 
-def rafael1(cfg, logger, out):
 
-
-    """Test reweighting with CV and get reports on the performance
-
-    To find the optimal parameters for the reweighting (most of all for the
-    gradient boosted reweighter) it is crucial to reweight and test in a
-    cross-validated way. There are several "metrics" to test the reweighting.
-
-    Parameters
-    ----------
-    cfg : python-file
-        The configuration file
-    logger : a python logger
-        The logger to be used. Should not be changed actually
-    out : instance of output class
-        The right instance which is placed in the meta-config
-    """
-
-    import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools import data_storage, metrics
-
-    out.add_output("Starting the run", title="Reweighting Cross-Validated")
-    # initialize variables
-    n_folds = cfg.reweight_cv_cfg['n_folds']
-    n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
-
-    # just some "administrative variables, irrelevant
-    plot_all = cfg.reweight_cv_cfg['make_plot']
-    make_plots = True if plot_all in (True, 'all') else False
-
-    # initialize data
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-
-    # do the Kfold reweighting. This reweights the data with Kfolding and returns
-    # the weights. If add_weights_to_data is True, the weights will automatically be
-    # added to the reweight_data_mc (or here, reweight_mc). To get an estimate
-    # wheter it has over-fitted, you can get the mcreweighted_as_real_score.
-    # This trains a clf on mc/real and tests it on mc, mc reweighted, real
-    # but both labeled with the same target as the real data in training
-    # The mc reweighted score should therefore lie in between the mc and the
-    # real score.
-    ml_ana.reweight_Kfold(reweight_data_mc=reweight_mc, reweight_data_real=reweight_real,
-                          meta_cfg=cfg.reweight_meta_cfg, columns=cfg.reweight_branches,
-                          reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
-                          mcreweighted_as_real_score=True, n_folds=n_folds, make_plot=make_plots)
-
-    # To get a good estimation for the reweighting quality, the
-    # train_similar score can be used. Its the one with training on
-    # mc reweighted/real and test on real, quite robust.
-    # Test_max is nice to know too even dough it can also be set to False if
-    # testing the same distribution over and over again, as it is the same for
-    # the same distributions (actually, it's just doing the score without the
-    # weights).
-    # test_predictions is an additional score I tried but so far I is not
-    # reliable or understandable at all. The output, the scores dictionary,
-    # is better described in the docs of the train_similar
-    scores = metrics.train_similar(mc_data=reweight_mc, real_data=reweight_real, test_max=True,
-                                   n_folds=n_folds, n_checks=n_checks, test_predictions=False,
-                                   make_plots=make_plots)
-
-    # We can of course also test the normal ROC curve. This is weak to overfitting
-    # but anyway (if not overfitting) a nice measure. You insert two datasets
-    # and do the normal cross-validation on it. It's quite a multi-purpose
-    # function depending on what validation is. If it is an integer, it means:
-    # do cross-validation with n(=validation) folds.
-    ml_ana.classify(original_data=reweight_mc, target_data=reweight_real,
-                    validation=10, make_plots=make_plots,
-                    plot_title="",  # you can set an addition to the title. The
-                                    # name of the data will be contained anyway
-                    curve_name="mc reweighted/real")  # name of the curve; the legend
-
-    # an example to add output with the most importand parameters. The first
-    # one can also be a single object instead of a list. do_print means
-    # printing it also to the console instead of only saving it to the output
-    # file. To_end is sometimes quite useful, as it prints (and saves) the
-    # arguments at the end of the file. So the important results are possibly
-    # printed to the end
-    out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
-                   title='Train similar report', to_end=True)
-    if scores.get('score_max', False):
-        out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                       importance=5, to_end=True)
-
-    return scores['score']  # may you want to take the mean of several scorings, as it
-                            # may vary around +-0.02. Ask for implementation or make it
-                            # by implementing it into the if-elif statement at the beginning
 
 #@profile
 def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
@@ -359,37 +254,9 @@ def _hyper_optimization_int(cfg, logger, out):
     optimize_features = cfg.hyper_cfg.get('optimize_features', False)
     features = cfg.opt_features
 
-    if optimize_features:
-        hyper_optimization(original_data=original_data, target_data=target_data,
-                           features=features, optimize_features=True,
-                           clf=clf, config_clf=config_clf, n_eval=n_eval,
-                           n_checks=n_checks, n_folds=n_folds, generator_type=generator_type)
-    else:
-        hyper_optimization(original_data=original_data, target_data=target_data,
-                           features=features, optimize_features=False,
-                           clf=clf, config_clf=config_clf, n_eval=n_eval,
-                           n_checks=n_checks, n_folds=n_folds, generator_type=generator_type)
-
 
 def feature_exploration(original_data, target_data, features=None, roc_auc=True):
     pass
-
-
-
-def hyper_optimization(original_data, target_data, clf, config_clf, n_eval, features=None,
-                       n_checks=10, n_folds=10, generator_type='subgrid', take_targets_from_data=False):
-    """Perform hyperparameter optimization in this module"""
-    import raredecay.analysis.ml_analysis as ml_ana
-
-    ml_ana.optimize_hyper_parameters(original_data, target_data, features=features,
-                                     clf=clf, config_clf=config_clf,
-                                     optimize_features=False,
-                                     n_eval=n_eval, n_checks=n_checks, n_folds=n_folds,
-                                     generator_type=generator_type,
-                                     take_target_from_data=take_targets_from_data)
-
-    original_data.plot(figure="data comparison", title="data comparison", columns=features)
-    target_data.plot(figure="data comparison", columns=features)
 
 
 def add_branch_to_rootfile(root_data=None, new_branch=None, branch_name=None):
@@ -436,7 +303,7 @@ def _reweight_int(cfg, logger, rootfile_to_add=None):
 
 
 def reweight(real_data, mc_data, apply_data, reweighter='gb', reweight_cfg=None,
-             columns=None, make_plots=True, apply_weights=True):
+             columns=None, apply_weights=True):
     """(Train a reweighter and) apply the reweighter do get new weights
 
 
@@ -461,10 +328,9 @@ def reweight(real_data, mc_data, apply_data, reweighter='gb', reweight_cfg=None,
                                                 reweighter_trained=reweighter,
                                                 add_weights_to_data=apply_weights)
 
-    if make_plots:
-        apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
-        out.save_fig(plt.figure("New weights"))
-        plt.hist(output['weights'], bins=30, log=True)
+    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
+    out.save_fig(plt.figure("New weights"), importance=3)
+    plt.hist(output['weights'], bins=30, log=True)
 
     return output
 
@@ -592,166 +458,6 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
         mc_data.set_weights(old_weights)
 
     return output
-
-
-def simple_plot(cfg, logger):
-
-    import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools import data_storage
-    from raredecay.globals_ import out
-    import matplotlib.pyplot as plt
-
-    mc_ee_original = data_storage.HEPDataStorage(**cfg.data.get('B2Kee_mc'))
-    mc_jpsi_original = data_storage.HEPDataStorage(**cfg.data.get('B2KJpsi_mc'))
-    mc_jpsi_cut = data_storage.HEPDataStorage(**cfg.data.get('B2KJpsi_mc_cut'))
-    real_cut = data_storage.HEPDataStorage(**cfg.data.get('B2KpiLL_real_cut'))
-    real_sweight = data_storage.HEPDataStorage(**cfg.data.get('B2KpiLL_real_cut_sweighted'))
-    real_original = data_storage.HEPDataStorage(**cfg.data.get('B2KpiLL_real'))
-
-#    real_cut.plot(figure="B2K1piLL data comparison: original-cut-sweighted (all normalized)",
-#                  data_name="nEvents: " + str(len(real_cut)),
-#                  title="B2K1piLL real data comparison: original-cut-sweighted")
-#    real_original.plot(figure="B2K1piLL data comparison: original-cut-sweighted (all normalized)",
-#                       data_name="nEvents: " + str(len(real_original)))
-#    real_sweight.plot(figure="B2K1piLL data comparison: original-cut-sweighted (all normalized)",
-#                      data_name="nEvents: " + str(len(real_sweight)))
-
-#    mc_jpsi_original.plot(figure="B2K1Jpsi mc data comparison: original-cut (all normalized)",
-#                          title="B2K1Jpsi mc data comparison: original-cut (all normalized)",
-#                          data_name="nEvents: " + str(len(mc_jpsi_original)))
-#    mc_jpsi_cut.plot(figure="B2K1Jpsi mc data comparison: original-cut (all normalized)",
-#                          data_name="nEvents: " + str(len(mc_jpsi_cut)))
-
-
-    real_cut.plot(figure="B2K1piLL CUT real vs mc (all normalized)",
-                  data_name="nEvents: " + str(len(real_cut)),
-                  title="B2K1piLL cut real vs mc comparison (all normalized)")
-    mc_jpsi_cut.plot(figure="B2K1piLL CUT real vs mc (all normalized)",
-                          data_name="nEvents: " + str(len(mc_jpsi_cut)))
-
-
-    real_sweight.plot(figure="B2K1piLL sweighted real vs mc (all normalized)",
-                  data_name="nEvents: " + str(len(real_cut)),
-                  title="B2K1piLL sweighted real vs mc comparison (all normalized)")
-    mc_jpsi_cut.plot(figure="B2K1piLL sweighted real vs mc (all normalized)",
-                          data_name="nEvents: " + str(len(mc_jpsi_cut)))
-
-#    mc_jpsi_original.plot(figure="B2K1piLL original real vs mc (all normalized)",
-#                          title="B2K1piLL original real vs mc comparison (all normalized)",
-#                          data_name="nEvents: " + str(len(mc_jpsi_original)))
-#    real_original.plot(figure="B2K1piLL original real vs mc (all normalized)",
-#                       data_name="nEvents: " + str(len(real_original)))
-
-    mc_ee_original.plot(figure="B2K1ee mc original (normalized)",
-                        title="B2K1ee mc original (normalized)",
-                        data_name="nEvents: " + str(len(mc_ee_original)))
-
-
-def reweight_comparison(cfg, logger):
-    """
-
-    """
-    import matplotlib.pyplot as plt
-
-    import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools import data_storage
-    from raredecay.globals_ import out
-
-    # make data
-    logger.info("Start with gb reweighter")
-    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-    # TODO: remove
-    gb_reweighter = ml_ana.reweight_train(reweight_data_mc=reweight_mc,
-                                            reweight_data_real=reweight_real,
-                                            columns=cfg.reweight_branches,
-                                            meta_cfg=cfg.reweight_meta_cfg,
-                                            **cfg.reweight_cfg)
-    #gb_reweighter = 'gb_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, columns=cfg.reweight_branches,
-                            reweighter_trained=gb_reweighter)
-    reweight_mc.plot2Dscatter('B_PT', 'nTracks', figure=2)
-    reweight_real.plot2Dscatter('B_PT', 'nTracks', figure=2, color='r')
-    gb_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-                                 target_data=reweight_real, curve_name="GB reweighted",
-                                 classifier='all')
-    plot1 = reweight_mc.plot(figure="gradient boosted reweighting",
-                     title="comparison real-target", data_name="self-reweighted", hist_settings={'bins':20})
-    reweight_real.plot(figure="gradient boosted reweighting", hist_settings={'bins':20})
-    out.save_fig(plot1, file_format=['png', 'svg'], to_pickle=False)
-    out.save_fig(plt.figure("Weights bg reweighter"))
-    plt.hist(reweight_mc.get_weights(), bins=20)
-    plt.figure("weights from reweighting self")
-    try:
-        plt.hist([i for i in reweight_mc.get_weights() if i > -5], bins=200, log=True)
-    except:
-        pass
-
-#==============================================================================
-# predict new weights of unknown data
-#==============================================================================
-    reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
-
-    reweight_apply.plot(figure="Data for reweights apply", title="Data before and after reweighting",
-                        data_name="no weights")
-
-
-
-    ml_ana.reweight_weights(reweight_data=reweight_apply, columns=cfg.reweight_branches,
-                            reweighter_trained=gb_reweighter)
-    reweight_apply.plot(figure="Data for reweights apply", data_name="gb weights")
-    out.save_fig(plt.figure("New weights on new dataset"))
-    plt.hist(reweight_apply.get_weights(), bins=30, log=True)
-
-
-    reweight_apply.plot(figure="Comparison gb - bins reweighted", data_name="gb weights")
-
-    print "mc weights sum", str(reweight_mc.get_weights().sum())
-    print "real weights sum", str(reweight_real.get_weights().sum())
-    #plt.show()
-    return
-
-
-    logger.info("Start with bins reweighter")
-    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-    reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
-
-    logger.debug("plotted figure 2")
-    bins_reweighter = ml_ana.reweight_train(reweight_data_mc=reweight_mc,
-                                            reweight_data_real=reweight_real,
-                                            reweighter='bins',
-                                            columns=['B_PT', 'nTracks', 'nSPDHits'
-                                            #, 'h1_TRACK_TCHI2NDOF'
-                                            ],
-                                            meta_cfg=cfg.reweight_meta_cfg_bins)
-    #bins_reweighter = 'bins_reweighter1.pickle'
-    ml_ana.reweight_weights(reweight_mc, bins_reweighter, columns=['B_PT', 'nTracks', 'nSPDHits'
-                                            #, 'h1_TRACK_TCHI2NDOF'
-                                            ],)
-    ml_ana.reweight_weights(reweight_apply, bins_reweighter, columns=['B_PT', 'nTracks', 'nSPDHits'
-                                            #, 'h1_TRACK_TCHI2NDOF'
-                                            ],)
-    reweight_mc.plot(figure="binned reweighting",
-                     data_name="comparison real-target")
-    reweight_real.plot(figure="binned reweighting")
-    bins_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-                                   target_data=reweight_real, curve_name="Bins reweighted")
-
-    reweight_apply.plot(figure="Comparison gb - bins reweighted", data_name="bins weights")
-    # plt.show()
-
-
-
-#    logger.debug("starting with original")
-#    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-#    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-#    original_roc_auc = ml_ana.data_ROC(original_data=reweight_mc,
-#                                       target_data=reweight_real, curve_name="Original weights")
-#    reweight_mc.plot(figure="no reweighting",
-#                     data_name="comparison real-target")
-#    reweight_real.plot(figure="no reweighting")
-
 
 
 # temporary:

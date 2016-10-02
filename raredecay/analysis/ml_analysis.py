@@ -103,15 +103,40 @@ def make_clf(clf, n_cpu=None, dict_only=False):
     clf : dict or str or sklearn/REP-classifier
         There are several ways to pass the classifier to the function.
 
-        - Pure classifier: You can pass a simple classifier to the method and
+        - Pure classifier: You can pass a classifier to the method,
+          either a scikit-learn or a REP classifier.
+        - Classifier with name: you can name your classifier by either:
+
+          - using a dict with {'my_clf_1': clf}
+          - using a dict with {'name': 'my_clf_1', 'clf': clf}
+            where clf referes to the classifier and 'my_clf_1' can be any name.
+        - Configuration for a clf: Instead of instantiating the clf outside,
+          you can also pass a configuration-dictionary. This has to look like:
+
+          - {'clf_type': config-dict, 'name': 'my_clf_1'} (name is optional)
+            whereas 'clf_type' has to be any of the implemented clf-types like
+            'xgb', 'rdf', 'ada' etc.
+        - Get a standard-clf: providing a string refering to an implemented
+          clf-type, you will get a classifier using the configuration in
+          :py:mod:`~raredecay.meta_config`
+
+    n_cpu : int > -1 or None
+        The number of cpus to use for this classifier. If the classifier is not
+        parallelizable, an according *parallel_profile* (also see in REP-docs)
+        will be created; 'threads-n' with n the number of cpus specified before.
+    dict_only : boolean
+        If True, only a dictionary will be returned containing the name, config,
+        clf_type and parallel_profile, n_cpu.
 
 
     Returns
     -------
     out : dict
         A dictionary containing the name ('name') of the classifier as well
-        as the classifier itself ('clf'). Additionally, there are more values
-        that can be contained:
+        as the classifier itself ('clf'). If *dict_only* is True, no clf will
+        be returned but a 'clf_type' as well as a 'config' key.
+        Additionally, there are more values that can be contained: if a
+        configuration and not an already instantiated clf is given:
 
         - **parallel_profile**: the parallel-profile (for different REP-functions)
           which is set according to the n_cpus entered as well as the n_cpus
@@ -120,7 +145,6 @@ def make_clf(clf, n_cpu=None, dict_only=False):
           be 'threads-n' with n = n_cpus.
         - **n_cpus**: The number of cpus used in the classifier.
     """
-    #TODO: write function below
     __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'nn', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
@@ -151,7 +175,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if not isinstance(classifier, Classifier):
             classifier = SklearnClassifier(clf=classifier)
         output['clf'] = classifier
-        output['name'] = clf.get('name', clf.get('type', "Classifier"))
+        output['name'] = clf.get('name', 'clf')
     else:
         if not clf.has_key('clf_type'):
             for imp_clf in __IMPLEMENTED_CLFS:
@@ -173,50 +197,221 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if clf['clf_type'] == 'xgb':
             # update config dict with parallel-variables and random state
             clf['config'].update(dict(nthreads=n_cpu, random_state=globals_.randint+4))  # overwrite entries
-            clf_tmp = XGBoostClassifier(**clf.pop('config'))
+            clf_tmp = XGBoostClassifier(**clf.get('config'))
         if clf['clf_type'] == 'tmva':
             serial_clf = True
-            clf_tmp = TMVAClassifier(**clf.pop('config'))
+            clf_tmp = TMVAClassifier(**clf.get('config'))
         if clf['clf_type'] == 'gb':
             serial_clf = True
-            clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.pop('config')))
+            clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.get('config')))
         if clf['clf_type'] == 'rdf':
             clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
-            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
+            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         if clf['clf_type'] == 'ada':
             serial_clf = True
             clf['config'].update(dict(random_state=globals_.randint+43))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                                    random_state=globals_.randint + 29), **clf.pop('config')))
+                                    random_state=globals_.randint + 29), **clf.get('config')))
         if clf['clf_type'] == 'knn':
             clf['config'].update(dict(random_state=globals_.randint+919, n_jobs=n_cpu))
-            clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.pop('config')))
+            clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
         if clf['clf_type'] == 'rdf':
             clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
-            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
+            clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         if clf['clf_type'] == 'nn':
             serial_clf = meta_config.use_gpu
             clf['config'].update(dict(random_state=globals_.randint+43))
-            clf_tmp = TheanetsClassifier(**clf.pop('config'))
+            clf_tmp = TheanetsClassifier(**clf.get('config'))
 
         # assign classifier to output dict
         output['clf'] = clf_tmp
         output['name'] = clf['name']
+        if dict_only:
+            output.pop('clf')
+            del clf_tmp
+            output['clf_type'] = clf['clf_type']
+            output['config'] = clf['config']
         # add parallel information
         if serial_clf and n_cpu > 1:
             output['n_cpu'] = 1
-            output['parallel_profile'] = 'Threads-' + str(n_cpu)
+            output['parallel_profile'] = 'threads-' + str(n_cpu)
         else:
             output['n_cpu'] = n_cpu
             output['parallel_profile'] = None
 
-        return output
+    return output
 
 
-def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eval,
-                              features=None, optimize_features=False, max_difference=0.08,
-                              n_checks=10, n_folds=10, generator_type=None, feature_exploration=False,
-                              take_target_from_data=False, train_best=False, no_roc_auc_features=False):
+def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
+                                 features=None, max_feature_elimination=None,
+                                 max_difference_to_best=0.08,
+                                 take_target_from_data=False):
+    """Train and score on each feature subset, eliminating features backwards.
+
+    To know, which features make a big impact on the training of the clf and
+    which don't, there are several techniques to find out. The most reliable,
+    but also cost-intensive one, seems to be the backward feature elimination.
+    A classifier gets trained first on all the features and is validated with
+    the KFold-technique and the ROC AUC. Then, a feature is removed and the
+    classifier is trained and tested again. This is done for all features once.
+    The one where the auc drops the least is then removed and the next round
+    starts from the beginning but with one feature less.
+
+    The function ends either if:
+    - no features are left
+    - max_feature_elimination features have been eliminated
+    - the difference between the most useless features auc and the best
+      (the run done with all features in the beginning) is higher then
+      max_difference_to_best
+
+    Parameters
+    ----------
+    original_data : HEPDataStorage
+        The original data
+    target_data : HEPDataStorage
+        The target data
+    clf : str {'xgb, 'rdf, 'erf', 'gb', 'ada', 'nn'} or config-dict
+        For possible options, see also :py:func:`~raredecay.ml_analysis.make_clf()`
+    n_folds : int > 1
+        How many folds you want to split your data in when doing KFold-splits
+        to measure the performance of the classifier.
+    features : list(str, str, str,...)
+        List of strings containing the features/columns to be used for the
+        hyper-optimization or feature selection.
+    max_feature_elimination : int >= 1
+        How many features should be eliminated before it surely stopps
+    max_difference_to_best : float
+        The maximum difference between the "worst" features auc and the best
+        (with all features) auc before it stopps.
+    take_target_from_data : boolean
+        Old, will be removed. Use if target-data == None.
+
+    Returns
+    -------
+    out : dict
+        Return a dictionary containing the evaluation:
+        - **'roc_auc'** : an ordered-dict with the feature that was removed and
+          the roc auc evaluated without that feature.
+        - **'scores'** : All the roc auc with every feature removed once.
+          Basically a pandas DataFrame containing all results.
+    """
+    # initialize variables and setting defaults
+    output = {}
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    if features is None:
+        features = original_data.columns
+        meta_config.warning_occured()
+        logger.warning("Feature not specified as argument to optimize_hyper_parameters." +
+                       "Features for feature-optimization will be taken from data.")
+    # We do not need to create more data than we well test on
+    features = data_tools.to_list(features)
+    assert features != [], "No features for optimization found"
+
+    #TODO: insert time estimation for feature optimization
+
+    # initialize data
+    data, label, weights = _make_data(original_data, target_data, features=features,
+                                      target_from_data=take_target_from_data)
+
+    # initialize clf and parallel_profile
+    clf_dict = make_clf(clf=clf, n_cpu=meta_config.n_cpu_max)
+    clf = clf_dict['clf']
+    clf_name = clf_dict['name']
+    parallel_profile = clf_dict['parallel_profile']
+
+#==============================================================================
+# start backward feature elimination
+#==============================================================================
+    selected_features = copy.deepcopy(features)  # explicit is better than implicit
+    assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
+
+    # starting feature selection
+    out.add_output(["Performing feature selection with the classifier", clf_name,
+                    "of the features", features], title="Feature selection: Backward elimination")
+    original_clf = FoldingClassifier(clf, n_folds=n_folds, stratified=True,
+                                     parallel_profile=parallel_profile)
+
+    # "loop-initialization", get score for all features
+    clf = copy.deepcopy(original_clf)  # required, the features attribute can not be changed somehow
+    clf.fit(data[selected_features], label, weights)
+    report = clf.test_on(data[selected_features], label, weights)
+    max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+    roc_auc = OrderedDict({'all features': round(max_auc, 4)})
+    out.save_fig(figure="feature importance " + str(clf_name), importance=2, **save_fig_cfg)
+    report.feature_importance_shuffling().plot()
+    out.save_fig(figure="feature correlation " + str(clf_name), importance=2, **save_fig_cfg)
+    report.features_correlation_matrix().plot()
+    out.save_fig(figure="ROC curve " + str(clf_name), importance=2, **save_fig_cfg)
+    report.roc(physics_notion=True).plot()
+    out.save_fig(figure="Learning curve " + str(clf_name), importance=3, **save_fig_cfg)
+    report.learning_curve(metrics.RocAuc(), steps=2, metric_label="ROC AUC").plot()
+
+    collected_scores = {feature: [] for feature in selected_features}
+    collected_scores['features_tot'] = []
+
+    n_to_eliminate = min([len(selected_features) - 1, max_feature_elimination])
+
+    # do-while python-style (with if-break inside)
+    while n_to_eliminate > 0:
+
+        # initialize variable
+        difference = 1  # a surely big initialisation
+        n_to_eliminate -= 1
+        n_features_left = len(selected_features)
+        collected_scores['features_tot'].append(n_features_left)
+
+        # iterate through the features and remove the ith each time
+        for i, feature in enumerate(selected_features):
+            clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
+            temp_features = copy.deepcopy(selected_features)
+            del temp_features[i]  # remove ith feature for testing
+            clf.fit(data[temp_features], label, weights)
+            report = clf.test_on(data[temp_features], label, weights)
+            temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
+            collected_scores[feature].append(round(temp_auc, 4))
+            if max_auc - temp_auc < difference:
+                difference = max_auc - temp_auc
+                temp_dict = {feature: round(temp_auc, 4)}
+
+        if difference >= max_difference_to_best:
+            break
+        else:
+            roc_auc.update(temp_dict)
+            selected_features.remove(temp_dict.keys()[0])
+            max_auc = temp_dict.values()[0]
+
+    output['roc_auc'] = roc_auc
+
+
+    for key, value in collected_scores.items():
+        missing_values = len(collected_scores['features_tot']) - len(value)
+        if missing_values > 0:
+            collected_scores[key].extend([None] * missing_values)
+    temp_val = collected_scores.pop('features_tot')
+    collected_scores = {'auc w/o ' + key: val for key, val in collected_scores.items()}
+    collected_scores['features_tot'] = temp_val
+    collected_scores = pd.DataFrame(collected_scores)
+    out.add_output(["The collected scores: ", collected_scores], importance=3)
+    output['scores'] = collected_scores
+
+
+    if len(selected_features) > 1:
+        out.add_output(["ROC AUC if the next feature was removed", roc_auc,
+                        "\nNext feature: ", temp_dict],
+                        subtitle="Feature selection results")
+    # if all features were removed
+    else:
+        out.add_output(["ROC AUC if the feature was removed", roc_auc,
+                        "All features removed, loop stopped removing because no feature was left"],
+                        subtitle="Feature selection results")
+
+
+
+
+
+def optimize_hyper_parameters(original_data, target_data, clf, n_eval, features=None,
+                              n_checks=10, n_folds=10, generator_type='subgrid',
+                              take_target_from_data=False):
     """Optimize the hyperparameters of a classifier or perform feature selection
 
     Parameters
@@ -225,10 +420,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
         The original data
     target_data : HEPDataStorage
         The target data
-    clf : str {'xgb, 'rdf, 'erf', 'gb', 'ada', 'nn'}
-        The name of the classifier
-    config_clf : dict
-        The configuration of the classifier
+    clf : config-dict
+        For possible options, see also :py:func:`~raredecay.ml_analysis.make_clf()`.
+        The difference is, for the feature you want to have optimised, use an
+        iterable instead of a single value, e.g. 'n_estimators': [1, 2, 3, 4] etc.
     n_eval : int > 1 or str "hh...hh:mm"
         How many evaluations should be done; how many points in the
         hyperparameter-space should be tested. This can either be an integer,
@@ -238,10 +433,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
         hyperparameter-search (**not** the exact upper limit)
     features : list(str, str, str,...)
         List of strings containing the features/columns to be used for the
-        hyper-optimization or feature selection.
-    optimize_features : Boolean
-        If True, feature selection will be done instead of hyperparameter-
-        optimization
+        hyper-optimization.
     n_checks : int >= 1
         Number of checks on *each* KFolded dataset will be done. For example,
         you split your data into 10 folds, but may only want to train/test on
@@ -250,258 +442,145 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
         How many folds you want to split your data in when doing train/test
         sets to measure the performance of the classifier.
     take_target_from_data : Boolean
+        OUTDATED; not encouraged to use
         If True, the target-labeling (the y) will be taken from the data
         directly and not created. Otherwise, 0 will be assumed for the
         original_data and 1 for the target_data.
-    train_best : boolean
-        If True, train the best classifier (if hyperparameter-optimization is
-        done) on the full dataset.
     """
-
     # initialize variables and setting defaults
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG)  # leave out?, **cfg.save_fig_cfg)
-    save_ext_fig_cfg = dict(meta_config.DEFAULT_EXT_SAVE_FIG)  # leave out?, **cfg.save_ext_fig_cfg)
+    output = {}
+    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    clf_dict = make_clf(clf, n_cpu=meta_config.n_cpu_max, dict_only=True)
+    config_clf = clf_dict['config']
     config_clf_cp = copy.deepcopy(config_clf)
-    config_clf = copy.deepcopy(config_clf)  # otherwise the original dict will be modified
 
     # Create parameter for clf and hyper-search
-    if not dev_tool.is_in_primitive(config_clf.get('features', None)):
-        features = config_clf.get('features', None)
     if features is None:
         features = original_data.columns
-        if optimize_features:
-            meta_config.warning_occured()
-            logger.warning("Feature not specified in classifier or as argument to optimize_hyper_parameters." +
-                           "Features for feature-optimization will be taken from data.")
 
-    if not optimize_features:
-        grid_param = {}
-        list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
-        for key, val in config_clf.items():
-            if isinstance(val, (list, np.ndarray, pd.Series)):
-                if key not in list_param or isinstance(val[0], list):
-                    val = data_tools.to_list(val)
-                    grid_param[key] = config_clf.pop(key)
+    grid_param = {}
+    list_param = ['layers', 'trainers']  # parameters which are by their nature a list, like nn-layers
+    for key, val in config_clf.items():
+        if isinstance(val, (list, np.ndarray, pd.Series)):
+            if key not in list_param or isinstance(val[0], list):
+                val = data_tools.to_list(val)
+                grid_param[key] = config_clf.pop(key)
 
 
 
-        # count maximal combinations of parameters
-        max_eval = 1
-        for n_params in grid_param.itervalues():
-            max_eval *= len(n_params)
-        logger.info("Maximum possible evaluations: " + str(max_eval))
+    # count maximal combinations of parameters
+    max_eval = 1
+    for n_params in grid_param.itervalues():
+        max_eval *= len(n_params)
+    logger.info("Maximum possible evaluations: " + str(max_eval))
 
-        # get a time estimation and extrapolate to get n_eval
-        if isinstance(n_eval, str) and meta_config.n_cpu_max * 2 < max_eval:
-            n_eval = n_eval.split(":")
-            assert len(n_eval) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
-            available_time = 3600 * int(n_eval[0]) + 60 * int(n_eval[1])
+    # get a time estimation and extrapolate to get n_eval
+    if isinstance(n_eval, str) and meta_config.n_cpu_max * 2 < max_eval:
+        n_eval = n_eval.split(":")
+        assert len(n_eval) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
+        available_time = 3600 * int(n_eval[0]) + 60 * int(n_eval[1])
 
-            start_timer_test = timeit.default_timer()
-            elapsed_time = 1
-            min_elapsed_time = 15 + 0.005 * available_time  # to get an approximate extrapolation
-            n_eval_tmp = meta_config.n_cpu_max
-            n_checks_tmp = 1  #time will be multiplied by actual n_checks
-            #call hyper_optimization with parameters for "one" run and measure time
-            out.add_output(data_out="", subtitle="Test run for time estimation only!")
-            # do-while loop
-            while True:
-                start_timer = timeit.default_timer()
-                config_clf_cp1 = copy.deepcopy(config_clf_cp)
-                optimize_hyper_parameters(original_data, target_data, clf=clf, config_clf=config_clf_cp1,
-                                          n_eval=n_eval_tmp, n_folds=n_folds, n_checks=n_checks_tmp,
-                                          features=features, generator_type=generator_type,
-                                          optimize_features=False, train_best=False,
-                                          take_target_from_data=take_target_from_data)
-                elapsed_time = timeit.default_timer() - start_timer
-                if elapsed_time > min_elapsed_time:
-                    break
-                elif n_checks_tmp < n_checks:  # for small datasets, increase n_checks for testing
-                    n_checks_tmp = min(n_checks, np.ceil(min_elapsed_time / elapsed_time))
-                else:
-                    n_eval_tmp *= np.ceil(min_elapsed_time / elapsed_time)  # if time to small, increase n_rounds
+        start_timer_test = timeit.default_timer()
+        elapsed_time = 1
+        min_elapsed_time = 15 + 0.005 * available_time  # to get an approximate extrapolation
+        n_eval_tmp = meta_config.n_cpu_max
+        n_checks_tmp = 1  #time will be multiplied by actual n_checks
 
-            elapsed_time *= np.ceil(float(n_checks) / n_checks_tmp)  # time for "one round"
-            test_time = timeit.default_timer() - start_timer_test
-            n_eval = (int((available_time * 0.98 - test_time) / elapsed_time)) * n_eval_tmp  # we did just one
-            if n_eval < 1:
-                n_eval = meta_config.n_cpu_max
-            out.add_output(["Time for one round:", elapsed_time, "Number of evaluations:", n_eval])
+        #call hyper_optimization with parameters for "one" run and measure time
+        out.add_output(data_out="", subtitle="Test run for time estimation only!",
+                       importance=2)
+        # do-while loop
+        clf = copy.deepcopy(clf_dict)
+        clf['config'] = config_clf_cp
+        while True:
+            start_timer = timeit.default_timer()
+            optimize_hyper_parameters(original_data, target_data, clf=clf,
+                                      n_eval=n_eval_tmp, n_folds=n_folds, n_checks=n_checks_tmp,
+                                      features=features, generator_type=generator_type,
+                                      take_target_from_data=take_target_from_data)
+            elapsed_time = timeit.default_timer() - start_timer
+            if elapsed_time > min_elapsed_time:
+                break
+            elif n_checks_tmp < n_checks:  # for small datasets, increase n_checks for testing
+                n_checks_tmp = min(n_checks, np.ceil(min_elapsed_time / elapsed_time))
+            else:
+                n_eval_tmp *= np.ceil(min_elapsed_time / elapsed_time)  # if time to small, increase n_rounds
 
-        elif isinstance(n_eval, str):
-            n_eval = max_eval
+        elapsed_time *= np.ceil(float(n_checks) / n_checks_tmp)  # time for "one round"
+        test_time = timeit.default_timer() - start_timer_test
+        n_eval = (int((available_time * 0.98 - test_time) / elapsed_time)) * n_eval_tmp  # we did just one
+        if n_eval < 1:
+            n_eval = meta_config.n_cpu_max
+        out.add_output(["Time for one round:", elapsed_time, "Number of evaluations:", n_eval])
 
-        n_eval = min(n_eval, max_eval)
+    elif isinstance(n_eval, str):
+        n_eval = max_eval
 
+    n_eval = min(n_eval, max_eval)
 
     # We do not need to create more data than we well test on
     features = data_tools.to_list(features)
-    if optimize_features:
-        grid_param = features
-
-    #TODO: insert time estimation for feature optimization
-
-
-
 
     assert grid_param != {}, "No values for optimization found"
-
-    # parallelize on the lowest level if possible (uses less RAM)
-    if clf in ('xgb', 'rdf', 'erf'):
-        parallel_profile = None
-    else:
-        parallel_profile = 'threads-' + str(min(globals_.free_cpus(), n_eval))
-
 
     # initialize data
     data, label, weights = _make_data(original_data, target_data, features=features,
                                       target_from_data=take_target_from_data)
 
     # initialize classifier
-    if clf == 'xgb':
-        clf_name = "XGBoost"
-        config_clf.update(nthreads=globals_.free_cpus())
-        clf = XGBoostClassifier(**config_clf)
-    elif clf == 'rdf':
-        clf_name = "Random Forest"
-        config_clf.update(n_jobs=globals_.free_cpus())  # needs less RAM if parallelized this way
-        clf = SklearnClassifier(RandomForestClassifier(**config_clf))
-    elif clf == 'gb':
-        clf_name = "GradientBoosting classifier"
-        clf = SklearnClassifier(GradientBoostingClassifier(**config_clf))
-    elif clf == 'nn':
-        clf_name = "Theanets Neural Network"
-        parallel_profile = None if meta_config.use_gpu else parallel_profile
-        clf = TheanetsClassifier(**config_clf)
-    elif clf == 'erf':
-        clf_name = "Extra Random Forest"
-        config_clf.update(n_jobs=globals_.free_cpus())
-        clf = SklearnClassifier(ExtraTreesClassifier(**config_clf))
-    elif clf == 'ada':
-        clf_name = "AdaBoost classifier"
-        clf = SklearnClassifier(AdaBoostClassifier(**config_clf))
+    clf_dict['config'] = config_clf
+    clf_dict = make_clf(clf=clf_dict, n_cpu=meta_config.n_cpu_max)
+    clf = clf_dict['clf']
+    clf_name = clf_dict['name']
+    parallel_profile = clf_dict['parallel_profile']
+#    if clf == 'xgb':
+#        clf_name = "XGBoost"
+#        config_clf.update(nthreads=globals_.free_cpus())
+#        clf = XGBoostClassifier(**config_clf)
+#    elif clf == 'rdf':
+#        clf_name = "Random Forest"
+#        config_clf.update(n_jobs=globals_.free_cpus())  # needs less RAM if parallelized this way
+#        clf = SklearnClassifier(RandomForestClassifier(**config_clf))
+#    elif clf == 'gb':
+#        clf_name = "GradientBoosting classifier"
+#        clf = SklearnClassifier(GradientBoostingClassifier(**config_clf))
+#    elif clf == 'nn':
+#        clf_name = "Theanets Neural Network"
+#        parallel_profile = None if meta_config.use_gpu else parallel_profile
+#        clf = TheanetsClassifier(**config_clf)
+#    elif clf == 'erf':
+#        clf_name = "Extra Random Forest"
+#        config_clf.update(n_jobs=globals_.free_cpus())
+#        clf = SklearnClassifier(ExtraTreesClassifier(**config_clf))
+#    elif clf == 'ada':
+#        clf_name = "AdaBoost classifier"
+#        clf = SklearnClassifier(AdaBoostClassifier(**config_clf))
+#
 
-    if optimize_features:
-        selected_features = copy.deepcopy(features)  # explicit is better than implicit
-        assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
+    # rederict print output (for the hyperparameter-optimizer from rep)
+    out.add_output("Starting hyper-optimization. This might take a while, no " +
+                   "output will be displayed during the process", importance=3)
+    out.IO_to_string()
 
-        # starting feature selection
-        out.add_output(["Performing feature selection of classifier", clf, "of the features", features],
-                       obj_separator=" ", title="Feature selection")
-        original_clf = FoldingClassifier(clf, n_folds=n_folds,
-                                         parallel_profile=parallel_profile)
-
-        # "loop-initialization", get score for all features
-        clf = copy.deepcopy(original_clf)  # required, the features attribute can not be changed somehow
-        clf.fit(data[selected_features], label, weights)
-        report = clf.test_on(data[selected_features], label, weights)
-        max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
-        roc_auc = OrderedDict({'all features': round(max_auc, 4)})
-        out.save_fig(figure="feature importance " + str(clf_name))
-        report.feature_importance_shuffling().plot()
-        out.save_fig(figure="feature correlation " + str(clf_name))
-        report.features_correlation_matrix().plot()
-
-        collected_scores = {feature: [] for feature in selected_features}
-        collected_scores['features_tot'] = []
-
-        # do-while python-style (with if-break inside)
-        while len(selected_features) > 1 and not no_roc_auc_features:
-
-            # initialize variable
-            difference = 1  # a surely big initialisation
-            n_features_left = len(selected_features)
-            collected_scores['features_tot'].append(n_features_left)
-
-            # iterate through the features and remove the ith each time
-            for i, feature in enumerate(selected_features):
-                clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
-                temp_features = selected_features[:]
-                del temp_features[i]  # remove ith feature for testing
-                clf.fit(data[temp_features], label, weights)
-                report = clf.test_on(data[temp_features], label, weights)
-                temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
-                collected_scores[feature].append(round(temp_auc, 4))
-                if max_auc - temp_auc < difference:
-                    difference = max_auc - temp_auc
-                    temp_dict = {feature: round(temp_auc, 4)}
-
-            if difference >= max_difference or feature_exploration:
-                break
-            else:
-                roc_auc.update(temp_dict)
-                selected_features.remove(temp_dict.keys()[0])
-                max_auc = temp_dict.values()[0]
-
-        for key, value in collected_scores.items():
-            missing_values = len(collected_scores['features_tot']) - len(value)
-            if missing_values > 0:
-                collected_scores[key].extend([None] * missing_values)
-        temp_key, temp_val = collected_scores.popitem()
-        collected_scores = {'auc without ' + key: val for key, val in collected_scores}
-        collected_scores[temp_key] = temp_val
-        collected_scores = pd.DataFrame(collected_scores)
-        out.add_output(["The collected scores: ", collected_scores], importance=2)
-
-        if not feature_exploration:
-            if len(selected_features) > 1:
-                out.add_output(["ROC AUC if the next feature was removed", roc_auc,
-                                "\nNext feature: ", temp_dict],
-                                subtitle="Feature selection results")
-            # if all features were removed
-            else:
-                out.add_output(["ROC AUC if the feature was removed", roc_auc,
-                                "All features removed, loop stopped removing because no feature was left"],
-                                subtitle="Feature selection results")
-
+    if generator_type == 'regression':
+        generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
+    elif generator_type == 'subgrid':
+        generator = SubgridParameterOptimizer(grid_param, n_evaluations=n_eval)
+    elif generator_type == 'random':
+        generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
     else:
-        # rederict print output (for the hyperparameter-optimizer from rep)
-        out.IO_to_string()
+        raise ValueError(str(generator) + " not a valid, implemented generator")
+    scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
+    grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
 
-        if generator_type == 'regression':
-            generator = RegressionParameterOptimizer(grid_param, n_evaluations=n_eval)
-        elif generator_type == 'subgrid':
-            generator = SubgridParameterOptimizer(grid_param, n_evaluations=n_eval)
-        elif generator_type == 'random':
-            generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
-        else:
-            raise ValueError(str(generator) + " not a valid, implemented generator")
-        scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
-        grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
+    # Search for hyperparameters
+    logger.info("starting " + clf_name + " hyper optimization")
+    grid_finder.fit(data, label, weights)
+    logger.info(clf_name + " hyper optimization finished")
+    grid_finder.params_generator.print_results()
 
-        # Search for hyperparameters
-        logger.info("starting " + clf_name + " hyper optimization")
-        grid_finder.fit(data, label, weights)
-        logger.info(clf_name + " hyper optimization finished")
-        grid_finder.params_generator.print_results()
-
-
-        if train_best:
-            # Train the best and plot reports
-            X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(data, label, weights,
-                                                                                 test_size=0.25)
-            best_est = grid_finder.fit_best_estimator(X_train, y_train, w_train)
-            report = best_est.test_on(X_test, y_test, w_test)
-
-            # plots
-            try:
-                name1 = "Learning curve of best classifier"
-                out.save_fig(name1, **save_fig_cfg)
-                report.roc().plot(title=name1)
-                name2 = str("Feature correlation matrix of " + original_data.get_name() +
-                            " and " + target_data.get_name())
-                out.save_fig(name2, **save_ext_fig_cfg)
-                report.features_correlation_matrix().plot(title=name2)
-                name3 = "Learning curve of best classifier"
-                out.save_fig(name3, **save_fig_cfg)
-                report.learning_curve(metrics.RocAuc(), steps=1).plot(title=name3)
-                name4 = "Feature importance of best classifier"
-                out.save_fig(name4, **save_fig_cfg)
-                report.feature_importance_shuffling().plot(title=name4)
-            except:
-                logger.error("Could not plot hyper optimization " + clf_name + " plots")
-
-        out.IO_to_sys(subtitle=clf_name + " hyperparameter/feature optimization")
+    out.IO_to_sys(subtitle=clf_name + " hyperparameter/feature optimization",
+                  importance=4, to_end=True)
 
 
 def classify(original_data=None, target_data=None, features=None, validation=10, clf='xgb',
