@@ -201,6 +201,11 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 
     from stacked_generalizer import StackedGeneralizer
 
+    import rep.metaml.cache
+    from rep.metaml._cache import CacheHelper
+    rep.metaml.cache.cache_helper = CacheHelper('/home/mayou/cache', 100000)
+
+
 #    data1.make_folds(n_folds)
 #    data2.make_folds(n_folds)
     output = {}
@@ -239,6 +244,12 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf, bootstrap=False, n_jobs=1)
     nn_bagged = CacheClassifier(name='nn_bagged1', clf=nn_bagged)
 
+    nn_single_clf = TheanetsClassifier(layers=[300, 300, 300], hidden_dropout=0.03,
+                       trainers=[{'optimize': 'adagrad', 'patience': 5, 'learning_rate': 0.2, 'min_improvement': 0.1,
+                       'momentum':0.4, 'nesterov':True, 'loss': 'xe'}])
+    nn_single = FoldingClassifier(base_estimator=nn_single_clf, n_folds=3, stratified=True)
+    nn_single = CacheClassifier(name='nn_single1', clf=nn_single)
+
 
     logit_stacker = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag'))
     logit_stacker = FoldingClassifier(base_estimator=logit_stacker, n_folds=n_folds,
@@ -248,7 +259,7 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     xgb_stacker = XGBoostClassifier(n_estimators=400, eta=0.1, max_depth=4, nthreads=8)
     #HACK
     xgb_stacker = xgb_big_stacker
-    xgb_stacker = FoldingClassifier(base_estimator=xgb_stacker, n_folds=n_folds,
+    xgb_stacker = FoldingClassifier(base_estimator=xgb_stacker, n_folds=n_folds, random_state=42,
                                     stratified=True, parallel_profile='threads-6')
     xgb_stacker = CacheClassifier(name='xgb_stacker1', clf=xgb_stacker)
 
@@ -259,19 +270,26 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 #        t_data, t_targets, t_weights =
     data, targets, weights = data1.make_dataset(data2, weights_ratio=1)
 
-    xgb_bagged.fit(data, targets, weights)
-    xgb_report = xgb_bagged.test_on(data, targets, weights)
-    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
-    output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
-    xgb_proba = xgb_report.prediction['clf'][:, 1]
-    del xgb_bagged, xgb_folded, xgb_clf, xgb_report
+#    xgb_bagged.fit(data, targets, weights)
+#    xgb_report = xgb_bagged.test_on(data, targets, weights)
+#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
+#    output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+#    xgb_proba = xgb_report.prediction['clf'][:, 1]
+#    del xgb_bagged, xgb_folded, xgb_clf, xgb_report
+#
+#    xgb_single.fit(data, targets, weights)
+#    xgb_report = xgb_single.test_on(data, targets, weights)
+#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_single classifier")
+#    output['xgb_single'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+#    xgb_proba = xgb_report.prediction['clf'][:, 1]
+#    del xgb_single, xgb_report
 
-    xgb_single.fit(data, targets, weights)
-    xgb_report = xgb_single.test_on(data, targets, weights)
-    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
-    output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
-    xgb_proba = xgb_report.prediction['clf'][:, 1]
-    del xgb_single, xgb_report
+    nn_single.fit(data, targets, weights)
+    nn_report = nn_single.test_on(data, targets, weights)
+    nn_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC nn_single classifier")
+    output['nn_single'] = "roc auc:" + str(nn_report.compute_metric(metric=RocAuc()))
+    nn_proba = nn_report.prediction['clf'][:, 1]
+    del nn_single, nn_report
 
 #    rdf_bagged.fit(data, targets, weights)
 #    rdf_report = rdf_bagged.test_on(data, targets, weights)
@@ -287,31 +305,31 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 #    gb_proba = gb_report.prediction['clf'][:, 1]
 #    del gb_bagged, gb_clf, gb_folded, gb_report
 
-    nn_bagged.fit(data, targets, weights)
-    nn_report = nn_bagged.test_on(data, targets, weights)
-    nn_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC nn_base classifier")
-    output['nn_base'] = "roc auc:" + str(nn_report.compute_metric(metric=RocAuc()))
-    nn_proba = nn_report.prediction['clf'][:, 1]
-    del nn_bagged, nn_clf, nn_folded, nn_report
-
-    base_predict = pd.DataFrame({'xgb': xgb_proba,
-#                                 'rdf': rdf_proba,
-                                 #'gb': gb_proba,
-                                 'nn': nn_proba
-                                 })
-
-
-    xgb_stacker.fit(base_predict, targets, weights)
-    xgb_report = xgb_stacker.test_on(base_predict, targets, weights)
-    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_stacked classifier")
-    output['stacker_xgb'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
-    del xgb_stacker, xgb_report
-
-    logit_stacker.fit(base_predict, targets, weights)
-    logit_report = logit_stacker.test_on(base_predict, targets, weights)
-    logit_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC logit_stacked classifier")
-    output['stacker_logit'] = "roc auc:" + str(logit_report.compute_metric(metric=RocAuc()))
-    del logit_stacker, logit_report
+#    nn_bagged.fit(data, targets, weights)
+#    nn_report = nn_bagged.test_on(data, targets, weights)
+#    nn_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC nn_base classifier")
+#    output['nn_base'] = "roc auc:" + str(nn_report.compute_metric(metric=RocAuc()))
+#    nn_proba = nn_report.prediction['clf'][:, 1]
+#    del nn_bagged, nn_clf, nn_folded, nn_report
+#
+#    base_predict = pd.DataFrame({'xgb': xgb_proba,
+##                                 'rdf': rdf_proba,
+#                                 #'gb': gb_proba,
+#                                 'nn': nn_proba
+#                                 })
+#
+#
+#    xgb_stacker.fit(base_predict, targets, weights)
+#    xgb_report = xgb_stacker.test_on(base_predict, targets, weights)
+#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_stacked classifier")
+#    output['stacker_xgb'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
+#    del xgb_stacker, xgb_report
+#
+#    logit_stacker.fit(base_predict, targets, weights)
+#    logit_report = logit_stacker.test_on(base_predict, targets, weights)
+#    logit_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC logit_stacked classifier")
+#    output['stacker_logit'] = "roc auc:" + str(logit_report.compute_metric(metric=RocAuc()))
+#    del logit_stacker, logit_report
 
     print output
 
@@ -325,9 +343,9 @@ def _hyper_optimization_int(cfg, logger, out):
     target_data = data_storage.HEPDataStorage(**cfg.data['hyper_target'])
 
 #HACK
-#    clf_mayou(data1=original_data, data2=target_data)
-#    print "hack in use, physical analysis; _hyper_optimization_int"
-#    return
+    clf_mayou(data1=original_data, data2=target_data)
+    print "hack in use, physical analysis; _hyper_optimization_int"
+    return
 #HACK END
     #original_data.plot()
 
@@ -559,6 +577,8 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # file. To_end is sometimes quite useful, as it prints (and saves) the
     # arguments at the end of the file. So the important results are possibly
     # printed to the end
+    out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
+                   title='ROC AUC of mc reweighted/real KFold', to_end=True)
     out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
                    title='Train similar report', to_end=True)
     if scores.get('score_max', False):

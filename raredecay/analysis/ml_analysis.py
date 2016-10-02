@@ -121,15 +121,17 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         - **n_cpus**: The number of cpus used in the classifier.
     """
     #TODO: write function below
+    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'nn', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
     # test if input is classifier, create dict
-    if isinstance(clf, BaseEstimator):
-        clf = {'clf': clf}
+    if isinstance(clf, (BaseEstimator, Classifier)):
+        clf = {'clf': clf, 'name': clf}
 
     # if clf is a string only, create dict with only the type specified
     if isinstance(clf, str):
-        clf = {'clf_type': clf}
+        assert clf in __IMPLEMENTED_CLFS, "clf not implemented (yet. Make an issue;) )"
+        clf = {'clf_type': clf, 'name': clf}
 
     assert isinstance(clf, dict), "Wrong data format of classifier..."
 
@@ -140,23 +142,30 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         n_cpu = globals_.free_cpus()
 
     # if input is dict containing a clf, make sure it's a Sklearn one
-    if isinstance(clf, dict) and len(clf) == 1 and isinstance(clf.values()[0], BaseEstimator):
+    if len(clf) == 1 and isinstance(clf.values()[0], (BaseEstimator, Classifier)):
         key, value = clf.popitem()
         clf['name'] = key
         clf['clf'] = value
-    if isinstance(clf, dict) and isinstance(clf.get('clf'), BaseEstimator):
+    if isinstance(clf.get('clf'), (BaseEstimator, Classifier)):
         classifier = clf['clf']
         if not isinstance(classifier, Classifier):
             classifier = SklearnClassifier(clf=classifier)
         output['clf'] = classifier
         output['name'] = clf.get('name', clf.get('type', "Classifier"))
-
     else:
+        if not clf.has_key('clf_type'):
+            for imp_clf in __IMPLEMENTED_CLFS:
+                if clf.has_key(imp_clf):
+                    clf['clf_type'] = imp_clf
+                    clf['config'] = clf[imp_clf]
+        if not clf.has_key('clf_type'):
+            raise ValueError("Invalid classifier, not implemented")
+        if not clf.has_key('name'):
+            clf['name'] = clf['clf_type']
         default_clf = dict(
             clf_type=clf['clf_type'],
-            name=meta_config.DEFAULT_CLF_NAME[clf],
-            config=meta_config.DEFAULT_CLF_CONFIG[clf],
-
+            name=meta_config.DEFAULT_CLF_NAME[clf['clf_type']],
+            config=meta_config.DEFAULT_CLF_CONFIG[clf['clf_type']],
         )
 
         clf = dict(default_clf, **clf)
@@ -167,7 +176,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             clf_tmp = XGBoostClassifier(**clf.pop('config'))
         if clf['clf_type'] == 'tmva':
             serial_clf = True
-            clf = TMVAClassifier(**clf.pop('config'))
+            clf_tmp = TMVAClassifier(**clf.pop('config'))
         if clf['clf_type'] == 'gb':
             serial_clf = True
             clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.pop('config')))
@@ -186,8 +195,9 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.pop('config')))
         if clf['clf_type'] == 'nn':
+            serial_clf = meta_config.use_gpu
             clf['config'].update(dict(random_state=globals_.randint+43))
-            clf = TheanetsClassifier(**clf.pop('config'))
+            clf_tmp = TheanetsClassifier(**clf.pop('config'))
 
         # assign classifier to output dict
         output['clf'] = clf_tmp
@@ -279,7 +289,7 @@ def optimize_hyper_parameters(original_data, target_data, clf, config_clf, n_eva
         max_eval = 1
         for n_params in grid_param.itervalues():
             max_eval *= len(n_params)
-        logger.i
+        logger.info("Maximum possible evaluations: " + str(max_eval))
 
         # get a time estimation and extrapolate to get n_eval
         if isinstance(n_eval, str) and meta_config.n_cpu_max * 2 < max_eval:
