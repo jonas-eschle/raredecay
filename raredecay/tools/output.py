@@ -26,7 +26,7 @@ class OutputHandler(object):
     """Class for output handling"""
 
     __SAVE_STDOUT = sys.stdout
-    IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
+    _IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
     _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.']
     _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
 
@@ -249,7 +249,7 @@ class OutputHandler(object):
             if isinstance(file_format, str):
                 file_format = [file_format]
             file_format = set(file_format)
-            file_format.intersection_update(self.IMPLEMENTED_FORMATS)
+            file_format.intersection_update(self._IMPLEMENTED_FORMATS)
             self._formats_used.update(file_format)
 
             # change layout of figures
@@ -376,11 +376,11 @@ class OutputHandler(object):
             The section title. Can be additional to the others or exclusive.
         obj_separator : str
             The separator between the objects in data_out.
-            Default is a new line: '\n'.
+            Default is a new line.
         data_separator : str
-            | Separates the data_outs from each other. Inserted at the end and
-              creates a separation from the next call of add_output.
-            | Default is a blank line as separation: '\n\n'.
+            Separates the data_outs from each other. Inserted at the end and
+            creates a separation from the next call of add_output.
+            Default is a blank line as separation.
         force_newline : boolean
             If true, the data_out will be written on a new line and not just
             concatenated to the data written before

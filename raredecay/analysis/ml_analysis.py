@@ -298,6 +298,7 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
     # initialize variables and setting defaults
     output = {}
     start_time = -1  # means: no time measurement on the way
+    available_time = 1
 
     # start timer if time-limit is given
     if isinstance(max_feature_elimination, str):
@@ -382,6 +383,10 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
             report = clf.test_on(data[temp_features], label, weights)
             temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
             collected_scores[feature].append(round(temp_auc, 4))
+            # set time condition
+            if available_time < timeit.default_timer() - start_time and start_time > 0:
+                n_to_eliminate = 0
+                break
             if max_auc - temp_auc < difference:
                 difference = max_auc - temp_auc
                 temp_dict = {feature: round(temp_auc, 4)}
