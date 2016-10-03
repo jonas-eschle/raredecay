@@ -9,6 +9,8 @@ Contain methods to change settings in the whole package
 
 from __future__ import division, absolute_import
 
+
+import copy
 import matplotlib.pyplot as plt
 
 from raredecay.run_config import config
@@ -19,9 +21,10 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
                run_message="This is a test-run to test the package", verbosity=3,
                report_verbosity=3, prompt_for_input=False,
                logger_console_level='warning', logger_file_level='debug',
-               n_cpu=-1, gpu_in_use=False):
+               n_cpu=1, gpu_in_use=False):
     """Place before Imports! Initialize/change several parameters for the package"""
     _init_user_input(prompt_for_input=prompt_for_input)
+    parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
     logger_file_level = None if output_path is None else logger_file_level
     _init_configure_logger(console_level=logger_console_level,
                            file_level=logger_file_level)
@@ -51,7 +54,11 @@ def finalize(show_plots=True, play_sound_at_end=False):
 
 
 def get_output_handler():
-    """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`"""
+    """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`
+
+    This can be used to add output (text as well as figures) and save them
+    easely. For more information see the docs of the OutputHandler
+    """
     from raredecay.globals_ import out
     return out
 
@@ -82,6 +89,35 @@ def parallel_profile(n_cpu=-1, gpu_in_use=False):
 
     """
     meta_config.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
+
+
+def figure_save_config(file_formats=['png', 'svg'], to_pickle=True, dpi=150):
+    """Change the save-options of figures.
+
+    If you initialized an output-path, the figures that are plotted during
+    the run will be f. On one hand, they are saved as pictures in the
+    given formats, on the other hand the figures (matplotlib) will be saved
+    as a pickle-object (also in the output-folder)
+    If the run was not initialized with an output-path, this function will
+    have no effect on the behaviour of your script.
+
+    Parameters
+    ----------
+    file_formats : str or list[str, str, str,...]
+        The possible formats to save the figures to. Currently implemented are:
+        ['png', 'jpg', 'pdf', 'svg']
+    to_pickle : boolean
+        If True, the matplotlib-figures will be saved as a pickle-file allowing
+        for later plotting. They are saved in the output-folder.
+    dpi : int
+        The resolution of the images.
+    """
+    # hack for using mutable defaults
+    file_formats = copy.deepcopy(file_formats)
+    config.save_fig_cfg['file_formats'] = file_formats
+    config.save_fig_cfg['to_pickle'] = to_pickle
+    config.save_fig_cfg['dpi'] = dpi
+
 
 
 def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,

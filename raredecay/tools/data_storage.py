@@ -369,7 +369,7 @@ class HEPDataStorage(object):
         Return
         ------
         out: 1-D numpy array
-            Return the weights in an array
+            Return the weights as pandas Series
         """
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
