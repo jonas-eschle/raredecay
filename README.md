@@ -1,7 +1,16 @@
-# README of the raredecay-package #
+# raredecay #
+
+This package consists of several tools for the event selection of particle decays, mostly built on machine learning techniques.
+It contains:
+
+- a **data-container** holding data, weights, labels and more and implemented root-to-python data conversion as well as plots and KFold-data splitting
+- **reweighting** tools from the hep_ml-repository wrapped in a KFolding structure and with metrics to evaluate the reweighting quality
+- **classifier optimization** tools for hyper-parameters as well as feature selection involving a backward-elimination
+- an **output handler** which makes it easy to add text as well as figures into your code and automatically save them to a file
+- ... and more
 
 
-[## Documentation ##](http://mayou36.bitbucket.org/index.html)
+[Documentation](http://mayou36.bitbucket.org/index.html)
 
 *Still under work, like the rest of the README!*
 
