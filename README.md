@@ -1,7 +1,7 @@
 # README of the raredecay-package #
 
 
-[**Documentation**](http://mayou36.bitbucket.org/index.html)
+[##Documentation##](http://mayou36.bitbucket.org/index.html)
 
 *Still under work, like the rest of the README!*
 
