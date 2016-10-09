@@ -14,7 +14,7 @@ It contains:
 
 *Still under work, like the rest of the README!*
 
-# [HowTo Examples](http://mayou36.bitbucket.org/howto_notebooks/html/IO_handling_and_settings.html)
+# [HowTo Examples](http://mayou36.bitbucket.org/index_howto.html)
 
 
 
