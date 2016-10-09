@@ -10,9 +10,11 @@ It contains:
 - ... and more
 
 
-[Documentation](http://mayou36.bitbucket.org/index.html)
+# [Documentation](http://mayou36.bitbucket.org/index.html) #
 
 *Still under work, like the rest of the README!*
+
+# [HowTo Examples](http://mayou36.bitbucket.org/howto_notebooks/html/IO_handling_and_settings.html)
 
 
 
