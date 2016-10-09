@@ -2,7 +2,7 @@
 """
 Created on Thu Apr  7 22:10:29 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 # debug
 from __future__ import division, absolute_import
@@ -1083,7 +1083,10 @@ class HEPDataStorage(object):
 
     def plot_correlation(self, second_storage=None, columns=None,
                          method='pearson', plot_importance=5):
-        """Plot the feature correlation for the data (combined with other data)
+        """
+        .. warning:: does not support weights. Maybe in the future.
+
+        Plot the feature correlation for the data (combined with other data)
 
         Calculate the feature correlation, return it and plot them.
 
@@ -1106,11 +1109,18 @@ class HEPDataStorage(object):
         out : pandas DataFrame
             Return the feature-correlations in a pandas DataFrame
         """
+        columns = self.columns if columns is None else columns
+
+        data_name = self.get_name()
+        if second_storage is not None:
+            data_name += " and " + second_storage.get_name()
         data, _tmp, _tmp2 = self.make_dataset(second_storage=second_storage,
                                               shuffle=True, columns=columns)
         del _tmp, _tmp2
         correlation = data.corr(method=method)
         corr_plot = sns.heatmap(correlation.T)
+
+        corr_plot.set_title("NO WEIGHTS! Correlation of " + data_name)
 
         # turn the axis label
         for item in corr_plot.get_yticklabels():
@@ -1120,7 +1130,7 @@ class HEPDataStorage(object):
             item.set_rotation(90)
 
 
-    def plot(self, figure=None, title=None, data_name=None, std_save=True,
+    def plot(self, figure=None, title=None, data_name=None, importance=3,
              log_y_axes=False, columns=None, index=None, sample_weights=None,
              data_labels=None, see_all=False, hist_settings=None, weights_as_events=False):
         """Draw histograms of the data.
@@ -1213,7 +1223,7 @@ class HEPDataStorage(object):
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
             self.__figure_dic.update({figure: x_limits_col, 'title': ""})
-        out_figure = plt.figure(figure, figsize=(20, 30))
+        out_figure = out.save_fig(figure, importance=importance, **cfg.save_fig_cfg)
 
         # create a label
         label_name = data_tools.obj_to_string([self._name[0], self._name[1],
@@ -1241,9 +1251,6 @@ class HEPDataStorage(object):
                                              label=label_name, **hist_settings)
             plt.title(column)
         plt.legend()
-
-        if std_save and out_imported:
-            out.save_fig(out_figure, **meta_config.DEFAULT_SAVE_FIG)
         return out_figure
 
     def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
@@ -1323,7 +1330,7 @@ if __name__ == '__main__':
 
     storage2 = HEPDataStorage(**root_data)
 
-    storage2.plot_correlation()
+    storage2.plot_correlation(storage2)
 
     storage3 = storage2.copy_storage(index=[3,5,7,9], columns=['B_PT', 'nTracks'])
     df11 = storage3.pandasDF()

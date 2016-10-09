@@ -2,83 +2,28 @@
 """
 Created on Sat Mar 26 16:49:45 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 
 Contains the different run-modes for the machine-learning algorithms.
 """
 from __future__ import division, absolute_import
 
 import importlib
+import multiprocessing
 
 import raredecay.meta_config
 
 from memory_profiler import profile
 
-__CFG_PATH = 'raredecay.run_config.'
-DEFAULT_CFG_FILE = dict(
-    reweightCV=__CFG_PATH + 'reweight_cfg',
-    reweight=__CFG_PATH + 'reweight_cfg',
-    hyper_optimization=__CFG_PATH + 'classifier_cfg',
-)
-
-
-def run(run_mode, cfg_file=None):
-    """select the right runmode from the parameter and run it"""
-
-    if cfg_file is None:
-        cfg_file = DEFAULT_CFG_FILE.get(run_mode, None)
-        assert cfg_file is not None, "No (default) cfg-file found."
-    raredecay.meta_config.run_config = cfg_file
-    raredecay.meta_config.NO_PROMPT_ASSUME_YES = False
-    raredecay.meta_config.PROMPT_FOR_COMMENT = True
-
-
-    # import configuration-file
-    cfg = importlib.import_module(raredecay.meta_config.run_config)
-
-    # initialize
-    from raredecay.globals_ import out
-    out.initialize_save(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
-    out.add_output(["config file used", str(raredecay.meta_config.run_config)],
-                    section="Configuration", obj_separator=" : ", to_end=True)
-
-    # create logger
-    from raredecay.tools import dev_tool
-    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
-
-    out.make_me_a_logger()  # creates a logger inside of "out"
-
-
-#==============================================================================
-# Run initialized, start physical analysis
-#==============================================================================
-
-    if run_mode == "test":
-        test(cfg, logger)
-    elif run_mode == "reweightCV":
-        score = _reweightCV_int(cfg, logger, out)
-    elif run_mode == "reweight":
-        _reweight_int(cfg, logger)
-    elif run_mode == "hyper_optimization":
-        _hyper_optimization_int(cfg, logger, out)
-    else:
-        raise ValueError("Runmode " + str(run_mode) + " not a valid choice")
-
-#==============================================================================
-# Run finished, finalize it
-#==============================================================================
-    out.finalize()
 
 def test(cfg):
     """just a test-function"""
     print "empty test function"
 
 
-
-
 #@profile
 def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
-    """Test a setup of clf involving bagging and stacking"""
+    """DEVELOPEMENT, WIP. Test a setup of clf involving bagging and stacking"""
     #import raredecay.analysis.ml_analysis as ml_ana
     import pandas as pd
     import copy
@@ -230,7 +175,7 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 
 
 
-def _hyper_optimization_int(cfg, logger, out):
+def _test_mayou_int():
     """Intern call to hyper_optimization"""
     from raredecay.tools import data_tools, dev_tool, data_storage
 
@@ -239,24 +184,163 @@ def _hyper_optimization_int(cfg, logger, out):
 
 #HACK
     clf_mayou(data1=original_data, data2=target_data)
-    print "hack in use, physical analysis; _hyper_optimization_int"
+    print "Clf_mayou function finished"
     return
-#HACK END
-    #original_data.plot()
-
-    clf = cfg.hyper_cfg['optimize_clf']
-    config_clf = getattr(cfg, 'cfg_' + clf)
-
-    n_eval = cfg.hyper_cfg['n_evaluations']
-    n_checks = cfg.hyper_cfg['n_fold_checks']
-    n_folds = cfg.hyper_cfg['n_folds']
-    generator_type = cfg.hyper_cfg.get('generator')
-    optimize_features = cfg.hyper_cfg.get('optimize_features', False)
-    features = cfg.opt_features
 
 
-def feature_exploration(original_data, target_data, features=None, roc_auc=True):
-    pass
+
+def _cut(data):
+    from raredecay.tools import data_tools
+
+    return data_tools.apply_cuts(*data)
+
+
+def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
+    """Cut the bkg while maintaining a certain percent of the signal
+
+
+    """
+    import matplotlib.pyplot as plt
+
+    from raredecay import meta_config
+    from raredecay.tools import data_tools
+    from raredecay.globals_ import out
+    from raredecay.tools.data_storage import HEPDataStorage
+
+
+    import numpy as np
+    import copy
+
+    columns = signal_data.columns
+    signal_data.plot(figure="Before cut", title="Data comparison before cut")
+    signal_data.plot(figure="Signal comparison", title="Data comparison before cut vs after")
+    bkg_data.plot(figure="Background comparison", title="Data comparison before cut vs after")
+    bkg_data.plot(figure="Before cut")
+    bkg_length = len(bkg_data)
+    signal_length = len(signal_data)
+    signal_cp = signal_data.copy_storage()
+    bkg_cp = bkg_data.copy_storage()
+    signal_data = signal_data.pandasDF()
+    bkg_data = bkg_data.pandasDF()
+
+
+    applied_cuts = {}
+
+    percent_end =  percent_sig_to_keep
+    percent_sig_to_keep = 100
+    stepsize = 0.1
+    keep = {}
+
+    while True:
+
+#        pool = multiprocessing.Pool(meta_config.n_cpu_max)
+        sig = copy.deepcopy(np.array([signal_data.as_matrix()[:,i] for i, col in enumerate(columns)]))
+        bkg = copy.deepcopy(np.array([bkg_data.as_matrix()[:,i] for i, col in enumerate(columns)]))
+        data = zip(sig, bkg, [percent_sig_to_keep] * len(columns))
+        limits, rejection = [], []
+        for sig, bkg, per in data:
+            temp = data_tools.apply_cuts(sig, bkg, per, bkg_length=bkg_length)
+            limits.append(temp[0])
+            rejection.append(temp[1])
+#        limits, rejection = pool.map(_cut, data)
+        i_max_rej = np.argmax(rejection)
+        max_rejection = np.max(rejection)
+        column, limits = columns[i_max_rej], limits[i_max_rej]
+        print percent_sig_to_keep, percent_end
+        if max_rejection < 0.001 and percent_sig_to_keep == 100:
+            if percent_end < 100:
+                percent_sig_to_keep -= stepsize
+            else:
+                break
+        elif percent_sig_to_keep >= percent_end and percent_sig_to_keep < 100:
+            percent_end += stepsize
+            stepsize *= (100 - stepsize) / 100
+        elif percent_sig_to_keep< percent_end:
+            break
+
+
+        if applied_cuts.has_key(column):
+            max_rejection += applied_cuts[column]['reduction']
+        applied_cuts[column] = {"limits": limits, "reduction": max_rejection}
+
+        cuts = np.logical_and(signal_data[column] > limits[0], signal_data[column] < limits[1])
+        signal_data = signal_data[cuts]
+
+        cuts = np.logical_and(bkg_data[column] > limits[0], bkg_data[column] < limits[1])
+        bkg_data = bkg_data[cuts]
+        print "We used " + column
+
+#    signal_data.hist(bins=30)
+#    bkg_data.hist(bins=30)
+
+
+    signal_len_cut = len(np.array(signal_data.as_matrix()[:, 0]))
+    bkg_len_cut = len(np.array(bkg_data.as_matrix()[:,0]))
+    signal_cp.set_data(signal_data)
+    signal_cp.plot(figure="Signal comparison")
+    signal_cp.plot(figure="Data cut plt", title="Data with cuts applied", log_y_axes=True)
+
+    bkg_cp.set_data(bkg_data)
+    bkg_cp.plot(figure="Background comparison")
+    bkg_cp.plot(figure="Data cut plt", log_y_axes=True)
+
+
+    out.add_output(applied_cuts, section="Preselection cuts report")
+    out.add_output(keep, section="All limits")
+    bkg_rejection = sum([i['reduction'] for i in applied_cuts.itervalues()])
+    out.add_output(["summed up Bkg rejection: ", bkg_rejection, "True rejection: ",
+                    100.0 - (bkg_len_cut/bkg_length), " True remaining signal: ",
+                    signal_len_cut/signal_length], section="Total bkg rejection")
+    print signal_len_cut
+    print signal_length
+    print bkg_len_cut
+    print bkg_length
+
+    return applied_cuts
+
+
+
+
+
+
+
+def feature_exploration(original_data, target_data, features=None, n_folds=10,
+                        roc_auc='single', extended_report=True):
+    """Explore the features by getting the roc auc and their feature importance
+
+
+    """
+    import raredecay.analysis.ml_analysis as ml_ana
+
+    roc_auc_all = True if roc_auc in ('all', 'both') else False
+    roc_auc_single = True if roc_auc in ('single', 'both') else False
+
+    if features is not None:
+        original_data = original_data.copy_storage(columns=features)
+        target_data = target_data.copy_storage(columns=features)
+
+    figure = "Plotting" + str(original_data.get_name()) + " and " + str(target_data.get_name())
+    original_data.plot(figure=figure, title=figure)
+    target_data.plot(figure=figure)
+
+    if roc_auc_all:
+        ml_ana.classify(original_data, target_data, validation=n_folds, extended_report=True)
+
+    features = original_data.columns if features is None else features
+
+    output = {}
+    out_temp = {}
+    if roc_auc_single:
+        for feature in features:
+            tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
+                                          validation=3, extended_report=extended_report,
+                                          plot_title="Feature exploration, ROC AUC only using" + str(feature),
+                                            weights_ratio=1)
+        out_temp[feature] = score
+
+    output['score'] = out_temp
+
+    return output
 
 
 def add_branch_to_rootfile(root_data=None, new_branch=None, branch_name=None):
@@ -270,36 +354,6 @@ def add_branch_to_rootfile(root_data=None, new_branch=None, branch_name=None):
 
     data_tools.add_to_rootfile(root_data, new_branch=new_branch,
                                branch_name=branch_name)
-
-
-def _reweight_int(cfg, logger, rootfile_to_add=None):
-    """
-
-    """
-
-    from raredecay.tools import data_tools, data_storage
-    from raredecay.globals_ import out
-    import matplotlib.pyplot as plt
-
-    out.add_output("Starting the run 'reweight'", title="Reweighting")
-
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-    reweight_apply = data_storage.HEPDataStorage(**cfg.data.get('reweight_apply'))
-
-    reweight_apply.plot(figure="Data for reweights apply", title="Data before and after reweighting",
-                        data_name="no weights")
-
-    reweight_real.plot(figure="Data to train reweighter", data_name="before reweighting")
-    reweight_mc.plot(figure="Data to train reweighter")
-
-    print reweight(real_data=reweight_real, mc_data=reweight_mc, apply_data=reweight_apply,
-             columns=cfg.reweight_branches, reweight_cfg=cfg.reweight_meta_cfg,
-             reweighter='gb')
-
-    # add weights to root TTree
-    #add_branch_to_rootfile(cfg, logger, root_data=reweight_mc.get_rootdict(),
-    #                       new_branch=new_weights, branch_name="weights_gb")
 
 
 def reweight(real_data, mc_data, apply_data, reweighter='gb', reweight_cfg=None,
@@ -335,60 +389,89 @@ def reweight(real_data, mc_data, apply_data, reweighter='gb', reweight_cfg=None,
     return output
 
 
+def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=None,
+               scoring=True, n_folds_scoring=10, score_clf='xgb', columns=None,
+               apply_weights=True):
+    """Reweight data (mc/real) in a KFolded way to unbias the reweighting
 
+    The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
+    hyperparameters. Therefore, it is good to ged an estimation for the
+    reweighting quality by reweighting the data and "test" it (compare how
+    similar the reweighted to the real one is). In order to get an unbiased
+    reweighting, a KFolding procedure is applied:
 
-def _reweightCV_int(cfg, logger, out):
-    """Test reweighting with CV and get reports on the performance
+    - the reweighter is trained on n-1/nth of the data and predicts the
+      weights for the 1/n leftover. This is done n times resulting in unbiased
+      weights for the mc data.
 
-    To find the optimal parameters for the reweighting (most of all for the
-    gradient boosted reweighter) it is crucial to reweight and test in a
-    cross-validated way. There are several "metrics" to test the reweighting.
+    To know, how well the reweighter worked, different stategies can be used
+    and are implemented, for further information also see: TODO, IMPLEMENT
+    REWEIGHT PRÄSI.
 
     Parameters
     ----------
-    cfg : python-file
-        The configuration file
-    logger : a python logger
-        The logger to be used. Should not be changed actually
-    out : instance of output class
-        The right instance which is placed in the meta-config
+    real_data : HEPDataStorage
+        The real data
+    mc_data : HEPDataStorage
+        The mc data
+    n_folds : int > 1
+        Number of folds to split the data for the reweighting. Usually, the
+        higher the better.
+    reweighter : str {'gb', 'bins'}
+        Which reweighter to use, either the Gradient Boosted reweighter or the
+        (normally used) Bins reweighter (both from *hep_ml*)
+    reweight_cfg : dict
+        A dict containing all the keyword arguments for the configuration of
+        the reweighters.
+    scoring : boolean
+        If True, the data is not only reweighted with KFolding but also several
+        scoring metrics are tested.
+
+        - Data-ROC : The data (mc reweighted and real mixed) is split in
+          KFolds, a classifier is then trained on the training fold and tested
+          on the test-fold. This is done K times and the roc curve is
+          evaluated. It is a good measure, basically, for how well two datasets
+          can be distinguished *but* can be "overfitted". Having too high,
+          single weights can lead to a roc curve significantly lower then 0.5
+          and therefore only a good indication but not a single measure of
+          quality for the reweighter hyper-parameter search.
+        - mcreweighted_as_real : n-1/n part of the data is trained on the
+          reweighter and the last 1/n part is then reweighted (as described
+          above). We can train a classifier on the mc (not reweighted) as
+          well as the real data (so a classifier which "distinguishes" between
+          mc and real) and predict:
+
+          - (not in training used) mc (not reweighted) and label it as if it
+            were real data.
+          - (not in training used) mc reweighted and label it as if it were
+            real data.
+          - (not in training used) real data and label it real.
+
+          Then we look at the tpr (we cannot look at the ROC as we only inserted
+          one class of labels; real) and therefore at "how many of the
+          datapoints we inserted did the classifier predict as real?":
+
+          The score for the real data should be the highest, the one for the
+          mc not reweighted the lowest. The reweighted one should be somewhere
+          in between (most probably). It is **not** the goal to maximise the
+          tpr for the mc reweighted (by changing the reweighter hyper-parameters)
+          as high, single weights (which occure when overfitting) will increase
+          the tpr drastically.
+        - train_similar: The probably most stable score to find the gbreweighter
+          hyper-parameters. The data is split into KFolds and a classifier is
+          trained on the mc reweighted and real data. Then it predicts the
+          (not yet seen) real data. The more it is able to predict as real,
+          the more it was able to learn from the differences of the datasets.
+          This scoring cannot overfit the same way the one above because a
+          single, high weight will cause a very bad distribution of the mc
+          data and therefore the classifier will be able to predict nearly
+          every real data as real (only *one single point*, the one with
+          the high weight, will be predicted as mc, the rest as real)
+
+    Parameters
+    ----------
+
     """
-
-    import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools import data_tools, data_storage, metrics
-    import matplotlib.pyplot as plt
-    import numpy as np
-    import pandas as pd
-    import seaborn as sns
-    import copy
-
-    from rep.estimators import XGBoostClassifier
-
-
-    out.add_output("Starting the run 'reweightCV'", title="Reweighting Cross-Validated")
-    # initialize variables
-    n_folds = cfg.reweight_cv_cfg['n_folds']
-    n_checks = cfg.reweight_cv_cfg.get('n_checks', n_folds)
-
-    plot_all = cfg.reweight_cv_cfg['plot_all']
-    make_plots = True if plot_all in (True, 'all') else False
-#    score_gb = np.ones(n_checks)
-#    score_min = np.ones(n_checks)
-#    score_max = np.ones(n_checks)
-
-    # initialize data
-    reweight_real = data_storage.HEPDataStorage(**cfg.data.get('reweight_real'))
-    reweight_mc = data_storage.HEPDataStorage(**cfg.data.get('reweight_mc'))
-
-    reweightCV(real_data=reweight_real, mc_data=reweight_mc,
-               reweighter=cfg.reweight_cfg.get('reweighter', 'gb'),
-               reweight_cfg=cfg.reweight_meta_cfg,
-               columns=cfg.reweight_branches, make_plots=make_plots)
-
-
-
-def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=None, scoring=True,
-             n_folds_scoring=10, columns=None, make_plots=True, apply_weights=True):
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
@@ -407,9 +490,9 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     if not apply_weights:
         old_weights = mc_data.get_weights()
     Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
-                                        meta_cfg=reweight_cfg, columns=columns,
-                                        reweighter=reweighter, mcreweighted_as_real_score=scoring,
-                                        n_folds=n_folds, make_plot=make_plots)
+                                         meta_cfg=reweight_cfg, columns=columns,
+                                         reweighter=reweighter, mcreweighted_as_real_score=scoring,
+                                         n_folds=n_folds, score_clf=score_clf)
     new_weights = Kfold_output.pop('weights')
     new_weights.sort_index()
     if scoring:
@@ -427,7 +510,7 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # is better described in the docs of the train_similar
     scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
                                    n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                   test_predictions=False, make_plots=make_plots)
+                                   test_predictions=False)
 
     # We can of course also test the normal ROC curve. This is weak to overfitting
     # but anyway (if not overfitting) a nice measure. You insert two datasets
@@ -435,7 +518,7 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
     # function depending on what validation is. If it is an integer, it means:
     # do cross-validation with n(=validation) folds.
     tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                           validation=n_folds_scoring, make_plots=make_plots)
+                                          validation=n_folds_scoring, plot_importance=4)
 
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
@@ -462,5 +545,18 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
 
 # temporary:
 if __name__ == '__main__':
-    print "hello world 1"
-    clf_mayou(1,2,3)
+    import pandas as pd
+    import numpy as np
+    import matplotlib.pyplot as plt
+
+    from raredecay.tools.data_storage import HEPDataStorage
+    a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, 7)))
+    a = HEPDataStorage(a)
+    b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.1, size=(1000, 7)))
+    b = HEPDataStorage(b)
+
+    feature_exploration(a, b, n_folds=3)
+
+    plt.show()
+
+

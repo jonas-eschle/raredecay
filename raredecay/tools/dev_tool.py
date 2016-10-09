@@ -2,7 +2,7 @@
 """
 Created on Mon Mar 21 21:25:26 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 
 Contains several useful tools for all kind of programs
 """

@@ -2,7 +2,7 @@
 """
 Created on Thu Apr 14 14:34:21 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 
 This module contains all (package-)global variables and methods.
 

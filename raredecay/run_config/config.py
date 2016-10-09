@@ -4,7 +4,7 @@ Created on Fri Sep 16 13:44:43 2016
 
 The configuration file for external operations.
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 
 

@@ -2,7 +2,7 @@
 """
 Created on Sat May 21 12:02:58 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 from memory_profiler import profile
 

@@ -2,7 +2,9 @@
 """
 Created on Mon Mar 21 21:27:14 2016
 
-@author: mayou
+OBSOLET PACKAGE?
+
+@author: Jonas Eschle "Mayou36"
 
 Main routine to start the analysis. It contains as few statements as possible.
 

@@ -2,7 +2,7 @@
 """
 Created on Thu Apr 28 16:26:12 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 
 from setuptools import setup
@@ -28,7 +28,7 @@ setup(name='raredecay',
       description='A package for analysis of rare particle decays with machine-learning algorithms',
       long_description=readme(),
       classifiers=[
-        'Development Status :: 9 - Alpha',
+        'Development Status :: 10 - Alpha',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='particle physics analysis machine learning reweight',
@@ -38,12 +38,13 @@ setup(name='raredecay',
       license='None',
       install_requires=[
           'hep_ml',
-          'rep',
-	  'sklearn>=0.17.1'
-	  'nose_parameterized'
-    	  'root_numpy'
+          'rep>=0.6.6',
+          'https://github.com/yandex/rep/archive/stratifiedkfold.zip',
+          'sklearn>=0.17.1'
+          'nose_parameterized'
+          'root_numpy'
 	  #'rootpy'
-	  'seaborn'
+          'seaborn'
 	#'memory_profiler'  # for developement, can be removed later
       ],
       packages=['raredecay',

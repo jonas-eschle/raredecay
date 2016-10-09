@@ -2,17 +2,18 @@
 """
 Created on Tue Mar 29 17:53:18 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 
 Contains several tools to convert, load, save and plot data
 """
 from __future__ import division, absolute_import
 
+import warnings
+
 import pandas as pd
 import numpy as np
 import cPickle as pickle
 
-from root_numpy import root2array, array2tree
 
 # both produce error (27.07.2016) when importing them if run from main.py. No problem when run as main...
 
@@ -20,6 +21,34 @@ from root_numpy import root2array, array2tree
 
 from raredecay.tools import dev_tool
 from raredecay import meta_config
+
+
+def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):
+    """Search for best cut on value to still keep percent_sig_to_keep of signal
+
+
+    Parameters
+    ----------
+    signal_data : 1-D numpy array
+        The signal
+    bkg_data : 1-D numpy array
+        The background data
+    percent_sig_to_keep : 0 < float <= 100
+        What percentage of the data to keep in order to apply the cuts.
+    """
+#    if percent_sig_to_keep < 100:
+#        raise NotImplementedError("percentage of < 100 not yet imlemented")
+    percentile = [0, percent_sig_to_keep]  # TODO: modify for percent_sig_to_keep
+    bkg_length_before = len(bkg_data)
+    bkg_length = len(bkg_data) if bkg_length in (None, 0) else bkg_length
+
+    lower_cut, upper_cut = np.percentile(signal_data, percentile)
+    cut_bkg = np.count_nonzero(np.logical_or(bkg_data < lower_cut, bkg_data > upper_cut))
+    rejected_bkg = (bkg_length_before - cut_bkg)/bkg_length
+
+    return [lower_cut, upper_cut], rejected_bkg
+
+
 
 
 def make_root_dict(path_to_rootfile, tree_name, branches):
@@ -56,6 +85,8 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         The name of the branche resp. the name in the dtype of the array.
 
     """
+    from root_numpy import root2array, array2tree
+
     from rootpy.io import root_open
     from ROOT import TObject
     # get the right parameters
@@ -252,6 +283,8 @@ def to_pandas(data_in, indices=None, columns=None, dtype=None):
 
     Convert data safely to pandas, whatever the format is.
     """
+    from root_numpy import root2array, array2tree
+
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
     if is_list(data_in):

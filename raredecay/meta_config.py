@@ -2,7 +2,7 @@
 """
 Created on Fri Apr  1 15:32:17 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 
 | This module provides the meta-configuration.
 | Mostly, you do not need to change this file or only some small parts of it.
@@ -54,11 +54,14 @@ MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
                 # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
+use_stratified_folding = True  # StratifiedKFolding is better, from a statistical point of view, but
+                                # also needs more memory, mostly insignificantly but can be large
 
 # set meta-config variables
-def set_parallel_profile(n_cpu=-1, gpu_in_use=False):
+def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
     """Set the number of cpus and whether a gpu is in use or not"""
-    global MULTIPROCESSING, MULTITHREAD, n_cpu_max, use_gpu
+    global MULTIPROCESSING, MULTITHREAD, n_cpu_max, use_gpu, use_stratified_folding
+    use_stratified_folding = stratified_kfolding
     MULTIPROCESSING = MULTITHREAD = True
     if n_cpu == 1:
         n_cpu_max = 1
@@ -299,20 +302,20 @@ run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
 
 loggers = {}
 
-verbosity = 5
+verbosity = 4
 def set_verbosity(new_verbosity):
     global verbosity
     verbosity = round(new_verbosity)
     _check_verbosity(verbosity)
 
-plot_verbosity = 5
+plot_verbosity = 3
 def set_plot_verbosity(new_plot_verbosity):
     global plot_verbosity
     plot_verbosity = round(new_plot_verbosity)
     _check_verbosity(plot_verbosity)
 
 def _check_verbosity(verbosity):
-    if verbosity not in range(6):
+    if verbosity not in range(-1, 7):
         raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
 
 #------------------------------------------------------------------------------

@@ -1,2 +1,2 @@
-"""Initialization of rare-decay
+"""Initialization of raredecay
 """

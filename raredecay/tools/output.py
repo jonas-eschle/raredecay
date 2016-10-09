@@ -2,7 +2,7 @@
 """
 Created on Sun May  1 12:06:06 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 import os
 import sys
@@ -184,20 +184,21 @@ class OutputHandler(object):
         self._IO_string = StringIO.StringIO()
         sys.stdout = self._IO_string
 
-    def IO_to_sys(self, to_output=True, **add_output_kwarg):
+    def IO_to_sys(self, importance=3, **add_output_kwarg):
         """Directs stdout back to the sys.stdout and return/save string to output
 
         Parameter
         ---------
-        to_output : boolean
-            | If True, the collected output will be added to the output-file.
+        importance : int {0, 1, 2, 3, 4, 5}
+            | The importance of the output. The higher, the more likely it will
+            | be added to the output. To not add it at all but only rederict
+            | the output, choose 0.
             | Additional keyword-arguments for the
             | :py:meth:`~raredecay.tools.output.add_output()` method can be
             | passed.
         """
         sys.stdout = self.__SAVE_STDOUT
-        if to_output:
-            self.add_output(self._IO_string.getvalue(), **add_output_kwarg)
+        self.add_output(self._IO_string.getvalue(), importance=importance, **add_output_kwarg)
         return self._IO_string.getvalue()
 
     def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
@@ -237,13 +238,18 @@ class OutputHandler(object):
             False, the figure will only be saved but not plotted.
         **save_cfg : keyword args
             Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`
+
+        Return
+        ------
+        out : matplotlib.pyplot.figure
+            Return the figure.
         """
         plot = 5 - round(importance) < meta_config.plot_verbosity  # to plot or not to plot
 
         if self._save_output:
             self._pickle_folder = self._pickle_folder or to_pickle
             if isinstance(figure, (int, str)):
-                figure = plt.figure(figure)
+                figure = plt.figure(figure, frameon=True)  # TODO: changeable?
 
             file_format = ['png', 'svg'] if file_format is None else file_format
             if isinstance(file_format, str):
@@ -265,6 +271,8 @@ class OutputHandler(object):
             self._check_initialization()
             if plot and isinstance(figure, (int, str)):
                 figure = plt.figure(figure)
+
+        return figure
 
     def _figure_to_file(self):
         """Write all figures from the _figures dictionary to file"""
@@ -523,6 +531,8 @@ class OutputHandler(object):
             subprocess.call(['rm', path + 'run_NOT_finished'])
             subprocess.call(['touch', path + 'run_finished_succesfully'])  # .finished shows if the run finished
 
+        del self.output, self._loud_end_output, self.end_output
+
         if play_sound_at_end:
             try:
                 from raredecay.tools.dev_tool import play_sound
@@ -535,5 +545,4 @@ class OutputHandler(object):
                 raw_input(["Run finished, press Enter to show the plots"])
             plt.show()
 
-        del self.output, self._loud_end_output, self.end_output
         return output

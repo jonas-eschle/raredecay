@@ -2,7 +2,7 @@
 """
 Created on Wed Jul 13 14:21:16 2016
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 from __future__ import division, absolute_import
 
@@ -23,7 +23,7 @@ def rnd_dist():
 
 def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
                   test_max=True, old_mc_weights=1, test_predictions=False,
-                  clf_pred='rdf', make_plots=True):
+                  clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
     Minimize score.
 
@@ -135,9 +135,10 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         real_test.set_targets(1)
 
         tmp_, scores[fold], pred_reweighted = ml_ana.classify(mc_data, real_train,
-                                            validation=real_test, clf=clf, make_plots=make_plots,
-                                            plot_title="train on mc reweighted/real, test on real",
-                                            weights_ratio=1, get_predictions=True)
+                                                validation=real_test, clf=clf,
+                                                plot_title="train on mc reweighted/real, test on real",
+                                                weights_ratio=1, get_predictions=True,
+                                                plot_importance=1)
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -150,7 +151,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
             tmp_, scores_max[fold], pred_mc = ml_ana.classify(mc_data, real_train, validation=real_test,
                                            plot_title="real/mc NOT reweight trained, validate on real",
                                            weights_ratio=1, get_predictions=True, clf=clf,
-                                           make_plots=make_plots)
+                                           plot_importance=1)
             mc_data.set_weights(temp_weights)
             probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])

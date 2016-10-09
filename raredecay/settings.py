@@ -4,7 +4,7 @@ Created on Tue Sep 27 16:45:51 2016
 
 Contain methods to change settings in the whole package
 
-@author: mayou
+@author: Jonas Eschle "Mayou36"
 """
 
 from __future__ import division, absolute_import
@@ -19,10 +19,11 @@ from raredecay import meta_config
 
 def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
                run_message="This is a test-run to test the package", verbosity=3,
-               report_verbosity=3, prompt_for_input=False,
+               plot_verbosity=3, prompt_for_input=False,
                logger_console_level='warning', logger_file_level='debug',
                n_cpu=1, gpu_in_use=False):
     """Place before Imports! Initialize/change several parameters for the package"""
+    set_verbosity(verbosity=verbosity, plot_verbosity=plot_verbosity)
     _init_user_input(prompt_for_input=prompt_for_input)
     parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
     logger_file_level = None if output_path is None else logger_file_level
@@ -51,6 +52,14 @@ def finalize(show_plots=True, play_sound_at_end=False):
     out = get_output_handler()
     output = out.finalize(show_plots=show_plots, play_sound_at_end=play_sound_at_end)
     return output
+
+
+def set_verbosity(verbosity=3, plot_verbosity=3):
+    """Change the verbosity of the package"""
+    if verbosity is not None:
+        meta_config.set_verbosity(verbosity)
+    if plot_verbosity is not None:
+        meta_config.set_plot_verbosity(plot_verbosity)
 
 
 def get_output_handler():
