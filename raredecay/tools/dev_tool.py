@@ -31,7 +31,7 @@ def syspath_append(verboise=False):
     # sys.path = sys.path[:len(sys.path)-n_to_remove]
     # used to remove unnecessary bindings
     for path in config.pathes_to_add:
-        """get the sys.path and add pahtes if they are not already contained"""
+        """get the sys.path and add pathes if they are not already contained"""
         if path not in sys.path:
             try:
                 sys.path.append(path)

@@ -14,6 +14,11 @@ import pandas as pd
 import numpy as np
 import cPickle as pickle
 
+try:
+    from root_numpy import root2array, array2tree
+except ImportError:
+    warnings.warn("could not import from root_numpy!")
+
 
 # both produce error (27.07.2016) when importing them if run from main.py. No problem when run as main...
 
@@ -85,7 +90,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         The name of the branche resp. the name in the dtype of the array.
 
     """
-    from root_numpy import root2array, array2tree
+    #from root_numpy import root2array, array2tree
 
     from rootpy.io import root_open
     from ROOT import TObject
@@ -283,7 +288,7 @@ def to_pandas(data_in, indices=None, columns=None, dtype=None):
 
     Convert data safely to pandas, whatever the format is.
     """
-    from root_numpy import root2array, array2tree
+
 
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict

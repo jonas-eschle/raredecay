@@ -20,7 +20,14 @@ import random
 from collections import deque
 import itertools
 
-from root_numpy import root2rec
+#HACK
+import sys
+sys.path.append('/usr/local/root-6.06.02/bindings/pyroot/ROOT.py')
+#sys.path.append('/usr/local/root-6.06.02/rootBuild/lib/ROOT.py')
+#sys.path.append('/usr/local/lib/python2.7/dist-packages/rootpy/ROOT.py')
+#HACK
+
+#from root_numpy import root2rec
 from rep.data.storage import LabeledDataStorage
 
 from raredecay.tools import data_tools, dev_tool
@@ -262,7 +269,7 @@ class HEPDataStorage(object):
                 temp_root_dict = copy.deepcopy(self._data)
                 temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
                 temp_branch = data_tools.to_list(temp_branch)
-                self._length = len(root2rec(branches=temp_branch[0], **temp_root_dict))
+                self._length = len(data_tools.to_ndarray(dict(branches=temp_branch[0], **temp_root_dict)))
             elif self._data_type == 'df':
                 self._length = len(self._data)
             elif self._data_type == 'array':
