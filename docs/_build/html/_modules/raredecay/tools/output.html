@@ -567,8 +567,7 @@
         <span class="k">if</span> <span class="n">do_print</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">to_end</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_loud_end_output</span> <span class="o">+=</span> <span class="n">temp_out</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">temp_out</span><span class="p">)</span>
+            <span class="nb">print</span> <span class="n">temp_out</span>  <span class="c1"># ?? why was there sys.stdout.write?!?</span>
         <span class="k">if</span> <span class="n">to_end</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">end_output</span> <span class="o">+=</span> <span class="n">temp_out</span>
         <span class="k">else</span><span class="p">:</span>

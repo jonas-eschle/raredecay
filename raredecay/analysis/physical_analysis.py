@@ -309,6 +309,27 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     """Explore the features by getting the roc auc and their feature importance
 
 
+    Parameters
+    ----------
+    original_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+        One dataset
+    target_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+        The other dataset
+    features : list(str, str, str,...)
+        The features/branches/columns to explore
+    n_folds : int > 1
+        Number of folds to split the data into to do some training/testing and
+        get an estimate for the feature importance.
+    roc_auc : {'single', 'all', 'both'} or False
+        Whether to make a training/testing with:
+        - every single feature (-> n_feature times KFolded training)
+        - all features together (-> one KFolded training)
+        - both of the above
+        - None of them (-> use *False*)
+    extended_report : boolean
+        If True, an extended report will be made including feature importance
+        and more.
+
     """
     import raredecay.analysis.ml_analysis as ml_ana
 
@@ -344,39 +365,88 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     return output
 
 
-def add_branch_to_rootfile(root_data=None, new_branch=None, branch_name=None):
-    """Add a branch to a given rootfile"""
+def add_branch_to_rootfile(filename, treename=None, new_branch=None, branch_name=None):
+    """Add a branch to a given ROOT-Tree
 
+    Add some data (*new_branch*) to the ROOT-file (*filename*) into its tree
+    (*treename*) under the branch (*branch_name*)
+
+    Parameters
+    ----------
+    filename : str
+        The name of the file (and its path)
+    treename : str
+        The name of the tree to save the data in
+    new_branch : array-like
+        The data to add to the root-file
+    branch_name : str
+        The name of the branch the data will be written too. This can either be
+        a new one or an already existing one, which then will be overwritten.
+        No "friend" will be created.
+    """
     from raredecay.tools import data_tools
     from raredecay.globals_ import out
 
     out.add_output(["Adding", new_branch, "as", branch_name, "to",
-                    root_data.get('filenames')], obj_separator=" ")
+                    filename], obj_separator=" ")
 
+    root_data = {'filenames': filename, 'treename': treename}
     data_tools.add_to_rootfile(root_data, new_branch=new_branch,
                                branch_name=branch_name)
 
 
-def reweight(real_data, mc_data, apply_data, reweighter='gb', reweight_cfg=None,
-             columns=None, apply_weights=True):
-    """(Train a reweighter and) apply the reweighter do get new weights
+def reweight(apply_data, real_data=None, mc_data=None, columns=None,
+             reweighter='gb', reweight_cfg=None,
+             apply_weights=True):
+    """(Train a reweighter and) apply the reweighter to get new weights
 
+    Parameters
+    ----------
+    apply_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+        The data which shall be corrected
+    real_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+        The real data to train the reweighter on
+    mc_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+        The MC data to train the reweighter on
+    columns : list(str, str, str,...)
+        The branches to use for the reweighting process.
+    reweighter : {'gb', 'bins'} or trained hep_ml-reweighter (also pickled)
+        Either a string specifying which reweighter to use or an already
+        trained reweighter from the hep_ml-package. The reweighter can also
+        be a file-path (str) to a pickled reweighter.
+    reweight_cfg : dict
+        A dict containing all the keywords and values you want to specify as
+        parameters to the reweighter.
+    apply_weights : boolean
+        If True, the weights will be added to the data directly, therefore
+        the data-storage will be modified.
+
+    Return
+    ------
+    out : dict
+        Return a dict containing the weights as well as the reweighter.
+        The keywords are:
+        - *reweighter* : The trained reweighter
+        - *weights* : pandas Series containing the new weights of the data.
 
     """
     import raredecay.analysis.ml_analysis as ml_ana
 
     from raredecay.globals_ import out
+    from raredecay.tools import data_tools
 
     import matplotlib.pyplot as plt
 
     output = {}
 
-    if isinstance(reweighter, str):
+    reweighter = data_tools.try_unpickle(reweighter)
+    if isinstance(reweighter, {'gb', 'bins'}):
         reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
-                                              reweight_data_real=real_data,
-                                              columns=columns,
-                                              meta_cfg=reweight_cfg,
-                                              reweighter=reweighter)
+                                           reweight_data_real=real_data,
+                                           columns=columns,
+                                           meta_cfg=reweight_cfg,
+                                           reweighter=reweighter)
+
     output['reweighter'] = reweighter
     output['weights'] = ml_ana.reweight_weights(reweight_data=apply_data,
                                                 columns=columns,
@@ -390,8 +460,9 @@ def reweight(real_data, mc_data, apply_data, reweighter='gb', reweight_cfg=None,
     return output
 
 
-def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=None,
-               scoring=True, n_folds_scoring=10, score_clf='xgb', columns=None,
+def reweightCV(real_data, mc_data, columns=None, n_folds=10,
+               reweighter='gb', reweight_cfg=None,
+               scoring=True, n_folds_scoring=10, score_clf='xgb',
                apply_weights=True):
     """Reweight data (mc/real) in a KFolded way to unbias the reweighting
 
@@ -411,10 +482,12 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
 
     Parameters
     ----------
-    real_data : HEPDataStorage
+    real_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
         The real data
-    mc_data : HEPDataStorage
+    mc_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
         The mc data
+    columns : list(str, str, str, ...)
+        The branches to use for the reweighting.
     n_folds : int > 1
         Number of folds to split the data for the reweighting. Usually, the
         higher the better.
@@ -468,10 +541,26 @@ def reweightCV(real_data, mc_data, n_folds=10, reweighter='gb', reweight_cfg=Non
           data and therefore the classifier will be able to predict nearly
           every real data as real (only *one single point*, the one with
           the high weight, will be predicted as mc, the rest as real)
+    n_folds_scoring : int > 1
+        The number of folds to split the data into for the scoring
+        described above.
+    score_clf : str or dict or clf
+        The classifier to use for the scoring. For an overview of what can be
+        used, see :py:function:`~raredecay.analysis.ml_analysis.make_clf()`.
+    apply_weights : boolean
+        If True, set the new weights to the MC data in place. This changes the
+        weights in the data-storage.
 
-    Parameters
-    ----------
 
+    Return
+    ------
+    out : dict
+        The output is a dictionary containing the different scores and/or the
+        new weights. The keywords are:
+        - *weights* : pandas Series containing the new weights
+        - *mcreweighted_as_real_score* : The scores of this method in a dict
+        - *train_similar* : The scores of this method in a dict
+        - *roc_auc_score* : The scores of this method in a dict
     """
 
     import raredecay.analysis.ml_analysis as ml_ana

@@ -148,13 +148,40 @@
 <p>Contains the different run-modes for the machine-learning algorithms.</p>
 <dl class="function">
 <dt id="raredecay.analysis.physical_analysis.reweight">
-<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">reweight</code><span class="sig-paren">(</span><em>real_data</em>, <em>mc_data</em>, <em>apply_data</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>columns=None</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#reweight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.reweight" title="Permalink to this definition">¶</a></dt>
-<dd><p>(Train a reweighter and) apply the reweighter do get new weights</p>
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">reweight</code><span class="sig-paren">(</span><em>apply_data</em>, <em>real_data=None</em>, <em>mc_data=None</em>, <em>columns=None</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#reweight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.reweight" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Train a reweighter and) apply the reweighter to get new weights</p>
+<dl class="docutils">
+<dt>apply_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>The data which shall be corrected</dd>
+<dt>real_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>The real data to train the reweighter on</dd>
+<dt>mc_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>The MC data to train the reweighter on</dd>
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str,...)</span><dd>The branches to use for the reweighting process.</dd>
+<dt>reweighter</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;gb&#8217;, &#8216;bins&#8217;} or trained hep_ml-reweighter (also pickled)</span><dd>Either a string specifying which reweighter to use or an already
+trained reweighter from the hep_ml-package. The reweighter can also
+be a file-path (str) to a pickled reweighter.</dd>
+<dt>reweight_cfg</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>A dict containing all the keywords and values you want to specify as
+parameters to the reweighter.</dd>
+<dt>apply_weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, the weights will be added to the data directly, therefore
+the data-storage will be modified.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>Return a dict containing the weights as well as the reweighter.
+The keywords are:
+- <em>reweighter</em> : The trained reweighter
+- <em>weights</em> : pandas Series containing the new weights of the data.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="raredecay.analysis.physical_analysis.reweightCV">
-<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">reweightCV</code><span class="sig-paren">(</span><em>real_data</em>, <em>mc_data</em>, <em>n_folds=10</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>scoring=True</em>, <em>n_folds_scoring=10</em>, <em>score_clf='xgb'</em>, <em>columns=None</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#reweightCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.reweightCV" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">reweightCV</code><span class="sig-paren">(</span><em>real_data</em>, <em>mc_data</em>, <em>columns=None</em>, <em>n_folds=10</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>scoring=True</em>, <em>n_folds_scoring=10</em>, <em>score_clf='xgb'</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#reweightCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.reweightCV" title="Permalink to this definition">¶</a></dt>
 <dd><p>Reweight data (mc/real) in a KFolded way to unbias the reweighting</p>
 <p>The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
 hyperparameters. Therefore, it is good to ged an estimation for the
@@ -171,9 +198,11 @@ and are implemented, for further information also see: TODO, IMPLEMENT
 REWEIGHT PRÄSI.</p>
 <dl class="docutils">
 <dt>real_data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The real data</dd>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>The real data</dd>
 <dt>mc_data</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The mc data</dd>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>The mc data</dd>
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str, ...)</span><dd>The branches to use for the reweighting.</dd>
 <dt>n_folds</dt>
  <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>Number of folds to split the data for the reweighting. Usually, the
 higher the better.</dd>
@@ -231,6 +260,24 @@ the high weight, will be predicted as mc, the rest as real)</p>
 </li>
 </ul>
 </dd>
+<dt>n_folds_scoring</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>The number of folds to split the data into for the scoring
+described above.</dd>
+<dt>score_clf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or dict or clf</span><dd>The classifier to use for the scoring. For an overview of what can be
+used, see <a href="#id1"><span class="problematic" id="id2">:py:function:`~raredecay.analysis.ml_analysis.make_clf()`</span></a>.</dd>
+<dt>apply_weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, set the new weights to the MC data in place. This changes the
+weights in the data-storage.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>The output is a dictionary containing the different scores and/or the
+new weights. The keywords are:
+- <em>weights</em> : pandas Series containing the new weights
+- <em>mcreweighted_as_real_score</em> : The scores of this method in a dict
+- <em>train_similar</em> : The scores of this method in a dict
+- <em>roc_auc_score</em> : The scores of this method in a dict</dd>
 </dl>
 </dd></dl>
 
@@ -244,12 +291,46 @@ the high weight, will be predicted as mc, the rest as real)</p>
 <dt id="raredecay.analysis.physical_analysis.feature_exploration">
 <code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">feature_exploration</code><span class="sig-paren">(</span><em>original_data</em>, <em>target_data</em>, <em>features=None</em>, <em>n_folds=10</em>, <em>roc_auc='single'</em>, <em>extended_report=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#feature_exploration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.feature_exploration" title="Permalink to this definition">¶</a></dt>
 <dd><p>Explore the features by getting the roc auc and their feature importance</p>
+<dl class="docutils">
+<dt>original_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>One dataset</dd>
+<dt>target_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage()</span></code></a></span><dd>The other dataset</dd>
+<dt>features</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str,...)</span><dd>The features/branches/columns to explore</dd>
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>Number of folds to split the data into to do some training/testing and
+get an estimate for the feature importance.</dd>
+<dt>roc_auc</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;single&#8217;, &#8216;all&#8217;, &#8216;both&#8217;} or False</span><dd>Whether to make a training/testing with:
+- every single feature (-&gt; n_feature times KFolded training)
+- all features together (-&gt; one KFolded training)
+- both of the above
+- None of them (-&gt; use <em>False</em>)</dd>
+<dt>extended_report</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, an extended report will be made including feature importance
+and more.</dd>
+</dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="raredecay.analysis.physical_analysis.add_branch_to_rootfile">
-<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">add_branch_to_rootfile</code><span class="sig-paren">(</span><em>root_data=None</em>, <em>new_branch=None</em>, <em>branch_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#add_branch_to_rootfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.add_branch_to_rootfile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Add a branch to a given rootfile</p>
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">add_branch_to_rootfile</code><span class="sig-paren">(</span><em>filename</em>, <em>treename=None</em>, <em>new_branch=None</em>, <em>branch_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#add_branch_to_rootfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.add_branch_to_rootfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a branch to a given ROOT-Tree</p>
+<p>Add some data (<em>new_branch</em>) to the ROOT-file (<em>filename</em>) into its tree
+(<em>treename</em>) under the branch (<em>branch_name</em>)</p>
+<dl class="docutils">
+<dt>filename</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The name of the file (and its path)</dd>
+<dt>treename</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The name of the tree to save the data in</dd>
+<dt>new_branch</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like</span><dd>The data to add to the root-file</dd>
+<dt>branch_name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The name of the branch the data will be written too. This can either be
+a new one or an already existing one, which then will be overwritten.
+No &#8220;friend&#8221; will be created.</dd>
+</dl>
 </dd></dl>
 
 </div>

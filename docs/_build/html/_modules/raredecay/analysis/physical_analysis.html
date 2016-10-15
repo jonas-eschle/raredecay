@@ -438,6 +438,27 @@
     <span class="sd">&quot;&quot;&quot;Explore the features by getting the roc auc and their feature importance</span>
 
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    original_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
+<span class="sd">        One dataset</span>
+<span class="sd">    target_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
+<span class="sd">        The other dataset</span>
+<span class="sd">    features : list(str, str, str,...)</span>
+<span class="sd">        The features/branches/columns to explore</span>
+<span class="sd">    n_folds : int &gt; 1</span>
+<span class="sd">        Number of folds to split the data into to do some training/testing and</span>
+<span class="sd">        get an estimate for the feature importance.</span>
+<span class="sd">    roc_auc : {&#39;single&#39;, &#39;all&#39;, &#39;both&#39;} or False</span>
+<span class="sd">        Whether to make a training/testing with:</span>
+<span class="sd">        - every single feature (-&gt; n_feature times KFolded training)</span>
+<span class="sd">        - all features together (-&gt; one KFolded training)</span>
+<span class="sd">        - both of the above</span>
+<span class="sd">        - None of them (-&gt; use *False*)</span>
+<span class="sd">    extended_report : boolean</span>
+<span class="sd">        If True, an extended report will be made including feature importance</span>
+<span class="sd">        and more.</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
 
@@ -473,39 +494,88 @@
     <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="add_branch_to_rootfile"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.add_branch_to_rootfile">[docs]</a><span class="k">def</span> <span class="nf">add_branch_to_rootfile</span><span class="p">(</span><span class="n">root_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">branch_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Add a branch to a given rootfile&quot;&quot;&quot;</span>
+<div class="viewcode-block" id="add_branch_to_rootfile"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.add_branch_to_rootfile">[docs]</a><span class="k">def</span> <span class="nf">add_branch_to_rootfile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">treename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">branch_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a branch to a given ROOT-Tree</span>
 
+<span class="sd">    Add some data (*new_branch*) to the ROOT-file (*filename*) into its tree</span>
+<span class="sd">    (*treename*) under the branch (*branch_name*)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    filename : str</span>
+<span class="sd">        The name of the file (and its path)</span>
+<span class="sd">    treename : str</span>
+<span class="sd">        The name of the tree to save the data in</span>
+<span class="sd">    new_branch : array-like</span>
+<span class="sd">        The data to add to the root-file</span>
+<span class="sd">    branch_name : str</span>
+<span class="sd">        The name of the branch the data will be written too. This can either be</span>
+<span class="sd">        a new one or an already existing one, which then will be overwritten.</span>
+<span class="sd">        No &quot;friend&quot; will be created.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
     <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
 
     <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;Adding&quot;</span><span class="p">,</span> <span class="n">new_branch</span><span class="p">,</span> <span class="s2">&quot;as&quot;</span><span class="p">,</span> <span class="n">branch_name</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span>
-                    <span class="n">root_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filenames&#39;</span><span class="p">)],</span> <span class="n">obj_separator</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+                    <span class="n">filename</span><span class="p">],</span> <span class="n">obj_separator</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
 
+    <span class="n">root_data</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;filenames&#39;</span><span class="p">:</span> <span class="n">filename</span><span class="p">,</span> <span class="s1">&#39;treename&#39;</span><span class="p">:</span> <span class="n">treename</span><span class="p">}</span>
     <span class="n">data_tools</span><span class="o">.</span><span class="n">add_to_rootfile</span><span class="p">(</span><span class="n">root_data</span><span class="p">,</span> <span class="n">new_branch</span><span class="o">=</span><span class="n">new_branch</span><span class="p">,</span>
                                <span class="n">branch_name</span><span class="o">=</span><span class="n">branch_name</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="reweight"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.reweight">[docs]</a><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">mc_data</span><span class="p">,</span> <span class="n">apply_data</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-             <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;(Train a reweighter and) apply the reweighter do get new weights</span>
+<div class="viewcode-block" id="reweight"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.reweight">[docs]</a><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span><span class="n">apply_data</span><span class="p">,</span> <span class="n">real_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mc_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(Train a reweighter and) apply the reweighter to get new weights</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    apply_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
+<span class="sd">        The data which shall be corrected</span>
+<span class="sd">    real_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
+<span class="sd">        The real data to train the reweighter on</span>
+<span class="sd">    mc_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
+<span class="sd">        The MC data to train the reweighter on</span>
+<span class="sd">    columns : list(str, str, str,...)</span>
+<span class="sd">        The branches to use for the reweighting process.</span>
+<span class="sd">    reweighter : {&#39;gb&#39;, &#39;bins&#39;} or trained hep_ml-reweighter (also pickled)</span>
+<span class="sd">        Either a string specifying which reweighter to use or an already</span>
+<span class="sd">        trained reweighter from the hep_ml-package. The reweighter can also</span>
+<span class="sd">        be a file-path (str) to a pickled reweighter.</span>
+<span class="sd">    reweight_cfg : dict</span>
+<span class="sd">        A dict containing all the keywords and values you want to specify as</span>
+<span class="sd">        parameters to the reweighter.</span>
+<span class="sd">    apply_weights : boolean</span>
+<span class="sd">        If True, the weights will be added to the data directly, therefore</span>
+<span class="sd">        the data-storage will be modified.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        Return a dict containing the weights as well as the reweighter.</span>
+<span class="sd">        The keywords are:</span>
+<span class="sd">        - *reweighter* : The trained reweighter</span>
+<span class="sd">        - *weights* : pandas Series containing the new weights of the data.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
 
     <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
 
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
 
     <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+    <span class="n">reweighter</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="s1">&#39;bins&#39;</span><span class="p">}):</span>
         <span class="n">reweighter</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">reweight_train</span><span class="p">(</span><span class="n">reweight_data_mc</span><span class="o">=</span><span class="n">mc_data</span><span class="p">,</span>
-                                              <span class="n">reweight_data_real</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
-                                              <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
-                                              <span class="n">meta_cfg</span><span class="o">=</span><span class="n">reweight_cfg</span><span class="p">,</span>
-                                              <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">)</span>
+                                           <span class="n">reweight_data_real</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
+                                           <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                           <span class="n">meta_cfg</span><span class="o">=</span><span class="n">reweight_cfg</span><span class="p">,</span>
+                                           <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">)</span>
+
     <span class="n">output</span><span class="p">[</span><span class="s1">&#39;reweighter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reweighter</span>
     <span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">reweight_weights</span><span class="p">(</span><span class="n">reweight_data</span><span class="o">=</span><span class="n">apply_data</span><span class="p">,</span>
                                                 <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
@@ -519,8 +589,9 @@
     <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="reweightCV"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.reweightCV">[docs]</a><span class="k">def</span> <span class="nf">reweightCV</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">mc_data</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-               <span class="n">scoring</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_folds_scoring</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">score_clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+<div class="viewcode-block" id="reweightCV"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.reweightCV">[docs]</a><span class="k">def</span> <span class="nf">reweightCV</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">mc_data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+               <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">scoring</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_folds_scoring</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">score_clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span>
                <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Reweight data (mc/real) in a KFolded way to unbias the reweighting</span>
 
@@ -540,10 +611,12 @@
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    real_data : HEPDataStorage</span>
+<span class="sd">    real_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
 <span class="sd">        The real data</span>
-<span class="sd">    mc_data : HEPDataStorage</span>
+<span class="sd">    mc_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`</span>
 <span class="sd">        The mc data</span>
+<span class="sd">    columns : list(str, str, str, ...)</span>
+<span class="sd">        The branches to use for the reweighting.</span>
 <span class="sd">    n_folds : int &gt; 1</span>
 <span class="sd">        Number of folds to split the data for the reweighting. Usually, the</span>
 <span class="sd">        higher the better.</span>
@@ -597,10 +670,26 @@
 <span class="sd">          data and therefore the classifier will be able to predict nearly</span>
 <span class="sd">          every real data as real (only *one single point*, the one with</span>
 <span class="sd">          the high weight, will be predicted as mc, the rest as real)</span>
+<span class="sd">    n_folds_scoring : int &gt; 1</span>
+<span class="sd">        The number of folds to split the data into for the scoring</span>
+<span class="sd">        described above.</span>
+<span class="sd">    score_clf : str or dict or clf</span>
+<span class="sd">        The classifier to use for the scoring. For an overview of what can be</span>
+<span class="sd">        used, see :py:function:`~raredecay.analysis.ml_analysis.make_clf()`.</span>
+<span class="sd">    apply_weights : boolean</span>
+<span class="sd">        If True, set the new weights to the MC data in place. This changes the</span>
+<span class="sd">        weights in the data-storage.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
 
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        The output is a dictionary containing the different scores and/or the</span>
+<span class="sd">        new weights. The keywords are:</span>
+<span class="sd">        - *weights* : pandas Series containing the new weights</span>
+<span class="sd">        - *mcreweighted_as_real_score* : The scores of this method in a dict</span>
+<span class="sd">        - *train_similar* : The scores of this method in a dict</span>
+<span class="sd">        - *roc_auc_score* : The scores of this method in a dict</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
