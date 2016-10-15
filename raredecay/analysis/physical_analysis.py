@@ -196,7 +196,7 @@ def _cut(data):
 
 
 def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
-    """Cut the bkg while maintaining a certain percent of the signal
+    """Cut the bkg while maintaining a certain percent of the signal.WIP.
 
 
     """
@@ -319,12 +319,13 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         original_data = original_data.copy_storage(columns=features)
         target_data = target_data.copy_storage(columns=features)
 
-    figure = "Plotting" + str(original_data.get_name()) + " and " + str(target_data.get_name())
+    figure = "Plotting" + str(original_data.name) + " and " + str(target_data.get_name())
     original_data.plot(figure=figure, title=figure)
     target_data.plot(figure=figure)
 
     if roc_auc_all:
-        ml_ana.classify(original_data, target_data, validation=n_folds, extended_report=True)
+        ml_ana.classify(original_data, target_data, validation=n_folds, extended_report=extended_report,
+                        curve_name="all features", plot_title="ROC AUC of all features")
 
     features = original_data.columns if features is None else features
 

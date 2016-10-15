@@ -1,0 +1,753 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.analysis.physical_analysis &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.analysis.physical_analysis</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.analysis.physical_analysis</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sat Mar 26 16:49:45 2016</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+
+<span class="sd">Contains the different run-modes for the machine-learning algorithms.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">importlib</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+<span class="kn">import</span> <span class="nn">raredecay.meta_config</span>
+
+<span class="kn">from</span> <span class="nn">memory_profiler</span> <span class="k">import</span> <span class="n">profile</span>
+
+
+<span class="k">def</span> <span class="nf">test</span><span class="p">(</span><span class="n">cfg</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;just a test-function&quot;&quot;&quot;</span>
+    <span class="nb">print</span> <span class="s2">&quot;empty test function&quot;</span>
+
+
+<span class="c1">#@profile</span>
+<span class="k">def</span> <span class="nf">clf_mayou</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">n_base_clf</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;DEVELOPEMENT, WIP. Test a setup of clf involving bagging and stacking&quot;&quot;&quot;</span>
+    <span class="c1">#import raredecay.analysis.ml_analysis as ml_ana</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span> <span class="nn">copy</span>
+
+    <span class="kn">from</span> <span class="nn">rep.estimators</span> <span class="k">import</span> <span class="n">SklearnClassifier</span><span class="p">,</span> <span class="n">XGBoostClassifier</span><span class="p">,</span> <span class="n">TMVAClassifier</span>
+    <span class="kn">from</span> <span class="nn">rep.metaml.folding</span> <span class="k">import</span> <span class="n">FoldingClassifier</span>
+    <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">GradientBoostingClassifier</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">,</span> <span class="n">ExtraTreesClassifier</span>
+    <span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">AdaBoostClassifier</span><span class="p">,</span> <span class="n">VotingClassifier</span><span class="p">,</span> <span class="n">BaggingClassifier</span>
+    <span class="kn">from</span> <span class="nn">rep.estimators.theanets</span> <span class="k">import</span> <span class="n">TheanetsClassifier</span>
+    <span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="k">import</span> <span class="n">DecisionTreeClassifier</span>
+    <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LogisticRegression</span>
+    <span class="kn">from</span> <span class="nn">rep.metaml.cache</span> <span class="k">import</span> <span class="n">CacheClassifier</span>
+
+    <span class="kn">from</span> <span class="nn">rep.report.metrics</span> <span class="k">import</span> <span class="n">RocAuc</span>
+
+    <span class="kn">from</span> <span class="nn">stacked_generalizer</span> <span class="k">import</span> <span class="n">StackedGeneralizer</span>
+
+    <span class="kn">import</span> <span class="nn">rep.metaml.cache</span>
+    <span class="kn">from</span> <span class="nn">rep.metaml._cache</span> <span class="k">import</span> <span class="n">CacheHelper</span>
+    <span class="n">rep</span><span class="o">.</span><span class="n">metaml</span><span class="o">.</span><span class="n">cache</span><span class="o">.</span><span class="n">cache_helper</span> <span class="o">=</span> <span class="n">CacheHelper</span><span class="p">(</span><span class="s1">&#39;/home/mayou/cache&#39;</span><span class="p">,</span> <span class="mi">100000</span><span class="p">)</span>
+
+
+<span class="c1">#    data1.make_folds(n_folds)</span>
+<span class="c1">#    data2.make_folds(n_folds)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1">#for i in range(n_folds):</span>
+    <span class="n">xgb_clf</span> <span class="o">=</span> <span class="n">XGBoostClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">xgb_folded</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">xgb_clf</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="s1">&#39;threads-2&#39;</span><span class="p">)</span>
+    <span class="n">xgb_bagged</span> <span class="o">=</span> <span class="n">BaggingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">xgb_folded</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="n">n_base_clf</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">xgb_bagged</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">xgb_bagged</span><span class="p">)</span>
+    <span class="n">xgb_big_stacker</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">xgb_bagged</span><span class="p">)</span>
+    <span class="n">xgb_bagged</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;xgb_bagged1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span> <span class="n">xgb_bagged</span><span class="p">)</span>
+
+
+    <span class="n">xgb_single</span> <span class="o">=</span> <span class="n">XGBoostClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">350</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">xgb_single</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">xgb_single</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                   <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="s1">&#39;threads-2&#39;</span><span class="p">)</span>
+    <span class="n">xgb_single</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;xgb_singled1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span> <span class="n">xgb_single</span><span class="p">)</span>
+
+
+    <span class="n">rdf_clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">300</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+    <span class="n">rdf_folded</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">rdf_clf</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="s1">&#39;threads-2&#39;</span><span class="p">)</span>
+    <span class="n">rdf_bagged</span> <span class="o">=</span> <span class="n">BaggingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">rdf_folded</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="n">n_base_clf</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">rdf_bagged</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">rdf_bagged</span><span class="p">)</span>
+    <span class="n">rdf_bagged</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;rdf_bagged1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">rdf_bagged</span><span class="p">)</span>
+
+    <span class="n">gb_clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">50</span><span class="p">))</span>
+    <span class="n">gb_folded</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">gb_clf</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="s1">&#39;threads-6&#39;</span><span class="p">)</span>
+    <span class="n">gb_bagged</span> <span class="o">=</span> <span class="n">BaggingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">gb_folded</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="n">n_base_clf</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+    <span class="n">gb_bagged</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">gb_bagged</span><span class="p">)</span>
+    <span class="n">gb_bagged</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;gb_bagged1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">gb_bagged</span><span class="p">)</span>
+
+    <span class="n">nn_clf</span> <span class="o">=</span> <span class="n">TheanetsClassifier</span><span class="p">(</span><span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">],</span> <span class="n">hidden_dropout</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+                       <span class="n">trainers</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;optimize&#39;</span><span class="p">:</span> <span class="s1">&#39;adagrad&#39;</span><span class="p">,</span> <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;learning_rate&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;min_improvement&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                       <span class="s1">&#39;momentum&#39;</span><span class="p">:</span><span class="mf">0.4</span><span class="p">,</span> <span class="s1">&#39;nesterov&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="s1">&#39;xe&#39;</span><span class="p">}])</span>
+    <span class="n">nn_folded</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">nn_clf</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>  <span class="c1">#&#39;threads-6&#39;)</span>
+    <span class="n">nn_bagged</span> <span class="o">=</span> <span class="n">BaggingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">nn_folded</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="n">n_base_clf</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">nn_bagged</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;nn_bagged1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">nn_bagged</span><span class="p">)</span>
+
+    <span class="n">nn_single_clf</span> <span class="o">=</span> <span class="n">TheanetsClassifier</span><span class="p">(</span><span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">300</span><span class="p">],</span> <span class="n">hidden_dropout</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+                       <span class="n">trainers</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;optimize&#39;</span><span class="p">:</span> <span class="s1">&#39;adagrad&#39;</span><span class="p">,</span> <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span> <span class="s1">&#39;learning_rate&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;min_improvement&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span>
+                       <span class="s1">&#39;momentum&#39;</span><span class="p">:</span><span class="mf">0.4</span><span class="p">,</span> <span class="s1">&#39;nesterov&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="s1">&#39;xe&#39;</span><span class="p">}])</span>
+    <span class="n">nn_single</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">nn_single_clf</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">nn_single</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;nn_single1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">nn_single</span><span class="p">)</span>
+
+
+    <span class="n">logit_stacker</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">LogisticRegression</span><span class="p">(</span><span class="n">penalty</span><span class="o">=</span><span class="s1">&#39;l2&#39;</span><span class="p">,</span> <span class="n">solver</span><span class="o">=</span><span class="s1">&#39;sag&#39;</span><span class="p">))</span>
+    <span class="n">logit_stacker</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">logit_stacker</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span>
+                                   <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="s1">&#39;threads-6&#39;</span><span class="p">)</span>
+    <span class="n">logit_stacker</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;logit_stacker1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">logit_stacker</span><span class="p">)</span>
+
+    <span class="n">xgb_stacker</span> <span class="o">=</span> <span class="n">XGBoostClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">400</span><span class="p">,</span> <span class="n">eta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">nthreads</span><span class="o">=</span><span class="mi">8</span><span class="p">)</span>
+    <span class="c1">#HACK</span>
+    <span class="n">xgb_stacker</span> <span class="o">=</span> <span class="n">xgb_big_stacker</span>
+    <span class="n">xgb_stacker</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">base_estimator</span><span class="o">=</span><span class="n">xgb_stacker</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">random_state</span><span class="o">=</span><span class="mi">42</span><span class="p">,</span>
+                                    <span class="n">stratified</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="s1">&#39;threads-6&#39;</span><span class="p">)</span>
+    <span class="n">xgb_stacker</span> <span class="o">=</span> <span class="n">CacheClassifier</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s1">&#39;xgb_stacker1&#39;</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">xgb_stacker</span><span class="p">)</span>
+
+
+<span class="c1">#        train1, test1 = data1.get_fold(i)</span>
+<span class="c1">#        train2, test2 = data1.get_fold(i)</span>
+<span class="c1">#</span>
+<span class="c1">#        t_data, t_targets, t_weights =</span>
+    <span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">data1</span><span class="o">.</span><span class="n">make_dataset</span><span class="p">(</span><span class="n">data2</span><span class="p">,</span> <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="c1">#    xgb_bagged.fit(data, targets, weights)</span>
+<span class="c1">#    xgb_report = xgb_bagged.test_on(data, targets, weights)</span>
+<span class="c1">#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC xgb_base classifier&quot;)</span>
+<span class="c1">#    output[&#39;xgb_base&#39;] = &quot;roc auc:&quot; + str(xgb_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    xgb_proba = xgb_report.prediction[&#39;clf&#39;][:, 1]</span>
+<span class="c1">#    del xgb_bagged, xgb_folded, xgb_clf, xgb_report</span>
+<span class="c1">#</span>
+<span class="c1">#    xgb_single.fit(data, targets, weights)</span>
+<span class="c1">#    xgb_report = xgb_single.test_on(data, targets, weights)</span>
+<span class="c1">#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC xgb_single classifier&quot;)</span>
+<span class="c1">#    output[&#39;xgb_single&#39;] = &quot;roc auc:&quot; + str(xgb_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    xgb_proba = xgb_report.prediction[&#39;clf&#39;][:, 1]</span>
+<span class="c1">#    del xgb_single, xgb_report</span>
+
+    <span class="n">nn_single</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">nn_report</span> <span class="o">=</span> <span class="n">nn_single</span><span class="o">.</span><span class="n">test_on</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">weights</span><span class="p">)</span>
+    <span class="n">nn_report</span><span class="o">.</span><span class="n">roc</span><span class="p">(</span><span class="n">physics_notion</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;ROC AUC nn_single classifier&quot;</span><span class="p">)</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;nn_single&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;roc auc:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">nn_report</span><span class="o">.</span><span class="n">compute_metric</span><span class="p">(</span><span class="n">metric</span><span class="o">=</span><span class="n">RocAuc</span><span class="p">()))</span>
+    <span class="n">nn_proba</span> <span class="o">=</span> <span class="n">nn_report</span><span class="o">.</span><span class="n">prediction</span><span class="p">[</span><span class="s1">&#39;clf&#39;</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">del</span> <span class="n">nn_single</span><span class="p">,</span> <span class="n">nn_report</span>
+
+<span class="c1">#    rdf_bagged.fit(data, targets, weights)</span>
+<span class="c1">#    rdf_report = rdf_bagged.test_on(data, targets, weights)</span>
+<span class="c1">#    rdf_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC rdf_base classifier&quot;)</span>
+<span class="c1">#    output[&#39;rdf_base&#39;] = &quot;roc auc:&quot; + str(rdf_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    rdf_proba = rdf_report.prediction[&#39;clf&#39;][:, 1]</span>
+<span class="c1">#    del rdf_bagged, rdf_clf, rdf_folded, rdf_report</span>
+
+<span class="c1">#    gb_bagged.fit(data, targets, weights)</span>
+<span class="c1">#    gb_report = gb_bagged.test_on(data, targets, weights)</span>
+<span class="c1">#    gb_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC gb_base classifier&quot;)</span>
+<span class="c1">#    output[&#39;gb_base&#39;] = &quot;roc auc:&quot; + str(gb_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    gb_proba = gb_report.prediction[&#39;clf&#39;][:, 1]</span>
+<span class="c1">#    del gb_bagged, gb_clf, gb_folded, gb_report</span>
+
+<span class="c1">#    nn_bagged.fit(data, targets, weights)</span>
+<span class="c1">#    nn_report = nn_bagged.test_on(data, targets, weights)</span>
+<span class="c1">#    nn_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC nn_base classifier&quot;)</span>
+<span class="c1">#    output[&#39;nn_base&#39;] = &quot;roc auc:&quot; + str(nn_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    nn_proba = nn_report.prediction[&#39;clf&#39;][:, 1]</span>
+<span class="c1">#    del nn_bagged, nn_clf, nn_folded, nn_report</span>
+<span class="c1">#</span>
+<span class="c1">#    base_predict = pd.DataFrame({&#39;xgb&#39;: xgb_proba,</span>
+<span class="c1">##                                 &#39;rdf&#39;: rdf_proba,</span>
+<span class="c1">#                                 #&#39;gb&#39;: gb_proba,</span>
+<span class="c1">#                                 &#39;nn&#39;: nn_proba</span>
+<span class="c1">#                                 })</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#    xgb_stacker.fit(base_predict, targets, weights)</span>
+<span class="c1">#    xgb_report = xgb_stacker.test_on(base_predict, targets, weights)</span>
+<span class="c1">#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC xgb_stacked classifier&quot;)</span>
+<span class="c1">#    output[&#39;stacker_xgb&#39;] = &quot;roc auc:&quot; + str(xgb_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    del xgb_stacker, xgb_report</span>
+<span class="c1">#</span>
+<span class="c1">#    logit_stacker.fit(base_predict, targets, weights)</span>
+<span class="c1">#    logit_report = logit_stacker.test_on(base_predict, targets, weights)</span>
+<span class="c1">#    logit_report.roc(physics_notion=True).plot(new_plot=True, title=&quot;ROC AUC logit_stacked classifier&quot;)</span>
+<span class="c1">#    output[&#39;stacker_logit&#39;] = &quot;roc auc:&quot; + str(logit_report.compute_metric(metric=RocAuc()))</span>
+<span class="c1">#    del logit_stacker, logit_report</span>
+
+    <span class="nb">print</span> <span class="n">output</span>
+
+
+
+<span class="k">def</span> <span class="nf">_test_mayou_int</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Intern call to hyper_optimization&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span><span class="p">,</span> <span class="n">dev_tool</span><span class="p">,</span> <span class="n">data_storage</span>
+
+    <span class="n">original_data</span> <span class="o">=</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">(</span><span class="o">**</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;hyper_original&#39;</span><span class="p">])</span>
+    <span class="n">target_data</span> <span class="o">=</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">(</span><span class="o">**</span><span class="n">cfg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;hyper_target&#39;</span><span class="p">])</span>
+
+<span class="c1">#HACK</span>
+    <span class="n">clf_mayou</span><span class="p">(</span><span class="n">data1</span><span class="o">=</span><span class="n">original_data</span><span class="p">,</span> <span class="n">data2</span><span class="o">=</span><span class="n">target_data</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;Clf_mayou function finished&quot;</span>
+    <span class="k">return</span>
+
+
+
+<span class="k">def</span> <span class="nf">_cut</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
+
+    <span class="k">return</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">apply_cuts</span><span class="p">(</span><span class="o">*</span><span class="n">data</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="preselection_cut"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.preselection_cut">[docs]</a><span class="k">def</span> <span class="nf">preselection_cut</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">,</span> <span class="n">percent_sig_to_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Cut the bkg while maintaining a certain percent of the signal.WIP.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+    <span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools.data_storage</span> <span class="k">import</span> <span class="n">HEPDataStorage</span>
+
+
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">copy</span>
+
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">signal_data</span><span class="o">.</span><span class="n">columns</span>
+    <span class="n">signal_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Before cut&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Data comparison before cut&quot;</span><span class="p">)</span>
+    <span class="n">signal_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Signal comparison&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Data comparison before cut vs after&quot;</span><span class="p">)</span>
+    <span class="n">bkg_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Background comparison&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Data comparison before cut vs after&quot;</span><span class="p">)</span>
+    <span class="n">bkg_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Before cut&quot;</span><span class="p">)</span>
+    <span class="n">bkg_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">)</span>
+    <span class="n">signal_length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal_data</span><span class="p">)</span>
+    <span class="n">signal_cp</span> <span class="o">=</span> <span class="n">signal_data</span><span class="o">.</span><span class="n">copy_storage</span><span class="p">()</span>
+    <span class="n">bkg_cp</span> <span class="o">=</span> <span class="n">bkg_data</span><span class="o">.</span><span class="n">copy_storage</span><span class="p">()</span>
+    <span class="n">signal_data</span> <span class="o">=</span> <span class="n">signal_data</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">()</span>
+    <span class="n">bkg_data</span> <span class="o">=</span> <span class="n">bkg_data</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">()</span>
+
+
+    <span class="n">applied_cuts</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">percent_end</span> <span class="o">=</span>  <span class="n">percent_sig_to_keep</span>
+    <span class="n">percent_sig_to_keep</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">stepsize</span> <span class="o">=</span> <span class="mf">0.1</span>
+    <span class="n">keep</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+
+<span class="c1">#        pool = multiprocessing.Pool(meta_config.n_cpu_max)</span>
+        <span class="n">sig</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">signal_data</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()[:,</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns</span><span class="p">)]))</span>
+        <span class="n">bkg</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">bkg_data</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()[:,</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">col</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">columns</span><span class="p">)]))</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">bkg</span><span class="p">,</span> <span class="p">[</span><span class="n">percent_sig_to_keep</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">))</span>
+        <span class="n">limits</span><span class="p">,</span> <span class="n">rejection</span> <span class="o">=</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sig</span><span class="p">,</span> <span class="n">bkg</span><span class="p">,</span> <span class="n">per</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+            <span class="n">temp</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">apply_cuts</span><span class="p">(</span><span class="n">sig</span><span class="p">,</span> <span class="n">bkg</span><span class="p">,</span> <span class="n">per</span><span class="p">,</span> <span class="n">bkg_length</span><span class="o">=</span><span class="n">bkg_length</span><span class="p">)</span>
+            <span class="n">limits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">rejection</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="c1">#        limits, rejection = pool.map(_cut, data)</span>
+        <span class="n">i_max_rej</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">rejection</span><span class="p">)</span>
+        <span class="n">max_rejection</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">rejection</span><span class="p">)</span>
+        <span class="n">column</span><span class="p">,</span> <span class="n">limits</span> <span class="o">=</span> <span class="n">columns</span><span class="p">[</span><span class="n">i_max_rej</span><span class="p">],</span> <span class="n">limits</span><span class="p">[</span><span class="n">i_max_rej</span><span class="p">]</span>
+        <span class="nb">print</span> <span class="n">percent_sig_to_keep</span><span class="p">,</span> <span class="n">percent_end</span>
+        <span class="k">if</span> <span class="n">max_rejection</span> <span class="o">&lt;</span> <span class="mf">0.001</span> <span class="ow">and</span> <span class="n">percent_sig_to_keep</span> <span class="o">==</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">percent_end</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+                <span class="n">percent_sig_to_keep</span> <span class="o">-=</span> <span class="n">stepsize</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">elif</span> <span class="n">percent_sig_to_keep</span> <span class="o">&gt;=</span> <span class="n">percent_end</span> <span class="ow">and</span> <span class="n">percent_sig_to_keep</span> <span class="o">&lt;</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="n">percent_end</span> <span class="o">+=</span> <span class="n">stepsize</span>
+            <span class="n">stepsize</span> <span class="o">*=</span> <span class="p">(</span><span class="mi">100</span> <span class="o">-</span> <span class="n">stepsize</span><span class="p">)</span> <span class="o">/</span> <span class="mi">100</span>
+        <span class="k">elif</span> <span class="n">percent_sig_to_keep</span><span class="o">&lt;</span> <span class="n">percent_end</span><span class="p">:</span>
+            <span class="k">break</span>
+
+
+        <span class="k">if</span> <span class="n">applied_cuts</span><span class="o">.</span><span class="n">has_key</span><span class="p">(</span><span class="n">column</span><span class="p">):</span>
+            <span class="n">max_rejection</span> <span class="o">+=</span> <span class="n">applied_cuts</span><span class="p">[</span><span class="n">column</span><span class="p">][</span><span class="s1">&#39;reduction&#39;</span><span class="p">]</span>
+        <span class="n">applied_cuts</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;limits&quot;</span><span class="p">:</span> <span class="n">limits</span><span class="p">,</span> <span class="s2">&quot;reduction&quot;</span><span class="p">:</span> <span class="n">max_rejection</span><span class="p">}</span>
+
+        <span class="n">cuts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">signal_data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">signal_data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">limits</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">signal_data</span> <span class="o">=</span> <span class="n">signal_data</span><span class="p">[</span><span class="n">cuts</span><span class="p">]</span>
+
+        <span class="n">cuts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">logical_and</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">limits</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">bkg_data</span><span class="p">[</span><span class="n">column</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">limits</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">bkg_data</span> <span class="o">=</span> <span class="n">bkg_data</span><span class="p">[</span><span class="n">cuts</span><span class="p">]</span>
+        <span class="nb">print</span> <span class="s2">&quot;We used &quot;</span> <span class="o">+</span> <span class="n">column</span>
+
+<span class="c1">#    signal_data.hist(bins=30)</span>
+<span class="c1">#    bkg_data.hist(bins=30)</span>
+
+
+    <span class="n">signal_len_cut</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">signal_data</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()[:,</span> <span class="mi">0</span><span class="p">]))</span>
+    <span class="n">bkg_len_cut</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">bkg_data</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()[:,</span><span class="mi">0</span><span class="p">]))</span>
+    <span class="n">signal_cp</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">signal_data</span><span class="p">)</span>
+    <span class="n">signal_cp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Signal comparison&quot;</span><span class="p">)</span>
+    <span class="n">signal_cp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Data cut plt&quot;</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Data with cuts applied&quot;</span><span class="p">,</span> <span class="n">log_y_axes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">bkg_cp</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">bkg_data</span><span class="p">)</span>
+    <span class="n">bkg_cp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Background comparison&quot;</span><span class="p">)</span>
+    <span class="n">bkg_cp</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Data cut plt&quot;</span><span class="p">,</span> <span class="n">log_y_axes</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">applied_cuts</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="s2">&quot;Preselection cuts report&quot;</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">keep</span><span class="p">,</span> <span class="n">section</span><span class="o">=</span><span class="s2">&quot;All limits&quot;</span><span class="p">)</span>
+    <span class="n">bkg_rejection</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="s1">&#39;reduction&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">applied_cuts</span><span class="o">.</span><span class="n">itervalues</span><span class="p">()])</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;summed up Bkg rejection: &quot;</span><span class="p">,</span> <span class="n">bkg_rejection</span><span class="p">,</span> <span class="s2">&quot;True rejection: &quot;</span><span class="p">,</span>
+                    <span class="mf">100.0</span> <span class="o">-</span> <span class="p">(</span><span class="n">bkg_len_cut</span><span class="o">/</span><span class="n">bkg_length</span><span class="p">),</span> <span class="s2">&quot; True remaining signal: &quot;</span><span class="p">,</span>
+                    <span class="n">signal_len_cut</span><span class="o">/</span><span class="n">signal_length</span><span class="p">],</span> <span class="n">section</span><span class="o">=</span><span class="s2">&quot;Total bkg rejection&quot;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="n">signal_len_cut</span>
+    <span class="nb">print</span> <span class="n">signal_length</span>
+    <span class="nb">print</span> <span class="n">bkg_len_cut</span>
+    <span class="nb">print</span> <span class="n">bkg_length</span>
+
+    <span class="k">return</span> <span class="n">applied_cuts</span></div>
+
+
+
+
+
+
+
+<div class="viewcode-block" id="feature_exploration"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.feature_exploration">[docs]</a><span class="k">def</span> <span class="nf">feature_exploration</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">target_data</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
+                        <span class="n">roc_auc</span><span class="o">=</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="n">extended_report</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Explore the features by getting the roc auc and their feature importance</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+
+    <span class="n">roc_auc_all</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">roc_auc</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;all&#39;</span><span class="p">,</span> <span class="s1">&#39;both&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+    <span class="n">roc_auc_single</span> <span class="o">=</span> <span class="kc">True</span> <span class="k">if</span> <span class="n">roc_auc</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;single&#39;</span><span class="p">,</span> <span class="s1">&#39;both&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="kc">False</span>
+
+    <span class="k">if</span> <span class="n">features</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">original_data</span> <span class="o">=</span> <span class="n">original_data</span><span class="o">.</span><span class="n">copy_storage</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">features</span><span class="p">)</span>
+        <span class="n">target_data</span> <span class="o">=</span> <span class="n">target_data</span><span class="o">.</span><span class="n">copy_storage</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">features</span><span class="p">)</span>
+
+    <span class="n">figure</span> <span class="o">=</span> <span class="s2">&quot;Plotting&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">original_data</span><span class="o">.</span><span class="n">name</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; and &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">target_data</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+    <span class="n">original_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">figure</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="n">figure</span><span class="p">)</span>
+    <span class="n">target_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="n">figure</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">roc_auc_all</span><span class="p">:</span>
+        <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">target_data</span><span class="p">,</span> <span class="n">validation</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">extended_report</span><span class="o">=</span><span class="n">extended_report</span><span class="p">,</span>
+                        <span class="n">curve_name</span><span class="o">=</span><span class="s2">&quot;all features&quot;</span><span class="p">,</span> <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;ROC AUC of all features&quot;</span><span class="p">)</span>
+
+    <span class="n">features</span> <span class="o">=</span> <span class="n">original_data</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">features</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">features</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">out_temp</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">if</span> <span class="n">roc_auc_single</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">features</span><span class="p">:</span>
+            <span class="n">tmp_</span><span class="p">,</span> <span class="n">score</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">original_data</span><span class="p">,</span> <span class="n">target_data</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="n">feature</span><span class="p">,</span>
+                                          <span class="n">validation</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">extended_report</span><span class="o">=</span><span class="n">extended_report</span><span class="p">,</span>
+                                          <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;Feature exploration, ROC AUC only using&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">feature</span><span class="p">),</span>
+                                            <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">out_temp</span><span class="p">[</span><span class="n">feature</span><span class="p">]</span> <span class="o">=</span> <span class="n">score</span>
+
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">out_temp</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="add_branch_to_rootfile"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.add_branch_to_rootfile">[docs]</a><span class="k">def</span> <span class="nf">add_branch_to_rootfile</span><span class="p">(</span><span class="n">root_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">new_branch</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">branch_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a branch to a given rootfile&quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;Adding&quot;</span><span class="p">,</span> <span class="n">new_branch</span><span class="p">,</span> <span class="s2">&quot;as&quot;</span><span class="p">,</span> <span class="n">branch_name</span><span class="p">,</span> <span class="s2">&quot;to&quot;</span><span class="p">,</span>
+                    <span class="n">root_data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filenames&#39;</span><span class="p">)],</span> <span class="n">obj_separator</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+    <span class="n">data_tools</span><span class="o">.</span><span class="n">add_to_rootfile</span><span class="p">(</span><span class="n">root_data</span><span class="p">,</span> <span class="n">new_branch</span><span class="o">=</span><span class="n">new_branch</span><span class="p">,</span>
+                               <span class="n">branch_name</span><span class="o">=</span><span class="n">branch_name</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="reweight"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.reweight">[docs]</a><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">mc_data</span><span class="p">,</span> <span class="n">apply_data</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(Train a reweighter and) apply the reweighter do get new weights</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="n">reweighter</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">reweight_train</span><span class="p">(</span><span class="n">reweight_data_mc</span><span class="o">=</span><span class="n">mc_data</span><span class="p">,</span>
+                                              <span class="n">reweight_data_real</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
+                                              <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                              <span class="n">meta_cfg</span><span class="o">=</span><span class="n">reweight_cfg</span><span class="p">,</span>
+                                              <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">)</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;reweighter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">reweighter</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">reweight_weights</span><span class="p">(</span><span class="n">reweight_data</span><span class="o">=</span><span class="n">apply_data</span><span class="p">,</span>
+                                                <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                                <span class="n">reweighter_trained</span><span class="o">=</span><span class="n">reweighter</span><span class="p">,</span>
+                                                <span class="n">add_weights_to_data</span><span class="o">=</span><span class="n">apply_weights</span><span class="p">)</span>
+
+    <span class="n">apply_data</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Data for reweights apply&quot;</span><span class="p">,</span> <span class="n">data_name</span><span class="o">=</span><span class="s2">&quot;gb weights&quot;</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">save_fig</span><span class="p">(</span><span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="s2">&quot;New weights&quot;</span><span class="p">),</span> <span class="n">importance</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">],</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="reweightCV"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.reweightCV">[docs]</a><span class="k">def</span> <span class="nf">reweightCV</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">mc_data</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">scoring</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">n_folds_scoring</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">score_clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Reweight data (mc/real) in a KFolded way to unbias the reweighting</span>
+
+<span class="sd">    The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its</span>
+<span class="sd">    hyperparameters. Therefore, it is good to ged an estimation for the</span>
+<span class="sd">    reweighting quality by reweighting the data and &quot;test&quot; it (compare how</span>
+<span class="sd">    similar the reweighted to the real one is). In order to get an unbiased</span>
+<span class="sd">    reweighting, a KFolding procedure is applied:</span>
+
+<span class="sd">    - the reweighter is trained on n-1/nth of the data and predicts the</span>
+<span class="sd">      weights for the 1/n leftover. This is done n times resulting in unbiased</span>
+<span class="sd">      weights for the mc data.</span>
+
+<span class="sd">    To know, how well the reweighter worked, different stategies can be used</span>
+<span class="sd">    and are implemented, for further information also see: TODO, IMPLEMENT</span>
+<span class="sd">    REWEIGHT PRÄSI.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    real_data : HEPDataStorage</span>
+<span class="sd">        The real data</span>
+<span class="sd">    mc_data : HEPDataStorage</span>
+<span class="sd">        The mc data</span>
+<span class="sd">    n_folds : int &gt; 1</span>
+<span class="sd">        Number of folds to split the data for the reweighting. Usually, the</span>
+<span class="sd">        higher the better.</span>
+<span class="sd">    reweighter : str {&#39;gb&#39;, &#39;bins&#39;}</span>
+<span class="sd">        Which reweighter to use, either the Gradient Boosted reweighter or the</span>
+<span class="sd">        (normally used) Bins reweighter (both from *hep_ml*)</span>
+<span class="sd">    reweight_cfg : dict</span>
+<span class="sd">        A dict containing all the keyword arguments for the configuration of</span>
+<span class="sd">        the reweighters.</span>
+<span class="sd">    scoring : boolean</span>
+<span class="sd">        If True, the data is not only reweighted with KFolding but also several</span>
+<span class="sd">        scoring metrics are tested.</span>
+
+<span class="sd">        - Data-ROC : The data (mc reweighted and real mixed) is split in</span>
+<span class="sd">          KFolds, a classifier is then trained on the training fold and tested</span>
+<span class="sd">          on the test-fold. This is done K times and the roc curve is</span>
+<span class="sd">          evaluated. It is a good measure, basically, for how well two datasets</span>
+<span class="sd">          can be distinguished *but* can be &quot;overfitted&quot;. Having too high,</span>
+<span class="sd">          single weights can lead to a roc curve significantly lower then 0.5</span>
+<span class="sd">          and therefore only a good indication but not a single measure of</span>
+<span class="sd">          quality for the reweighter hyper-parameter search.</span>
+<span class="sd">        - mcreweighted_as_real : n-1/n part of the data is trained on the</span>
+<span class="sd">          reweighter and the last 1/n part is then reweighted (as described</span>
+<span class="sd">          above). We can train a classifier on the mc (not reweighted) as</span>
+<span class="sd">          well as the real data (so a classifier which &quot;distinguishes&quot; between</span>
+<span class="sd">          mc and real) and predict:</span>
+
+<span class="sd">          - (not in training used) mc (not reweighted) and label it as if it</span>
+<span class="sd">            were real data.</span>
+<span class="sd">          - (not in training used) mc reweighted and label it as if it were</span>
+<span class="sd">            real data.</span>
+<span class="sd">          - (not in training used) real data and label it real.</span>
+
+<span class="sd">          Then we look at the tpr (we cannot look at the ROC as we only inserted</span>
+<span class="sd">          one class of labels; real) and therefore at &quot;how many of the</span>
+<span class="sd">          datapoints we inserted did the classifier predict as real?&quot;:</span>
+
+<span class="sd">          The score for the real data should be the highest, the one for the</span>
+<span class="sd">          mc not reweighted the lowest. The reweighted one should be somewhere</span>
+<span class="sd">          in between (most probably). It is **not** the goal to maximise the</span>
+<span class="sd">          tpr for the mc reweighted (by changing the reweighter hyper-parameters)</span>
+<span class="sd">          as high, single weights (which occure when overfitting) will increase</span>
+<span class="sd">          the tpr drastically.</span>
+<span class="sd">        - train_similar: The probably most stable score to find the gbreweighter</span>
+<span class="sd">          hyper-parameters. The data is split into KFolds and a classifier is</span>
+<span class="sd">          trained on the mc reweighted and real data. Then it predicts the</span>
+<span class="sd">          (not yet seen) real data. The more it is able to predict as real,</span>
+<span class="sd">          the more it was able to learn from the differences of the datasets.</span>
+<span class="sd">          This scoring cannot overfit the same way the one above because a</span>
+<span class="sd">          single, high weight will cause a very bad distribution of the mc</span>
+<span class="sd">          data and therefore the classifier will be able to predict nearly</span>
+<span class="sd">          every real data as real (only *one single point*, the one with</span>
+<span class="sd">          the high weight, will be predicted as mc, the rest as real)</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">metrics</span>
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="c1"># do the Kfold reweighting. This reweights the data with Kfolding and returns</span>
+    <span class="c1"># the weights. If add_weights_to_data is True, the weights will automatically be</span>
+    <span class="c1"># added to the reweight_data_mc (or here, reweight_mc). To get an estimate</span>
+    <span class="c1"># wheter it has over-fitted, you can get the mcreweighted_as_real_score.</span>
+    <span class="c1"># This trains a clf on mc/real and tests it on mc, mc reweighted, real</span>
+    <span class="c1"># but both labeled with the same target as the real data in training</span>
+    <span class="c1"># The mc reweighted score should therefore lie in between the mc and the</span>
+    <span class="c1"># real score.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">apply_weights</span><span class="p">:</span>
+        <span class="n">old_weights</span> <span class="o">=</span> <span class="n">mc_data</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
+    <span class="n">Kfold_output</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">reweight_Kfold</span><span class="p">(</span><span class="n">reweight_data_mc</span><span class="o">=</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">reweight_data_real</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
+                                         <span class="n">meta_cfg</span><span class="o">=</span><span class="n">reweight_cfg</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                         <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">,</span> <span class="n">mcreweighted_as_real_score</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+                                         <span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">,</span> <span class="n">score_clf</span><span class="o">=</span><span class="n">score_clf</span><span class="p">)</span>
+    <span class="n">new_weights</span> <span class="o">=</span> <span class="n">Kfold_output</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;weights&#39;</span><span class="p">)</span>
+    <span class="n">new_weights</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+    <span class="k">if</span> <span class="n">scoring</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;mcreweighted_as_real_score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">Kfold_output</span>
+
+    <span class="c1"># To get a good estimation for the reweighting quality, the</span>
+    <span class="c1"># train_similar score can be used. Its the one with training on</span>
+    <span class="c1"># mc reweighted/real and test on real, quite robust.</span>
+    <span class="c1"># Test_max is nice to know too even dough it can also be set to False if</span>
+    <span class="c1"># testing the same distribution over and over again, as it is the same for</span>
+    <span class="c1"># the same distributions (actually, it&#39;s just doing the score without the</span>
+    <span class="c1"># weights).</span>
+    <span class="c1"># test_predictions is an additional score I tried but so far I is not</span>
+    <span class="c1"># reliable or understandable at all. The output, the scores dictionary,</span>
+    <span class="c1"># is better described in the docs of the train_similar</span>
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">metrics</span><span class="o">.</span><span class="n">train_similar</span><span class="p">(</span><span class="n">mc_data</span><span class="o">=</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_data</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span> <span class="n">test_max</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                   <span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds_scoring</span><span class="p">,</span> <span class="n">n_checks</span><span class="o">=</span><span class="n">n_folds_scoring</span><span class="p">,</span>
+                                   <span class="n">test_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+    <span class="c1"># We can of course also test the normal ROC curve. This is weak to overfitting</span>
+    <span class="c1"># but anyway (if not overfitting) a nice measure. You insert two datasets</span>
+    <span class="c1"># and do the normal cross-validation on it. It&#39;s quite a multi-purpose</span>
+    <span class="c1"># function depending on what validation is. If it is an integer, it means:</span>
+    <span class="c1"># do cross-validation with n(=validation) folds.</span>
+    <span class="n">tmp_</span><span class="p">,</span> <span class="n">roc_auc_score</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">original_data</span><span class="o">=</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">target_data</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
+                                          <span class="n">validation</span><span class="o">=</span><span class="n">n_folds_scoring</span><span class="p">,</span> <span class="n">plot_importance</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+    <span class="c1"># an example to add output with the most importand parameters. The first</span>
+    <span class="c1"># one can also be a single object instead of a list. do_print means</span>
+    <span class="c1"># printing it also to the console instead of only saving it to the output</span>
+    <span class="c1"># file. To_end is sometimes quite useful, as it prints (and saves) the</span>
+    <span class="c1"># arguments at the end of the file. So the important results are possibly</span>
+    <span class="c1"># printed to the end</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s1">&#39;ROC AUC score:&#39;</span><span class="p">,</span> <span class="n">roc_auc_score</span><span class="p">],</span> <span class="n">importance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                   <span class="n">title</span><span class="o">=</span><span class="s1">&#39;ROC AUC of mc reweighted/real KFold&#39;</span><span class="p">,</span> <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s1">&#39;score:&#39;</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">],</span> <span class="s2">&quot;+-&quot;</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="s1">&#39;score_std&#39;</span><span class="p">]],</span> <span class="n">importance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                   <span class="n">title</span><span class="o">=</span><span class="s1">&#39;Train similar report&#39;</span><span class="p">,</span> <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">scores</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;score_max&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">):</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s1">&#39;score max:&#39;</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="s1">&#39;score_max&#39;</span><span class="p">],</span> <span class="s2">&quot;+-&quot;</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="s1">&#39;score_max_std&#39;</span><span class="p">]],</span>
+                       <span class="n">importance</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_weights</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;train_similar&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scores</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;roc_auc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">roc_auc_score</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">apply_weights</span><span class="p">:</span>
+        <span class="n">mc_data</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">old_weights</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<span class="c1"># temporary:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+    <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+    <span class="kn">from</span> <span class="nn">raredecay.tools.data_storage</span> <span class="k">import</span> <span class="n">HEPDataStorage</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">7</span><span class="p">)))</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">HEPDataStorage</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mf">1.1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1000</span><span class="p">,</span> <span class="mi">7</span><span class="p">)))</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">HEPDataStorage</span><span class="p">(</span><span class="n">b</span><span class="p">)</span>
+
+    <span class="n">feature_exploration</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

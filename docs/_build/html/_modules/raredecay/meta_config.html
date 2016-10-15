@@ -1,0 +1,538 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.meta_config &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.meta_config</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.meta_config</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Fri Apr  1 15:32:17 2016</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+
+<span class="sd">| This module provides the meta-configuration.</span>
+<span class="sd">| Mostly, you do not need to change this file or only some small parts of it.</span>
+<span class="sd">| Things you may want to change include whether to</span>
+<span class="sd">    - promt for a addition to the file name</span>
+<span class="sd">    - number of cores to use</span>
+<span class="sd">    - path for pickle-files</span>
+<span class="sd">    - default configuration for classifiers, figure saving and more</span>
+<span class="sd">| It contains furthermore:</span>
+<span class="sd"> - (package-)global default variables for all modules.</span>
+<span class="sd"> - Debug-options which change some implementation on a basic level like protocols.</span>
+<span class="sd"> - Global configurations like the endings of specific file-types etc.</span>
+
+<span class="sd">The explanation to the variables is available as a comment behind each.</span>
+
+<span class="sd">Variables:</span>
+<span class="sd">---------</span>
+<span class="sd">run_config:</span>
+<span class="sd">    It provides the right config module depending on what was chosen</span>
+<span class="sd">    in the run-methods.</span>
+<span class="sd">    Should not be changed during the run, only once in the begining.</span>
+<span class="sd">SUPPRESS_WRONG_SKLEARN_VERSION:</span>
+<span class="sd">    This package was built for sklearn 0.17. With 0.18 there are some</span>
+<span class="sd">    module-name changes, which can cause a crash of the program.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># DO NOT IMPORT ANY PACKAGE (run configuration) DEPENDENCY!</span>
+<span class="c1">#==============================================================================</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">cPickle</span> <span class="k">as</span> <span class="nn">pickle</span>
+<span class="kn">import</span> <span class="nn">multiprocessing</span>
+
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># Parameters which can be changed WITHOUT affecting stability of a single run.</span>
+<span class="c1"># Be aware: certain tasks like loading  a pickled file may fail if the file-</span>
+<span class="c1"># endings are changed.</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1"># General run parameters</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="n">PROMPT_FOR_COMMENT</span><span class="o">=</span><span class="kc">False</span>  <span class="c1"># let you add an extension to the run/file name</span>
+<span class="n">MULTITHREAD</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># if False, no parallel work will be done</span>
+<span class="n">MULTIPROCESSING</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># requires MULTITHREAD to be true, else it&#39;s False</span>
+<span class="n">n_cpu_max</span> <span class="o">=</span> <span class="mi">6</span>  <span class="c1"># VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned</span>
+<span class="n">use_gpu</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).</span>
+                <span class="c1"># This does NOT use the GPU yet, but &quot;not use the cpu&quot; where the GPU will be invoked</span>
+<span class="n">use_stratified_folding</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># StratifiedKFolding is better, from a statistical point of view, but</span>
+                                <span class="c1"># also needs more memory, mostly insignificantly but can be large</span>
+
+<span class="c1"># set meta-config variables</span>
+<div class="viewcode-block" id="set_parallel_profile"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_parallel_profile">[docs]</a><span class="k">def</span> <span class="nf">set_parallel_profile</span><span class="p">(</span><span class="n">n_cpu</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stratified_kfolding</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the number of cpus and whether a gpu is in use or not&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">MULTIPROCESSING</span><span class="p">,</span> <span class="n">MULTITHREAD</span><span class="p">,</span> <span class="n">n_cpu_max</span><span class="p">,</span> <span class="n">use_gpu</span><span class="p">,</span> <span class="n">use_stratified_folding</span>
+    <span class="n">use_stratified_folding</span> <span class="o">=</span> <span class="n">stratified_kfolding</span>
+    <span class="n">MULTIPROCESSING</span> <span class="o">=</span> <span class="n">MULTITHREAD</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">n_cpu</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">n_cpu_max</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="k">elif</span> <span class="n">n_cpu</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_cpu</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">n_cpu</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">n_cpu_max</span> <span class="o">=</span> <span class="n">n_cpu</span>
+        <span class="k">elif</span> <span class="n">n_cpu</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">n_cpu_max</span> <span class="o">=</span> <span class="n">multiprocessing</span><span class="o">.</span><span class="n">cpu_count</span><span class="p">()</span> <span class="o">+</span> <span class="n">n_cpu</span> <span class="o">+</span> <span class="mi">1</span>  <span class="c1"># because -1 is &quot;all cpus&quot;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid n_cpu argument: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_cpu</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Wrong n_cpu argument, type: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">n_cpu</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; not allowed&quot;</span><span class="p">)</span>
+
+    <span class="n">use_gpu</span> <span class="o">=</span> <span class="n">gpu_in_use</span> <span class="k">if</span> <span class="n">gpu_in_use</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">use_gpu</span></div>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1">#  Datatype ending variables</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># The ending of a certain variable type. Change with caution and good reason.</span>
+<span class="n">PICKLE_DATATYPE</span> <span class="o">=</span> <span class="s2">&quot;pickle&quot;</span>  <span class="c1"># default: &#39;pickle&#39;</span>
+<span class="n">ROOT_DATATYPE</span> <span class="o">=</span> <span class="s2">&quot;root&quot;</span>  <span class="c1"># default &#39;root&#39;</span>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1"># SHARED OBJECT PATHES INPUT &amp; OUTPUT</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># folder where the pickled objects are stored</span>
+<span class="n">PICKLE_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/&#39;</span>
+<span class="c1"># folder where the git-directory is located. Can be an empty string</span>
+<span class="n">GIT_DIR_PATH</span> <span class="o">=</span> <span class="s2">&quot;/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay&quot;</span>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1">#  Debug related options</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># This options should not directly affect the behaviour (except of speed etc)</span>
+<span class="c1"># IF the right environment is used. Don&#39;t touch until you have good reasons to do.</span>
+<span class="n">PICKLE_PROTOCOL</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">HIGHEST_PROTOCOL</span>  <span class="c1"># default: pickle.HIGHEST_PROTOCOL</span>
+<span class="n">SUPPRESS_WRONG_SKLEARN_VERSION</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># Should NOT BE CHANGED.</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># Parameters which may affect stability</span>
+<span class="c1"># setting for example MAX_AUTO_FOLDERS to 0, it will surely not work</span>
+<span class="c1">#==============================================================================</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1">#  Limits for auto-methods</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># If a folder already exists and no overwrite is in use, a new folder (with a</span>
+<span class="c1"># trailing number) will be created. There can be set a limit to prevent a full</span>
+<span class="c1"># disk in case of an endless loop-error or similar.</span>
+<span class="n">MAX_AUTO_FOLDERS</span> <span class="o">=</span> <span class="mi">10000</span>  <span class="c1"># max number of auto-generated folders by initialize</span>
+<span class="n">NO_PROMPT_ASSUME_YES</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># no userinput required, assumes yes (e.g. when overwritting files)</span>
+<span class="n">MAX_ERROR_COUNT</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># set a maximum number of possible errors (like not able to save figure etc.)</span>
+                        <span class="c1"># Criticals will end the run anyway.</span>
+<span class="n">MAX_FIGURES</span> <span class="o">=</span> <span class="mi">1000</span>  <span class="c1"># max number of figures to be plotted</span>
+
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># DEFAULT SETTINGS for different things</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1">#  Output and plot configurations</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># available output folders. Do NOT CHANGE THE KEYS as modules depend on them!</span>
+<span class="c1"># You may add additional key-value pairs or just change some values</span>
+
+<span class="c1"># The name of the folders created inside the run-folder</span>
+<span class="n">DEFAULT_OUTPUT_FOLDERS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">log</span><span class="o">=</span><span class="s2">&quot;log&quot;</span><span class="p">,</span>  <span class="c1"># contains the logger informations</span>
+    <span class="n">plots</span><span class="o">=</span><span class="s2">&quot;plots&quot;</span><span class="p">,</span>  <span class="c1"># contains all the plots</span>
+    <span class="n">results</span><span class="o">=</span><span class="s2">&quot;results&quot;</span><span class="p">,</span>  <span class="c1"># contains the written output</span>
+    <span class="n">config</span><span class="o">=</span><span class="s2">&quot;config&quot;</span>  <span class="c1"># NOT YET IMPLEMENTED, but cound contain the config file used</span>
+<span class="p">)</span>
+
+<span class="c1"># The default histogram settings used for some plots</span>
+<span class="n">DEFAULT_HIST_SETTINGS</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span>  <span class="c1"># default: 40</span>
+    <span class="n">normed</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># default: True, useful for shape comparison of distributions</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span>  <span class="c1"># transparency [0.0, 1.0]</span>
+<span class="p">)</span>
+
+<span class="c1"># Default configuration for most of the figures for save_fig from OutputHandler()</span>
+<span class="n">DEFAULT_SAVE_FIG</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">file_format</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;svg&#39;</span><span class="p">],</span>  <span class="c1"># default: [&#39;png&#39;, &#39;svg&#39;], the file formats</span>
+                                 <span class="c1"># to be saved to. For implementations, see OutputHandler()</span>
+    <span class="n">to_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># whether to pickle the plot (and therefore be able to replot)</span>
+    <span class="c1">#save_cfg=None</span>
+<span class="p">)</span>
+
+<span class="c1"># Default configuration for additional figures (plots you mostly do not care</span>
+<span class="c1"># about but may be happy to have them saved somewhere)</span>
+<span class="n">DEFAULT_EXT_SAVE_FIG</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">file_format</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;svg&#39;</span><span class="p">],</span>
+    <span class="n">to_pickle</span><span class="o">=</span><span class="kc">True</span>
+    <span class="c1">#save_cfg=None</span>
+<span class="p">)</span>
+
+<span class="c1"># A logger writes some stuff during the run just for the control of the</span>
+<span class="c1"># correct execution. The log will be written to console, to file, or both.</span>
+<span class="c1"># Each message has a level ranging from the lowest (most unimportant) &#39;debug&#39;</span>
+<span class="c1"># to &#39;critical&#39;. You can specify which level (+ the more important one) will</span>
+<span class="c1"># appear where.</span>
+<span class="c1"># Example: you can set console to &#39;error&#39;. and file to &#39;info&#39;. This way you</span>
+<span class="c1"># collect also seemingly unneccesary informations (which are maybe later nice</span>
+<span class="c1"># to check if a variable was meaningful) but on the screen you will only see</span>
+<span class="c1"># if an error or critical occurs.</span>
+<span class="n">DEFAULT_LOGGER_CFG</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">logging_mode</span><span class="o">=</span><span class="s1">&#39;console&#39;</span><span class="p">,</span>   <span class="c1"># define where the logger is written to</span>
+    <span class="c1"># take &#39;both&#39;, &#39;file&#39;, &#39;console&#39; or &#39;no&#39;</span>
+    <span class="n">log_level_file</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span>  <span class="c1"># &#39;debug&#39;, &#39;info&#39;, warning&#39;, &#39;error&#39;, &#39;critical&#39;</span>
+    <span class="c1"># specifies the level to be logged to the file</span>
+    <span class="n">log_level_console</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span>  <span class="c1"># &#39;debug&#39;, &#39;info&#39;, warning&#39;, &#39;error&#39;, &#39;critical&#39;</span>
+    <span class="c1"># specify the level to be logged to the console</span>
+    <span class="n">overwrite_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="c1"># specifies whether it should overwrite the log file each time</span>
+    <span class="c1"># or instead make a new one each run</span>
+    <span class="n">log_file_name</span><span class="o">=</span><span class="s1">&#39;AAlastRun&#39;</span><span class="p">,</span>
+    <span class="c1"># the beginning ofthe name of the logfile, like &#39;project1&#39;</span>
+    <span class="n">log_file_dir</span><span class="o">=</span><span class="n">DEFAULT_OUTPUT_FOLDERS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
+<span class="p">)</span>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1">#  Classifier configurations</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># Some modules use classifiers for different tasks where it is mostly not</span>
+<span class="c1"># important to have a fully optimized classifier but just a &quot;good enough&quot; one.</span>
+<span class="c1"># Like in the data_ROC where you can see how well two datasets differ from</span>
+<span class="c1"># each other.</span>
+<span class="c1"># Changing this default values will surely affect your results (over- or</span>
+<span class="c1"># underfitting for example), but is mostly not required at all.</span>
+<span class="n">DEFAULT_CLF_XGB</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">275</span><span class="p">,</span>  <span class="c1"># default 75</span>
+    <span class="n">eta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>  <span class="c1"># default 0.1, learning-rate</span>
+    <span class="n">min_child_weight</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span>  <span class="c1"># #0 stage 2 to optimize</span>
+    <span class="n">max_depth</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>  <span class="c1"># #6 stage 2 to optimize</span>
+    <span class="n">gamma</span><span class="o">=</span><span class="mf">4.6</span><span class="p">,</span>  <span class="c1"># stage 3, minimum loss-reduction required to make a split. Higher value-&gt; more conservative</span>
+    <span class="n">subsample</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span> <span class="c1"># stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree</span>
+    <span class="n">colsample</span><span class="o">=</span><span class="mi">1</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLF_TMVA</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">method</span><span class="o">=</span><span class="s1">&#39;kBDT&#39;</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLF_RDF</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+    <span class="n">max_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="c1">#max_depth=100</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLF_GB</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.15</span><span class="p">,</span>
+    <span class="n">max_depth</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+    <span class="n">subsample</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+    <span class="n">max_features</span><span class="o">=</span><span class="kc">None</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLF_ADA</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_estimators</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+    <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.2</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLF_NN</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">300</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+    <span class="n">hidden_activation</span><span class="o">=</span><span class="s1">&#39;logistic&#39;</span><span class="p">,</span>
+    <span class="n">output_activation</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span>
+    <span class="n">input_noise</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># [0,1,2,3,4,5,10,20],</span>
+    <span class="n">hidden_noise</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">input_dropout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+    <span class="n">hidden_dropout</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+    <span class="n">decode_from</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+    <span class="n">weight_l1</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">weight_l2</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+    <span class="n">scaler</span><span class="o">=</span><span class="s1">&#39;standard&#39;</span><span class="p">,</span>
+    <span class="n">trainers</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;optimize&#39;</span><span class="p">:</span> <span class="s1">&#39;adagrad&#39;</span><span class="p">,</span> <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s1">&#39;learning_rate&#39;</span><span class="p">:</span> <span class="mf">0.1</span><span class="p">,</span> <span class="s1">&#39;min_improvement&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">,</span>
+               <span class="s1">&#39;momentum&#39;</span><span class="p">:</span><span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;nesterov&#39;</span><span class="p">:</span><span class="kc">True</span><span class="p">,</span> <span class="s1">&#39;loss&#39;</span><span class="p">:</span> <span class="s1">&#39;xe&#39;</span><span class="p">}],</span>
+<span class="p">)</span>
+
+<span class="n">DEFAULT_CLF_KNN</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">n_neigh</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="p">)</span>
+
+<span class="c1"># default clf config collection</span>
+<span class="n">DEFAULT_CLF_CONFIG</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">xgb</span><span class="o">=</span><span class="n">DEFAULT_CLF_XGB</span><span class="p">,</span>
+    <span class="n">tmva</span><span class="o">=</span><span class="n">DEFAULT_CLF_TMVA</span><span class="p">,</span>
+    <span class="n">gb</span><span class="o">=</span><span class="n">DEFAULT_CLF_GB</span><span class="p">,</span>
+    <span class="n">ada</span><span class="o">=</span><span class="n">DEFAULT_CLF_ADA</span><span class="p">,</span>
+    <span class="n">nn</span><span class="o">=</span><span class="n">DEFAULT_CLF_NN</span><span class="p">,</span>
+    <span class="n">knn</span><span class="o">=</span><span class="n">DEFAULT_CLF_KNN</span><span class="p">,</span>
+    <span class="n">rdf</span><span class="o">=</span><span class="n">DEFAULT_CLF_RDF</span>
+<span class="p">)</span>
+
+<span class="c1"># default clf names collection</span>
+<span class="n">DEFAULT_CLF_NAME</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+    <span class="n">xgb</span><span class="o">=</span><span class="s1">&#39;XGBoost clf&#39;</span><span class="p">,</span>
+    <span class="n">tmva</span><span class="o">=</span><span class="s1">&#39;TMVA clf&#39;</span><span class="p">,</span>
+    <span class="n">gb</span><span class="o">=</span><span class="s1">&#39;Gradient Boosted Trees clf&#39;</span><span class="p">,</span>
+    <span class="n">ada</span><span class="o">=</span><span class="s1">&#39;AdaBoost over Trees clf&#39;</span><span class="p">,</span>
+    <span class="n">nn</span><span class="o">=</span><span class="s1">&#39;Theanets Neural Network clf&#39;</span><span class="p">,</span>
+    <span class="n">knn</span><span class="o">=</span><span class="s1">&#39;K-Nearest Neighbour clf&#39;</span><span class="p">,</span>
+    <span class="n">rdf</span><span class="o">=</span><span class="s1">&#39;Random Forest clf&#39;</span>
+<span class="p">)</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1">#  Hyper parameter optimization</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1"># The backwards feature selection uses first all features and determines the ROC AUC.</span>
+<span class="c1"># Then it removes one feature at a time, the one which yields the smallest difference</span>
+<span class="c1"># to the &#39;all_features&#39; roc auc is then removed. This continues until the smallest</span>
+<span class="c1"># score difference is bigger then max_difference_feature_selection.</span>
+<span class="n">max_difference_feature_selection</span> <span class="o">=</span> <span class="mf">0.08</span>  <span class="c1"># the biggest score difference to &#39;all features&#39;</span>
+                                         <span class="c1"># allowed in auc when removing features</span>
+<span class="n">DEFAULT_HYPER_GENERATOR</span> <span class="o">=</span> <span class="s1">&#39;subgrid&#39;</span>  <span class="c1"># The default cenerater for the hyperspace search</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># END OF CONFIGURABLE PARAMETERS - DO NOT CHANGE WHAT IS BELOW</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="c1"># DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE</span>
+<span class="c1"># DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE</span>
+<span class="c1"># DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE</span>
+
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># START INTERNAL CONFIGURATION - DO NOT CHANGE</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="n">run_config</span> <span class="o">=</span> <span class="s2">&quot;raredecay.run_config.config&quot;</span>  <span class="c1"># manipulated by OutputHandler()</span>
+
+<span class="n">loggers</span> <span class="o">=</span> <span class="p">{}</span>
+
+<span class="n">verbosity</span> <span class="o">=</span> <span class="mi">4</span>
+<div class="viewcode-block" id="set_verbosity"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_verbosity">[docs]</a><span class="k">def</span> <span class="nf">set_verbosity</span><span class="p">(</span><span class="n">new_verbosity</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">verbosity</span>
+    <span class="n">verbosity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">new_verbosity</span><span class="p">)</span>
+    <span class="n">_check_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="p">)</span></div>
+
+<span class="n">plot_verbosity</span> <span class="o">=</span> <span class="mi">3</span>
+<div class="viewcode-block" id="set_plot_verbosity"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_plot_verbosity">[docs]</a><span class="k">def</span> <span class="nf">set_plot_verbosity</span><span class="p">(</span><span class="n">new_plot_verbosity</span><span class="p">):</span>
+    <span class="k">global</span> <span class="n">plot_verbosity</span>
+    <span class="n">plot_verbosity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">new_plot_verbosity</span><span class="p">)</span>
+    <span class="n">_check_verbosity</span><span class="p">(</span><span class="n">plot_verbosity</span><span class="p">)</span></div>
+
+<span class="k">def</span> <span class="nf">_check_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">verbosity</span> <span class="ow">not</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Verbosity has to be int {0, 1, 2, 3, 4, 5}&quot;</span><span class="p">)</span>
+
+<span class="c1">#------------------------------------------------------------------------------</span>
+<span class="c1"># parallel profile</span>
+<span class="c1">#------------------------------------------------------------------------------</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># ERROR HANDLING</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="n">_error_count</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># increases if an error happens</span>
+<div class="viewcode-block" id="error_occured"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.error_occured">[docs]</a><span class="k">def</span> <span class="nf">error_occured</span><span class="p">(</span><span class="n">max_error_count</span><span class="o">=</span><span class="n">MAX_ERROR_COUNT</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Call this function every time a non-critical error (saving etc) occurs&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_error_count</span>
+    <span class="n">_error_count</span> <span class="o">+=</span> <span class="mi">1</span>
+    <span class="k">if</span> <span class="n">_error_count</span> <span class="o">&gt;=</span> <span class="n">max_error_count</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Too many errors encountered from different sources&quot;</span><span class="p">)</span></div>
+
+<span class="n">_warning_count</span> <span class="o">=</span> <span class="mi">0</span>  <span class="c1"># increases if an error happens</span>
+<div class="viewcode-block" id="warning_occured"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.warning_occured">[docs]</a><span class="k">def</span> <span class="nf">warning_occured</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Call this function every time a warning occurs&quot;&quot;&quot;</span>
+    <span class="k">global</span> <span class="n">_warning_count</span>
+    <span class="n">_warning_count</span> <span class="o">+=</span> <span class="mi">1</span></div>
+
+
+
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

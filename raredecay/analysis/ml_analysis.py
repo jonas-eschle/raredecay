@@ -13,7 +13,6 @@ The functions serve as basic tools, which do already a lot of the work.
 from __future__ import division, absolute_import
 
 import warnings
-import memory_profiler
 import multiprocessing
 import copy
 
@@ -712,9 +711,10 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                                           conv_ori_weights=conv_ori_weights,
                                           conv_tar_weights=conv_tar_weights,
                                           weights_ratio=weights_ratio)
-        data_name = original_data.get_name()
+        data_name = original_data.name
         if target_data is not None:
-            data_name += " and " + target_data.get_name()
+            data_name += " and " + target_data.name
+
     clf_name = 'classifier'
     if clf == 'xgb':
         clf_name = 'XGBoost classifier'
@@ -809,9 +809,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         report.estimators[plot_name] = report.estimators.pop(clf_name)
 
         if binary_test:
-            out.save_fig(plt.figure(plot_title + ", ROC " + plot_name),
+            out.save_fig(plt.figure(plot_title + " " + plot_name),
                          importance=plot_importance, **save_fig_cfg)
-            report.roc(physics_notion=True).plot(title="ROC curve of" + clf_name + " on data:" +
+            report.roc(physics_notion=True).plot(title=plot_title + "\nROC curve of" + clf_name + " on data:" +
                                                    data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
@@ -825,10 +825,14 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 #                         importance=plot_importance, **save_fig_cfg)
 #            report.learning_curve(metrics., steps=1).plot(title="Learning curve of " + plot_name)
         if extended_report:
-            out.save_fig(figure="Feature importance shuffling of " + plot_name, importance=plot_importance)
-            report.feature_importance_shuffling().plot(title="Feature importance shuffling of " + plot_name)
-            out.save_fig(figure="Feature correlation matrix of " + plot_name, importance=plot_importance)
-            report.features_correlation_matrix().plot()
+            if len(data.columns) > 1:
+                out.save_fig(figure="Feature importance shuffling of " + plot_name,
+                             importance=plot_importance)
+                report.feature_importance_shuffling().plot(
+                            title="Feature importance shuffling of " + plot_name)
+                out.save_fig(figure="Feature correlation matrix of " + plot_name,
+                             importance=plot_importance)
+                report.features_correlation_matrix().plot()
             out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
             report.prediction_pdf(plot_type='bar').plot()
 
@@ -909,8 +913,8 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
     # TODO: columns = reweight_data_mc.columns if columns is None else columns
-    out.add_output(msg + ["\nData used:\n", reweight_data_mc.get_name(), " and ",
-                   reweight_data_real.get_name(), "\ncolumns used for the reweighter training:\n",
+    out.add_output(msg + ["\nData used:\n", reweight_data_mc.name, " and ",
+                   reweight_data_real.name, "\ncolumns used for the reweighter training:\n",
                     columns], section="Training the reweighter", obj_separator=" ")
 
     if columns is None:
@@ -971,7 +975,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
     # write to output
     out.add_output(["Using the reweighter:\n", reweighter_trained, "\n to reweight ",
-                    reweight_data.get_name()], obj_separator="")
+                    reweight_data.name], obj_separator="")
 
     if normalize:
         for i in range(1):  # old... remove? TODO

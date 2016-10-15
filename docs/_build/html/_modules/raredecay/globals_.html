@@ -1,0 +1,285 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.globals_ &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.globals_</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.globals_</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Apr 14 14:34:21 2016</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+
+<span class="sd">This module contains all (package-)global variables and methods.</span>
+
+<span class="sd">Instances</span>
+<span class="sd">---------</span>
+<span class="sd">out : object of class :class:`~raredecay.tools.output.OutputHandler`</span>
+<span class="sd">    An instance which is initiated once for the whole package and handles</span>
+<span class="sd">    all the output and metastructure of the code:</span>
+
+<span class="sd">    * initialization:</span>
+
+<span class="sd">      - create and set run-dependant variables</span>
+<span class="sd">      - create folders to save the collected output</span>
+<span class="sd">      - create loggers</span>
+
+<span class="sd">    * collection of output:</span>
+
+<span class="sd">      - collect figures and save them later on</span>
+<span class="sd">      - concatenate every string output and format it</span>
+
+<span class="sd">    * finalization:</span>
+
+<span class="sd">      - add general information to the output</span>
+<span class="sd">      - save all the figures and outputs</span>
+<span class="sd">      - collect run information like errors occured</span>
+
+<span class="sd">    It is important to use the same instance (of course) for the same run.</span>
+<span class="sd">    Everything else would be very special case.</span>
+
+<span class="sd">    .. note:: To ensure that you import the instance and to not make a copy,</span>
+<span class="sd">      always import with an alias</span>
+
+<span class="sd">Variables:</span>
+<span class="sd">---------</span>
+<span class="sd">randint : int</span>
+<span class="sd">    Many methods need random integers for their pseudo-random generator.</span>
+<span class="sd">    To keep them all the same (or intentionally not), use the randint.</span>
+
+<span class="sd">methods</span>
+<span class="sd">-------</span>
+<span class="sd">free_cpus</span>
+<span class="sd">    Return the number of available cores. Currently not sophisticated, but</span>
+<span class="sd">    can be extended if wanted</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">random</span>
+
+<span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">output</span>
+<span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
+<span class="kn">from</span> <span class="nn">raredecay.run_config</span> <span class="k">import</span> <span class="n">config</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># Output handler. Contains methods &quot;initialize&quot; and &quot;finalize&quot;</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="n">out</span> <span class="o">=</span> <span class="n">output</span><span class="o">.</span><span class="n">OutputHandler</span><span class="p">()</span>
+
+<span class="n">cfg</span> <span class="o">=</span> <span class="n">config</span>
+<span class="n">logger_cfg</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">logger_cfg</span>  <span class="c1"># only if not save_output</span>
+
+<span class="c1">#def set_output_handler(internal=True):</span>
+<span class="c1">#  global out</span>
+<span class="c1">#  if internal:</span>
+<span class="c1">#    out = output.OutputHandlerInt()</span>
+<span class="c1">#  else:</span>
+<span class="c1">#    out = output.OutputHandlerExt()</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># Random integer generator for pseudo random generator (or other things)</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="n">randint</span> <span class="o">=</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">123</span><span class="p">,</span> <span class="mi">1512412</span><span class="p">)</span>  <span class="c1"># 357422 or 566575</span>
+
+<span class="c1">#==============================================================================</span>
+<span class="c1"># parallel profile</span>
+<span class="c1">#==============================================================================</span>
+
+<span class="n">n_cpu_used</span> <span class="o">=</span> <span class="mi">0</span>
+<div class="viewcode-block" id="free_cpus"><a class="viewcode-back" href="../../raredecay.globals_.html#raredecay.globals_.free_cpus">[docs]</a><span class="k">def</span> <span class="nf">free_cpus</span><span class="p">():</span>
+    <span class="n">n_out</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">meta_config</span><span class="o">.</span><span class="n">n_cpu_max</span> <span class="o">-</span> <span class="n">n_cpu_used</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">n_out</span></div>
+
+
+
+
+<span class="k">if</span> <span class="n">__name__</span><span class="o">==</span><span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="nb">print</span> <span class="s2">&quot;Selftest start&quot;</span>
+    <span class="nb">print</span> <span class="s2">&quot;Selftest completed&quot;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

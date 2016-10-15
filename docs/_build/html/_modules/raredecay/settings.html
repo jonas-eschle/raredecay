@@ -1,0 +1,388 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.settings &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../index.html"/>
+        <link rel="up" title="Module code" href="../index.html"/> 
+
+  
+  <script src="../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.settings</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.settings</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Tue Sep 27 16:45:51 2016</span>
+
+<span class="sd">Contain methods to change settings in the whole package</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+<span class="kn">from</span> <span class="nn">raredecay.run_config</span> <span class="k">import</span> <span class="n">config</span>
+<span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
+
+
+<div class="viewcode-block" id="initialize"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.initialize">[docs]</a><span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="n">output_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="s2">&quot;Test run&quot;</span><span class="p">,</span> <span class="n">overwrite_existing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">run_message</span><span class="o">=</span><span class="s2">&quot;This is a test-run to test the package&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+               <span class="n">plot_verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">prompt_for_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+               <span class="n">logger_console_level</span><span class="o">=</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="n">logger_file_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span>
+               <span class="n">n_cpu</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Place before Imports! Initialize/change several parameters for the package&quot;&quot;&quot;</span>
+    <span class="n">set_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">,</span> <span class="n">plot_verbosity</span><span class="o">=</span><span class="n">plot_verbosity</span><span class="p">)</span>
+    <span class="n">_init_user_input</span><span class="p">(</span><span class="n">prompt_for_input</span><span class="o">=</span><span class="n">prompt_for_input</span><span class="p">)</span>
+    <span class="n">parallel_profile</span><span class="p">(</span><span class="n">n_cpu</span><span class="o">=</span><span class="n">n_cpu</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="n">gpu_in_use</span><span class="p">)</span>
+    <span class="n">logger_file_level</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">logger_file_level</span>
+    <span class="n">_init_configure_logger</span><span class="p">(</span><span class="n">console_level</span><span class="o">=</span><span class="n">logger_console_level</span><span class="p">,</span>
+                           <span class="n">file_level</span><span class="o">=</span><span class="n">logger_file_level</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">output_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">_init_output_to_file</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="n">output_path</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="n">run_name</span><span class="p">,</span>
+                             <span class="n">overwrite_existing</span><span class="o">=</span><span class="n">overwrite_existing</span><span class="p">,</span>
+                             <span class="n">run_message</span><span class="o">=</span><span class="n">run_message</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_init_output_to_file</span><span class="p">(</span><span class="n">file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="n">run_name</span><span class="p">,</span>
+                             <span class="n">prompt_for_input</span><span class="o">=</span><span class="n">prompt_for_input</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="finalize"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.finalize">[docs]</a><span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="n">show_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">play_sound_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Finalize the run, (save figures and output) and return output</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    show_plots : boolean</span>
+<span class="sd">        If True, show the plots (*plt.show()*), if user prompt is activated,</span>
+<span class="sd">        you first have to press enter to show them.</span>
+<span class="sd">    play_sound_at_end : boolean</span>
+<span class="sd">        If true, a beep will be played at the end of the run</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">get_output_handler</span><span class="p">()</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">finalize</span><span class="p">(</span><span class="n">show_plots</span><span class="o">=</span><span class="n">show_plots</span><span class="p">,</span> <span class="n">play_sound_at_end</span><span class="o">=</span><span class="n">play_sound_at_end</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="set_verbosity"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.set_verbosity">[docs]</a><span class="k">def</span> <span class="nf">set_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">plot_verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Change the verbosity of the package&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">verbosity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">meta_config</span><span class="o">.</span><span class="n">set_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">plot_verbosity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">meta_config</span><span class="o">.</span><span class="n">set_plot_verbosity</span><span class="p">(</span><span class="n">plot_verbosity</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_output_handler"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.get_output_handler">[docs]</a><span class="k">def</span> <span class="nf">get_output_handler</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`</span>
+
+<span class="sd">    This can be used to add output (text as well as figures) and save them</span>
+<span class="sd">    easely. For more information see the docs of the OutputHandler</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+    <span class="k">return</span> <span class="n">out</span></div>
+
+
+<div class="viewcode-block" id="parallel_profile"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.parallel_profile">[docs]</a><span class="k">def</span> <span class="nf">parallel_profile</span><span class="p">(</span><span class="n">n_cpu</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the parallel profile, the n_cpu to use</span>
+
+<span class="sd">    Most of the functions do not have a number of threads option. You can</span>
+<span class="sd">    change that here by either:</span>
+
+<span class="sd">    - using a positive integer, which corresponds to the number of threads to</span>
+<span class="sd">      use</span>
+<span class="sd">    - using a negative integer. Then, -1 means to use all available (virtual)</span>
+<span class="sd">      cores (resp. the number of threads). But sometimes you want to still work</span>
+<span class="sd">      on your machine and have not all cpus used up. Therefore you can just use</span>
+<span class="sd">      -2 (which will use all except of one; &quot;all up to the second last&quot;), -3</span>
+<span class="sd">      (which will use all except two; &quot;all up to the third last&quot;) etc.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_cpu : int (not 0)</span>
+<span class="sd">        The number of cpus to use, explanation see above.</span>
+<span class="sd">    gpu_in_use : boolean</span>
+<span class="sd">        If a gpu is in use (say for nn), you can set this boolean to true in</span>
+<span class="sd">        order to avoid parallel computation of the nn or to activate any</span>
+<span class="sd">        other implemented gpu assistance.</span>
+
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">meta_config</span><span class="o">.</span><span class="n">set_parallel_profile</span><span class="p">(</span><span class="n">n_cpu</span><span class="o">=</span><span class="n">n_cpu</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="n">gpu_in_use</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="figure_save_config"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.figure_save_config">[docs]</a><span class="k">def</span> <span class="nf">figure_save_config</span><span class="p">(</span><span class="n">file_formats</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;svg&#39;</span><span class="p">],</span> <span class="n">to_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">150</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Change the save-options of figures.</span>
+
+<span class="sd">    If you initialized an output-path, the figures that are plotted during</span>
+<span class="sd">    the run will be f. On one hand, they are saved as pictures in the</span>
+<span class="sd">    given formats, on the other hand the figures (matplotlib) will be saved</span>
+<span class="sd">    as a pickle-object (also in the output-folder)</span>
+<span class="sd">    If the run was not initialized with an output-path, this function will</span>
+<span class="sd">    have no effect on the behaviour of your script.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    file_formats : str or list[str, str, str,...]</span>
+<span class="sd">        The possible formats to save the figures to. Currently implemented are:</span>
+<span class="sd">        [&#39;png&#39;, &#39;jpg&#39;, &#39;pdf&#39;, &#39;svg&#39;]</span>
+<span class="sd">    to_pickle : boolean</span>
+<span class="sd">        If True, the matplotlib-figures will be saved as a pickle-file allowing</span>
+<span class="sd">        for later plotting. They are saved in the output-folder.</span>
+<span class="sd">    dpi : int</span>
+<span class="sd">        The resolution of the images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># hack for using mutable defaults</span>
+    <span class="n">file_formats</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">file_formats</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">save_fig_cfg</span><span class="p">[</span><span class="s1">&#39;file_formats&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_formats</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">save_fig_cfg</span><span class="p">[</span><span class="s1">&#39;to_pickle&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_pickle</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">save_fig_cfg</span><span class="p">[</span><span class="s1">&#39;dpi&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">dpi</span></div>
+
+
+
+<span class="k">def</span> <span class="nf">_init_output_to_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="s2">&quot;Test run&quot;</span><span class="p">,</span> <span class="n">overwrite_existing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                         <span class="n">run_message</span><span class="o">=</span><span class="s2">&quot;This is a test-run to test the package&quot;</span><span class="p">,</span> <span class="n">prompt_for_input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Saves output to file&quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">run_name</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)),</span> <span class="s2">&quot;run_name has to be a string or int&quot;</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">RUN_NAME</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_name</span><span class="p">)</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">OUTPUT_CFG</span><span class="p">[</span><span class="s1">&#39;run_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_name</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">file_path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;file_path has to be a string&quot;</span>
+
+        <span class="n">file_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="k">else</span> <span class="n">file_path</span>
+        <span class="n">file_path</span> <span class="o">+=</span> <span class="s2">&quot;&quot;</span> <span class="k">if</span> <span class="n">file_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="s2">&quot;/&quot;</span>
+
+        <span class="n">config</span><span class="o">.</span><span class="n">run_message</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_message</span><span class="p">)</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">OUTPUT_CFG</span><span class="p">[</span><span class="s1">&#39;output_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_path</span>
+        <span class="n">config</span><span class="o">.</span><span class="n">OUTPUT_CFG</span><span class="p">[</span><span class="s1">&#39;del_existing_folders&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">overwrite_existing</span>
+
+        <span class="n">out</span> <span class="o">=</span> <span class="n">get_output_handler</span><span class="p">()</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">initialize_save</span><span class="p">(</span><span class="n">logger_cfg</span><span class="o">=</span><span class="n">config</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">,</span> <span class="o">**</span><span class="n">config</span><span class="o">.</span><span class="n">OUTPUT_CFG</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">make_me_a_logger</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">get_output_handler</span><span class="p">()</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">initialize</span><span class="p">(</span><span class="n">run_name</span><span class="o">=</span><span class="n">run_name</span><span class="p">,</span> <span class="n">prompt_for_comment</span><span class="o">=</span><span class="n">prompt_for_input</span><span class="p">)</span>
+
+
+
+<span class="k">def</span> <span class="nf">_init_configure_logger</span><span class="p">(</span><span class="n">console_level</span><span class="o">=</span><span class="s1">&#39;critical&#39;</span><span class="p">,</span> <span class="n">file_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Call before imports! Set the logger-level</span>
+
+<span class="sd">    The package contains several loggers which will print/save to file some</span>
+<span class="sd">    information. What kind of information is handled can be changed by this</span>
+<span class="sd">    function. The higher (severer) the level, the less will be displayed.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    console_level : None or str {&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;}</span>
+<span class="sd">        Define the logging-level of the console handler. None means no output</span>
+<span class="sd">        at all.</span>
+<span class="sd">    file_level : None or str {&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;}</span>
+<span class="sd">        Define the logging-level of the file handler. None means no output</span>
+<span class="sd">        at all.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">console_level</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">file_level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logging_mode</span> <span class="o">=</span> <span class="s1">&#39;file&#39;</span>
+        <span class="n">console_level</span> <span class="o">=</span> <span class="s1">&#39;critical&#39;</span>
+    <span class="k">elif</span> <span class="n">console_level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logging_mode</span> <span class="o">=</span> <span class="s1">&#39;file&#39;</span>
+    <span class="k">elif</span> <span class="n">file_level</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">logging_mode</span> <span class="o">=</span> <span class="s1">&#39;console&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">logging_mode</span> <span class="o">=</span> <span class="s1">&#39;both&#39;</span>
+
+    <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">(</span><span class="n">console_level</span><span class="p">,</span> <span class="n">file_level</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="n">level</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">,</span> <span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="s1">&#39;error&#39;</span><span class="p">,</span> <span class="s1">&#39;critical&#39;</span><span class="p">),</span> <span class="s2">&quot;invalid logger level&quot;</span>
+
+    <span class="n">config</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">[</span><span class="s1">&#39;logging_mode&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">logging_mode</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">[</span><span class="s1">&#39;log_level_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">file_level</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">[</span><span class="s1">&#39;log_level_console&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">console_level</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">[</span><span class="s1">&#39;overwrite_file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">config</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">[</span><span class="s1">&#39;log_file_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;logfile_&#39;</span>
+
+
+<span class="k">def</span> <span class="nf">_init_user_input</span><span class="p">(</span><span class="n">prompt_for_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;If called, you will be asked for input to name the specific run&quot;&quot;&quot;</span>
+    <span class="n">meta_config</span><span class="o">.</span><span class="n">NO_PROMPT_ASSUME_YES</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">prompt_for_input</span>
+    <span class="n">meta_config</span><span class="o">.</span><span class="n">PROMPT_FOR_COMMENT</span> <span class="o">=</span> <span class="n">prompt_for_input</span>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

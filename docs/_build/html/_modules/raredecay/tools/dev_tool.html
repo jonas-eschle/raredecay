@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.tools.dev_tool &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.tools.dev_tool</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.tools.dev_tool</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Mon Mar 21 21:25:26 2016</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+
+<span class="sd">Contains several useful tools for all kind of programs</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">collections</span>
+
+<span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
+
+
+
+
+<span class="k">def</span> <span class="nf">syspath_append</span><span class="p">(</span><span class="n">verboise</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Adds the relevant path to the sys.path variable.</span>
+<span class="sd">    options:</span>
+<span class="sd">    v for verboise, print sys.paht before and after</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="kn">import</span> <span class="nn">config</span>
+
+    <span class="k">if</span> <span class="n">verboise</span> <span class="o">==</span> <span class="s1">&#39;v&#39;</span><span class="p">:</span> <span class="n">verboise</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">if</span> <span class="n">verboise</span><span class="p">:</span> <span class="nb">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
+    <span class="c1"># n_to_remove = 0 #number of elements to remove from sys.path from behind</span>
+    <span class="c1"># sys.path = sys.path[:len(sys.path)-n_to_remove]</span>
+    <span class="c1"># used to remove unnecessary bindings</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">pathes_to_add</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;get the sys.path and add pathes if they are not already contained&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">path</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="nb">print</span> <span class="s2">&quot;error when adding path </span><span class="se">\&quot;</span><span class="s2">&quot;</span><span class="o">+</span><span class="n">path</span><span class="o">+</span><span class="s2">&quot;</span><span class="se">\&quot;</span><span class="s2"> to sys.path&quot;</span>
+    <span class="k">if</span> <span class="n">verboise</span><span class="p">:</span> <span class="nb">print</span> <span class="n">sys</span><span class="o">.</span><span class="n">path</span>
+
+
+<div class="viewcode-block" id="make_logger"><a class="viewcode-back" href="../../../raredecay.tools.dev_tool.html#raredecay.tools.dev_tool.make_logger">[docs]</a><span class="k">def</span> <span class="nf">make_logger</span><span class="p">(</span><span class="n">module_name</span><span class="p">,</span> <span class="n">logging_mode</span><span class="o">=</span><span class="s1">&#39;both&#39;</span><span class="p">,</span> <span class="n">log_level_file</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span>
+                <span class="n">log_level_console</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="n">overwrite_file</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">log_file_name</span><span class="o">=</span><span class="s1">&#39;AAlast_run&#39;</span><span class="p">,</span><span class="n">log_file_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a logger with a console-/filehandler or both.</span>
+
+<span class="sd">    A useful tool to log the run of the program and debug or control it. With</span>
+<span class="sd">    logger.debug(&quot;message&quot;) a loging message is produced consisting of:</span>
+<span class="sd">    timestamp(from year to ms) - module_name - logger level - message</span>
+<span class="sd">    This can be either written to files, the console or both.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    module_name : string</span>
+<span class="sd">        Name of the logger, shown in output. Best choose __name__</span>
+<span class="sd">    logging_mode : {&#39;both&#39;, &#39;file&#39;, &#39;console&#39;}</span>
+<span class="sd">        Which logger handler is used; where the log is printed to.</span>
+<span class="sd">    log_level_file : {&#39;debug&#39;,&#39;info&#39;,&#39;warning&#39;,&#39;error&#39;,&#39;critical&#39;}</span>
+<span class="sd">        Which level of messages are logged. A lower level (left) always also</span>
+<span class="sd">        includes the higher (right) levels, but not the other way around.</span>
+<span class="sd">        This level specifies the level for the file log (if enabled).</span>
+<span class="sd">    log_level_console : {&#39;debug&#39;,&#39;info&#39;,&#39;warning&#39;,&#39;error&#39;,&#39;critical&#39;}</span>
+<span class="sd">        Level for console log (if enabled). See also log_level_file.</span>
+<span class="sd">    overwrite_file : boolean</span>
+<span class="sd">        If enabled, the logfiled gets overwritten at every run.</span>
+<span class="sd">        Otherwise, a new logfile is created.</span>
+<span class="sd">    log_file_name : string</span>
+<span class="sd">        The name of the logfile</span>
+<span class="sd">    log_file_dir : string</span>
+<span class="sd">        The directory to save the logfile.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    out : loggerObject</span>
+<span class="sd">        Logger instance</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    &gt;&gt;&gt; my_logger = make_logger(__name__)</span>
+<span class="sd">    &gt;&gt;&gt; my_logger.info(&quot;hello world&quot;)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="kn">import</span> <span class="nn">logging</span>
+    <span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">strftime</span>
+
+    <span class="k">if</span> <span class="n">log_file_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="kn">import</span> <span class="nn">raredecay.globals_</span>
+        <span class="n">log_file_dir</span> <span class="o">=</span> <span class="n">raredecay</span><span class="o">.</span><span class="n">globals_</span><span class="o">.</span><span class="n">out</span><span class="o">.</span><span class="n">get_logger_path</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">log_file_dir</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="c1"># set logging only to console; if &#39;file&#39; was selected, no console,</span>
+            <span class="c1"># set logging to console with level &#39;critical&#39;</span>
+            <span class="k">if</span> <span class="n">logging_mode</span> <span class="o">==</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span>
+                <span class="n">log_level_console</span><span class="o">=</span><span class="s1">&#39;critical&#39;</span>
+            <span class="n">logging_mode</span> <span class="o">=</span> <span class="s1">&#39;console&#39;</span>
+
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+    <span class="c1"># may be changed due to performance issues, does not have to log everything</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">propagate</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">file_mode</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span> <span class="k">if</span> <span class="n">overwrite_file</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - &quot;</span> <span class="o">+</span> <span class="n">module_name</span> <span class="o">+</span>
+                                  <span class="s2">&quot;: </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logging_mode</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span> <span class="ow">or</span> <span class="n">logging_mode</span> <span class="o">==</span> <span class="s1">&#39;file&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">overwrite_file</span><span class="p">:</span>
+            <span class="n">timeStamp</span> <span class="o">=</span> <span class="s1">&#39;logfile&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">timeStamp</span> <span class="o">=</span> <span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%a-</span><span class="si">%d</span><span class="s2">-%b-%Y-%H:%M:%S&quot;</span><span class="p">)</span>
+        <span class="n">log_file_dir</span> <span class="o">+=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">log_file_dir</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;/&#39;</span>
+        <span class="n">log_file_fullname</span> <span class="o">=</span> <span class="n">log_file_dir</span> <span class="o">+</span> <span class="n">log_file_name</span> <span class="o">+</span> <span class="n">module_name</span>
+        <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">-logfile.txt&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">log_file_fullname</span><span class="p">,</span>
+                                                        <span class="n">timeStamp</span><span class="p">),</span> <span class="n">file_mode</span><span class="p">)</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">log_level_file</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+        <span class="n">fh</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">logging_mode</span> <span class="o">==</span> <span class="s1">&#39;both&#39;</span> <span class="ow">or</span> <span class="n">logging_mode</span> <span class="o">==</span> <span class="s1">&#39;console&#39;</span><span class="p">:</span>
+        <span class="n">ch</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="n">ch</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">log_level_console</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+        <span class="n">ch</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+
+    <span class="c1"># add logger to the loggers collection</span>
+    <span class="n">meta_config</span><span class="o">.</span><span class="n">loggers</span><span class="p">[</span><span class="n">module_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">logger</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;Logger created succesfully, loggers: &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">meta_config</span><span class="o">.</span><span class="n">loggers</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<span class="k">def</span> <span class="nf">add_file_handler</span><span class="p">(</span><span class="n">logger</span><span class="p">,</span> <span class="n">module_name</span><span class="p">,</span> <span class="n">log_file_dir</span><span class="p">,</span> <span class="n">log_level</span><span class="o">=</span><span class="s1">&#39;info&#39;</span><span class="p">,</span>
+                     <span class="n">overwrite_file</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Add a filehandler to a logger to also direct the output to a file&quot;&quot;&quot;</span>
+    <span class="kn">from</span> <span class="nn">time</span> <span class="k">import</span> <span class="n">strftime</span>
+    <span class="kn">import</span> <span class="nn">logging</span>
+
+    <span class="n">file_mode</span> <span class="o">=</span> <span class="s1">&#39;w&#39;</span> <span class="k">if</span> <span class="n">overwrite_file</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - &quot;</span> <span class="o">+</span> <span class="n">module_name</span> <span class="o">+</span>
+                                  <span class="s2">&quot;: </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">overwrite_file</span><span class="p">:</span>
+        <span class="n">timeStamp</span> <span class="o">=</span> <span class="s1">&#39;logfile&#39;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">timeStamp</span> <span class="o">=</span> <span class="n">strftime</span><span class="p">(</span><span class="s2">&quot;%a-</span><span class="si">%d</span><span class="s2">-%b-%Y-%H:%M:%S&quot;</span><span class="p">)</span>
+    <span class="n">log_file_dir</span> <span class="o">+=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">log_file_dir</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;/&#39;</span>
+    <span class="n">log_file_fullname</span> <span class="o">=</span> <span class="n">log_file_dir</span> <span class="o">+</span> <span class="n">module_name</span>
+    <span class="n">fh</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">FileHandler</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">%s</span><span class="s1">-</span><span class="si">%s</span><span class="s1">-logfile.txt&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">log_file_fullname</span><span class="p">,</span>
+                                                    <span class="n">timeStamp</span><span class="p">),</span> <span class="n">file_mode</span><span class="p">)</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">logging</span><span class="p">,</span> <span class="n">log_level</span><span class="o">.</span><span class="n">upper</span><span class="p">()))</span>
+    <span class="n">fh</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">check_var</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">allowed_range</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if a given variable (string, number etc.) is &quot;allowed&quot;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Dictionary</span>
+    <span class="k">if</span> <span class="n">variable</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">allowed_range</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">variable</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; is not a valid choice of &quot;</span> <span class="o">+</span>
+                            <span class="nb">str</span><span class="p">(</span><span class="n">allowed_range</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span> <span class="o">+</span>
+                            <span class="s2">&quot;. Instead, the default value was used: &quot;</span> <span class="o">+</span>
+                            <span class="n">default</span><span class="p">)</span>
+        <span class="n">variable</span> <span class="o">=</span> <span class="n">default</span>
+    <span class="k">return</span> <span class="n">variable</span>
+
+
+<div class="viewcode-block" id="fill_list_var"><a class="viewcode-back" href="../../../raredecay.tools.dev_tool.html#raredecay.tools.dev_tool.fill_list_var">[docs]</a><span class="k">def</span> <span class="nf">fill_list_var</span><span class="p">(</span><span class="n">to_check</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list filled with the specified variable and the desired length</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">difference</span> <span class="o">=</span> <span class="n">length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_check</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">difference</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_check</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+            <span class="n">to_check</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="n">var</span><span class="p">]</span> <span class="o">*</span> <span class="n">difference</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">to_check</span></div>
+
+
+<div class="viewcode-block" id="make_list_fill_var"><a class="viewcode-back" href="../../../raredecay.tools.dev_tool.html#raredecay.tools.dev_tool.make_list_fill_var">[docs]</a><span class="k">def</span> <span class="nf">make_list_fill_var</span><span class="p">(</span><span class="n">to_check</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">var</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Returns a list with the objects or a list filled with None.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">to_check</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">to_check</span> <span class="o">=</span> <span class="p">[</span><span class="n">to_check</span><span class="p">]</span>
+    <span class="n">difference</span> <span class="o">=</span> <span class="n">length</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">to_check</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">difference</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">to_check</span> <span class="o">+=</span> <span class="p">[</span><span class="n">var</span><span class="p">]</span><span class="o">*</span><span class="n">difference</span>
+    <span class="k">return</span> <span class="n">to_check</span></div>
+
+
+<div class="viewcode-block" id="is_in_primitive"><a class="viewcode-back" href="../../../raredecay.tools.dev_tool.html#raredecay.tools.dev_tool.is_in_primitive">[docs]</a><span class="k">def</span> <span class="nf">is_in_primitive</span><span class="p">(</span><span class="n">test_object</span><span class="p">,</span> <span class="n">allowed_primitives</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Actually &quot;equivalent&quot; to: &#39;test_object is allowed_primitives&#39; resp.</span>
+<span class="sd">    &#39;test_object in allowed_primitives&#39; but also works for arrays etc.</span>
+
+<span class="sd">    There is a problem (designproblem?!) with certain container types when</span>
+<span class="sd">    comparing them to a certain value, e.g. None and you create an expression</span>
+<span class="sd">    with &#39;container is None&#39; and the container (as it is a container) is not</span>
+<span class="sd">    None, then the expression is not defined. The code tries to make</span>
+<span class="sd">    elementwise comparison.</span>
+<span class="sd">    This method allows to fix this error by doing a REAL comparison. E.g.</span>
+<span class="sd">    if the test_object is ANY container and the allowed_primitives is None,</span>
+<span class="sd">    it will always be False.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    test_object : any python-object</span>
+<span class="sd">        The object you want to test whether it is one of the</span>
+<span class="sd">        allowed_primitives.</span>
+<span class="sd">    allowed_primitives : object or list(obj, obj, obj,...)</span>
+<span class="sd">        Has to be testable as &#39;is obj&#39;. If test_object is any of the</span>
+<span class="sd">        allowed_primitives, True will be returned.</span>
+
+<span class="sd">    out : boolean</span>
+<span class="sd">        Returns True if test_object is any of the allowed_primitives,</span>
+<span class="sd">        otherwise False.</span>
+<span class="sd">    ---</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">test_object</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)):</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">elif</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">allowed_primitives</span><span class="p">,</span> <span class="n">collections</span><span class="o">.</span><span class="n">Iterable</span><span class="p">)</span> <span class="ow">and</span>
+            <span class="p">(</span><span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">allowed_primitives</span><span class="p">,</span> <span class="n">basestring</span><span class="p">))):</span>
+        <span class="k">if</span> <span class="n">test_object</span> <span class="ow">in</span> <span class="n">allowed_primitives</span><span class="p">:</span>
+            <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">elif</span> <span class="n">test_object</span> <span class="ow">is</span> <span class="n">allowed_primitives</span><span class="p">:</span>
+        <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">return</span> <span class="n">flag</span></div>
+
+
+
+<div class="viewcode-block" id="play_sound"><a class="viewcode-back" href="../../../raredecay.tools.dev_tool.html#raredecay.tools.dev_tool.play_sound">[docs]</a><span class="k">def</span> <span class="nf">play_sound</span><span class="p">(</span><span class="n">duration</span> <span class="o">=</span> <span class="mf">0.3</span><span class="p">,</span> <span class="n">frequency</span> <span class="o">=</span> <span class="mi">440</span><span class="p">,</span> <span class="n">change</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Play a single frequency (Hertz) for a given time (seconds).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">os</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">system</span><span class="p">(</span><span class="s1">&#39;play --no-show-progress --null --channels 1 synth </span><span class="si">%s</span><span class="s1"> sine </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">duration</span><span class="p">,</span> <span class="n">frequency</span><span class="p">))</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

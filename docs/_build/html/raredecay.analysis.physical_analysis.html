@@ -1,0 +1,325 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Physical Analysis with ML &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/>
+        <link rel="up" title="Analysis" href="raredecay.analysis.html"/>
+        <link rel="next" title="Tools" href="raredecay.tools.html"/>
+        <link rel="prev" title="Machine Learning" href="raredecay.analysis.ml_analysis.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.analysis.html">Analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.ml_analysis.html">Machine Learning</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Physical Analysis with ML</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">Run Settings</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+          <li><a href="raredecay.analysis.html">Analysis</a> &raquo;</li>
+      
+    <li>Physical Analysis with ML</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.analysis.physical_analysis.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.analysis.physical_analysis">
+<span id="physical-analysis-with-ml"></span><h1>Physical Analysis with ML<a class="headerlink" href="#module-raredecay.analysis.physical_analysis" title="Permalink to this headline">¶</a></h1>
+<p>Created on Sat Mar 26 16:49:45 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<p>Contains the different run-modes for the machine-learning algorithms.</p>
+<dl class="function">
+<dt id="raredecay.analysis.physical_analysis.reweight">
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">reweight</code><span class="sig-paren">(</span><em>real_data</em>, <em>mc_data</em>, <em>apply_data</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>columns=None</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#reweight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.reweight" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Train a reweighter and) apply the reweighter do get new weights</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.physical_analysis.reweightCV">
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">reweightCV</code><span class="sig-paren">(</span><em>real_data</em>, <em>mc_data</em>, <em>n_folds=10</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>scoring=True</em>, <em>n_folds_scoring=10</em>, <em>score_clf='xgb'</em>, <em>columns=None</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#reweightCV"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.reweightCV" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reweight data (mc/real) in a KFolded way to unbias the reweighting</p>
+<p>The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
+hyperparameters. Therefore, it is good to ged an estimation for the
+reweighting quality by reweighting the data and &#8220;test&#8221; it (compare how
+similar the reweighted to the real one is). In order to get an unbiased
+reweighting, a KFolding procedure is applied:</p>
+<ul class="simple">
+<li>the reweighter is trained on n-1/nth of the data and predicts the
+weights for the 1/n leftover. This is done n times resulting in unbiased
+weights for the mc data.</li>
+</ul>
+<p>To know, how well the reweighter worked, different stategies can be used
+and are implemented, for further information also see: TODO, IMPLEMENT
+REWEIGHT PRÄSI.</p>
+<dl class="docutils">
+<dt>real_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The real data</dd>
+<dt>mc_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The mc data</dd>
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>Number of folds to split the data for the reweighting. Usually, the
+higher the better.</dd>
+<dt>reweighter</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str {&#8216;gb&#8217;, &#8216;bins&#8217;}</span><dd>Which reweighter to use, either the Gradient Boosted reweighter or the
+(normally used) Bins reweighter (both from <em>hep_ml</em>)</dd>
+<dt>reweight_cfg</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>A dict containing all the keyword arguments for the configuration of
+the reweighters.</dd>
+<dt>scoring</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd><p class="first">If True, the data is not only reweighted with KFolding but also several
+scoring metrics are tested.</p>
+<ul class="last">
+<li><p class="first">Data-ROC : The data (mc reweighted and real mixed) is split in
+KFolds, a classifier is then trained on the training fold and tested
+on the test-fold. This is done K times and the roc curve is
+evaluated. It is a good measure, basically, for how well two datasets
+can be distinguished <em>but</em> can be &#8220;overfitted&#8221;. Having too high,
+single weights can lead to a roc curve significantly lower then 0.5
+and therefore only a good indication but not a single measure of
+quality for the reweighter hyper-parameter search.</p>
+</li>
+<li><p class="first">mcreweighted_as_real : n-1/n part of the data is trained on the
+reweighter and the last 1/n part is then reweighted (as described
+above). We can train a classifier on the mc (not reweighted) as
+well as the real data (so a classifier which &#8220;distinguishes&#8221; between
+mc and real) and predict:</p>
+<ul class="simple">
+<li>(not in training used) mc (not reweighted) and label it as if it
+were real data.</li>
+<li>(not in training used) mc reweighted and label it as if it were
+real data.</li>
+<li>(not in training used) real data and label it real.</li>
+</ul>
+<p>Then we look at the tpr (we cannot look at the ROC as we only inserted
+one class of labels; real) and therefore at &#8220;how many of the
+datapoints we inserted did the classifier predict as real?&#8221;:</p>
+<p>The score for the real data should be the highest, the one for the
+mc not reweighted the lowest. The reweighted one should be somewhere
+in between (most probably). It is <strong>not</strong> the goal to maximise the
+tpr for the mc reweighted (by changing the reweighter hyper-parameters)
+as high, single weights (which occure when overfitting) will increase
+the tpr drastically.</p>
+</li>
+<li><p class="first">train_similar: The probably most stable score to find the gbreweighter
+hyper-parameters. The data is split into KFolds and a classifier is
+trained on the mc reweighted and real data. Then it predicts the
+(not yet seen) real data. The more it is able to predict as real,
+the more it was able to learn from the differences of the datasets.
+This scoring cannot overfit the same way the one above because a
+single, high weight will cause a very bad distribution of the mc
+data and therefore the classifier will be able to predict nearly
+every real data as real (only <em>one single point</em>, the one with
+the high weight, will be predicted as mc, the rest as real)</p>
+</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.physical_analysis.preselection_cut">
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">preselection_cut</code><span class="sig-paren">(</span><em>signal_data</em>, <em>bkg_data</em>, <em>percent_sig_to_keep=100</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#preselection_cut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.preselection_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Cut the bkg while maintaining a certain percent of the signal.WIP.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.physical_analysis.feature_exploration">
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">feature_exploration</code><span class="sig-paren">(</span><em>original_data</em>, <em>target_data</em>, <em>features=None</em>, <em>n_folds=10</em>, <em>roc_auc='single'</em>, <em>extended_report=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#feature_exploration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.feature_exploration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Explore the features by getting the roc auc and their feature importance</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.physical_analysis.add_branch_to_rootfile">
+<code class="descclassname">raredecay.analysis.physical_analysis.</code><code class="descname">add_branch_to_rootfile</code><span class="sig-paren">(</span><em>root_data=None</em>, <em>new_branch=None</em>, <em>branch_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/physical_analysis.html#add_branch_to_rootfile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.physical_analysis.add_branch_to_rootfile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add a branch to a given rootfile</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.tools.html" class="btn btn-neutral float-right" title="Tools" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.analysis.ml_analysis.html" class="btn btn-neutral" title="Machine Learning" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

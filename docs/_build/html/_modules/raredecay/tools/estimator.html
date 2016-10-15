@@ -1,0 +1,728 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.tools.estimator &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.tools.estimator</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.tools.estimator</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Sat May 21 12:02:58 2016</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">memory_profiler</span> <span class="k">import</span> <span class="n">profile</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+<span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">Counter</span><span class="p">,</span> <span class="n">OrderedDict</span>
+
+<span class="kn">from</span> <span class="nn">rep.estimators.interface</span> <span class="k">import</span> <span class="n">Classifier</span>
+
+<span class="kn">import</span> <span class="nn">hep_ml.reweight</span>
+<span class="kn">from</span> <span class="nn">rep.metaml</span> <span class="k">import</span> <span class="n">ClassifiersFactory</span>
+<span class="kn">from</span> <span class="nn">rep.utils</span> <span class="k">import</span> <span class="n">train_test_split</span>
+<span class="kn">from</span> <span class="nn">rep.data</span> <span class="k">import</span> <span class="n">LabeledDataStorage</span>
+
+<span class="c1"># classifier imports</span>
+<span class="kn">from</span> <span class="nn">rep.estimators</span> <span class="k">import</span> <span class="n">SklearnClassifier</span><span class="p">,</span> <span class="n">XGBoostClassifier</span><span class="p">,</span> <span class="n">TMVAClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">GradientBoostingClassifier</span><span class="p">,</span> <span class="n">RandomForestClassifier</span><span class="p">,</span> <span class="n">ExtraTreesClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.ensemble</span> <span class="k">import</span> <span class="n">AdaBoostClassifier</span><span class="p">,</span> <span class="n">VotingClassifier</span><span class="p">,</span> <span class="n">BaggingClassifier</span>
+<span class="kn">from</span> <span class="nn">rep.estimators.theanets</span> <span class="k">import</span> <span class="n">TheanetsClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.tree</span> <span class="k">import</span> <span class="n">DecisionTreeClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="k">import</span> <span class="n">LogisticRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.neighbors</span> <span class="k">import</span> <span class="n">KNeighborsClassifier</span>
+<span class="kn">from</span> <span class="nn">sklearn.preprocessing</span> <span class="k">import</span> <span class="n">StandardScaler</span>
+
+<span class="kn">from</span> <span class="nn">rep.report</span> <span class="k">import</span> <span class="n">ClassificationReport</span>
+
+<span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">globals_</span>
+<span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">dev_tool</span>
+<span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
+
+
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># dev_tool.make_logger(__name__)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># import configuration</span>
+    <span class="kn">import</span> <span class="nn">importlib</span>
+    <span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
+    <span class="n">cfg</span> <span class="o">=</span> <span class="n">importlib</span><span class="o">.</span><span class="n">import_module</span><span class="p">(</span><span class="n">meta_config</span><span class="o">.</span><span class="n">run_config</span><span class="p">)</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">make_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="o">**</span><span class="n">cfg</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">)</span>
+
+<span class="c1"># TODO: Transformations don&#39;t work</span>
+<div class="viewcode-block" id="Mayou"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou">[docs]</a><span class="k">class</span> <span class="nc">Mayou</span><span class="p">(</span><span class="n">Classifier</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Classifier for raredecay analysis&quot;&quot;&quot;</span>
+
+    <span class="n">__DEFAULT_CLF_CFG</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">xgb</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">450</span><span class="p">,</span>
+            <span class="n">eta</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+            <span class="n">subsample</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+            <span class="n">bagging</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">),</span>
+        <span class="n">rdf</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">1600</span><span class="p">,</span>  <span class="c1"># 1600</span>
+            <span class="n">max_features</span><span class="o">=</span> <span class="s1">&#39;auto&#39;</span><span class="p">,</span> <span class="c1"># only 1 feature seems to be pretty good...</span>
+            <span class="n">max_depth</span><span class="o">=</span><span class="mi">200</span><span class="p">,</span>
+            <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">250</span><span class="p">,</span>
+            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">150</span><span class="p">,</span>
+            <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+            <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">bootstrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">oob_score</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="n">n_jobs</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span>
+            <span class="n">class_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">bagging</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">),</span>
+<span class="c1">#        erf=dict(</span>
+<span class="c1">#            n_estimators=50,</span>
+<span class="c1">#        ),</span>
+        <span class="n">nn</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">layers</span><span class="o">=</span><span class="p">[</span><span class="mi">100</span><span class="p">,</span> <span class="mi">100</span><span class="p">],</span>
+            <span class="n">hidden_activation</span><span class="o">=</span><span class="s1">&#39;logistic&#39;</span><span class="p">,</span>
+            <span class="n">output_activation</span><span class="o">=</span><span class="s1">&#39;linear&#39;</span><span class="p">,</span>
+            <span class="n">input_noise</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># [0,1,2,3,4,5,10,20],</span>
+            <span class="n">hidden_noise</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">input_dropout</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">hidden_dropout</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">decode_from</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">weight_l1</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span>
+            <span class="n">weight_l2</span><span class="o">=</span><span class="mf">0.03</span><span class="p">,</span>
+            <span class="n">scaler</span><span class="o">=</span><span class="s1">&#39;standard&#39;</span><span class="p">,</span>
+            <span class="n">trainers</span><span class="o">=</span><span class="p">[{</span><span class="s1">&#39;optimize&#39;</span><span class="p">:</span> <span class="s1">&#39;adagrad&#39;</span><span class="p">,</span> <span class="s1">&#39;patience&#39;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;momentum&#39;</span><span class="p">:</span> <span class="mf">0.5</span><span class="p">,</span> <span class="s1">&#39;nesterov&#39;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+                       <span class="s1">&#39;learning_rate&#39;</span><span class="p">:</span> <span class="mf">0.2</span><span class="p">,</span> <span class="s1">&#39;min_improvement&#39;</span><span class="p">:</span> <span class="mf">0.01</span><span class="p">}],</span>
+            <span class="n">bagging</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">),</span>
+<span class="c1">#        ada=dict(</span>
+<span class="c1">#            n_estimators=300,</span>
+<span class="c1">#            learning_rate=0.1</span>
+<span class="c1">#        ),</span>
+        <span class="n">gb</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span>
+            <span class="n">learning_rate</span><span class="o">=</span><span class="mf">0.05</span><span class="p">,</span>
+            <span class="n">n_estimators</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span>
+            <span class="n">max_depth</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span>
+            <span class="n">min_samples_split</span><span class="o">=</span><span class="mi">600</span><span class="p">,</span>
+            <span class="n">min_samples_leaf</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+            <span class="n">min_weight_fraction_leaf</span><span class="o">=</span><span class="mf">0.</span><span class="p">,</span>
+            <span class="n">subsample</span><span class="o">=</span><span class="mf">0.8</span><span class="p">,</span>
+            <span class="n">max_features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">max_leaf_nodes</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+            <span class="n">bagging</span><span class="o">=</span><span class="kc">None</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+    <span class="n">__DEFAULT_BAG_CFG</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+        <span class="n">n_estimators</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+        <span class="n">max_samples</span><span class="o">=</span><span class="mf">0.9</span><span class="p">,</span>
+        <span class="n">max_features</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">base_estimators</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bagging_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stacking</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span>
+                 <span class="n">features_stack</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bagging_stack</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hunting</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">transform_pred</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;blablabla</span>
+
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        base_estimators : dict(&#39;clf&#39;: classifier OR keyword-parameters)</span>
+<span class="sd">            Contains all the level-0 classifiers. The key is the name of the</span>
+<span class="sd">            classifier and the value is either a **prefitted** classifier or</span>
+<span class="sd">            a dictionary containing the keyword arguments to instantiate</span>
+<span class="sd">            such a classifier.</span>
+
+<span class="sd">            If no pre-trained classifier is provided, the key-value has to</span>
+<span class="sd">            be one of the following:</span>
+<span class="sd">             - **&#39;xgb&#39;** creates an XGBoost classifier</span>
+<span class="sd">             - **&#39;rdf&#39;** creates a Random Forest classifier</span>
+<span class="sd">             - **&#39;erf&#39;** creates a Forest consisting of Extra Randomized Trees</span>
+<span class="sd">             - **&#39;nn&#39;** creates an artificial Neural Network from TheaNets</span>
+<span class="sd">             - **&#39;ada&#39;** creates an AdaBoost instance with Decision Trees as</span>
+<span class="sd">               basis</span>
+<span class="sd">             - **&#39;gb&#39;** creates a Gradient Boosted classifier with Decision</span>
+<span class="sd">               Trees as basis</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_estimators</span> <span class="o">=</span> <span class="n">OrderedDict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__DEFAULT_CLF_CFG</span><span class="p">)</span> <span class="k">if</span> <span class="n">base_estimators</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">base_estimators</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stacking</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span> <span class="o">=</span> <span class="p">{</span><span class="n">stacking</span><span class="p">:</span> <span class="kc">None</span><span class="p">}</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stacking</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span> <span class="o">=</span> <span class="n">stacking</span>
+        <span class="k">elif</span> <span class="n">stacking</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">stacking</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;clf_stacking&#39;</span><span class="p">:</span> <span class="n">stacking</span><span class="p">}</span>  <span class="c1"># stacking is a classifier</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_transform_data</span> <span class="o">=</span> <span class="n">transform</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bagging</span> <span class="o">=</span> <span class="n">bagging_base</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hunting</span> <span class="o">=</span> <span class="n">hunting</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1_bagging</span> <span class="o">=</span> <span class="n">bagging_stack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_features_stack</span> <span class="o">=</span> <span class="n">features_stack</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clf_0</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span> <span class="o">=</span> <span class="n">ClassifiersFactory</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_base_scaler</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pred_scaler</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="Mayou.get_params"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
+            <span class="n">base_estimators</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bagging_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stacking</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span>
+            <span class="n">features_stack</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bagging_stack</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">hunting</span><span class="o">=</span><span class="kc">False</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+    <span class="k">def</span> <span class="nf">_transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_data</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">fit</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_base_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_base_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="nf">_transform_pred</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_pred</span><span class="p">:</span>
+            <span class="n">columns</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+            <span class="n">index</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">fit</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pred_scaler</span> <span class="o">=</span> <span class="n">StandardScaler</span><span class="p">(</span><span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># don&#39;t change data!</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_pred_scaler</span><span class="o">.</span><span class="n">fit_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pred_scaler</span><span class="o">.</span><span class="n">transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+
+            <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">X</span>
+
+    <span class="k">def</span> <span class="nf">_make_clf</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">clf</span><span class="p">,</span> <span class="n">bagging</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a classifier from a dict or returns the clf&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">popitem</span><span class="p">()</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__DEFAULT_CLF_CFG</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">val</span>
+            <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not an implemented classifier.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span>
+
+            <span class="n">temp_bagging</span> <span class="o">=</span> <span class="n">val</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="s1">&#39;bagging&#39;</span><span class="p">,</span> <span class="n">bagging</span><span class="p">)</span>
+            <span class="n">bagging</span> <span class="o">=</span> <span class="n">temp_bagging</span> <span class="k">if</span> <span class="n">bagging</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">bagging</span>
+
+
+            <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;rdf&#39;</span><span class="p">:</span>
+                <span class="n">config_clf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># possible multi-threading arguments</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">config_clf</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;erf&#39;</span><span class="p">:</span>
+                <span class="n">config_clf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># possible multi-threading arguments</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">ExtraTreesClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">config_clf</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;nn&#39;</span><span class="p">:</span>
+                <span class="n">config_clf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># possible multi-threading arguments</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">TheanetsClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">config_clf</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;ada&#39;</span><span class="p">:</span>
+                <span class="n">config_clf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># possible multi-threading arguments</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">AdaBoostClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">config_clf</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;gb&#39;</span><span class="p">:</span>
+                <span class="n">config_clf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># possible multi-threading arguments</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">GradientBoostingClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">config_clf</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">key</span> <span class="o">==</span> <span class="s1">&#39;xgb&#39;</span><span class="p">:</span>
+                <span class="n">config_clf</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>  <span class="c1"># possible multi-threading arguments</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">XGBoostClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">config_clf</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="s1">&#39;fit&#39;</span><span class="p">):</span>
+                <span class="n">bagging</span> <span class="o">=</span> <span class="kc">False</span>  <span class="c1"># return the classifier</span>
+
+            <span class="c1"># bagging over the instantiated estimators</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bagging</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span> <span class="ow">and</span> <span class="n">bagging</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">bagging</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__DEFAULT_BAG_CFG</span><span class="p">,</span> <span class="n">n_estimators</span><span class="o">=</span><span class="n">bagging</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">bagging</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="c1"># TODO: implement multi-thread:</span>
+                <span class="n">bagging</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="s1">&#39;base_estimator&#39;</span><span class="p">:</span> <span class="n">clf</span><span class="p">})</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">BaggingClassifier</span><span class="p">(</span><span class="o">**</span><span class="n">bagging</span><span class="p">))</span>
+
+
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not valid as a classifier.&quot;</span><span class="p">)</span>
+
+
+        <span class="n">clf</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="n">clf</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">clf</span>
+
+    <span class="k">def</span> <span class="nf">_factory_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">):</span>
+
+        <span class="c1"># create classifiers from initial dictionary</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_estimators</span> <span class="o">!=</span> <span class="p">{}:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_base_estimators</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">clf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_clf</span><span class="p">({</span><span class="n">key</span><span class="p">:</span> <span class="n">val</span><span class="p">},</span> <span class="n">bagging</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_bagging</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_clf_0</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">clf</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_base_estimators</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># add base estimators to factory</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf_0</span><span class="o">.</span><span class="n">iteritems</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">add_classifier</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+        <span class="c1"># parallel on factory level -&gt; good mixture of clfs (one uses lot of RAM, one cpu...)</span>
+        <span class="n">parallel_profile</span> <span class="o">=</span> <span class="s1">&#39;threads-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">globals_</span><span class="o">.</span><span class="n">free_cpus</span><span class="p">()]))</span>
+
+        <span class="c1"># fit all classifiers</span>
+        <span class="nb">print</span> <span class="s2">&quot;start fitting factory&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="n">parallel_profile</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">_factory_predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+        <span class="c1"># parallel on factory level -&gt; good mixture of clfs (one uses lot of RAM, one cpu...)</span>
+        <span class="n">parallel_profile</span> <span class="o">=</span> <span class="s1">&#39;threads-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">globals_</span><span class="o">.</span><span class="n">free_cpus</span><span class="p">()]))</span>
+
+        <span class="c1"># predict, return a dictionary</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="n">parallel_profile</span><span class="p">)</span>
+
+        <span class="c1"># slice the arrays of predictions in the dict right</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">predictions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">predictions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="c1">#@profile</span>
+    <span class="k">def</span> <span class="nf">_factory_predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+
+        <span class="n">index</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">index</span>
+
+        <span class="c1"># parallel on factory level -&gt; good mixture of clfs (one uses lot of RAM, one cpu...)</span>
+        <span class="n">parallel_profile</span> <span class="o">=</span> <span class="s1">&#39;threads-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">min</span><span class="p">([</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">items</span><span class="p">()),</span> <span class="n">globals_</span><span class="o">.</span><span class="n">free_cpus</span><span class="p">()]))</span>
+        <span class="nb">print</span> <span class="n">parallel_profile</span>
+        <span class="n">parallel_profile</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># predict, return a dictionary</span>
+        <span class="k">global</span> <span class="n">debug2</span>
+        <span class="n">debug2</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="n">predictions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">parallel_profile</span><span class="o">=</span><span class="n">parallel_profile</span><span class="p">)</span>
+
+        <span class="c1"># slice the arrays of predictions in the dict right</span>
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">predictions</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">predictions</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_X_stack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">fit_scaler</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+
+        <span class="c1"># get the predictions of the base estimators</span>
+        <span class="n">lvl_0_proba</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_factory_predict_proba</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="n">index</span><span class="o">=</span><span class="n">X</span><span class="o">.</span><span class="n">index</span><span class="p">,</span>
+                                   <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_factory</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="n">lvl_0_proba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform_pred</span><span class="p">(</span><span class="n">lvl_0_proba</span><span class="p">,</span><span class="n">fit</span><span class="o">=</span><span class="n">fit_scaler</span><span class="p">)</span>
+
+        <span class="c1"># add data features to stacking data</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_features_stack</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_features_stack</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_features_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">features</span>
+            <span class="k">elif</span> <span class="ow">not</span> <span class="nb">set</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_features_stack</span><span class="p">)</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Stacked features not in features of the data fitted to&quot;</span><span class="p">)</span>
+
+            <span class="n">X_data</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_features_stack</span><span class="p">)</span>
+            <span class="n">lvl_0_proba</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">([</span><span class="n">lvl_0_proba</span><span class="p">,</span> <span class="n">X_data</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">lvl_0_proba</span>
+
+    <span class="k">def</span> <span class="nf">_clf_1_fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">):</span>
+
+        <span class="n">X_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_X_stack</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">fit_scaler</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">False</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">dict</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_clf</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span><span class="p">,</span> <span class="n">bagging</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_clf_1_bagging</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_clf</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_clf_1</span><span class="o">.</span><span class="n">values</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_stack</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the &#39;features&#39; attribute for the classifier&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">X</span><span class="o">.</span><span class="n">columns</span><span class="o">.</span><span class="n">values</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Feature_&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])]</span>
+
+<div class="viewcode-block" id="Mayou.fit"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="c1"># initiate properties</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_features</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">classes_</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">y</span><span class="p">)))</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">fit</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># fit the base estimators</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_factory_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+
+        <span class="c1"># fit the stacking classifier</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_clf_1_fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+<div class="viewcode-block" id="Mayou.predict"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.predict">[docs]</a>    <span class="k">def</span> <span class="nf">predict</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+
+        <span class="c1"># TODO: inside get_X_stack: lvl_0_proba = self._factory_predict_proba(X)</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_X_stack</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_stack</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Mayou.predict_proba"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_X_stack</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_stack</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Mayou.test_on"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.test_on">[docs]</a>    <span class="k">def</span> <span class="nf">test_on</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">lds</span> <span class="o">=</span> <span class="n">LabeledDataStorage</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">test_on_lds</span><span class="p">(</span><span class="n">lds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Mayou.test_on_lds"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.test_on_lds">[docs]</a>    <span class="k">def</span> <span class="nf">test_on_lds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lds</span><span class="p">):</span>
+        <span class="n">lds</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">lds</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ClassificationReport</span><span class="p">({</span><span class="s1">&#39;Mayou clf&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="p">},</span> <span class="n">lds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Mayou.staged_predict_proba"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.staged_predict_proba">[docs]</a>    <span class="k">def</span> <span class="nf">staged_predict_proba</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">):</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="n">X_stack</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_X_stack</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">temp_proba</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf</span><span class="o">.</span><span class="n">staged_predict_proba</span><span class="p">(</span><span class="n">X_stack</span><span class="p">)</span>
+        <span class="c1"># TODO: change error catching</span>
+        <span class="k">except</span><span class="p">:</span>
+            <span class="nb">print</span> <span class="s2">&quot;error occured in mayou, staged predict proba not supported&quot;</span>
+        <span class="k">return</span> <span class="n">temp_proba</span></div>
+
+<div class="viewcode-block" id="Mayou.stacker_test_on_lds"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.stacker_test_on_lds">[docs]</a>    <span class="k">def</span> <span class="nf">stacker_test_on_lds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lds</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return report for the stacker only&quot;&quot;&quot;</span>
+        <span class="n">lds</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_X_stack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_transform</span><span class="p">(</span><span class="n">lds</span><span class="o">.</span><span class="n">data</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">ClassificationReport</span><span class="p">({</span><span class="s1">&#39;Mayou stacker&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_clf</span><span class="p">},</span> <span class="n">lds</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Mayou.stacker_test_on"><a class="viewcode-back" href="../../../raredecay.tools.estimator.html#raredecay.tools.estimator.Mayou.stacker_test_on">[docs]</a>    <span class="k">def</span> <span class="nf">stacker_test_on</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return report for the stacker only&quot;&quot;&quot;</span>
+        <span class="n">lds</span> <span class="o">=</span> <span class="n">LabeledDataStorage</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">sample_weight</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">stacker_test_on_lds</span><span class="p">(</span><span class="n">lds</span><span class="p">)</span></div></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;selftest&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
+
+    <span class="kn">from</span> <span class="nn">rep.metaml</span> <span class="k">import</span> <span class="n">FoldingClassifier</span>
+    <span class="kn">from</span> <span class="nn">rep.report.metrics</span> <span class="k">import</span> <span class="n">RocAuc</span><span class="p">,</span> <span class="n">significance</span><span class="p">,</span> <span class="n">ams</span><span class="p">,</span> <span class="n">OptimalAccuracy</span><span class="p">,</span> <span class="n">OptimalAMS</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools.metrics</span> <span class="k">import</span> <span class="n">punzi_fom</span><span class="p">,</span> <span class="n">precision_measure</span>
+    <span class="kn">from</span> <span class="nn">sklearn.svm</span> <span class="k">import</span> <span class="n">NuSVC</span>
+    <span class="kn">from</span> <span class="nn">sklearn.naive_bayes</span> <span class="k">import</span> <span class="n">GaussianNB</span>
+
+    <span class="kn">from</span> <span class="nn">root_numpy</span> <span class="k">import</span> <span class="n">root2array</span><span class="p">,</span> <span class="n">rec2array</span>
+
+
+    <span class="n">folding</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">higgs_data</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">primitiv</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="n">n_ones</span><span class="p">,</span> <span class="n">n_zeros</span> <span class="o">=</span> <span class="mi">20000</span><span class="p">,</span> <span class="mi">20000</span>
+    <span class="n">n_tot</span> <span class="o">=</span> <span class="n">n_ones</span> <span class="o">+</span> <span class="n">n_zeros</span>
+
+    <span class="n">branch_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;one&#39;</span><span class="p">]</span>
+    <span class="n">feature_one</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_ones</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_zeros</span><span class="p">)))</span>
+    <span class="n">feature_two</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">exponential</span><span class="p">(</span><span class="n">scale</span><span class="o">=</span><span class="mf">1.7</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_ones</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=-</span><span class="mf">0.7</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_zeros</span><span class="p">)))</span>
+    <span class="c1">#feature_two = copy.deepcopy(feature_one)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;one&#39;</span><span class="p">:</span> <span class="n">feature_one</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">:</span> <span class="n">feature_two</span><span class="p">})</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_ones</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n_zeros</span><span class="p">)))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_tot</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">higgs_data</span><span class="p">:</span>
+
+<span class="c1">#                jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,</span>
+<span class="c1">#        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,</span>
+<span class="c1">#        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,</span>
+<span class="c1">#        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,</span>
+        <span class="n">branch_names</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        missing energy magnitude, missing energy phi,</span>
+<span class="s2">        m_jj, m_jjj, m_lv, m_jlv, m_bb, m_wbb,</span>
+<span class="s2">        lepton pT, lepton eta, lepton phi,</span>
+<span class="s2">        m_wwbb&quot;&quot;&quot;</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;,&quot;</span><span class="p">)</span>
+        <span class="n">branch_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">branch_names</span><span class="p">]</span>
+        <span class="n">branch_names</span> <span class="o">=</span> <span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">branch_names</span><span class="p">)</span>
+        <span class="n">branch_names</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">,</span> <span class="s2">&quot;_&quot;</span><span class="p">)</span> <span class="k">for</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">branch_names</span><span class="p">)</span>
+
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">root2array</span><span class="p">(</span><span class="s2">&quot;/home/mayou/Downloads/higgs/HIGGSsignal.root&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;tree&quot;</span><span class="p">,</span>
+                            <span class="n">branch_names</span><span class="p">)</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rec2array</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">branch_names</span><span class="p">)</span>
+
+        <span class="n">backgr</span> <span class="o">=</span> <span class="n">root2array</span><span class="p">(</span><span class="s2">&quot;/home/mayou/Downloads/higgs/HIGGSbackground.root&quot;</span><span class="p">,</span>
+                            <span class="s2">&quot;tree&quot;</span><span class="p">,</span>
+                            <span class="n">branch_names</span><span class="p">)</span>
+        <span class="n">backgr</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">rec2array</span><span class="p">(</span><span class="n">backgr</span><span class="p">),</span> <span class="n">columns</span><span class="o">=</span><span class="n">branch_names</span><span class="p">)</span>
+
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">signal</span><span class="p">[:</span><span class="mi">20000</span><span class="p">]</span>
+        <span class="n">backgr</span> <span class="o">=</span> <span class="n">backgr</span><span class="p">[:</span><span class="mi">20000</span><span class="p">]</span>
+
+        <span class="c1"># for sklearn data is usually organised</span>
+        <span class="c1"># into one 2D array of shape (n_samples x n_features)</span>
+        <span class="c1"># containing all the data and one array of categories</span>
+        <span class="c1"># of length n_samples</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">concat</span><span class="p">((</span><span class="n">signal</span><span class="p">,</span> <span class="n">backgr</span><span class="p">))</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
+                            <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">backgr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">])))</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+
+
+
+    <span class="k">if</span> <span class="n">primitiv</span><span class="p">:</span>
+        <span class="n">X</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">({</span><span class="s1">&#39;odin&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">2.</span><span class="p">,</span> <span class="mf">3.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">,</span> <span class="mf">7.</span><span class="p">,</span> <span class="mf">8.</span><span class="p">]),</span>
+                              <span class="s1">&#39;dwa&#39;</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">2.2</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">,</span> <span class="mf">2.2</span><span class="p">,</span> <span class="mf">2.3</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">,</span> <span class="mf">3.1</span><span class="p">,</span> <span class="mf">2.1</span><span class="p">,</span> <span class="mf">3.2</span><span class="p">,</span> <span class="mf">8.1</span><span class="p">,</span> <span class="mf">7.5</span><span class="p">,</span> <span class="mf">8.2</span><span class="p">,</span> <span class="mf">7.1</span><span class="p">,</span> <span class="mf">8.5</span><span class="p">,</span> <span class="mf">8.2</span><span class="p">,</span> <span class="mf">7.6</span><span class="p">,</span> <span class="mf">8.1</span><span class="p">])</span>
+                              <span class="p">})</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">,</span><span class="mi">1</span><span class="p">])</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">16</span><span class="p">)</span>
+        <span class="n">branch_names</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;odin&#39;</span><span class="p">,</span> <span class="s1">&#39;dwa&#39;</span><span class="p">]</span>
+    <span class="nb">print</span> <span class="n">branch_names</span>
+    <span class="n">X_train</span><span class="p">,</span> <span class="n">X_test</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">w_train</span><span class="p">,</span> <span class="n">w_test</span> <span class="o">=</span> <span class="n">train_test_split</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">test_size</span><span class="o">=</span><span class="mf">0.33</span><span class="p">)</span>
+
+
+    <span class="n">lds</span> <span class="o">=</span> <span class="n">LabeledDataStorage</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">w_test</span><span class="p">)</span>
+
+    <span class="c1"># CLASSIFIER</span>
+    <span class="n">clf_stacking</span> <span class="o">=</span> <span class="n">SklearnClassifier</span><span class="p">(</span><span class="n">RandomForestClassifier</span><span class="p">(</span><span class="n">n_estimators</span><span class="o">=</span><span class="mi">5000</span><span class="p">,</span> <span class="n">bootstrap</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">n_jobs</span><span class="o">=</span><span class="mi">7</span><span class="p">))</span>
+    <span class="c1">#clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,</span>
+    <span class="c1">#                                 subsample=0.5</span>
+    <span class="c1">#                                 )</span>
+    <span class="c1">#clf_stacking=&#39;nn&#39;</span>
+    <span class="n">clf</span> <span class="o">=</span> <span class="n">Mayou</span><span class="p">(</span><span class="n">base_estimators</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;xgb&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">},</span> <span class="n">bagging_base</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bagging_stack</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">stacking</span><span class="o">=</span><span class="n">clf_stacking</span><span class="p">,</span>
+                <span class="n">features_stack</span><span class="o">=</span><span class="n">branch_names</span><span class="p">,</span>
+                <span class="n">transform</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">transform_pred</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="c1">#clf = SklearnClassifier(GaussianNB())</span>
+    <span class="c1">#clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1., bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))</span>
+    <span class="c1">#clf = XGBoostClassifier(n_estimators=400, eta=0.1, nthreads=6)</span>
+    <span class="c1">#clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))</span>
+    <span class="c1">#clf = SklearnClassifier(NuSVC(cache_size=1000000))</span>
+    <span class="c1">#clf = SklearnClassifier(clf)</span>
+    <span class="k">if</span> <span class="n">folding</span><span class="p">:</span>
+        <span class="n">X_train</span> <span class="o">=</span> <span class="n">X_test</span> <span class="o">=</span> <span class="n">X</span>
+        <span class="n">y_train</span> <span class="o">=</span> <span class="n">y_test</span> <span class="o">=</span> <span class="n">y</span>
+        <span class="n">w_train</span> <span class="o">=</span> <span class="n">w_test</span> <span class="o">=</span> <span class="n">w</span>
+        <span class="n">clf</span> <span class="o">=</span> <span class="n">FoldingClassifier</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+
+
+    <span class="n">clf</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X_train</span><span class="p">,</span> <span class="n">y_train</span><span class="p">,</span> <span class="n">w_train</span><span class="p">)</span>
+    <span class="k">global</span> <span class="n">debug2</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 1=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="nb">print</span> <span class="s2">&quot;Predictions: &quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 2=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="nb">print</span> <span class="s2">&quot;Probabilites&quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">predict_proba</span><span class="p">(</span><span class="n">X_test</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 3=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="c1">#report = clf.test_on(X_test, y_test, w_test)</span>
+    <span class="n">report</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">test_on_lds</span><span class="p">(</span><span class="n">lds</span><span class="p">)</span>
+    <span class="n">report</span><span class="o">.</span><span class="n">roc</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 4=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">ROC AUC = &quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">compute_metric</span><span class="p">(</span><span class="n">RocAuc</span><span class="p">())</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">OptimalAccuracy = &quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">compute_metric</span><span class="p">(</span><span class="n">OptimalAccuracy</span><span class="p">())</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 5=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">OptimalAMS = &quot;</span><span class="p">,</span> <span class="n">report</span><span class="o">.</span><span class="n">compute_metric</span><span class="p">(</span><span class="n">OptimalAMS</span><span class="p">())</span>
+    <span class="n">report</span><span class="o">.</span><span class="n">metrics_vs_cut</span><span class="p">(</span><span class="n">ams</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;ams&quot;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">punzi_fom = &quot;</span>
+    <span class="n">report</span><span class="o">.</span><span class="n">metrics_vs_cut</span><span class="p">(</span><span class="n">punzi_fom</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;punzi fom&quot;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">precision measure = &quot;</span>
+    <span class="n">report</span><span class="o">.</span><span class="n">metrics_vs_cut</span><span class="p">(</span><span class="n">precision_measure</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s2">&quot;precision measure&quot;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 6=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="nb">print</span> <span class="s2">&quot;score: &quot;</span><span class="p">,</span> <span class="n">clf</span><span class="o">.</span><span class="n">score</span><span class="p">(</span><span class="n">X_test</span><span class="p">,</span> <span class="n">y_test</span><span class="p">,</span> <span class="n">w_test</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 7=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="n">feat_imp</span> <span class="o">=</span> <span class="n">report</span><span class="o">.</span><span class="n">feature_importance_shuffling</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 8=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+
+    <span class="n">report_stack</span> <span class="o">=</span> <span class="n">clf</span><span class="o">.</span><span class="n">stacker_test_on_lds</span><span class="p">(</span><span class="n">lds</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 9=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="n">report_stack</span><span class="o">.</span><span class="n">feature_importance_shuffling</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 10=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+    <span class="n">report_stack</span><span class="o">.</span><span class="n">features_correlation_matrix</span><span class="p">()</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">new_plot</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;debug2 11=&quot;</span><span class="p">,</span> <span class="n">debug2</span>
+
+<span class="c1">#    report.features_correlation_matrix().plot(new_plot=True)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

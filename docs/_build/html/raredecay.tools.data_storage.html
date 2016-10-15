@@ -1,0 +1,708 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Data Storage &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/>
+        <link rel="up" title="Tools" href="raredecay.tools.html"/>
+        <link rel="next" title="Data Tools" href="raredecay.tools.data_tools.html"/>
+        <link rel="prev" title="Tools" href="raredecay.tools.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="raredecay.analysis.html">Analysis</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.tools.html">Tools</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Data Storage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.data_tools.html">Data Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.dev_tool.html">Developer Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.metrics.html">Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.output.html">Output Handler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">Run Settings</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+          <li><a href="raredecay.tools.html">Tools</a> &raquo;</li>
+      
+    <li>Data Storage</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.tools.data_storage.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.tools.data_storage">
+<span id="data-storage"></span><h1>Data Storage<a class="headerlink" href="#module-raredecay.tools.data_storage" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Apr  7 22:10:29 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<dl class="class">
+<dt id="raredecay.tools.data_storage.HEPDataStorage">
+<em class="property">class </em><code class="descclassname">raredecay.tools.data_storage.</code><code class="descname">HEPDataStorage</code><span class="sig-paren">(</span><em>data</em>, <em>index=None</em>, <em>target=None</em>, <em>sample_weights=None</em>, <em>data_name=None</em>, <em>data_name_addition=None</em>, <em>data_labels=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
+<p>A wrapper around pandas.DataFrame and an extension to the
+LabeledDataStorage.</p>
+<p>Initialize instance and load data</p>
+<p>data : (root-tree dict, pandas DataFrame)</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>root-tree dict</strong> (<em>root-dict</em>):</li>
+</ul>
+<div class="line-block">
+<div class="line">Dictionary which specifies all the information to convert a root-
+tree to an array. Directly given to <code class="xref py py-func docutils literal"><span class="pre">root2rec()</span></code></div>
+</div>
+<ul class="simple">
+<li><strong>pandas DataFrame</strong>:</li>
+</ul>
+<div class="line-block">
+<div class="line">A pandas DataFrame. The index (if not explicitly defined)
+and column names will be taken.</div>
+</div>
+</div></blockquote>
+<dl class="docutils">
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D array-like</span><dd>The indices of the data that will be used.</dd>
+<dt>target</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list or 1-D array or int {0, 1}</span><dd>Labels the data for the machine learning. Usually the y.</dd>
+<dt>sample_weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D array or {1, None}</span><dd>Contains the weights of the samples.</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If None or 1 specified, 1 will be assumed for all.</p>
+</div>
+<dl class="docutils">
+<dt>data_name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd><div class="first last line-block">
+<div class="line">Name of the data, human-readable. Displayed in the title of
+plots.</div>
+<div class="line"><em>Example: &#8216;Bu2K1piee mc&#8217;, &#8216;beta-decay real data&#8217; etc.</em></div>
+</div>
+</dd>
+<dt>data_name_addition</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd><div class="first last line-block">
+<div class="line">Additional remarks to the data, human readable. Displayed in
+the title of plots.</div>
+<div class="line"><em>Example: &#8216;reweighted&#8217;, &#8216;shuffled&#8217;, &#8216;5 GeV cut applied&#8217; etc.</em></div>
+</div>
+</dd>
+<dt>data_labels</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict with strings {column name: human readable name}</span><dd><div class="first line-block">
+<div class="line">Human-readable names for the columns, displayed in the plot.</div>
+<div class="line">Dictionary has to contain the exact column (=branch) name of
+the data</div>
+<div class="line">All not specified labels will be auto-labeled by the branch
+name itself.</div>
+</div>
+<div class="last line-block">
+<div class="line"><em>Good practice</em>: keep a dictionary containing all possible lables
+and hand it over every time.</div>
+</div>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.columns">
+<code class="descname">columns</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.columns" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.copy_storage">
+<code class="descname">copy_storage</code><span class="sig-paren">(</span><em>columns=None</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.copy_storage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.copy_storage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a copy of self with only some of the columns (and therefore
+labels etc) or indices.</p>
+<dl class="docutils">
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or list(str, str, str, ...)</span><dd>The columns which will be in the new storage.</dd>
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D array-like</span><dd>The indices of the rows (and corresponding weights, targets etc.)
+for the new storage.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.data">
+<code class="descname">data</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.data_name">
+<code class="descname">data_name</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.data_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.data_name_addition">
+<code class="descname">data_name_addition</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.data_name_addition" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.fold_name">
+<code class="descname">fold_name</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.fold_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_LabeledDataStorage">
+<code class="descname">get_LabeledDataStorage</code><span class="sig-paren">(</span><em>columns=None</em>, <em>index=None</em>, <em>random_state=None</em>, <em>shuffle=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_LabeledDataStorage"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_LabeledDataStorage" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create and return an instance of class &#8220;LabeledDataStorage&#8221; from
+the REP repository.</p>
+<dl class="docutils">
+<dt>out: LabeledDataStorage instance</dt>
+<dd>Return a Labeled Data Storage instance created with the data
+from inside this instance.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_fold">
+<code class="descname">get_fold</code><span class="sig-paren">(</span><em>fold</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_fold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_fold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the specified fold: train and test data as instance of
+<a class="reference internal" href="#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a></p>
+<dl class="docutils">
+<dt>fold</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>The number of the fold to return. From 0 to n_folds - 1</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple(HEPDataStorage, HEPDataStorage)</span><dd>Return the <em>train</em> and the <em>test</em> data in a HEPDataStorage</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_index">
+<code class="descname">get_index</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_index"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the index used inside the DataStorage. Advanced feature.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_labels">
+<code class="descname">get_labels</code><span class="sig-paren">(</span><em>columns=None</em>, <em>as_list=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the human readable branch-labels of the data.</p>
+<dl class="docutils">
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list with str or str</span><dd>The labels of the columns to return</dd>
+<dt>as_list</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If true, the labels will be returned as a list instead of a dict.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list or dict</span><dd>Return a list or dict containing the labels.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_n_folds">
+<code class="descname">get_n_folds</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_n_folds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_n_folds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return how many folds are currently availabe or 0 if no folds
+have been created</p>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>The number of folds which are currently available.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_name">
+<code class="descname">get_name</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the human-readable name of the data as a string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_targets">
+<code class="descname">get_targets</code><span class="sig-paren">(</span><em>index=None</em>, <em>weights_as_events=False</em>, <em>min_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_targets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_targets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the targets of the data <strong>as a numpy array</strong>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.get_weights">
+<code class="descname">get_weights</code><span class="sig-paren">(</span><em>index=None</em>, <em>normalize=True</em>, <em>weights_as_events=False</em>, <em>min_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.get_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.get_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the weights of the specified indeces or, if None, return all.</p>
+<dl class="docutils">
+<dt>normalize</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean or float &gt; 0</span><dd>If True, the weights will be normalized to 1 (the mean is 1).
+No effect, if weights_as_events is True.
+If a float is provided, the mean of the weights will be equal
+to <em>normalize</em>. So <em>True</em> and <em>1</em> will yield the same results.</dd>
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D list</span><dd>List of index to get the weights from.</dd>
+<dt>weights_as_events</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt;= 1 or False, None</span><dd><p class="first">Return the weights converted to number of events. Basically,
+return the weights compatible to the <em>pandasDF</em> function with
+the argument <em>weights_as_events</em> passed.</p>
+<p class="last">Simple: create a numpy array with ones of the right length.</p>
+</dd>
+<dt>min_weight</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float or int</span><dd>For &#8220;weights_as_events&#8221;; normaly, the minimum of the weights is
+used to scale, but providing a <em>min_weight</em> will use the minimum
+of the two minima for scaling.</dd>
+</dl>
+<dl class="docutils">
+<dt>out: 1-D numpy array</dt>
+<dd>Return the weights as pandas Series</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.index">
+<code class="descname">index</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.index" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <em>real</em> index as a list</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.labels">
+<code class="descname">labels</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.labels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.make_dataset">
+<code class="descname">make_dataset</code><span class="sig-paren">(</span><em>second_storage=None</em>, <em>index=None</em>, <em>index_2=None</em>, <em>columns=None</em>, <em>weights_as_events=False</em>, <em>weights_as_events_2=False</em>, <em>targets_from_data=False</em>, <em>min_weight=None</em>, <em>weights_ratio=0</em>, <em>shuffle=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.make_dataset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.make_dataset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create data, targets and weights of the instance (and another one)</p>
+<p>In machine-learning, it is very often required to have data, it&#8217;s
+targets (or labeling, the &#8216;y&#8217;) and the weights. In most cases, we
+are not only interested in one such pair, but need to concatenate
+it to other data (for example signal and background).</p>
+<p>This is exactly, what make_dataset does.</p>
+<p>second_storage : instance of
+<a class="reference internal" href="#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a></p>
+<blockquote>
+<div>A second data-storage. If provided, the data/targets/weights
+will be concatenated and returned as one.</div></blockquote>
+<dl class="docutils">
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(int, int, int, ...)</span><dd>The index for the <strong>calling</strong> (the <em>first</em>) storage instance.</dd>
+<dt>index_2</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(int, int, int, ...)</span><dd>The index for the (optional) <strong>second storage instance</strong>.</dd>
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str, ...)</span><dd>The columns to be used of <strong>both</strong> data-storages.</dd>
+<dt>weights_as_events</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Convert the weights to number of events. Argument specifies the
+minimum weight (if not provided by min_weights).</dd>
+<dt>min_weight</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float</span><dd>To scale the weights to events, the weights get divided by the
+lowest weight. If a min_weights is provided <em>and</em> it is lower
+then the smallest weight, the min_weight will be used instead.</dd>
+</dl>
+<p>..note:: If weights_ratio is provided, this parameter is ignored.
+weights_ratio : float &gt;= 0</p>
+<blockquote>
+<div><p>Only works if a second data storage is provided and assumes
+that the two storages can be seen as the two different targets.
+If zero, nothing happens. If it is bigger than zero, it
+represents the ratio of the sum of the weights from the first
+to the second storage. If set to 1, they both are equally
+weighted. Requires internal normalisation.</p>
+<p>Ratio := sum(weights1) / sum(weights2)</p>
+</div></blockquote>
+<dl class="docutils">
+<dt>shuffle</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean or int</span><dd>If True or int, the dataset will be shuffled before returned. If an
+int is provided, it will be used as a seed to the pseudo-random
+generator.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.make_folds">
+<code class="descname">make_folds</code><span class="sig-paren">(</span><em>n_folds=10</em>, <em>shuffle=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.make_folds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.make_folds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create shuffled train-test folds which can be accessed via
+<a class="reference internal" href="#raredecay.tools.data_storage.HEPDataStorage.get_fold" title="raredecay.tools.data_storage.HEPDataStorage.get_fold"><code class="xref py py-meth docutils literal"><span class="pre">get_fold()</span></code></a></p>
+<p>Split the data into n folds (for usage in KFold validaten etc.).
+Then every fold consists of a train dataset, which consists of
+n-1/n part of the data and a test dataset, which consists of 1/n part
+of the whole data.
+The folds will be created as <em>HEPDataStorage</em>.
+To get a certain fold (train-test pair), use
+<a class="reference internal" href="#raredecay.tools.data_storage.HEPDataStorage.get_fold" title="raredecay.tools.data_storage.HEPDataStorage.get_fold"><code class="xref py py-meth docutils literal"><span class="pre">get_fold()</span></code></a></p>
+<dl class="docutils">
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>The number of folds to be created from the data. If you want, for
+example, a simple 2/3-1/3 split, just specify n_folds = 3 and
+just take one fold.</dd>
+<dt>shuffle</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean or int</span><dd>If True or int, shuffle the data before slicing. If an int is
+provided, it is used as seed to the pseudo-random generator.</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.name">
+<code class="descname">name</code><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the <strong>full</strong> human-readable name of the data as a string</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.pandasDF">
+<code class="descname">pandasDF</code><span class="sig-paren">(</span><em>columns=None</em>, <em>index=None</em>, <em>weights_as_events=False</em>, <em>min_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.pandasDF"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.pandasDF" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the data to pandas or cut an already existing data frame and
+return it.</p>
+<p>Return a pandas DataFrame</p>
+<dl class="docutils">
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Arguments for the <code class="xref py py-func docutils literal"><span class="pre">root2rec()</span></code> ls
+function.</dd>
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D list</span><dd>The index from the root-branche to be used. If None, all indices
+will be used (all the HEPDataStorage instance was created with).</dd>
+<dt>weights_as_events</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean or int &gt;= 1</span><dd><p class="first">If False, the data will returned as usual. If an integer is
+provided, this has three effects:</p>
+<ol class="arabic simple">
+<li>The <strong>weights</strong> are divided by it&#8217;s smallest element (so
+the smallest weight will be one)</li>
+<li>multiplied by the provided integer</li>
+<li>each event is multiple times recreated and added to the data
+according to its (new created) weight.</li>
+</ol>
+<p>As the weight of an event basically is the occurence of it, this
+can be seen as a <em>weight-to-events</em> conversion and is useful,
+if you have few data with sometimes high weights (which then can
+cause statistic effects if badly distributed)</p>
+<p class="last">Don&#8217;t forget to manually assing weights 1 and not just take
+the weights from data.</p>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">With highly unbalanced weights this can lead to a memory
+explosion!</p>
+</div>
+<dl class="docutils">
+<dt>min_weight</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int or float</span><dd>For <em>weights_as_events</em>; normaly, the minimum of the weights
+times <em>weights_as_events</em> is taken for scaling of the weights,
+if a <em>min_weight</em> is provided, the minimum of the weights and
+<em>min_weight</em> times the <em>weights_as_events</em> will be taken for
+scaling.</dd>
+<dt>selection</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>A selection applied to <strong>ROOT TTrees</strong> only! For further details,
+see the root_numpy module.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.plot">
+<code class="descname">plot</code><span class="sig-paren">(</span><em>figure=None</em>, <em>title=None</em>, <em>data_name=None</em>, <em>bins=None</em>, <em>importance=3</em>, <em>log_y_axes=False</em>, <em>plot_range=None</em>, <em>columns=None</em>, <em>index=None</em>, <em>sample_weights=None</em>, <em>data_labels=None</em>, <em>see_all=False</em>, <em>hist_settings=None</em>, <em>weights_as_events=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.plot"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.plot" title="Permalink to this definition">¶</a></dt>
+<dd><p>Draw histograms of the data.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Only 99.98% of the newest plotted data will be shown to focus
+on the essential parts (the axis limits will be set accordingly).
+This implies a risk of cutting the previously (in the same figure)
+plotted data (mostly, if they do not overlap a lot). To ensure that
+all data is plotted, set <em>see_all</em> to <em>True</em>.</p>
+</div>
+<dl class="docutils">
+<dt>figure</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or int</span><dd>The name of the figure. If the figure already exists, the plots
+will be plotted in the same window (can be intentional, for
+example to compare data)</dd>
+<dt>title</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd><div class="first last line-block">
+<div class="line">The title of the whole plot (NOT of the subplots). If several
+titles for the same figures are given, they will be <em>concatenated</em>.</div>
+<div class="line">So for a &#8220;simple&#8221; title, specify the title only once.</div>
+</div>
+</dd>
+<dt>data_name:</dt>
+<dd><div class="first last line-block">
+<div class="line">Additional, (to the <em>data_name</em> and <em>data_name_addition</em>), human-
+readable name for the legend.</div>
+<div class="line">Examples: &#8220;before cut&#8221;, &#8220;after cut&#8221; etc</div>
+</div>
+</dd>
+<dt>bins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Number of bins to plot.</dd>
+<dt>std_save</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, the figure will be saved (with
+<code class="xref py py-meth docutils literal"><span class="pre">save_fig()</span></code>) with
+&#8220;standard&#8221; parameters as specified in <em>meta_config</em>.</dd>
+<dt>log_y_axes</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, the y-axes will be scaled logarithmically.</dd>
+<dt>plot_range</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">tuple or None</span><dd>The lower and upper range of the bins. If None, 99.98% of the data
+will be plottet automatically.</dd>
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or list(str, str, str, ...)</span><dd>The columns of the data to be plotted. If None, all are plotted.</dd>
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(int, int, int, ...)</span><dd>A list of indeces to be plotted. If None, all are plotted.</dd>
+<dt>sample_weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list containing weights</span><dd>The weights for the data, how &#8220;high&#8221; a bin is. Actually, how much
+it should account for the whole distribution or how &#8220;often&#8221; it
+occures.</dd>
+<dt>data_labels</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>Contain the column as key and the value as label</dd>
+<dt>hist_settings</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>A dictionary containing the settings as keywords for the
+<code class="xref py py-func docutils literal"><span class="pre">hist()</span></code> function.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.plot2Dscatter">
+<code class="descname">plot2Dscatter</code><span class="sig-paren">(</span><em>x_branch</em>, <em>y_branch</em>, <em>dot_size=20</em>, <em>color='b'</em>, <em>weights=None</em>, <em>figure=0</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.plot2Dscatter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.plot2Dscatter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plots two columns against each other to see the distribution.</p>
+<p>The dots size is proportional to the weights, so you have a good
+overview on the data and the weights.</p>
+<p>x_branch : str</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.plot_correlation">
+<code class="descname">plot_correlation</code><span class="sig-paren">(</span><em>second_storage=None</em>, <em>figure=None</em>, <em>columns=None</em>, <em>method='pearson'</em>, <em>plot_importance=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.plot_correlation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.plot_correlation" title="Permalink to this definition">¶</a></dt>
+<dd><div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">does not support weights. Maybe in the future.</p>
+</div>
+<p>Plot the feature correlation for the data (combined with other data)</p>
+<p>Calculate the feature correlation, return it and plot them.</p>
+<dl class="docutils">
+<dt>second_storage</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage or None</span><dd>If a second data-storage is provided, the data will be merged and
+then the correlation will be calculated. Otherwise, only this
+datas correlation will be calculated and plotted.</dd>
+<dt>method</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str {&#8216;pearson&#8217;, &#8216;kendall&#8217;, &#8216;spearman&#8217;}</span><dd>The method to calculate the correlation.</dd>
+<dt>plot_importance</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int {1, 2, 3, 4, 5}</span><dd>The higher the more likely it gets plotted. Depends on the
+plot_verbosity. To make sure the correlation...
+- <em>does</em> get plotted, chose 5
+- does <em>not</em> get plotted, chose 1</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">pandas DataFrame</span><dd>Return the feature-correlations in a pandas DataFrame</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.set_data">
+<code class="descname">set_data</code><span class="sig-paren">(</span><em>data</em>, <em>index=None</em>, <em>columns=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.set_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.set_data" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.set_labels">
+<code class="descname">set_labels</code><span class="sig-paren">(</span><em>data_labels</em>, <em>add_label=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.set_labels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.set_labels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the human readable data-labels (for the columns).</p>
+<p>Sometimes you want to change the labels of columns. This can be done
+by passing a dictionary containing the column as key and a
+human-readable name as value.</p>
+<dl class="docutils">
+<dt>data_labels</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>It has the form: {column: name}</dd>
+<dt>add_label</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If False, the existing label dictionary gets overwritten instead
+of updated.</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.set_root_selection">
+<code class="descname">set_root_selection</code><span class="sig-paren">(</span><em>selection</em>, <em>exception_if_failure=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.set_root_selection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.set_root_selection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the selection in a root-file. Only possible if a root-file is provided</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.set_targets">
+<code class="descname">set_targets</code><span class="sig-paren">(</span><em>targets</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.set_targets"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.set_targets" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the targets of the data. Either a list-like object or
+{-1, 0, 1, None}</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.data_storage.HEPDataStorage.set_weights">
+<code class="descname">set_weights</code><span class="sig-paren">(</span><em>sample_weights</em>, <em>index=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_storage.html#HEPDataStorage.set_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_storage.HEPDataStorage.set_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the weights of the sample.</p>
+<dl class="docutils">
+<dt>sample_weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D array-like or list or int {1} (or str/dict for root-trees)</span><dd>The new weights for the dataset. If the data is a root-tree file,
+a string (naming the branche) or a whole root-dict can be given,
+pointing to the weights stored.</dd>
+<dt>index</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">1-D array or list or None</span><dd>The indeces for the weights to be set</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.tools.data_tools.html" class="btn btn-neutral float-right" title="Data Tools" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.tools.html" class="btn btn-neutral" title="Tools" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

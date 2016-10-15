@@ -1,0 +1,317 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Metrics &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/>
+        <link rel="up" title="Tools" href="raredecay.tools.html"/>
+        <link rel="next" title="Output Handler" href="raredecay.tools.output.html"/>
+        <link rel="prev" title="Developer Tools" href="raredecay.tools.dev_tool.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="raredecay.analysis.html">Analysis</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.tools.html">Tools</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.data_storage.html">Data Storage</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.data_tools.html">Data Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.dev_tool.html">Developer Tools</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.output.html">Output Handler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">Run Settings</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+          <li><a href="raredecay.tools.html">Tools</a> &raquo;</li>
+      
+    <li>Metrics</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.tools.metrics.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.tools.metrics">
+<span id="metrics"></span><h1>Metrics<a class="headerlink" href="#module-raredecay.tools.metrics" title="Permalink to this headline">¶</a></h1>
+<p>Created on Wed Jul 13 14:21:16 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<dl class="function">
+<dt id="raredecay.tools.metrics.precision_measure">
+<code class="descclassname">raredecay.tools.metrics.</code><code class="descname">precision_measure</code><span class="sig-paren">(</span><em>n_signal</em>, <em>n_background</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#precision_measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.precision_measure" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the precision measure: s / sqrt(s + b)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.metrics.punzi_fom">
+<code class="descclassname">raredecay.tools.metrics.</code><code class="descname">punzi_fom</code><span class="sig-paren">(</span><em>n_signal</em>, <em>n_background</em>, <em>n_sigma=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#punzi_fom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.punzi_fom" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return the Punzi Figure of Merit metric: S / (sqrt(B) + n_sigma/2)</p>
+<p>The Punzi FoM is mostly used for the detection of rare decays to prevent
+the metric of cutting off all the background and leaving us with only a
+very few signals.</p>
+<dl class="docutils">
+<dt>n_signal</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Number of signals observed (= tpr; true positiv rate)</dd>
+<dt>n_background</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Number of background observed as signal (= fpr; false positiv rate)</dd>
+</dl>
+<p>n_sigma : int or float</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.metrics.train_similar">
+<code class="descclassname">raredecay.tools.metrics.</code><code class="descname">train_similar</code><span class="sig-paren">(</span><em>mc_data</em>, <em>real_data</em>, <em>n_checks=10</em>, <em>n_folds=10</em>, <em>clf='xgb'</em>, <em>test_max=True</em>, <em>old_mc_weights=1</em>, <em>test_predictions=False</em>, <em>clf_pred='rdf'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#train_similar"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.train_similar" title="Permalink to this definition">¶</a></dt>
+<dd><p>Score for reweighting. Train clf on mc reweighted/real, test on real.
+Minimize score.</p>
+<p>Enter two datasets and evaluate the score described below. Return a
+dictionary containing the different scores. The test_predictions is
+another scoring, which is built upon the train_similar method.</p>
+<p><strong>Idea</strong>:
+A clf is trained on the reweighted mc as well as on the real data of a
+certain decay. Therefore, the classifier learns to distinguish between
+Monte-Carlo data and real data. Then we let the classifier predict some
+real data (an unbiased test set) and see, how many he is able to classify
+as real events. The lower the score, the less differences he was able to
+learn from the train data therefore the more similar the train data
+therefore the better the reweighting.</p>
+<p><strong>Advandages</strong>: It is quite difficult to cheat on this method. Most of all
+it is robust to single high-weight events (which mcreweighted_as_real is
+not) and, in general, seems to be the best scoring so far.</p>
+<p><strong>Disadvantages</strong>: If you insert a gaussian shaped 1.0 as mc and a gaussian
+shaped 1.1 as real, the score will be badly (around 0.33). So far, this was
+only observed for &#8220;artificial&#8221; distributions (even dough, of course, we
+do not know if it affects real distributions aswell partly)</p>
+<p>The return is a dictionary containing several values. Of course, only the
+values, which are set to be evaluated, are contained. The keys are:</p>
+<ul class="simple">
+<li>&#8216;<strong>score</strong>&#8216; : The average of all train_similar scores (as we use KFolding,
+there will be n_folds scores). <em>The</em> score.</li>
+<li>&#8216;<strong>score_std</strong>&#8216; : The std of a single score, just for curiosity</li>
+<li>&#8216;<strong>score_max</strong>&#8216; : The (average of all) &#8220;maximum&#8221; score. Actually the
+train_similar score but
+with mc instead of <em>reweighted</em> mc. Should be higher then the
+reweighted score.</li>
+<li>&#8216;<strong>score_max_std</strong>&#8216; : The std of a single score, just for curiosity</li>
+<li>&#8216;<strong>score_pred</strong>&#8216; : The score of the test_predictions method.</li>
+<li>&#8216;<strong>score_mc_pred</strong>&#8216; : The score of the test_predictions method but on the
+predictions of the mc instead of the <em>reweighted</em> mc.</li>
+</ul>
+<dl class="docutils">
+<dt>mc_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The reweighted Monte-Carlo data, assuming the new weights are applied
+already.</dd>
+<dt>real_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The real data</dd>
+<dt>n_checks</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt;= 1</span><dd>Number of checks to perform. Has to be &lt;= n_folds</dd>
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>Number of folds the data will be split into</dd>
+<dt>clf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The name of a classifier to be used in
+<a class="reference internal" href="raredecay.analysis.ml_analysis.html#raredecay.analysis.ml_analysis.classify" title="raredecay.analysis.ml_analysis.classify"><code class="xref py py-func docutils literal"><span class="pre">classify()</span></code></a>.</dd>
+<dt>test_max</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If true, test for the &#8220;maximum value&#8221; by training also on mc/real
+(instead of <em>reweighted</em> mc/real)
+and test on real. The score for only mc should be higher than for
+reweighted mc/real. It <em>should</em> most probably but does not have to
+be!</dd>
+<dt>old_mc_weights</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like or 1</span><dd>If <em>test_max</em> is True, the weights for mc before reweighting will be
+taken to be <em>old_mc_weights</em>, the weights the mc distribution had
+before the reweighting. The default is 1.</dd>
+<dt>test_predictions</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If true, try to distinguish the predictions. Advanced feature and not
+yet really discoverd how to interpret. Gives very high ROC somehow.</dd>
+<dt>clf_pred</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The classifier to be used to distinguish the predictions. Required for
+the <em>test_predictions</em>.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>A dictionary conaining the different scores. Description see above.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.tools.output.html" class="btn btn-neutral float-right" title="Output Handler" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.tools.dev_tool.html" class="btn btn-neutral" title="Developer Tools" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

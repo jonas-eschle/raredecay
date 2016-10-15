@@ -1,0 +1,419 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.tools.metrics &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.tools.metrics</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.tools.metrics</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Wed Jul 13 14:21:16 2016</span>
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
+
+<span class="kn">import</span> <span class="nn">math</span> <span class="k">as</span> <span class="nn">mt</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_storage</span>
+<span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+<span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+
+
+
+<span class="k">def</span> <span class="nf">rnd_dist</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Test reweighting by classify several random distributions. Not yet</span>
+<span class="sd">    known how to interpret outcome correctly&quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="train_similar"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.train_similar">[docs]</a><span class="k">def</span> <span class="nf">train_similar</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_data</span><span class="p">,</span> <span class="n">n_checks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span>
+                  <span class="n">test_max</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">old_mc_weights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">test_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                  <span class="n">clf_pred</span><span class="o">=</span><span class="s1">&#39;rdf&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Score for reweighting. Train clf on mc reweighted/real, test on real.</span>
+<span class="sd">    Minimize score.</span>
+
+<span class="sd">    Enter two datasets and evaluate the score described below. Return a</span>
+<span class="sd">    dictionary containing the different scores. The test_predictions is</span>
+<span class="sd">    another scoring, which is built upon the train_similar method.</span>
+
+<span class="sd">    Scoring method description</span>
+<span class="sd">    --------------------------</span>
+
+<span class="sd">    **Idea**:</span>
+<span class="sd">    A clf is trained on the reweighted mc as well as on the real data of a</span>
+<span class="sd">    certain decay. Therefore, the classifier learns to distinguish between</span>
+<span class="sd">    Monte-Carlo data and real data. Then we let the classifier predict some</span>
+<span class="sd">    real data (an unbiased test set) and see, how many he is able to classify</span>
+<span class="sd">    as real events. The lower the score, the less differences he was able to</span>
+<span class="sd">    learn from the train data therefore the more similar the train data</span>
+<span class="sd">    therefore the better the reweighting.</span>
+
+<span class="sd">    **Advandages**: It is quite difficult to cheat on this method. Most of all</span>
+<span class="sd">    it is robust to single high-weight events (which mcreweighted_as_real is</span>
+<span class="sd">    not) and, in general, seems to be the best scoring so far.</span>
+
+<span class="sd">    **Disadvantages**: If you insert a gaussian shaped 1.0 as mc and a gaussian</span>
+<span class="sd">    shaped 1.1 as real, the score will be badly (around 0.33). So far, this was</span>
+<span class="sd">    only observed for &quot;artificial&quot; distributions (even dough, of course, we</span>
+<span class="sd">    do not know if it affects real distributions aswell partly)</span>
+
+<span class="sd">    Output explanation</span>
+<span class="sd">    ------------------</span>
+<span class="sd">    The return is a dictionary containing several values. Of course, only the</span>
+<span class="sd">    values, which are set to be evaluated, are contained. The keys are:</span>
+
+<span class="sd">    - &#39;**score**&#39; : The average of all train_similar scores (as we use KFolding,</span>
+<span class="sd">      there will be n_folds scores). *The* score.</span>
+<span class="sd">    - &#39;**score_std**&#39; : The std of a single score, just for curiosity</span>
+<span class="sd">    - &#39;**score_max**&#39; : The (average of all) &quot;maximum&quot; score. Actually the</span>
+<span class="sd">      train_similar score but</span>
+<span class="sd">      with mc instead of *reweighted* mc. Should be higher then the</span>
+<span class="sd">      reweighted score.</span>
+<span class="sd">    - &#39;**score_max_std**&#39; : The std of a single score, just for curiosity</span>
+<span class="sd">    - &#39;**score_pred**&#39; : The score of the test_predictions method.</span>
+<span class="sd">    - &#39;**score_mc_pred**&#39; : The score of the test_predictions method but on the</span>
+<span class="sd">      predictions of the mc instead of the *reweighted* mc.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mc_data : HEPDataStorage</span>
+<span class="sd">        The reweighted Monte-Carlo data, assuming the new weights are applied</span>
+<span class="sd">        already.</span>
+<span class="sd">    real_data : HEPDataStorage</span>
+<span class="sd">        The real data</span>
+<span class="sd">    n_checks : int &gt;= 1</span>
+<span class="sd">        Number of checks to perform. Has to be &lt;= n_folds</span>
+<span class="sd">    n_folds : int &gt; 1</span>
+<span class="sd">        Number of folds the data will be split into</span>
+<span class="sd">    clf : str</span>
+<span class="sd">        The name of a classifier to be used in</span>
+<span class="sd">        :py:func:`~raredecay.analysis.ml_analysis.classify`.</span>
+<span class="sd">    test_max : boolean</span>
+<span class="sd">        If true, test for the &quot;maximum value&quot; by training also on mc/real</span>
+<span class="sd">        (instead of *reweighted* mc/real)</span>
+<span class="sd">        and test on real. The score for only mc should be higher than for</span>
+<span class="sd">        reweighted mc/real. It *should* most probably but does not have to</span>
+<span class="sd">        be!</span>
+<span class="sd">    old_mc_weights : array-like or 1</span>
+<span class="sd">        If *test_max* is True, the weights for mc before reweighting will be</span>
+<span class="sd">        taken to be *old_mc_weights*, the weights the mc distribution had</span>
+<span class="sd">        before the reweighting. The default is 1.</span>
+<span class="sd">    test_predictions : boolean</span>
+<span class="sd">        If true, try to distinguish the predictions. Advanced feature and not</span>
+<span class="sd">        yet really discoverd how to interpret. Gives very high ROC somehow.</span>
+<span class="sd">    clf_pred : str</span>
+<span class="sd">        The classifier to be used to distinguish the predictions. Required for</span>
+<span class="sd">        the *test_predictions*.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        A dictionary conaining the different scores. Description see above.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># initialize variables</span>
+    <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">n_checks</span> <span class="o">&lt;=</span> <span class="n">n_folds</span> <span class="ow">and</span> <span class="n">n_folds</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;wrong n_checks/n_folds. Check the docs&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">),</span> <span class="s2">&quot;mc_data wrong type:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">mc_data</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;, has to be HEPDataStorage&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">),</span> <span class="s2">&quot;real_data wrong type:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">real_data</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot;, has to be HEPDataStorage&quot;</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">clf</span><span class="p">,</span> <span class="nb">str</span><span class="p">),</span> <span class="s2">&quot;clf has to be a string, the name of a valid classifier. Check the docs!&quot;</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="n">scores</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_checks</span><span class="p">)</span>
+    <span class="n">scores_max</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">n_checks</span><span class="p">)</span>  <span class="c1"># required due to output of loop</span>
+    <span class="n">probas_mc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">probas_reweighted</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">weights_mc</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">weights_reweighted</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+    <span class="n">real_pred</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">real_test_index</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">real_mc_pred</span> <span class="o">=</span> <span class="p">[]</span>
+
+
+
+    <span class="c1"># initialize data</span>
+    <span class="n">real_data</span><span class="o">.</span><span class="n">make_folds</span><span class="p">(</span><span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">fold</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">):</span>
+        <span class="n">real_train</span><span class="p">,</span> <span class="n">real_test</span> <span class="o">=</span> <span class="n">real_data</span><span class="o">.</span><span class="n">get_fold</span><span class="p">(</span><span class="n">fold</span><span class="p">)</span>
+        <span class="n">real_test</span><span class="o">.</span><span class="n">set_targets</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+        <span class="n">tmp_</span><span class="p">,</span> <span class="n">scores</span><span class="p">[</span><span class="n">fold</span><span class="p">],</span> <span class="n">pred_reweighted</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_train</span><span class="p">,</span>
+                                                <span class="n">validation</span><span class="o">=</span><span class="n">real_test</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                                                <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;train on mc reweighted/real, test on real&quot;</span><span class="p">,</span>
+                                                <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_predictions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="n">probas_reweighted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_reweighted</span><span class="p">[</span><span class="s1">&#39;y_proba&#39;</span><span class="p">])</span>
+        <span class="n">weights_reweighted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_reweighted</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
+
+        <span class="n">real_pred</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pred_reweighted</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">])</span>
+        <span class="n">real_test_index</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">real_test</span><span class="o">.</span><span class="n">get_index</span><span class="p">())</span>
+
+        <span class="k">if</span> <span class="n">test_max</span><span class="p">:</span>
+            <span class="n">temp_weights</span> <span class="o">=</span> <span class="n">mc_data</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
+            <span class="n">mc_data</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">tmp_</span><span class="p">,</span> <span class="n">scores_max</span><span class="p">[</span><span class="n">fold</span><span class="p">],</span> <span class="n">pred_mc</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_train</span><span class="p">,</span> <span class="n">validation</span><span class="o">=</span><span class="n">real_test</span><span class="p">,</span>
+                                           <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;real/mc NOT reweight trained, validate on real&quot;</span><span class="p">,</span>
+                                           <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_predictions</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span>
+                                           <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+            <span class="n">mc_data</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">temp_weights</span><span class="p">)</span>
+            <span class="n">probas_mc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_mc</span><span class="p">[</span><span class="s1">&#39;y_proba&#39;</span><span class="p">])</span>
+            <span class="n">weights_mc</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_mc</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
+
+            <span class="n">real_mc_pred</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">pred_mc</span><span class="p">[</span><span class="s1">&#39;y_pred&#39;</span><span class="p">])</span>
+
+
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;Score train_similar (recall, lower means better): &quot;</span><span class="p">,</span>
+                    <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">],</span> <span class="mi">4</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_std&#39;</span><span class="p">],</span> <span class="mi">4</span><span class="p">))],</span>
+                    <span class="c1"># TODO: remove? not required actually: &quot;Scores:&quot;, [round(i, 4) for i in scores]],</span>
+                    <span class="n">subtitle</span><span class="o">=</span><span class="s2">&quot;Clf trained on real/mc reweight, tested on real&quot;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">test_max</span><span class="p">:</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_max&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores_max</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_max_std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores_max</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
+        <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;No reweighting score: &quot;</span><span class="p">,</span> <span class="nb">round</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_max&#39;</span><span class="p">],</span> <span class="mi">4</span><span class="p">),])</span>
+
+    <span class="k">if</span> <span class="n">test_predictions</span><span class="p">:</span>
+        <span class="c1"># test on the reweighted/real predictions</span>
+        <span class="n">real_data</span><span class="o">.</span><span class="n">set_targets</span><span class="p">(</span><span class="n">targets</span><span class="o">=</span><span class="n">real_pred</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">real_test_index</span><span class="p">)</span>
+        <span class="n">tmp_</span><span class="p">,</span> <span class="n">score_pred</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">target_from_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">clf_pred</span><span class="p">,</span>
+                                           <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;train on predictions reweighted/real, real as target&quot;</span><span class="p">,</span>
+                                           <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">validation</span><span class="o">=</span><span class="n">n_checks</span><span class="p">,</span> <span class="n">make_plots</span><span class="o">=</span><span class="n">make_plots</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_pred&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">score_pred</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">test_predictions</span> <span class="ow">and</span> <span class="n">test_max</span><span class="p">:</span>
+        <span class="c1"># test on the mc/real predictions</span>
+        <span class="n">real_data</span><span class="o">.</span><span class="n">set_targets</span><span class="p">(</span><span class="n">targets</span><span class="o">=</span><span class="n">real_mc_pred</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">real_test_index</span><span class="p">)</span>
+        <span class="n">tmp_</span><span class="p">,</span> <span class="n">score_mc_pred</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">target_from_data</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">clf_pred</span><span class="p">,</span>
+                                              <span class="n">validation</span><span class="o">=</span><span class="n">n_checks</span><span class="p">,</span>
+                                              <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;mc not rew/real pred, real as target&quot;</span><span class="p">,</span>
+                                              <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">make_plots</span><span class="o">=</span><span class="n">make_plots</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_mc_pred&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">score_mc_pred</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="punzi_fom"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.punzi_fom">[docs]</a><span class="k">def</span> <span class="nf">punzi_fom</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="n">n_background</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the Punzi Figure of Merit metric: S / (sqrt(B) + n_sigma/2)</span>
+
+<span class="sd">    The Punzi FoM is mostly used for the detection of rare decays to prevent</span>
+<span class="sd">    the metric of cutting off all the background and leaving us with only a</span>
+<span class="sd">    very few signals.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    n_signal : int</span>
+<span class="sd">        Number of signals observed (= tpr; true positiv rate)</span>
+<span class="sd">    n_background : int</span>
+<span class="sd">        Number of background observed as signal (= fpr; false positiv rate)</span>
+<span class="sd">    n_sigma : int or float</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_signal</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_background</span><span class="p">))</span>
+        <span class="n">term1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sqrt</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_background</span><span class="p">)</span>
+        <span class="n">term1</span> <span class="o">=</span> <span class="n">n_sigma</span><span class="o">/</span><span class="mi">2</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">n_signal</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span> <span class="o">+</span> <span class="n">term1</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="precision_measure"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.precision_measure">[docs]</a><span class="k">def</span> <span class="nf">precision_measure</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="n">n_background</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return the precision measure: s / sqrt(s + b)&quot;&quot;&quot;</span>
+    <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_signal</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_signal</span> <span class="o">+</span> <span class="n">n_background</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">sqrt</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_signal</span> <span class="o">+</span> <span class="n">n_background</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">n_signal</span> <span class="o">/</span> <span class="n">sqrt</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

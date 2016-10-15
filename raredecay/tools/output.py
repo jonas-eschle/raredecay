@@ -16,6 +16,7 @@ from abc import ABCMeta, abstractmethod
 
 import matplotlib.pyplot as plt
 import cPickle as pickle
+import seaborn as sns
 
 from raredecay import meta_config
 from raredecay.tools import dev_tool, data_tools
@@ -51,6 +52,10 @@ class OutputHandler(object):
         # start timer and log current time
         self._start_timer = timeit.default_timer()
         self._start_time = time.strftime("%c")
+
+        # set plotting style
+        sns.set_context("poster")
+        plt.rc('figure', figsize=(20, 20))
 
     def _check_initialization(self, return_error=False):
         if not self._is_initialized and not return_error:

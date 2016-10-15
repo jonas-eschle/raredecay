@@ -19,10 +19,9 @@ import math
 import random
 from collections import deque
 import itertools
-
 #HACK
-import sys
-sys.path.append('/usr/local/root-6.06.02/bindings/pyroot/ROOT.py')
+#import sys
+#sys.path.append('/usr/local/root-6.06.02/bindings/pyroot/ROOT.py')
 #sys.path.append('/usr/local/root-6.06.02/rootBuild/lib/ROOT.py')
 #sys.path.append('/usr/local/lib/python2.7/dist-packages/rootpy/ROOT.py')
 #HACK
@@ -61,8 +60,7 @@ class HEPDataStorage(object):
     __figure_dic = {}
 
     def __init__(self, data, index=None, target=None, sample_weights=None,
-                 data_name=None, data_name_addition=None, data_labels=None,
-                 hist_settings=None, supertitle_fontsize=18):
+                 data_name=None, data_name_addition=None, data_labels=None):
         """Initialize instance and load data
 
         Parameters
@@ -71,7 +69,7 @@ class HEPDataStorage(object):
 
             - **root-tree dict** (*root-dict*):
             |   Dictionary which specifies all the information to convert a root-
-            |   tree to an array. Directly given to :py:func:`~root_numpy.root2rec`
+               tree to an array. Directly given to :py:func:`~root_numpy.root2rec`
 
             - **pandas DataFrame**:
             |   A pandas DataFrame. The index (if not explicitly defined)
@@ -85,30 +83,22 @@ class HEPDataStorage(object):
             Contains the weights of the samples.
         .. note:: If None or 1 specified, 1 will be assumed for all.
         data_name : str
-            | Name of the data, human-readable. Displayed in the title of \
-            plots.
+            | Name of the data, human-readable. Displayed in the title of
+              plots.
             | *Example: 'Bu2K1piee mc', 'beta-decay real data' etc.*
         data_name_addition : str
-            | Additional remarks to the data, human readable. Displayed in \
-            the title of plots.
+            | Additional remarks to the data, human readable. Displayed in
+              the title of plots.
             | *Example: 'reweighted', 'shuffled', '5 GeV cut applied' etc.*
         data_labels : dict with strings {column name: human readable name}
             | Human-readable names for the columns, displayed in the plot.
-            | Dictionary has to contain the exact column (=branch) name of \
-            the data
-            | All not specified labels will be auto-labeled by the branch \
+            | Dictionary has to contain the exact column (=branch) name of
+              the data
+            | All not specified labels will be auto-labeled by the branch
               name itself.
 
             | *Good practice*: keep a dictionary containing all possible lables
               and hand it over every time.
-        add_label : boolean
-            If true, the human-readable labels will be added to the branch name
-            shows in the plot instead of replaced.
-        hist_settings : dict
-            Dictionary with the settings for the histogram plot function
-            :func:`~matplotlip.pyplot.hist`
-        supertitle_fontsize : int
-            The size of the title of several subplots.
         """
         # initialize logger
         self.logger = modul_logger
@@ -138,10 +128,9 @@ class HEPDataStorage(object):
         self.set_weights(sample_weights)
 
         # plot settings
-        if dev_tool.is_in_primitive(hist_settings, None):
-            hist_settings = meta_config.DEFAULT_HIST_SETTINGS
+        hist_settings = meta_config.DEFAULT_HIST_SETTINGS
         self.hist_settings = hist_settings
-        self.supertitle_fontsize = supertitle_fontsize
+        self.supertitle_fontsize = 18
 
     def __len__(self):
         return self._length
@@ -331,10 +320,11 @@ class HEPDataStorage(object):
             pass
         # pandas DataFrame
         elif self._data_type == 'df':
-            self._data = self._make_df(data=self._data, index=self._index)
+            self._data = self._make_df(index=self._index)  # No cols, it's set above
         # numpy array
         elif self._data_type == 'array':
-            self._data = self._make_df(data=data, index=self._index)
+            self._data = self._make_df(index=self._index)
+            warnings.warn(DeprecationWarning, "Not safe, it's better to use pandas DataFrame")
         else:
             raise NotImplementedError("Other dataformats are not yet implemented")
 
@@ -537,8 +527,18 @@ class HEPDataStorage(object):
         assert min(weights) >= 0.98, "weights are not higher then 1, but they should be."
         return pd.Series(weights, index=index)
 
-    def pandasDF(self, columns=None, index=None, weights_as_events=False, min_weight=None,
-                 selection=None):
+    def set_root_selection(self, selection, exception_if_failure=True):
+        """Set the selection in a root-file. Only possible if a root-file is provided"""
+        if self._data_type == 'root':
+            self.data['selection'] == selection
+        elif exception_if_failure:
+            raise RuntimeError("selection could not be applied, no root-dict")
+        else:
+            self.logger.error("selection not applied, no root-dict")
+
+
+
+    def pandasDF(self, columns=None, index=None, weights_as_events=False, min_weight=None):
         """Convert the data to pandas or cut an already existing data frame and
         return it.
 
@@ -596,7 +596,7 @@ class HEPDataStorage(object):
                                                         index=index), (None, 1))
 
         # create data
-        data_out = self._make_df(columns=columns, index=index, selection=selection, copy=True)
+        data_out = self._make_df(columns=columns, index=index, copy=True)
         if not data_out.index.tolist() == range(len(data_out)):  # if not, convert the indices to
             data_out.reset_index(drop=True, inplace=True)
 
@@ -654,8 +654,8 @@ class HEPDataStorage(object):
         data_out.columns = columns
         return data_out
 
-    def _make_df(self, data=None, columns=None, index=None, copy=False, selection=None):
-        """Return a DataFrame from the given data. Does some dirty, internal work."""
+    def _make_df(self, columns=None, index=None, copy=False):
+        """Return a DataFrame from the internal data. Does some dirty, internal work."""
         # initialize data
         # TODO: remove trailing comment?
         data = self._data # if dev_tool.is_in_primitive(data) else data
@@ -664,7 +664,7 @@ class HEPDataStorage(object):
 
         if self._data_type == 'root':
             #update root dictionary
-            temp_root_dict = dict(data, **{'branches': columns, 'selection': selection})
+            temp_root_dict = dict(data, **{'branches': columns})
             for key, val in temp_root_dict.items():
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
@@ -847,8 +847,10 @@ class HEPDataStorage(object):
             weighted. Requires internal normalisation.
 
             Ratio := sum(weights1) / sum(weights2)
-        shuffle : boolean
-            If True, the dataset will be shuffled before returned
+        shuffle : boolean or int
+            If True or int, the dataset will be shuffled before returned. If an
+            int is provided, it will be used as a seed to the pseudo-random
+            generator.
          """
          # TODO1: implement take_target_from_data
          # TODO2: make it recursive. second storage can be a list and get
@@ -928,6 +930,14 @@ class HEPDataStorage(object):
                 weights_as_events_2 = int(np.round(ratio_2 * max_converter) + 0.00005)
 
 
+        if shuffle is not False:
+            index = self.index if index is None else index
+            if isinstance(shuffle, int) and shuffle != True:
+                rand_seed = shuffle
+                rand_seed_2 = shuffle + 74
+            else:
+                rand_seed = rand_seed_2 = None
+            random.shuffle(index, random=rand_seed)
         data = self.pandasDF(columns=columns, index=index, min_weight=min_weight,
                              weights_as_events=weights_as_events)
         if second_storage is None:
@@ -938,6 +948,9 @@ class HEPDataStorage(object):
 
         if second_storage is not None:
             assert isinstance(second_storage, HEPDataStorage), "Wrong type, has to be a HEPDataStorage"
+            if shuffle is not False:
+                index_2 = second_storage.index if index_2 is None else index_2
+                random.shuffle(index_2, random=rand_seed_2)
             length_1 = len(data)
             data_2 = second_storage.pandasDF(columns=columns, index=index_2,
                                              min_weight=min_weight,
@@ -1028,6 +1041,9 @@ class HEPDataStorage(object):
             The number of folds to be created from the data. If you want, for
             example, a simple 2/3-1/3 split, just specify n_folds = 3 and
             just take one fold.
+        shuffle : boolean or int
+            If True or int, shuffle the data before slicing. If an int is
+            provided, it is used as seed to the pseudo-random generator.
         """
         if n_folds <= 1:
             raise ValueError("Number of folds has to be higher then 1")
@@ -1041,8 +1057,9 @@ class HEPDataStorage(object):
 
         # get a copy of index and shuffle it if True
         temp_index = copy.deepcopy(self._make_index())
-        if shuffle:
-            random.shuffle(temp_index)
+        if shuffle is not False:
+            rand_seed = shuffle if isinstance(shuffle, int) and shuffle!= True else None
+            random.shuffle(temp_index, random=rand_seed)
         for i in range(n_folds):
             self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
 
@@ -1088,7 +1105,7 @@ class HEPDataStorage(object):
         """
         return 0 if self._fold_index is None else len(self._fold_index)
 
-    def plot_correlation(self, second_storage=None, columns=None,
+    def plot_correlation(self, second_storage=None, figure=None, columns=None,
                          method='pearson', plot_importance=5):
         """
         .. warning:: does not support weights. Maybe in the future.
@@ -1118,12 +1135,13 @@ class HEPDataStorage(object):
         """
         columns = self.columns if columns is None else columns
 
-        data_name = self.get_name()
+        data_name = self.name
         if second_storage is not None:
-            data_name += " and " + second_storage.get_name()
+            data_name += " and " + second_storage.name
         data, _tmp, _tmp2 = self.make_dataset(second_storage=second_storage,
                                               shuffle=True, columns=columns)
         del _tmp, _tmp2
+        out.save_fig(figure)
         correlation = data.corr(method=method)
         corr_plot = sns.heatmap(correlation.T)
 
@@ -1136,9 +1154,11 @@ class HEPDataStorage(object):
         for item in corr_plot.get_xticklabels():
             item.set_rotation(90)
 
+        return correlation
 
-    def plot(self, figure=None, title=None, data_name=None, importance=3,
-             log_y_axes=False, columns=None, index=None, sample_weights=None,
+
+    def plot(self, figure=None, title=None, data_name=None, bins=None, importance=3,
+             log_y_axes=False, plot_range=None, columns=None, index=None, sample_weights=None,
              data_labels=None, see_all=False, hist_settings=None, weights_as_events=False):
         """Draw histograms of the data.
 
@@ -1162,12 +1182,17 @@ class HEPDataStorage(object):
             | Additional, (to the *data_name* and *data_name_addition*), human-
               readable name for the legend.
             | Examples: "before cut", "after cut" etc
+        bins : int
+            Number of bins to plot.
         std_save : boolean
             If True, the figure will be saved (with
             :py:meth:`~raredecay.tools.output.output.save_fig()`) with
             "standard" parameters as specified in *meta_config*.
         log_y_axes : boolean
             If True, the y-axes will be scaled logarithmically.
+        plot_range : tuple or None
+            The lower and upper range of the bins. If None, 99.98% of the data
+            will be plottet automatically.
         columns : str or list(str, str, str, ...)
             The columns of the data to be plotted. If None, all are plotted.
         index : list(int, int, int, ...)
@@ -1204,6 +1229,10 @@ class HEPDataStorage(object):
             hist_settings = {}
         if isinstance(hist_settings, dict):
             hist_settings = dict(meta_config.DEFAULT_HIST_SETTINGS, **hist_settings)
+        if bins is not None:
+            hist_settings['bins'] = bins
+        if plot_range is not None:
+            hist_settings['range'] = plot_range
 
         # create data
         data_plot = self.pandasDF(columns=columns, index=index, weights_as_events=weights_as_events)
@@ -1251,6 +1280,8 @@ class HEPDataStorage(object):
                 x_limits = (lower, upper)
             elif see_all:  # choose the maximum range. Bins not nicely overlapping.
                 x_limits = (min(x_limits[0], lower), max(x_limits[1], upper))
+            if hist_settings.has_key('range'):
+                x_limits = hist_settings.pop('range')
             self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
             temp1, temp2, patches = plt.hist(data_plot[column], weights=sample_weights,

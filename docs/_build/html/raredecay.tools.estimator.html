@@ -1,0 +1,270 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.tools.estimator module &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>raredecay.tools.estimator module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.tools.estimator.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.tools.estimator">
+<span id="raredecay-tools-estimator-module"></span><h1>raredecay.tools.estimator module<a class="headerlink" href="#module-raredecay.tools.estimator" title="Permalink to this headline">¶</a></h1>
+<p>Created on Sat May 21 12:02:58 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<dl class="class">
+<dt id="raredecay.tools.estimator.Mayou">
+<em class="property">class </em><code class="descclassname">raredecay.tools.estimator.</code><code class="descname">Mayou</code><span class="sig-paren">(</span><em>base_estimators=None</em>, <em>bagging_base=None</em>, <em>stacking='xgb'</em>, <em>features_stack=None</em>, <em>bagging_stack=None</em>, <em>hunting=False</em>, <em>transform=True</em>, <em>transform_pred=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">rep.estimators.interface.Classifier</span></code></p>
+<p>Classifier for raredecay analysis</p>
+<p>blablabla</p>
+<dl class="docutils">
+<dt>base_estimators</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict(&#8216;clf&#8217;: classifier OR keyword-parameters)</span><dd><p class="first">Contains all the level-0 classifiers. The key is the name of the
+classifier and the value is either a <strong>prefitted</strong> classifier or
+a dictionary containing the keyword arguments to instantiate
+such a classifier.</p>
+<p>If no pre-trained classifier is provided, the key-value has to
+be one of the following:</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li><strong>&#8216;xgb&#8217;</strong> creates an XGBoost classifier</li>
+<li><strong>&#8216;rdf&#8217;</strong> creates a Random Forest classifier</li>
+<li><strong>&#8216;erf&#8217;</strong> creates a Forest consisting of Extra Randomized Trees</li>
+<li><strong>&#8216;nn&#8217;</strong> creates an artificial Neural Network from TheaNets</li>
+<li><strong>&#8216;ada&#8217;</strong> creates an AdaBoost instance with Decision Trees as
+basis</li>
+<li><strong>&#8216;gb&#8217;</strong> creates a Gradient Boosted classifier with Decision
+Trees as basis</li>
+</ul>
+</div></blockquote>
+</dd>
+</dl>
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.fit">
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.fit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><em>deep=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.predict">
+<code class="descname">predict</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.predict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.predict" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.predict_proba">
+<code class="descname">predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.predict_proba" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.stacker_test_on">
+<code class="descname">stacker_test_on</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.stacker_test_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.stacker_test_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return report for the stacker only</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.stacker_test_on_lds">
+<code class="descname">stacker_test_on_lds</code><span class="sig-paren">(</span><em>lds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.stacker_test_on_lds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.stacker_test_on_lds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return report for the stacker only</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.staged_predict_proba">
+<code class="descname">staged_predict_proba</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.staged_predict_proba"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.staged_predict_proba" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.test_on">
+<code class="descname">test_on</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>sample_weight=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.test_on"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.test_on" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="raredecay.tools.estimator.Mayou.test_on_lds">
+<code class="descname">test_on_lds</code><span class="sig-paren">(</span><em>lds</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/estimator.html#Mayou.test_on_lds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.estimator.Mayou.test_on_lds" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

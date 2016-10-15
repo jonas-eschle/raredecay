@@ -1,0 +1,676 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Machine Learning &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/>
+        <link rel="up" title="Analysis" href="raredecay.analysis.html"/>
+        <link rel="next" title="Physical Analysis with ML" href="raredecay.analysis.physical_analysis.html"/>
+        <link rel="prev" title="Analysis" href="raredecay.analysis.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.analysis.html">Analysis</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Machine Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.physical_analysis.html">Physical Analysis with ML</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">Run Settings</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+          <li><a href="raredecay.analysis.html">Analysis</a> &raquo;</li>
+      
+    <li>Machine Learning</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.analysis.ml_analysis.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.analysis.ml_analysis">
+<span id="machine-learning"></span><h1>Machine Learning<a class="headerlink" href="#module-raredecay.analysis.ml_analysis" title="Permalink to this headline">¶</a></h1>
+<p>Created on Sat Mar 26 11:29:01 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<p>The Machine Learning Analysis module consists of machine-learning functions
+which are mostly wrappers around already existing algorithms. The expected
+format of the data is a <em>HEPDataStorage</em>.</p>
+<p>The functions serve as basic tools, which do already a lot of the work.</p>
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.backward_feature_elimination">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">backward_feature_elimination</code><span class="sig-paren">(</span><em>original_data</em>, <em>target_data</em>, <em>clf</em>, <em>n_folds=10</em>, <em>features=None</em>, <em>max_feature_elimination=None</em>, <em>max_difference_to_best=0.08</em>, <em>direction='backward'</em>, <em>take_target_from_data=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#backward_feature_elimination"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.backward_feature_elimination" title="Permalink to this definition">¶</a></dt>
+<dd><p>Train and score on each feature subset, eliminating features backwards.</p>
+<p>To know, which features make a big impact on the training of the clf and
+which don&#8217;t, there are several techniques to find out. The most reliable,
+but also cost-intensive one, seems to be the backward feature elimination.
+A classifier gets trained first on all the features and is validated with
+the KFold-technique and the ROC AUC. Then, a feature is removed and the
+classifier is trained and tested again. This is done for all features once.
+The one where the auc drops the least is then removed and the next round
+starts from the beginning but with one feature less.</p>
+<p>The function ends either if:</p>
+<ul class="simple">
+<li>no features are left</li>
+<li>max_feature_elimination features have been eliminated</li>
+<li>the difference between the most useless features auc and the best
+(the run done with all features in the beginning) is higher then
+max_difference_to_best</li>
+</ul>
+<dl class="docutils">
+<dt>original_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The original data</dd>
+<dt>target_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The target data</dd>
+<dt>clf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str {&#8216;xgb, &#8216;rdf, &#8216;erf&#8217;, &#8216;gb&#8217;, &#8216;ada&#8217;, &#8216;nn&#8217;} or config-dict</span><dd>For possible options, see also <code class="xref py py-func docutils literal"><span class="pre">make_clf()</span></code></dd>
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>How many folds you want to split your data in when doing KFold-splits
+to measure the performance of the classifier.</dd>
+<dt>features</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str,...)</span><dd>List of strings containing the features/columns to be used for the
+hyper-optimization or feature selection.</dd>
+<dt>max_feature_elimination</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt;= 1</span><dd>How many features should be eliminated before it surely stopps</dd>
+<dt>max_difference_to_best</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float</span><dd>The maximum difference between the &#8220;worst&#8221; features auc and the best
+(with all features) auc before it stopps.</dd>
+<dt>take_target_from_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>Old, will be removed. Use if target-data == None.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd><p class="first">Return a dictionary containing the evaluation:
+- <strong>&#8216;roc_auc&#8217;</strong> : an ordered-dict with the feature that was removed and</p>
+<blockquote>
+<div>the roc auc evaluated without that feature.</div></blockquote>
+<ul class="last simple">
+<li><strong>&#8216;scores&#8217;</strong> : All the roc auc with every feature removed once.
+Basically a pandas DataFrame containing all results.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.classify">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">classify</code><span class="sig-paren">(</span><em>original_data=None</em>, <em>target_data=None</em>, <em>features=None</em>, <em>validation=10</em>, <em>clf='xgb'</em>, <em>plot_importance=3</em>, <em>extended_report=False</em>, <em>plot_title=None</em>, <em>curve_name=None</em>, <em>target_from_data=False</em>, <em>conv_ori_weights=False</em>, <em>conv_tar_weights=False</em>, <em>conv_vali_weights=False</em>, <em>weights_ratio=0</em>, <em>get_predictions=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#classify"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.classify" title="Permalink to this definition">¶</a></dt>
+<dd><p>Training and testing a classifier or distinguish a dataset</p>
+<p>Classify is a multi-purpose function which does most of the things around
+machine-learning. It can be used for:</p>
+<ul>
+<li><dl class="first docutils">
+<dt>Training a clf.</dt>
+<dd><p class="first last">A quite simple task. You give some data, specify a clf and set
+validation to False (not mandatory actually, but pay attention if
+validation is set to an integer)</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Predict data.</dt>
+<dd><p class="first last">Use either a pre-trained (see above) classifier or specify one with a
+string and give in some data to the validation and no to the
+original_data or target_data. Set get_predictions to True and you&#8217;re
+done.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Get a ROC curve of two datasets.</dt>
+<dd><p class="first last">Specify the two input data (original_data and target_data) and use
+cross-validation by setting validation to the number of folds</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>original_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The original data for the training</dd>
+<dt>target_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage or None</span><dd>The target data for the training. If None, only the original_data will
+be used for the training.</dd>
+<dt>features</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str...)</span><dd>List with features/columns to use in training.</dd>
+<dt>validation</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt;= 1 or HEPDataStorage</span><dd><p class="first">You can either do cross-validation or give a testsample for the data.</p>
+<ul class="last">
+<li><dl class="first docutils">
+<dt>Cross-validation:</dt>
+<dd><p class="first last">Enter an integer, which is the number of folds</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Validation-dataset:</dt>
+<dd><p class="first last">Enter a <em>HEPDataStorage</em> which contains data to be tested on.
+The target-label will be taken from it, so ensure that they are
+not None! To use two datasets, you can also use a list of
+<strong>maximum</strong> two datastorages.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+<dt>clf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str {&#8216;xgb&#8217;, &#8216;rdf&#8217;} or REP-classifier</span><dd>The classifier to be used for the training and predicting. If you don&#8217;t
+pass a classifier (with <em>fit</em>, <em>predict</em> and <em>predict_proba</em> at least),
+an XGBoost classifier will be used.</dd>
+<dt>plot_importance</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int {0, 1, 2, 3, 4, 5}</span><dd>The higher the importance, the more likely the plots will be showed.
+All plots should be saved anyway.</dd>
+<dt>extended_report</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, make extended reports on the classifier as well as on the data,
+including feature correlation, feature importance etc.</dd>
+<dt>plot_title</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>A part of the title of the plots.</dd>
+<dt>curve_name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>A labeling for the plotted data.</dd>
+<dt>target_from_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd><div class="first last line-block">
+<div class="line">If true, the target-values (labels; 0 or 1) for the original and the
+target data will be taken from the
+data instead of assigned accordingly (original:1, target:0).</div>
+<div class="line">If no target_data is provided, the targets/labels will be taken
+from the original_data anyway.</div>
+</div>
+</dd>
+<dt>get_predictions</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, return a dictionary containing the prediction probabilities, the
+true y-values and maybe, in the futur, even more.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">clf</span><dd>Return the trained classifier.</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">If validation was choosen to be KFold, the returned classifier well be
+instance of <code class="xref py py-class docutils literal"><span class="pre">FoldingClassifier()</span></code>!</p>
+</div>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">float (only if validation is not None)</span><dd>Return the score (recall or roc auc) of the validation. If only one
+class (sort of labels, mostly if data for validation is provided) is
+given, the recall will be computed. Otherwise the ROC-AUC (like for
+cross-validation)</dd>
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict  (only if <em>get_predictions</em> is True)</span><dd><p class="first">Return a dict containing the predictions, probability and more.</p>
+<ul class="last simple">
+<li>&#8216;y_pred&#8217; : predictions of the classifier</li>
+<li>&#8216;y_proba&#8217; : prediciton probabilities</li>
+<li>&#8216;y_true&#8217; : the true labels of the data (if available)</li>
+<li>&#8216;weights&#8217; : the weights of the corresponding predicitons</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.make_clf">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">make_clf</code><span class="sig-paren">(</span><em>clf</em>, <em>n_cpu=None</em>, <em>dict_only=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#make_clf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.make_clf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a classifier-dict. Takes a str, config-dict or clf-dict or clf</p>
+<dl class="docutils">
+<dt>clf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict or str or sklearn/REP-classifier</span><dd><p class="first">There are several ways to pass the classifier to the function.</p>
+<ul class="last simple">
+<li>Pure classifier: You can pass a classifier to the method,
+either a scikit-learn or a REP classifier.</li>
+<li>Classifier with name: you can name your classifier by either:<ul>
+<li>using a dict with {&#8216;my_clf_1&#8217;: clf}</li>
+<li>using a dict with {&#8216;name&#8217;: &#8216;my_clf_1&#8217;, &#8216;clf&#8217;: clf}
+where clf referes to the classifier and &#8216;my_clf_1&#8217; can be any name.</li>
+</ul>
+</li>
+<li>Configuration for a clf: Instead of instantiating the clf outside,
+you can also pass a configuration-dictionary. This has to look like:<ul>
+<li>{&#8216;clf_type&#8217;: config-dict, &#8216;name&#8217;: &#8216;my_clf_1&#8217;} (name is optional)
+whereas &#8216;clf_type&#8217; has to be any of the implemented clf-types like
+&#8216;xgb&#8217;, &#8216;rdf&#8217;, &#8216;ada&#8217; etc.</li>
+</ul>
+</li>
+<li>Get a standard-clf: providing a string refering to an implemented
+clf-type, you will get a classifier using the configuration in
+<a class="reference internal" href="raredecay.meta_config.html#module-raredecay.meta_config" title="raredecay.meta_config"><code class="xref py py-mod docutils literal"><span class="pre">meta_config</span></code></a></li>
+</ul>
+</dd>
+<dt>n_cpu</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; -1 or None</span><dd>The number of cpus to use for this classifier. If the classifier is not
+parallelizable, an according <em>parallel_profile</em> (also see in REP-docs)
+will be created; &#8216;threads-n&#8217; with n the number of cpus specified before.</dd>
+<dt>dict_only</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, only a dictionary will be returned containing the name, config,
+clf_type and parallel_profile, n_cpu.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd><p class="first">A dictionary containing the name (&#8216;name&#8217;) of the classifier as well
+as the classifier itself (&#8216;clf&#8217;). If <em>dict_only</em> is True, no clf will
+be returned but a &#8216;clf_type&#8217; as well as a &#8216;config&#8217; key.
+Additionally, there are more values that can be contained: if a
+configuration and not an already instantiated clf is given:</p>
+<ul class="last simple">
+<li><strong>parallel_profile</strong>: the parallel-profile (for different REP-functions)
+which is set according to the n_cpus entered as well as the n_cpus
+used. If n cpus should be used, the classifier takes, the profile
+will be None. If the classifier is using only 1 cpu, the profile will
+be &#8216;threads-n&#8217; with n = n_cpus.</li>
+<li><strong>n_cpus</strong>: The number of cpus used in the classifier.</li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.optimize_hyper_parameters">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">optimize_hyper_parameters</code><span class="sig-paren">(</span><em>original_data</em>, <em>target_data</em>, <em>clf</em>, <em>n_eval</em>, <em>features=None</em>, <em>n_checks=10</em>, <em>n_folds=10</em>, <em>generator_type='subgrid'</em>, <em>take_target_from_data=False</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#optimize_hyper_parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.optimize_hyper_parameters" title="Permalink to this definition">¶</a></dt>
+<dd><p>Optimize the hyperparameters of a classifier</p>
+<dl class="docutils">
+<dt>original_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The original data</dd>
+<dt>target_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">HEPDataStorage</span><dd>The target data</dd>
+<dt>clf</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">config-dict</span><dd>For possible options, see also <code class="xref py py-func docutils literal"><span class="pre">make_clf()</span></code>.
+The difference is, for the feature you want to have optimised, use an
+iterable instead of a single value, e.g. &#8216;n_estimators&#8217;: [1, 2, 3, 4] etc.</dd>
+<dt>n_eval</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1 or str &#8220;hh...hh:mm&#8221;</span><dd>How many evaluations should be done; how many points in the
+hyperparameter-space should be tested. This can either be an integer,
+which then represents the number of evaluations done or a string in the
+format of &#8220;hours:minutes&#8221; (e.g. &#8220;3:25&#8221;, &#8220;1569:01&#8221; (quite long...),
+&#8220;0:12&#8221;), which represents the approximat time it should take for the
+hyperparameter-search (<strong>not</strong> the exact upper limit)</dd>
+<dt>features</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list(str, str, str,...)</span><dd>List of strings containing the features/columns to be used for the
+hyper-optimization.</dd>
+<dt>n_checks</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt;= 1</span><dd>Number of checks on <em>each</em> KFolded dataset will be done. For example,
+you split your data into 10 folds, but may only want to train/test on
+3 different ones.</dd>
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt; 1</span><dd>How many folds you want to split your data in when doing train/test
+sets to measure the performance of the classifier.</dd>
+<dt>generator_type</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str {&#8216;subgrid&#8217;, &#8216;regression&#8217;, &#8216;random&#8217;}</span><dd><p class="first">The generator searches the hyper-parameter space. Different generators
+can be used using different strategies to search for the global maximum.</p>
+<ul class="last simple">
+<li><strong>subgrid</strong> : For larger grids, first performe search on smaller
+subgrids to better know the rough topology of the space.</li>
+<li><strong>regression</strong> : using an estimator doing regression on the already
+known hyper-parameter space points to estimate where to test for
+the next one.</li>
+<li><strong>random</strong> : Randomly choose points in the hyper-parameter space.</li>
+</ul>
+</dd>
+<dt>take_target_from_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">Boolean</span><dd>OUTDATED; not encouraged to use
+If True, the target-labeling (the y) will be taken from the data
+directly and not created. Otherwise, 0 will be assumed for the
+original_data and 1 for the target_data.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.reweight_Kfold">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">reweight_Kfold</code><span class="sig-paren">(</span><em>reweight_data_mc</em>, <em>reweight_data_real</em>, <em>n_folds=10</em>, <em>columns=None</em>, <em>reweighter='gb'</em>, <em>meta_cfg=None</em>, <em>score_clf='xgb'</em>, <em>add_weights_to_data=True</em>, <em>mcreweighted_as_real_score=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#reweight_Kfold"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.reweight_Kfold" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reweight data by &#8220;itself&#8221; for <em>scoring</em> and hyper-parameters via
+Kfolding to avoid bias.</p>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Do NOT use for the real reweighting process! (except if you really want
+to reweight the data &#8220;by itself&#8221;)</p>
+</div>
+<p>If you want to figure out the hyper-parameters for a reweighting process
+or just want to find out how good the reweighter works, you may want to
+apply this to the data itself. This means:</p>
+<ul class="simple">
+<li>train a reweighter on mc/real</li>
+<li>apply it to get new weights for mc</li>
+<li>compare the mc/real distribution</li>
+</ul>
+<p>The problem arises with biasing your reweighter. As in classification
+tasks, where you split your data into train/test sets for Kfolds, you
+want to do the same here. Therefore:</p>
+<ul class="simple">
+<li>split the mc data into (n_folds-1)/n_folds (training)</li>
+<li>train the reweighter on the training mc/complete real (if
+mcreweighted_as_real_score is True, the real data will be folded too
+for unbiasing the score)</li>
+<li>reweight the leftout mc test-fold</li>
+<li>do this n_folds times</li>
+<li>getting unbiased weights</li>
+</ul>
+<p>The parameters are more or less the same as for the
+<a class="reference internal" href="#raredecay.analysis.ml_analysis.reweight_train" title="raredecay.analysis.ml_analysis.reweight_train"><code class="xref py py-func docutils literal"><span class="pre">reweight_train()</span></code></a> and
+<a class="reference internal" href="#raredecay.analysis.ml_analysis.reweight_weights" title="raredecay.analysis.ml_analysis.reweight_weights"><code class="xref py py-func docutils literal"><span class="pre">reweight_weights()</span></code></a></p>
+<dl class="docutils">
+<dt>reweight_data_mc</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></span><dd>The Monte-Carlo data, which has to be &#8220;fitted&#8221; to the real data.</dd>
+<dt>reweight_data_real</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></span><dd>Same as <em>reweight_data_mc</em> but for the real data.</dd>
+<dt>n_folds</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int &gt;= 1</span><dd><p class="first">The number of folds to split the data. Usually, the more folds the
+&#8220;better&#8221; reweighting.</p>
+<p class="last">If n_folds = 1, the data will be reweighted directly and the benefit
+of Kfolds and the unbiasing <em>disappears</em></p>
+</dd>
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span><dd>The columns/features/branches you want to use for the reweighting.</dd>
+<dt>reweighter</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;gb&#8217;, &#8216;bins&#8217;}</span><dd>Specify which reweighter to be used</dd>
+<dt>reweight_saveas</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string</span><dd><p class="first">To save a trained reweighter in addition to return it. The value
+is the file(path +)name. The full name will be</p>
+<blockquote>
+<div>PICKLE_PATH + reweight_saveas + .pickle</div></blockquote>
+<p class="last">(.pickle is only added if not yet contained in &#8220;reweight_saveas&#8221;)</p>
+</dd>
+<dt>meta_cfg</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>Contains the parameters for the bins/gb-reweighter. See also
+<code class="xref py py-func docutils literal"><span class="pre">BinsReweighter()</span></code> and
+<code class="xref py py-func docutils literal"><span class="pre">GBReweighter()</span></code>.</dd>
+<dt>add_weights_to_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, the new weights will be added (in place) to the mc data and
+returned. Otherwise, the weights will only be returned.</dd>
+<dt>mcreweighted_as_real_score</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean or str</span><dd><p class="first">If a string, it has to be an implemented classifier in <em>classify</em>.
+If true, the default (&#8216;xgb&#8217; most probably) will be used.</p>
+<p>If not False, calculate and print the score. This scoring is based on a
+clf, which was trained on the not reweighted mc and real data and
+tested on the reweighted mc, and then predicts how many it &#8220;thinks&#8221;
+are real datapoints.</p>
+<p>Intuitively, a classifiers learns to distinguish between mc and real
+and then classifies mc reweighted data labeled as real; he says, how
+&#8220;real&#8221; the reweighted data looks like. So a higher score is better.
+Drawback of this method is, it is completely blind to over-fitting
+of the reweighter. To get a relation, the classifier also predicts
+the mc (which should be an under limit) as well as the real data
+(which should be an upper limit).</p>
+<p class="last">Even dough this scoring sais not a lot about how well the reweighting
+worked, we can say, that if the score is higher than the real one,
+it has somehow over-fitted (if a classifier cannot classify, say,
+more than 70% of the real data as real, it should not be able to
+classify more than 70% of the reweighted mc as real. Reweighted mc
+should not &#8220;look more real&#8221; than real data)</p>
+</dd>
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numpy array</span><dd>Return the new weights</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.reweight_train">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">reweight_train</code><span class="sig-paren">(</span><em>reweight_data_mc</em>, <em>reweight_data_real</em>, <em>columns=None</em>, <em>reweighter='gb'</em>, <em>reweight_saveas=None</em>, <em>meta_cfg=None</em>, <em>weights_mc=None</em>, <em>weights_real=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#reweight_train"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.reweight_train" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a trained reweighter from a (mc/real) distribution comparison.</p>
+<div class="line-block">
+<div class="line">Reweighting a distribution is a &#8220;making them the same&#8221; by changing the     weights of the bins (instead of 1) for each event. Mostly, and therefore     the naming, you want to change the mc-distribution towards the real one.</div>
+<div class="line">There are two possibilities</div>
+</div>
+<ul>
+<li><dl class="first docutils">
+<dt>normal bins reweighting:</dt>
+<dd><p class="first last">divides the bins from one distribution by the bins of the other
+distribution. Easy and fast, but unstable and inaccurat for higher
+dimensions.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>Gradient Boosted reweighting:</dt>
+<dd><p class="first last">uses several decision trees to reweight the bins. Slower, but more
+accurat. Very useful in higher dimensions.
+But be aware, that you can easily screw up things by overfitting.</p>
+</dd>
+</dl>
+</li>
+</ul>
+<dl class="docutils">
+<dt>reweight_data_mc</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></span><dd>The Monte-Carlo data, which has to be &#8220;fitted&#8221; to the real data.</dd>
+<dt>reweight_data_real</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></span><dd>Same as <em>reweight_data_mc</em> but for the real data.</dd>
+<dt>columns</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list of strings</span><dd>The columns/features/branches you want to use for the reweighting.</dd>
+<dt>reweighter</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">{&#8216;gb&#8217;, &#8216;bins&#8217;}</span><dd>Specify which reweighter to be used</dd>
+<dt>reweight_saveas</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string</span><dd><p class="first">To save a trained reweighter in addition to return it. The value
+is the file(path +)name. The full name will be</p>
+<blockquote>
+<div>PICKLE_PATH + reweight_saveas + .pickle</div></blockquote>
+<p class="last">(.pickle is only added if not yet contained in &#8220;reweight_saveas&#8221;)</p>
+</dd>
+<dt>meta_cfg</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>Contains the parameters for the bins/gb-reweighter. See also
+<code class="xref py py-func docutils literal"><span class="pre">BinsReweighter()</span></code> and
+<code class="xref py py-func docutils literal"><span class="pre">GBReweighter()</span></code>.</dd>
+<dt>weights_mc</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numpy.array [n_samples]</span><dd>Explicit weights for the Monte-Carlo data. Only specify if you don&#8217;t
+want to use the weights in the <em>HEPDataStorage</em>.</dd>
+<dt>weights_real</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numpy.array [n_samples]</span><dd>Explicit weights for the real data. Only specify if you don&#8217;t
+want to use the weights in the <em>HEPDataStorage</em>.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object of type reweighter</span><dd>Reweighter is trained to the data. Can, for example,
+be used with <code class="xref py py-func docutils literal"><span class="pre">predict_weights()</span></code></dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.ml_analysis.reweight_weights">
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">reweight_weights</code><span class="sig-paren">(</span><em>reweight_data</em>, <em>reweighter_trained</em>, <em>columns=None</em>, <em>normalize=True</em>, <em>add_weights_to_data=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#reweight_weights"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.reweight_weights" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add (or only return) new weights to the data by applying a given
+reweighter on the reweight_data.</p>
+<p>Can be seen as a wrapper for the
+<code class="xref py py-func docutils literal"><span class="pre">predict_weights()</span></code> method.
+Additional functionality:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Takes a trained reweighter as argument, but can also unpickle one
+from a file.</li>
+</ul>
+</div></blockquote>
+<dl class="docutils">
+<dt>reweight_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></span><dd>The data for which the reweights are to be predicted.</dd>
+<dt>reweighter_trained</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">(pickled) reweighter (<em>from hep_ml</em>)</span><dd>The trained reweighter, which predicts the new weights.</dd>
+<dt>normalize</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, the weights will be normalized to one.</dd>
+<dt>add_weights_to_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If set to False, the weights will only be returned and not updated in
+the data (<em>HEPDataStorage</em>).</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">numpy.array</span><dd>Return a numpy.array of shape [n_samples] containing the new
+weights.</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.analysis.physical_analysis.html" class="btn btn-neutral float-right" title="Physical Analysis with ML" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.analysis.html" class="btn btn-neutral" title="Analysis" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

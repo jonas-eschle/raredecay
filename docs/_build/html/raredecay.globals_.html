@@ -1,0 +1,250 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.globals_ module &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>raredecay.globals_ module</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.globals_.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.globals_">
+<span id="raredecay-globals-module"></span><h1><a href="#id1"><span class="problematic" id="id2">raredecay.globals_</span></a> module<a class="headerlink" href="#module-raredecay.globals_" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Apr 14 14:34:21 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<p>This module contains all (package-)global variables and methods.</p>
+<div class="section" id="instances">
+<h2>Instances<a class="headerlink" href="#instances" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object of class <a class="reference internal" href="raredecay.tools.output.html#raredecay.tools.output.OutputHandler" title="raredecay.tools.output.OutputHandler"><code class="xref py py-class docutils literal"><span class="pre">OutputHandler</span></code></a></span><dd><p class="first">An instance which is initiated once for the whole package and handles
+all the output and metastructure of the code:</p>
+<ul class="simple">
+<li>initialization:<ul>
+<li>create and set run-dependant variables</li>
+<li>create folders to save the collected output</li>
+<li>create loggers</li>
+</ul>
+</li>
+<li>collection of output:<ul>
+<li>collect figures and save them later on</li>
+<li>concatenate every string output and format it</li>
+</ul>
+</li>
+<li>finalization:<ul>
+<li>add general information to the output</li>
+<li>save all the figures and outputs</li>
+<li>collect run information like errors occured</li>
+</ul>
+</li>
+</ul>
+<p>It is important to use the same instance (of course) for the same run.
+Everything else would be very special case.</p>
+<div class="last admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">To ensure that you import the instance and to not make a copy,
+always import with an alias</p>
+</div>
+</dd>
+</dl>
+</div>
+<div class="section" id="variables">
+<h2>Variables:<a class="headerlink" href="#variables" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>randint</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>Many methods need random integers for their pseudo-random generator.
+To keep them all the same (or intentionally not), use the randint.</dd>
+</dl>
+</div>
+<div class="section" id="methods">
+<h2>methods<a class="headerlink" href="#methods" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt>free_cpus</dt>
+<dd>Return the number of available cores. Currently not sophisticated, but
+can be extended if wanted</dd>
+</dl>
+<dl class="function">
+<dt id="raredecay.globals_.free_cpus">
+<code class="descclassname">raredecay.globals_.</code><code class="descname">free_cpus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/globals_.html#free_cpus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.globals_.free_cpus" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

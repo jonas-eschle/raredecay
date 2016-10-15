@@ -1,0 +1,290 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Run Settings &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/>
+        <link rel="up" title="Raredecay Analysis Package" href="raredecay.html"/>
+        <link rel="prev" title="Output Handler" href="raredecay.tools.output.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="raredecay.analysis.html">Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">Tools</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Run Settings</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+    <li>Run Settings</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.settings.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.settings">
+<span id="run-settings"></span><h1>Run Settings<a class="headerlink" href="#module-raredecay.settings" title="Permalink to this headline">¶</a></h1>
+<p>Created on Tue Sep 27 16:45:51 2016</p>
+<p>Contain methods to change settings in the whole package</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<dl class="function">
+<dt id="raredecay.settings.figure_save_config">
+<code class="descclassname">raredecay.settings.</code><code class="descname">figure_save_config</code><span class="sig-paren">(</span><em>file_formats=['png', 'svg'], to_pickle=True, dpi=150</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#figure_save_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.figure_save_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the save-options of figures.</p>
+<p>If you initialized an output-path, the figures that are plotted during
+the run will be f. On one hand, they are saved as pictures in the
+given formats, on the other hand the figures (matplotlib) will be saved
+as a pickle-object (also in the output-folder)
+If the run was not initialized with an output-path, this function will
+have no effect on the behaviour of your script.</p>
+<dl class="docutils">
+<dt>file_formats</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or list[str, str, str,...]</span><dd>The possible formats to save the figures to. Currently implemented are:
+[&#8216;png&#8217;, &#8216;jpg&#8217;, &#8216;pdf&#8217;, &#8216;svg&#8217;]</dd>
+<dt>to_pickle</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, the matplotlib-figures will be saved as a pickle-file allowing
+for later plotting. They are saved in the output-folder.</dd>
+<dt>dpi</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int</span><dd>The resolution of the images.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.settings.finalize">
+<code class="descclassname">raredecay.settings.</code><code class="descname">finalize</code><span class="sig-paren">(</span><em>show_plots=True</em>, <em>play_sound_at_end=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.finalize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Finalize the run, (save figures and output) and return output</p>
+<dl class="docutils">
+<dt>show_plots</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If True, show the plots (<em>plt.show()</em>), if user prompt is activated,
+you first have to press enter to show them.</dd>
+<dt>play_sound_at_end</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If true, a beep will be played at the end of the run</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.settings.get_output_handler">
+<code class="descclassname">raredecay.settings.</code><code class="descname">get_output_handler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#get_output_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.get_output_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return an output handler, instance of <a class="reference internal" href="raredecay.tools.output.html#raredecay.tools.output.OutputHandler" title="raredecay.tools.output.OutputHandler"><code class="xref py py-class docutils literal"><span class="pre">OutputHandler()</span></code></a></p>
+<p>This can be used to add output (text as well as figures) and save them
+easely. For more information see the docs of the OutputHandler</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.settings.initialize">
+<code class="descclassname">raredecay.settings.</code><code class="descname">initialize</code><span class="sig-paren">(</span><em>output_path=None</em>, <em>run_name='Test run'</em>, <em>overwrite_existing=False</em>, <em>run_message='This is a test-run to test the package'</em>, <em>verbosity=3</em>, <em>plot_verbosity=3</em>, <em>prompt_for_input=False</em>, <em>logger_console_level='warning'</em>, <em>logger_file_level='debug'</em>, <em>n_cpu=1</em>, <em>gpu_in_use=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.initialize" title="Permalink to this definition">¶</a></dt>
+<dd><p>Place before Imports! Initialize/change several parameters for the package</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.settings.parallel_profile">
+<code class="descclassname">raredecay.settings.</code><code class="descname">parallel_profile</code><span class="sig-paren">(</span><em>n_cpu=-1</em>, <em>gpu_in_use=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#parallel_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.parallel_profile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the parallel profile, the n_cpu to use</p>
+<p>Most of the functions do not have a number of threads option. You can
+change that here by either:</p>
+<ul class="simple">
+<li>using a positive integer, which corresponds to the number of threads to
+use</li>
+<li>using a negative integer. Then, -1 means to use all available (virtual)
+cores (resp. the number of threads). But sometimes you want to still work
+on your machine and have not all cpus used up. Therefore you can just use
+-2 (which will use all except of one; &#8220;all up to the second last&#8221;), -3
+(which will use all except two; &#8220;all up to the third last&#8221;) etc.</li>
+</ul>
+<dl class="docutils">
+<dt>n_cpu</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int (not 0)</span><dd>The number of cpus to use, explanation see above.</dd>
+<dt>gpu_in_use</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean</span><dd>If a gpu is in use (say for nn), you can set this boolean to true in
+order to avoid parallel computation of the nn or to activate any
+other implemented gpu assistance.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.settings.set_verbosity">
+<code class="descclassname">raredecay.settings.</code><code class="descname">set_verbosity</code><span class="sig-paren">(</span><em>verbosity=3</em>, <em>plot_verbosity=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#set_verbosity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.set_verbosity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Change the verbosity of the package</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+      
+        <a href="raredecay.tools.output.html" class="btn btn-neutral" title="Output Handler" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

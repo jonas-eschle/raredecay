@@ -1,0 +1,365 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Data Tools &mdash; raredecay 1.0a documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="raredecay 1.0a documentation" href="index.html"/>
+        <link rel="up" title="Tools" href="raredecay.tools.html"/>
+        <link rel="next" title="Developer Tools" href="raredecay.tools.dev_tool.html"/>
+        <link rel="prev" title="Data Storage" href="raredecay.tools.data_storage.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="raredecay.analysis.html">Analysis</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.tools.html">Tools</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.data_storage.html">Data Storage</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Data Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.dev_tool.html">Developer Tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.metrics.html">Metrics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.tools.output.html">Output Handler</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">Run Settings</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+          <li><a href="raredecay.tools.html">Tools</a> &raquo;</li>
+      
+    <li>Data Tools</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.tools.data_tools.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.tools.data_tools">
+<span id="data-tools"></span><h1>Data Tools<a class="headerlink" href="#module-raredecay.tools.data_tools" title="Permalink to this headline">¶</a></h1>
+<p>Created on Tue Mar 29 17:53:18 2016</p>
+<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<p>Contains several tools to convert, load, save and plot data</p>
+<dl class="function">
+<dt id="raredecay.tools.data_tools.adv_return">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">adv_return</code><span class="sig-paren">(</span><em>return_value</em>, <em>save_name=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#adv_return"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.adv_return" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save the value if save_name specified, otherwise just return input</p>
+<p>Can be wrapped around the return value. Without any arguments, the return
+of your function will be exactly the same. With arguments, the value can
+be saved (<strong>pickled</strong>) before it is returned.</p>
+<dl class="docutils">
+<dt>return_value</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">any python object</span><dd>The python object which should be pickled.</dd>
+<dt>save_name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, None</span><dd><div class="first line-block">
+<div class="line">The (file-)name for the pickled file. File-extension will be added</div>
+</div>
+<p class="last">automatically if specified in <em>raredecay.meta_config</em>.
+| If <em>None</em> is passed, the object won&#8217;t be pickled.</p>
+</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">python object</span><dd>Return return_value without changes.</dd>
+<dt><strong>Usage</strong>:</dt>
+<dd><p class="first">Instead of a simple return statement</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="n">my_variable</span><span class="o">/</span><span class="n">my_object</span>
+</pre></div>
+</div>
+<p>one can use the <strong>completely equivalent</strong> statement</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="n">adv_return</span><span class="p">(</span><span class="n">my_variable</span><span class="o">/</span><span class="n">my_object</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the return value should be saved in addition to be returned, use</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">return</span> <span class="n">adv_return</span><span class="p">(</span><span class="n">my_variable</span><span class="o">/</span><span class="n">my_object</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="s1">&#39;my_object.pickle&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<blockquote>
+<div>(<em>the .pickle ending is not required but added automatically if omitted</em>)</div></blockquote>
+<p class="last">which returns the value and saves it.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.is_list">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">is_list</code><span class="sig-paren">(</span><em>data_to_check</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#is_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.is_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the given data is a list</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.is_ndarray">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">is_ndarray</code><span class="sig-paren">(</span><em>data_to_check</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#is_ndarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.is_ndarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether a given data is an ndarray.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.is_pickle">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">is_pickle</code><span class="sig-paren">(</span><em>data_to_check</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#is_pickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.is_pickle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.is_root">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">is_root</code><span class="sig-paren">(</span><em>data_to_check</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#is_root"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.is_root" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether a given data is a root file. Needs dicts to be True!</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.make_root_dict">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">make_root_dict</code><span class="sig-paren">(</span><em>path_to_rootfile</em>, <em>tree_name</em>, <em>branches</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#make_root_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.make_root_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a root_numpy compatible &#8220;root-dict&#8221; of a root-tree</p>
+<dl class="docutils">
+<dt>path_to_rootfile</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The exact path to the root-tree including the filename. Example:
+/home/user1/data/myRootTree1.root</dd>
+<dt>tree_name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The name of the tree</dd>
+<dt>branches</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or list[str, str, str,... ]</span><dd>The branches of the tree to use</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.obj_to_string">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">obj_to_string</code><span class="sig-paren">(</span><em>objects</em>, <em>separator=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#obj_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.obj_to_string" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a string containing all objects as strings, separated by the separator.</p>
+<p>Useful for automatic conversion for different types. The following objects
+will automatically be converted:</p>
+<ul class="simple">
+<li>None will be omitted</li>
+</ul>
+<dl class="docutils">
+<dt>objects</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">any object or list(obj, obj, ...) with a string representation</span><dd>The objects will be converted to a string and concatenated, separated
+by the separator.</dd>
+<dt>separator</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The separator between the objects. Default is &#8221; - &#8221;.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.to_list">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">to_list</code><span class="sig-paren">(</span><em>data_in</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#to_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.to_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert the data into a list. Does not pack lists into a new one.</p>
+<p>If your input is, for example, a string or a list of strings, or a
+tuple filled with strings, you have, in general, a problem:</p>
+<ul class="simple">
+<li>just iterate through the object will fail because it iterates through the
+characters of the string.</li>
+<li>using list(obj) converts the tuple, leaves the list but splits the strings
+characters into single elements of a new list.</li>
+<li>using [obj] creates a list containing a string, but also a list containing
+a list or a tuple, which you did not want to.</li>
+</ul>
+<p>Solution: use to_list(obj), which creates a new list in case the object is
+a single object (a string is a single object in this sence) or converts
+to a list if the object is already a container for several objects.</p>
+<dl class="docutils">
+<dt>data_in</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">any obj</span><dd>So far, any object can be entered.</dd>
+</dl>
+<dl class="docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list</span><dd>Return a list containing the object or the object converted to a list.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.to_ndarray">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">to_ndarray</code><span class="sig-paren">(</span><em>data_in</em>, <em>dtype=None</em>, <em>float_array=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#to_ndarray"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.to_ndarray" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert data to numpy array (containing only floats)</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.to_pandas">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">to_pandas</code><span class="sig-paren">(</span><em>data_in</em>, <em>indices=None</em>, <em>columns=None</em>, <em>dtype=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#to_pandas"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.to_pandas" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert data from numpy or root to pandas dataframe.</p>
+<p>Convert data safely to pandas, whatever the format is.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.data_tools.try_unpickle">
+<code class="descclassname">raredecay.tools.data_tools.</code><code class="descname">try_unpickle</code><span class="sig-paren">(</span><em>file_to_unpickle</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/data_tools.html#try_unpickle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.data_tools.try_unpickle" title="Permalink to this definition">¶</a></dt>
+<dd><p>Try to unpickle a file and return, otherwise just return input</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.tools.dev_tool.html" class="btn btn-neutral float-right" title="Developer Tools" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.tools.data_storage.html" class="btn btn-neutral" title="Data Storage" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0a',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

@@ -14,7 +14,7 @@ def readme():
         return f.read()
 try:
     git_version = subprocess.check_output(["git", "-C",
-                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay",
+                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay/raredecay",
                         "describe"])
     git_version = git_version.partition('-')
     git_version = str(git_version[0])
@@ -32,14 +32,14 @@ setup(name='raredecay',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='particle physics analysis machine learning reweight',
-      url='https://bitbucket.org/mayou36/hep-ml-analysis',
+      url='https://github.com/mayou36/raredecay',
       author='Jonas Eschle',
       author_email='mayou36@jonas.eschle.com',
       license='None',
       install_requires=[
           'hep_ml',
           'rep>=0.6.6',
-          'https://github.com/yandex/rep/archive/stratifiedkfold.zip',
+          #'https://github.com/yandex/rep/archive/stratifiedkfold.zip',
           'sklearn>=0.17.1'
           'nose_parameterized'
           'root_numpy'

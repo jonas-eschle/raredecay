@@ -46,7 +46,7 @@ logger_cfg = dict(
     # take 'both', 'file', 'console' or 'no'
     log_level_file='debug',
     # specifies the level to be logged to the file
-    log_level_console='debug', #'warning',
+    log_level_console='warning', #'warning',
     # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time
