@@ -438,8 +438,7 @@ class OutputHandler(object):
         if do_print:
             if to_end:
                 self._loud_end_output += temp_out
-            else:
-                sys.stdout.write(temp_out)
+            print temp_out  # ?? why was there sys.stdout.write?!?
         if to_end:
             self.end_output += temp_out
         else:

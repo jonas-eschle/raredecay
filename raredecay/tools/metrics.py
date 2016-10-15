@@ -138,7 +138,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
                                                 validation=real_test, clf=clf,
                                                 plot_title="train on mc reweighted/real, test on real",
                                                 weights_ratio=1, get_predictions=True,
-                                                plot_importance=1)
+                                                plot_importance=1, importance=1)
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -151,7 +151,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
             tmp_, scores_max[fold], pred_mc = ml_ana.classify(mc_data, real_train, validation=real_test,
                                            plot_title="real/mc NOT reweight trained, validate on real",
                                            weights_ratio=1, get_predictions=True, clf=clf,
-                                           plot_importance=1)
+                                           plot_importance=1, importance=1)
             mc_data.set_weights(temp_weights)
             probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])

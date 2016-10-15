@@ -611,10 +611,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, n_eval, features=
 
 
 def classify(original_data=None, target_data=None, features=None, validation=10,
-             clf='xgb', plot_importance=3, extended_report=False, plot_title=None,
-             curve_name=None, target_from_data=False, conv_ori_weights=False,
-             conv_tar_weights=False, conv_vali_weights=False, weights_ratio=0,
-             get_predictions=False):
+             clf='xgb', importance=3, plot_importance=3, extended_report=False,
+             plot_title=None, curve_name=None, target_from_data=False,
+             get_predictions=False, weights_ratio=0,
+             conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False):
     """Training and testing a classifier or distinguish a dataset
 
     Classify is a multi-purpose function which does most of the things around
@@ -772,7 +772,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
             out.add_output(["ROC AUC of ", clf_name, ": ", clf_score],
                            obj_separator="", subtitle="Report of classify",
-                           importance=4)
+                           importance=importance)
             plot_name = clf_name + ", AUC = " + str(clf_score)
             binary_test = True
         elif n_classes == 1:
@@ -789,12 +789,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             clf_score = clf.score(lds_test.get_data(), y_true, w_test)
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)#, sample_weight=w_test)
             class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
-            out.add_output(class_rep, section="Classification report " + clf_name)
+            out.add_output(class_rep, section="Classification report " + clf_name,
+                           importance=importance)
             out.add_output(["accuracy NO WEIGHTS! (just for curiosity):", clf_name,
-                            ",", curve_name, ":", clf_score2],
-                            subtitle="Report of classify", importance=4)
+                            ",", curve_name, ":", clf_score2], importance=importance,
+                            subtitle="Report of classify")
             out.add_output(["recall of", clf_name, ",", curve_name, ":", clf_score],
-                           importance=4)
+                           importance=importance)
             binary_test = False
             plot_name = clf_name + ", recall = " + str(clf_score)
         else:
@@ -1134,7 +1135,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10,
                                        add_weights_to_data=True)  # fold only, not full data
         # plot one for example of the new weights
         if n_folds > 1:
-            out.save_fig("new weights of fold " + str(fold))
+            out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
             plt.hist(new_weights, bins=40, log=True)
 
         if mcreweighted_as_real_score:
@@ -1144,16 +1145,19 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10,
             clf, scores[fold] = classify(train_mc, train_real, validation=test_mc,
                                          curve_name="mc reweighted as real",
                                          plot_title="fold " + str(fold) + " reweighted validation",
-                                         weights_ratio=1, clf=score_clf)
+                                         weights_ratio=1, clf=score_clf,
+                                         importance=1, plot_importance=1)
 
             # Get the max and min for "calibration" of the possible score for the reweighted data by
             # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
             test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
             tmp_, score_min[fold] = classify(clf=clf, validation=test_mc,
-                                             curve_name="mc as real")
+                                             curve_name="mc as real",
+                                             importance=1, plot_importance=1)
             test_real.set_targets(1)
             tmp_, score_max[fold] = classify(clf=clf, validation=test_real,
-                                             curve_name="real as real")
+                                             curve_name="real as real",
+                                             importance=1, plot_importance=1)
 
 
         # collect all the new weights to get a really cross-validated reweighted dataset
@@ -1179,7 +1183,8 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10,
 
     # create score
     if mcreweighted_as_real_score:
-        out.add_output("", subtitle="Kfold reweight report", section="Precision scores of classification on reweighted mc")
+        out.add_output("", subtitle="Kfold reweight report", section="Precision scores of classification on reweighted mc",
+                       importance=4)
         score_list = [("Reweighted: ", scores, 'score_reweighted'),
                       ("mc as real (min): ", score_min, 'score_min'),
                       ("real as real (max): ", score_max, 'score_max')]
@@ -1187,7 +1192,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10,
         for name, score, key in score_list:
             mean, std = round(np.mean(score), 4), round(np.std(score), 4)
             out.add_output(["Classify the target, average score " + name + str(mean) +
-                            " +- " + str(std)], to_end=True)
+                            " +- " + str(std)], to_end=True, importance=4)
             output[key] = mean
 
     new_weights_all = pd.Series(new_weights_all, index=new_weights_index)

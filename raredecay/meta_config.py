@@ -94,7 +94,7 @@ ROOT_DATATYPE = "root"  # default 'root'
 # folder where the pickled objects are stored
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 # folder where the git-directory is located. Can be an empty string
-GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/HEP-decay-analysis/raredecay"
+GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay/raredecay"
 
 #------------------------------------------------------------------------------
 #  Debug related options
