@@ -39,12 +39,12 @@ setup(name='raredecay',
       install_requires=[
           'hep_ml',
           'rep>=0.6.6',
-          #'https://github.com/yandex/rep/archive/stratifiedkfold.zip',
-          'sklearn>=0.17.1'
-          'nose_parameterized'
-          'root_numpy'
+          'git+https://github.com/yandex/rep/archive/stratifiedkfold.zip',
+          'sklearn>=0.17.1',
+          'nose_parameterized',
+          'root_numpy',
 	  #'rootpy'
-          'seaborn'
+          'seaborn',
 	#'memory_profiler'  # for developement, can be removed later
       ],
       packages=['raredecay',
