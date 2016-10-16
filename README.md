@@ -23,7 +23,9 @@ The API as well as the documentation:
 ## Setup and installation ##
 
 PIP package will may be uploaded in the future. Until then, use the following.
-first install the very newest version of REP (the -U can be omitted if necessary, but is recommended):
+first install the very newest version of REP
+
+(the -U can be omitted if necessary, but is recommended):
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
