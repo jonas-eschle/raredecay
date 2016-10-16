@@ -18,7 +18,7 @@ To get an idea of the package, have a look at the howto notebooks:
 ## Documentation and API ##
 
 The API as well as the documentation:
-[Documentation](http://mayou36.bitbucket.org/index.html)
+[Documentation](http://mayou36.bitbucket.org/raredecay/docs/)
 
 ## Setup and installation ##
 
