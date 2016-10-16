@@ -1,0 +1,9 @@
+hep_ml
+rep >= 0.6.6
+https://github.com/yandex/rep/archive/stratifiedkfold.zip
+scikit-learn >= 0.18
+nose_parameterized
+root_numpy
+rootpy
+seaborn
+

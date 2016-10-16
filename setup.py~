@@ -8,19 +8,28 @@ Created on Thu Apr 28 16:26:12 2016
 from setuptools import setup
 import subprocess
 
+import io
+import os
+import re
+
+here = os.path.abspath(os.path.dirname(__file__))
+
+with io.open(os.path.join(here, 'requirements.txt')) as f:
+    requirements = f.read().split('\n')
+
 
 def readme():
     with open('README.md') as f:
         return f.read()
 try:
     git_version = subprocess.check_output(["git", "-C",
-                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay/raredecay",
+                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay",
                         "describe"])
     git_version = git_version.partition('-')
     git_version = str(git_version[0])
 except:
     git_version = 'unknown'
-#git_version = '0.9.5'
+    git_version = '1.0'
 
 
 setup(name='raredecay',
@@ -36,17 +45,8 @@ setup(name='raredecay',
       author='Jonas Eschle',
       author_email='mayou36@jonas.eschle.com',
       license='None',
-      install_requires=[
-          'hep_ml',
-          'rep>=0.6.6',
-          'git+https://github.com/yandex/rep/archive/stratifiedkfold.zip',
-          'sklearn>=0.17.1',
-          'nose_parameterized',
-          'root_numpy',
-	  #'rootpy'
-          'seaborn',
-	#'memory_profiler'  # for developement, can be removed later
-      ],
+      dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
+      install_requires=requirements,
       packages=['raredecay',
                 'raredecay.analysis',
                 'raredecay.run_config',
