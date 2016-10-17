@@ -32,6 +32,7 @@ Then, install the raredecay package via
 ```
 pip install git+https://github.com/mayou36/raredecay.git
 ```
+As it is a young package still under developement, it may receive regular updates and improvements and it is probably a good idea to regularly download the newest package.
 
 
 [pandas.DataFrame]: http://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html
