@@ -1,3 +1,6 @@
+[![Code Health](https://landscape.io/github/mayou36/raredecay/master/landscape.svg?style=flat)](https://landscape.io/github/mayou36/raredecay/master)
+
+
 # raredecay #
 
 This package consists of several tools for the event selection of particle decays, mostly built on machine learning techniques.
