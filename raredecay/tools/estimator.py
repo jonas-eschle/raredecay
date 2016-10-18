@@ -4,29 +4,29 @@ Created on Sat May 21 12:02:58 2016
 
 @author: Jonas Eschle "Mayou36"
 """
-from memory_profiler import profile
+
 
 import copy
 import numpy as np
 import pandas as pd
-import seaborn as sns
-from collections import Counter, OrderedDict
+# import seaborn as sns
+from collections import OrderedDict
 
 from rep.estimators.interface import Classifier
 
-import hep_ml.reweight
 from rep.metaml import ClassifiersFactory
 from rep.utils import train_test_split
 from rep.data import LabeledDataStorage
 
 # classifier imports
-from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, ExtraTreesClassifier
-from sklearn.ensemble import AdaBoostClassifier, VotingClassifier, BaggingClassifier
+from rep.estimators import SklearnClassifier, XGBoostClassifier  # , TMVAClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier  # , VotingClassifier
 from rep.estimators.theanets import TheanetsClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LogisticRegression
-from sklearn.neighbors import KNeighborsClassifier
+# from sklearn.tree import DecisionTreeClassifier
+# from sklearn.linear_model import LogisticRegression
+# from sklearn.neighbors import KNeighborsClassifie
 from sklearn.preprocessing import StandardScaler
 
 from rep.report import ClassificationReport
@@ -35,17 +35,10 @@ from raredecay import globals_
 from raredecay.tools import dev_tool
 from raredecay import meta_config
 
+import importlib
+cfg = importlib.import_module(meta_config.run_config)
+logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
-
-
-if __name__ == '__main__':
-    logger = None  # dev_tool.make_logger(__name__)
-else:
-    # import configuration
-    import importlib
-    from raredecay import meta_config
-    cfg = importlib.import_module(meta_config.run_config)
-    logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 # TODO: Transformations don't work
 class Mayou(Classifier):
@@ -60,7 +53,7 @@ class Mayou(Classifier):
         ),
         rdf=dict(
             n_estimators=1600,  # 1600
-            max_features= 'auto', # only 1 feature seems to be pretty good...
+            max_features='auto',  # only 1 feature seems to be pretty good...
             max_depth=200,
             min_samples_split=250,
             min_samples_leaf=150,
@@ -72,9 +65,7 @@ class Mayou(Classifier):
             class_weight=None,
             bagging=None
         ),
-#        erf=dict(
-#            n_estimators=50,
-#        ),
+
         nn=dict(
             layers=[100, 100],
             hidden_activation='logistic',
@@ -91,10 +82,6 @@ class Mayou(Classifier):
                        'learning_rate': 0.2, 'min_improvement': 0.01}],
             bagging=None
         ),
-#        ada=dict(
-#            n_estimators=300,
-#            learning_rate=0.1
-#        ),
         gb=dict(
             learning_rate=0.05,
             n_estimators=500,
@@ -115,7 +102,8 @@ class Mayou(Classifier):
     )
 
     def __init__(self, base_estimators=None, bagging_base=None, stacking='xgb',
-                 features_stack=None, bagging_stack=None, hunting=False, transform=True, transform_pred=True):
+                 features_stack=None, bagging_stack=None, hunting=False,
+                 transform=True, transform_pred=True):
         """blablabla
 
 
@@ -208,7 +196,6 @@ class Mayou(Classifier):
             temp_bagging = val.pop('bagging', bagging)
             bagging = temp_bagging if bagging is None else bagging
 
-
             if key == 'rdf':
                 config_clf = dict(val)  # possible multi-threading arguments
                 clf = SklearnClassifier(RandomForestClassifier(**config_clf))
@@ -234,15 +221,11 @@ class Mayou(Classifier):
             if isinstance(bagging, int) and bagging >= 1:
                 bagging = dict(self.__DEFAULT_BAG_CFG, n_estimators=bagging)
             if isinstance(bagging, dict):
-            # TODO: implement multi-thread:
+                # TODO: implement multi-thread:
                 bagging.update({'base_estimator': clf})
                 clf = SklearnClassifier(BaggingClassifier(**bagging))
-
-
-
         else:
             raise ValueError(str(clf) + " not valid as a classifier.")
-
 
         clf = {key: clf}
         return clf
@@ -282,10 +265,10 @@ class Mayou(Classifier):
 
         # slice the arrays of predictions in the dict right
         for key, val in predictions.items():
-            predictions[key] = val[:,1]
+            predictions[key] = val[:, 1]
         return pd.DataFrame(predictions, index=index, columns=columns)
 
-    #@profile
+    # @profile
     def _factory_predict_proba(self, X):
 
         index = X.index
@@ -301,7 +284,7 @@ class Mayou(Classifier):
 
         # slice the arrays of predictions in the dict right
         for key, val in predictions.items():
-            predictions[key] = val[:,1]
+            predictions[key] = val[:, 1]
         return pd.DataFrame(predictions, index=index)
 
     def _get_X_stack(self, X, fit_scaler=False):
@@ -309,7 +292,7 @@ class Mayou(Classifier):
         # get the predictions of the base estimators
         lvl_0_proba = pd.DataFrame(self._factory_predict_proba(X), index=X.index,
                                    columns=self._factory.keys())
-        lvl_0_proba = self._transform_pred(lvl_0_proba,fit=fit_scaler)
+        lvl_0_proba = self._transform_pred(lvl_0_proba, fit=fit_scaler)
 
         # add data features to stacking data
         if self._features_stack is not None:
@@ -403,13 +386,12 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     from rep.metaml import FoldingClassifier
-    from rep.report.metrics import RocAuc, significance, ams, OptimalAccuracy, OptimalAMS
+    from rep.report.metrics import RocAuc, ams, OptimalAccuracy, OptimalAMS  # , significance
     from raredecay.tools.metrics import punzi_fom, precision_measure
-    from sklearn.svm import NuSVC
-    from sklearn.naive_bayes import GaussianNB
+#    from sklearn.svm import NuSVC
+#    from sklearn.naive_bayes import GaussianNB
 
     from root_numpy import root2array, rec2array
-
 
     folding = True
     higgs_data = False
@@ -419,19 +401,21 @@ if __name__ == '__main__':
     n_tot = n_ones + n_zeros
 
     branch_names = ['two', 'one']
-    feature_one = np.concatenate((np.random.normal(loc=0.2, size=n_ones), np.random.exponential(scale=1.0, size=n_zeros)))
-    feature_two = np.concatenate((np.random.exponential(scale=1.7, size=n_ones), np.random.normal(loc=-0.7, size=n_zeros)))
-    #feature_two = copy.deepcopy(feature_one)
+    feature_one = np.concatenate((np.random.normal(loc=0.2, size=n_ones),
+                                  np.random.exponential(scale=1.0, size=n_zeros)))
+    feature_two = np.concatenate((np.random.exponential(scale=1.7, size=n_ones),
+                                  np.random.normal(loc=-0.7, size=n_zeros)))
+    # feature_two = copy.deepcopy(feature_one)
     X = pd.DataFrame({'one': feature_one, 'two': feature_two})
     y = np.concatenate((np.ones(n_ones), np.zeros(n_zeros)))
     w = np.ones(n_tot)
 
     if higgs_data:
 
-#                jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,
-#        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,
-#        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,
-#        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,
+        #                jet 1 pt, jet 1 eta, jet 1 phi, jet 1 b-tag,
+        #        jet 2 pt, jet 2 eta, jet 2 phi, jet 2 b-tag,
+        #        jet 3 pt, jet 3 eta, jet 3 phi, jet 3 b-tag,
+        #        jet 4 pt, jet 4 eta, jet 4 phi, jet 4 b-tag,
         branch_names = """
         missing energy magnitude, missing energy phi,
         m_jj, m_jjj, m_lv, m_jlv, m_bb, m_wbb,
@@ -463,42 +447,41 @@ if __name__ == '__main__':
                             np.zeros(backgr.shape[0])))
         w = np.ones(len(X))
 
-
-
     if primitiv:
-        X = pd.DataFrame({'odin': np.array([2., 2., 2., 2., 3., 3., 2., 3., 8., 7., 8., 7., 8., 8., 7., 8.]),
-                              'dwa': np.array([2.2, 2.1, 2.2, 2.3, 3.1, 3.1, 2.1, 3.2, 8.1, 7.5, 8.2, 7.1, 8.5, 8.2, 7.6, 8.1])
-                              })
-        y = np.array([0,0,0,0,0,0,0,0,1,1,1,1,1,1,1,1])
+        X = pd.DataFrame({'odin': np.array([2., 2., 2., 2., 3., 3., 2., 3., 8.,
+                                            7., 8., 7., 8., 8., 7., 8.]),
+                          'dwa': np.array([2.2, 2.1, 2.2, 2.3, 3.1, 3.1, 2.1, 3.2, 8.1,
+                                           7.5, 8.2, 7.1, 8.5, 8.2, 7.6, 8.1])
+                          })
+        y = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
         w = np.ones(16)
         branch_names = ['odin', 'dwa']
     print branch_names
     X_train, X_test, y_train, y_test, w_train, w_test = train_test_split(X, y, w, test_size=0.33)
 
-
     lds = LabeledDataStorage(X_test, y_test, w_test)
-
     # CLASSIFIER
-    clf_stacking = SklearnClassifier(RandomForestClassifier(n_estimators=5000, bootstrap=False, n_jobs=7))
-    #clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,
+    clf_stacking = SklearnClassifier(RandomForestClassifier(n_estimators=5000, bootstrap=False,
+                                                            n_jobs=7))
+    # clf_stacking = XGBoostClassifier(n_estimators=700, eta=0.1, nthreads=8,
     #                                 subsample=0.5
     #                                 )
-    #clf_stacking='nn'
-    clf = Mayou(base_estimators={'xgb': None}, bagging_base=None, bagging_stack=8, stacking=clf_stacking,
-                features_stack=branch_names,
+    # clf_stacking='nn'
+    clf = Mayou(base_estimators={'xgb': None}, bagging_base=None, bagging_stack=8,
+                stacking=clf_stacking, features_stack=branch_names,
                 transform=False, transform_pred=False)
-    #clf = SklearnClassifier(GaussianNB())
-    #clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1., bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))
-    #clf = XGBoostClassifier(n_estimators=400, eta=0.1, nthreads=6)
-    #clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
-    #clf = SklearnClassifier(NuSVC(cache_size=1000000))
-    #clf = SklearnClassifier(clf)
+    # clf = SklearnClassifier(GaussianNB())
+    # clf = SklearnClassifier(BaggingClassifier(n_jobs=1, max_features=1.,
+    # bootstrap=False, base_estimator=clf, n_estimators=20, max_samples=0.1))
+    # clf = XGBoostClassifier(n_estimators=400, eta=0.1, nthreads=6)
+    # clf = SklearnClassifier(BaggingClassifier(clf, max_samples=0.8))
+    # clf = SklearnClassifier(NuSVC(cache_size=1000000))
+    # clf = SklearnClassifier(clf)
     if folding:
         X_train = X_test = X
         y_train = y_test = y
         w_train = w_test = w
         clf = FoldingClassifier(clf, n_folds=5)
-
 
     clf.fit(X_train, y_train, w_train)
     global debug2
@@ -507,7 +490,7 @@ if __name__ == '__main__':
     print "debug2 2=", debug2
     print "Probabilites", clf.predict_proba(X_test)
     print "debug2 3=", debug2
-    #report = clf.test_on(X_test, y_test, w_test)
+    # report = clf.test_on(X_test, y_test, w_test)
     report = clf.test_on_lds(lds)
     report.roc().plot(new_plot=True)
     print "debug2 4=", debug2
