@@ -15,8 +15,6 @@ import collections
 from raredecay import meta_config
 
 
-
-
 def syspath_append(verboise=False):
     """Adds the relevant path to the sys.path variable.
     options:
@@ -25,8 +23,10 @@ def syspath_append(verboise=False):
     import sys
     import config
 
-    if verboise == 'v': verboise = True
-    if verboise: print sys.path
+    if verboise == 'v':
+        verboise = True
+    if verboise:
+        print sys.path
     # n_to_remove = 0 #number of elements to remove from sys.path from behind
     # sys.path = sys.path[:len(sys.path)-n_to_remove]
     # used to remove unnecessary bindings
@@ -37,12 +37,13 @@ def syspath_append(verboise=False):
                 sys.path.append(path)
             except:
                 print "error when adding path \""+path+"\" to sys.path"
-    if verboise: print sys.path
+    if verboise:
+        print sys.path
 
 
 def make_logger(module_name, logging_mode='both', log_level_file='debug',
                 log_level_console='debug', overwrite_file=True,
-                log_file_name='AAlast_run',log_file_dir=None):
+                log_file_name='AAlast_run', log_file_dir=None):
     """Return a logger with a console-/filehandler or both.
 
     A useful tool to log the run of the program and debug or control it. With
@@ -90,7 +91,7 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
             # set logging only to console; if 'file' was selected, no console,
             # set logging to console with level 'critical'
             if logging_mode == 'file':
-                log_level_console='critical'
+                log_level_console = 'critical'
             logging_mode = 'console'
 
     logger = logging.getLogger(module_name)
@@ -154,9 +155,9 @@ def check_var(variable, allowed_range, default=None, logger=None):
     # Dictionary
     if variable not in allowed_range:
         logger.warning(str(variable) + " is not a valid choice of " +
-                            str(allowed_range.keys()) +
-                            ". Instead, the default value was used: " +
-                            default)
+                       str(allowed_range.keys()) +
+                       ". Instead, the default value was used: " +
+                       default)
         variable = default
     return variable
 
@@ -221,9 +222,9 @@ def is_in_primitive(test_object, allowed_primitives=None):
     return flag
 
 
-
-def play_sound(duration = 0.3, frequency = 440, change=False):
+def play_sound(duration=0.3, frequency=440, change=False):
     """ Play a single frequency (Hertz) for a given time (seconds).
     """
+    freq = frequency
     import os
-    os.system('play --no-show-progress --null --channels 1 synth %s sine %f' % (duration, frequency))
+    os.system('play --no-show-progress --null --channels 1 synth %s sine %f' % (duration, freq))

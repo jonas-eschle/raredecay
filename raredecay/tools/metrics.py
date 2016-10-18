@@ -14,7 +14,6 @@ import raredecay.analysis.ml_analysis as ml_ana
 from raredecay.globals_ import out
 
 
-
 def rnd_dist():
     """Test reweighting by classify several random distributions. Not yet
     known how to interpret outcome correctly"""
@@ -108,9 +107,12 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     """
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
-    assert isinstance(mc_data, data_storage.HEPDataStorage), "mc_data wrong type:" + str(type(mc_data)) + ", has to be HEPDataStorage"
-    assert isinstance(real_data, data_storage.HEPDataStorage), "real_data wrong type:" + str(type(real_data)) + ", has to be HEPDataStorage"
-    assert isinstance(clf, str), "clf has to be a string, the name of a valid classifier. Check the docs!"
+    assert isinstance(mc_data, data_storage.HEPDataStorage), \
+        "mc_data wrong type:" + str(type(mc_data)) + ", has to be HEPDataStorage"
+    assert isinstance(real_data, data_storage.HEPDataStorage), \
+        "real_data wrong type:" + str(type(real_data)) + ", has to be HEPDataStorage"
+    assert isinstance(clf, str),\
+        "clf has to be a string, the name of a valid classifier. Check the docs!"
 
     output = {}
 
@@ -121,24 +123,20 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     weights_mc = []
     weights_reweighted = []
 
-
     real_pred = []
     real_test_index = []
     real_mc_pred = []
-
-
 
     # initialize data
     real_data.make_folds(n_folds=n_folds)
     for fold in range(n_folds):
         real_train, real_test = real_data.get_fold(fold)
         real_test.set_targets(1)
-
-        tmp_, scores[fold], pred_reweighted = ml_ana.classify(mc_data, real_train,
-                                                validation=real_test, clf=clf,
-                                                plot_title="train on mc reweighted/real, test on real",
-                                                weights_ratio=1, get_predictions=True,
-                                                plot_importance=1, importance=1)
+        tmp_out = ml_ana.classify(mc_data, real_train, validation=real_test, clf=clf,
+                                  plot_title="train on mc reweighted/real, test on real",
+                                  weights_ratio=1, get_predictions=True,
+                                  plot_importance=1, importance=1)
+        t_, scores[fold], pred_reweighted = tmp_out
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -148,35 +146,34 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         if test_max:
             temp_weights = mc_data.get_weights()
             mc_data.set_weights(1)
-            tmp_, scores_max[fold], pred_mc = ml_ana.classify(mc_data, real_train, validation=real_test,
-                                           plot_title="real/mc NOT reweight trained, validate on real",
-                                           weights_ratio=1, get_predictions=True, clf=clf,
-                                           plot_importance=1, importance=1)
+            tmp_out = ml_ana.classify(mc_data, real_train, validation=real_test,
+                                      plot_title="real/mc NOT reweight trained, validate on real",
+                                      weights_ratio=1, get_predictions=True, clf=clf,
+                                      plot_importance=1, importance=1)
+            tmp_, scores_max[fold], pred_mc = tmp_out
             mc_data.set_weights(temp_weights)
             probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])
 
             real_mc_pred.extend(pred_mc['y_pred'])
 
-
     output['score'] = np.round(scores.mean(), 4)
     output['score_std'] = np.round(scores.std(), 4)
 
     out.add_output(["Score train_similar (recall, lower means better): ",
-                    str(round(output['score'], 4)) + " +- " + str(round(output['score_std'], 4))],
-                    # TODO: remove? not required actually: "Scores:", [round(i, 4) for i in scores]],
-                    subtitle="Clf trained on real/mc reweight, tested on real")
+                   str(round(output['score'], 4)) + " +- " + str(round(output['score_std'], 4))],
+                   subtitle="Clf trained on real/mc reweight, tested on real")
     if test_max:
         output['score_max'] = np.round(scores_max.mean(), 4)
         output['score_max_std'] = np.round(scores_max.std(), 4)
-        out.add_output(["No reweighting score: ", round(output['score_max'], 4),])
+        out.add_output(["No reweighting score: ", round(output['score_max'], 4)])
 
     if test_predictions:
         # test on the reweighted/real predictions
         real_data.set_targets(targets=real_pred, index=real_test_index)
         tmp_, score_pred = ml_ana.classify(real_data, target_from_data=True, clf=clf_pred,
                                            plot_title="train on predictions reweighted/real, real as target",
-                                           weights_ratio=1, validation=n_checks, make_plots=make_plots)
+                                           weights_ratio=1, validation=n_checks, plot_importance=3)
         output['score_pred'] = round(score_pred, 4)
 
     if test_predictions and test_max:
@@ -185,7 +182,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         tmp_, score_mc_pred = ml_ana.classify(real_data, target_from_data=True, clf=clf_pred,
                                               validation=n_checks,
                                               plot_title="mc not rew/real pred, real as target",
-                                              weights_ratio=1, make_plots=make_plots)
+                                              weights_ratio=1, plot_importance=3)
         output['score_mc_pred'] = np.round(score_mc_pred, 4)
 
     return output

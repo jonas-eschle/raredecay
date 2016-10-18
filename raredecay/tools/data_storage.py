@@ -9,7 +9,7 @@ from __future__ import division, absolute_import
 
 import copy
 import warnings
-#import cProfile as profile
+# import cProfile as profile
 
 import pandas as pd
 import seaborn as sns
@@ -17,16 +17,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 import random
-from collections import deque
-import itertools
-#HACK
-#import sys
-#sys.path.append('/usr/local/root-6.06.02/bindings/pyroot/ROOT.py')
-#sys.path.append('/usr/local/root-6.06.02/rootBuild/lib/ROOT.py')
-#sys.path.append('/usr/local/lib/python2.7/dist-packages/rootpy/ROOT.py')
-#HACK
+# from collections import deque
+# import itertools
 
-#from root_numpy import root2rec
 from rep.data.storage import LabeledDataStorage
 
 from raredecay.tools import data_tools, dev_tool
@@ -34,14 +27,15 @@ try:
     from raredecay.globals_ import out
     out_imported = True
 except ImportError:
-    warnings.warn(ImportWarning, "could not import out. Some functions regarding output (save figure etc.) won't be available")
+    warnings.warn(ImportWarning, "could not import out. Some functions regarding output" +
+                  "(save figure etc.) won't be available")
     out_imported = False
 from raredecay import meta_config
 
-## TODO: import config not needed??
-## import configuration
+# TODO: import config not needed??
+# import configuration
 import importlib
-##from raredecay import meta_config
+# from raredecay import meta_config
 cfg = importlib.import_module(meta_config.run_config)
 modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
@@ -250,7 +244,6 @@ class HEPDataStorage(object):
 
             self._columns = columns
 
-
     def _set_length(self, index):
         # determine whether to set length individually from the data or not
         if index is None:
@@ -258,7 +251,8 @@ class HEPDataStorage(object):
                 temp_root_dict = copy.deepcopy(self._data)
                 temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
                 temp_branch = data_tools.to_list(temp_branch)
-                self._length = len(data_tools.to_ndarray(dict(branches=temp_branch[0], **temp_root_dict)))
+                self._length = len(data_tools.to_ndarray(dict(branches=temp_branch[0],
+                                                              **temp_root_dict)))
             elif self._data_type == 'df':
                 self._length = len(self._data)
             elif self._data_type == 'array':
@@ -277,7 +271,7 @@ class HEPDataStorage(object):
         """
         data_type = None
         if isinstance(data, dict):
-            if data.has_key('filenames') and data['filenames'].endswith(HEPDataStorage.__ROOT_DATATYPE):
+            if 'filenames' in data and data['filenames'].endswith(HEPDataStorage.__ROOT_DATATYPE):
                 data_type = 'root'
         elif isinstance(data, pd.DataFrame):
             data_type = 'df'
@@ -312,7 +306,6 @@ class HEPDataStorage(object):
         self.index = index
         self.columns = columns
 
-
         # convert the data (and save it)
 
         # root data
@@ -333,8 +326,6 @@ class HEPDataStorage(object):
     @property
     def labels(self):
         return self._label_dic.get(self.columns)
-
-
 
     def get_weights(self, index=None, normalize=True):
         """Return the weights of the specified indeces or, if None, return all.
@@ -358,7 +349,7 @@ class HEPDataStorage(object):
 
         weights_out = self._get_weights(index=index, normalize=normalize)
 
-        normalize = 1 if normalize == True else normalize
+        normalize = 1 if normalize is True else normalize
         if dev_tool.is_in_primitive(weights_out, (None, 1)):
             weights_out = pd.Series(data=np.ones(length), index=index) * normalize
 
@@ -409,11 +400,12 @@ class HEPDataStorage(object):
                 sample_weights = {'branches': sample_weights}
             tmp_root.update(sample_weights)
             branche = tmp_root['branches']
-            assert (isinstance(branche, list) and len(branche) == 1) or isinstance(branche, str), "Can only be one branche"
+            assert ((isinstance(branche, list) and (len(branche) == 1)) or
+                    isinstance(branche, str)), "Can only be one branche"
             sample_weights = data_tools.to_ndarray(tmp_root)
 
-
-        assert dev_tool.is_in_primitive(sample_weights, (None, 1)) or len(sample_weights) <= length, "Invalid weights"
+        assert (dev_tool.is_in_primitive(sample_weights, (None, 1)) or
+                len(sample_weights) <= length), "Invalid weights"
 
         self._set_weights(sample_weights=sample_weights, index=index)
 
@@ -440,7 +432,6 @@ class HEPDataStorage(object):
                 self._weights = pd.Series(np.ones(len(self)), index=self._index)
             self._weights.update(sample_weights)
 
-
     def set_root_selection(self, selection, exception_if_failure=True):
         """Set the selection in a root-file. Only possible if a root-file is provided"""
         if self._data_type == 'root':
@@ -449,8 +440,6 @@ class HEPDataStorage(object):
             raise RuntimeError("selection could not be applied, no root-dict")
         else:
             self.logger.error("selection not applied, no root-dict")
-
-
 
     def pandasDF(self, columns=None, index=None):
         """Convert the data to pandas or cut an already existing data frame and
@@ -483,12 +472,12 @@ class HEPDataStorage(object):
         """Return a DataFrame from the internal data. Does some dirty, internal work."""
         # initialize data
         # TODO: remove trailing comment?
-        data = self._data # if dev_tool.is_in_primitive(data) else data
+        data = self._data  # if dev_tool.is_in_primitive(data) else data
         columns = self.columns if columns is None else data_tools.to_list(columns)
         index = self._index if index is None else data_tools.to_list(index)
 
         if self._data_type == 'root':
-            #update root dictionary
+            # update root dictionary
             temp_root_dict = dict(data, **{'branches': columns})
             for key, val in temp_root_dict.items():
                 if dev_tool.is_in_primitive(val, None):
@@ -579,7 +568,7 @@ class HEPDataStorage(object):
         """Return targets as pandas Series or primitive type"""
         # assign defaults
         index = self._index if index is None else list(index)
-        length = len(self) if index is None else len(index)
+        # length = len(self) if index is None else len(index)
 
         if index is None or dev_tool.is_in_primitive(self._target, (-1, 0, 1, None)):
             out_targets = self._target
@@ -651,16 +640,13 @@ class HEPDataStorage(object):
             int is provided, it will be used as a seed to the pseudo-random
             generator.
          """
-         # TODO1: implement take_target_from_data
-         # TODO2: make it recursive. second storage can be a list and get
-         # data via make_dataset (or similar... difficult with ratio etc...)
         # initialize values
 
         normalize_1 = 1
         normalize_2 = 1
 
         if weights_ratio > 0 and second_storage is not None:
-            weights_1 =self.get_weights(index=index)
+            weights_1 = self.get_weights(index=index)
             weights_2 = second_storage.get_weights(index=index_2)
 
             sum_weight_1 = float(sum(weights_1))
@@ -674,15 +660,12 @@ class HEPDataStorage(object):
                 ratio_2 = 1.0 / ratio_1
                 ratio_1 = 1.0
 
-
             normalize_1 = ratio_1
             normalize_2 = ratio_2
 
-
-
         if shuffle is not False:
             index = self.index if index is None else index
-            if isinstance(shuffle, int) and shuffle != True:
+            if isinstance(shuffle, int) and shuffle is not True:
                 rand_seed = shuffle
                 rand_seed_2 = shuffle + 74
             else:
@@ -694,7 +677,7 @@ class HEPDataStorage(object):
         weights = self.get_weights(index=index, normalize=normalize_1)
 
         if second_storage is not None:
-            assert isinstance(second_storage, HEPDataStorage), "Wrong type, has to be a HEPDataStorage"
+            assert isinstance(second_storage, HEPDataStorage), "Wrong type, not an HEPDataStorage"
             if shuffle is not False:
                 index_2 = second_storage.index if index_2 is None else index_2
                 random.shuffle(index_2, random=rand_seed_2)
@@ -738,7 +721,6 @@ class HEPDataStorage(object):
         new_targets = copy.deepcopy(self._get_targets(index=index))
         new_weights = copy.deepcopy(self._get_weights(index=index))
         new_index = copy.deepcopy(index)
-
 
         new_storage = HEPDataStorage(new_data, target=new_targets,
                                      sample_weights=new_weights,
@@ -803,7 +785,7 @@ class HEPDataStorage(object):
         # get a copy of index and shuffle it if True
         temp_index = copy.deepcopy(self._make_index())
         if shuffle is not False:
-            rand_seed = shuffle if isinstance(shuffle, int) and shuffle!= True else None
+            rand_seed = shuffle if isinstance(shuffle, int) and shuffle is not True else None
             random.shuffle(temp_index, random=rand_seed)
         for i in range(n_folds):
             self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
@@ -821,8 +803,9 @@ class HEPDataStorage(object):
         out : tuple(HEPDataStorage, HEPDataStorage)
             Return the *train* and the *test* data in a HEPDataStorage
         """
-        assert self._fold_index is not None, "Tried to get a fold but data has no folds. First create them (make_folds())"
-        assert isinstance(fold, int) and fold<len(self._fold_index), "your value of fold is not valid"
+        assert self._fold_index is not None, "Tried to get a fold but data has no folds." + \
+                                             " First create them (make_folds())"
+        assert isinstance(fold, int) and fold < len(self._fold_index), "Value of fold is invalid"
         train_index = []
         for i, index_slice in enumerate(self._fold_index):
             if i == fold:
@@ -832,12 +815,12 @@ class HEPDataStorage(object):
         n_folds = len(self._fold_index)
         test_DS = self.copy_storage(index=test_index)
         test_DS._fold_status = (fold, n_folds)
-        test_DS.fold_name = "test set fold " + str(fold + 1) + " of " + str(n_folds)  # + 1 human-readable
+        # + 1 human-readable
+        test_DS.fold_name = "test set fold " + str(fold + 1) + " of " + str(n_folds)
         train_DS = self.copy_storage(index=train_index)
         train_DS._fold_status = (fold, n_folds)
         train_DS.fold_name = "train set fold " + str(fold + 1) + " of " + str(n_folds)
         return train_DS, test_DS
-
 
     def get_n_folds(self):
         """Return how many folds are currently availabe or 0 if no folds
@@ -885,11 +868,11 @@ class HEPDataStorage(object):
         if second_storage is not None:
             data_name += " and " + second_storage.name
         data, _tmp, weights = self.make_dataset(second_storage=second_storage,
-                                              shuffle=True, columns=columns)
+                                                shuffle=True, columns=columns)
         del _tmp
         out.save_fig(figure)
         ds = DescrStatsW(data.as_matrix(), weights=weights)
-        correlation = ds.cov  #data.corr(method=method)
+        correlation = ds.cov  # data.corr(method=method)
         corr_plot = sns.heatmap(correlation.T)
 
         corr_plot.set_title("Correlation of " + data_name)
@@ -902,7 +885,6 @@ class HEPDataStorage(object):
             item.set_rotation(90)
 
         return correlation
-
 
     def plot(self, figure=None, columns=None, index=None, title=None, data_name=None,
              bins=None, log_y_axes=False, plot_range=None, sample_weights=None,
@@ -955,9 +937,9 @@ class HEPDataStorage(object):
             :py:func:`~matplotlib.pyplot.hist()` function.
 
         """
-#==============================================================================
+# ==============================================================================
 #        initialize values
-#==============================================================================
+# ==============================================================================
         if sample_weights is None:
             sample_weights = self._get_weights(index=index)
             if dev_tool.is_in_primitive(sample_weights, 1):
@@ -977,7 +959,6 @@ class HEPDataStorage(object):
         data_plot = self.pandasDF(columns=columns, index=index)
         columns = data_plot.columns.values
         self.logger.debug("plot columns from pandasDataFrame: " + str(columns))
-
 
         # set the right number of rows and columns for the subplot
         subplot_col = int(math.ceil(math.sqrt(len(columns))))
@@ -1005,9 +986,9 @@ class HEPDataStorage(object):
         self.__figure_dic['title'] += "" if title is None else title
         plt.suptitle(self.__figure_dic.get('title'), fontsize=self.supertitle_fontsize)
 
-#==============================================================================
+# ==============================================================================
 #       Start plotting
-#==============================================================================
+# ==============================================================================
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
             # only plot in range x_limits, otherwise the plot is too big
@@ -1018,7 +999,7 @@ class HEPDataStorage(object):
                 x_limits = (lower, upper)
             elif see_all:  # choose the maximum range. Bins not nicely overlapping.
                 x_limits = (min(x_limits[0], lower), max(x_limits[1], upper))
-            if hist_settings.has_key('range'):
+            if 'range' in hist_settings:
                 x_limits = hist_settings.pop('range')
             self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
@@ -1065,13 +1046,14 @@ if __name__ == '__main__':
     n_tested = 0
 
     b = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [51, 52, 53]])
-    a = pd.DataFrame(b, columns=['one', 'two', 'three'], index=[1,2,11,22,33])
+    a = pd.DataFrame(b, columns=['one', 'two', 'three'], index=[1, 2, 11, 22, 33])
     c = copy.deepcopy(a)
-    storage = HEPDataStorage(a, index=[1,2,11,22], target=[1,1,1,0], sample_weights=[1,2,1,0.5],
+    storage = HEPDataStorage(a, index=[1, 2, 11, 22], target=[1, 1, 1, 0],
+                             sample_weights=[1, 2, 1, 0.5],
                              data_name="my_data", data_name_addition="and addition")
     n_tested += 1
 
-    d = a.loc[[1,2,11,22]]
+    d = a.loc[[1, 2, 11, 22]]
     pd1 = storage.pandasDF()
 
     t1 = all(pd1.reset_index(drop=True) == d.reset_index(drop=True))
@@ -1082,32 +1064,32 @@ if __name__ == '__main__':
     print "storage with DataFrame works:", works1
 
     DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/'
-    all_branches = ['B_PT', 'nTracks', 'nSPDHits'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              ,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]
+    all_branches = ['B_PT', 'nTracks', 'nSPDHits',
+                    'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
+                    'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV', 'B_ENDVERTEX_CHI2',
+                    'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+                    ]
+    mc_file = 'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root'
     cut_Bu2K1Jpsi_mc = dict(
-        filenames=DATA_PATH+'cut_data/CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root',
+        filenames=DATA_PATH+'cut_data/'+mc_file,
         treename='DecayTree',
         branches=all_branches
 
     )
 
-    root_data = dict(
-    data=cut_Bu2K1Jpsi_mc,
-    sample_weights=None,
-    data_name="B->K1 J/Psi monte-carlo",
-    data_name_addition="cut"
-    )
+    root_data = dict(data=cut_Bu2K1Jpsi_mc,
+                     sample_weights=None,
+                     data_name="B->K1 J/Psi monte-carlo",
+                     data_name_addition="cut"
+                     )
 
     storage2 = HEPDataStorage(**root_data)
 
     storage2.plot_correlation(storage2)
 
-    storage3 = storage2.copy_storage(index=[3,5,7,9], columns=['B_PT', 'nTracks'])
+    storage3 = storage2.copy_storage(index=[3, 5, 7, 9], columns=['B_PT', 'nTracks'])
     df11 = storage3.pandasDF()
-    storage3.set_weights(sample_weights=[1,4,1,0.5])
+    storage3.set_weights(sample_weights=[1, 4, 1, 0.5])
 
     storage3.make_folds(4)
     train, test = storage3.get_fold(1)
@@ -1117,23 +1099,11 @@ if __name__ == '__main__':
     print train1.pandasDF(), "\n", test1.pandasDF()
     t21 = isinstance(storage2.pandasDF(), pd.DataFrame)
     print "t21 = ", t21
-    #print storage2.pandasDF().index.values
-    #print "w3 = ", w3, "type:", type(w3)
-
-
 
     t22 = True
-    #print "t22 =", t22
     works2 = t21 and t22
     works = works1 and works2
     print "DataFrame works:", works
     plt.show()
 
-
-
     print "Selftest finished, tested " + str(n_tested) + " functions."
-
-
-
-
-

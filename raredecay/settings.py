@@ -11,7 +11,6 @@ from __future__ import division, absolute_import
 
 
 import copy
-import matplotlib.pyplot as plt
 
 from raredecay.run_config import config
 from raredecay import meta_config
@@ -137,12 +136,12 @@ def set_random_seed(seed=None):
         The seed for the random generator. If None, it won't change anything
     """
     if seed is not None:
-        globals_
-
+        meta_config.set_seed(seed)
 
 
 def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
-                         run_message="This is a test-run to test the package", prompt_for_input=False):
+                         run_message="This is a test-run to test the package",
+                         prompt_for_input=False):
     """Saves output to file"""
     assert isinstance(run_name, (str, int)), "run_name has to be a string or int"
     config.RUN_NAME = str(run_name)
@@ -164,7 +163,6 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
     else:
         out = get_output_handler()
         out.initialize(run_name=run_name, prompt_for_comment=prompt_for_input)
-
 
 
 def _init_configure_logger(console_level='critical', file_level='debug'):
@@ -194,7 +192,8 @@ def _init_configure_logger(console_level='critical', file_level='debug'):
         logging_mode = 'both'
 
     for level in (console_level, file_level):
-        assert level in (None, 'debug', 'info', 'warning', 'error', 'critical'), "invalid logger level"
+        assert level in (None, 'debug', 'info', 'warning', 'error', 'critical'), \
+            "invalid logger level"
 
     config.logger_cfg['logging_mode'] = logging_mode
     config.logger_cfg['log_level_file'] = file_level
@@ -207,4 +206,3 @@ def _init_user_input(prompt_for_input=True):
     """If called, you will be asked for input to name the specific run"""
     meta_config.NO_PROMPT_ASSUME_YES = not prompt_for_input
     meta_config.PROMPT_FOR_COMMENT = prompt_for_input
-

@@ -126,7 +126,10 @@ class Mayou(Classifier):
              - **'gb'** creates a Gradient Boosted classifier with Decision
                Trees as basis
         """
-        self._base_estimators = OrderedDict(self.__DEFAULT_CLF_CFG) if base_estimators is None else base_estimators
+        if base_estimators is None:
+            OrderedDict(self.__DEFAULT_CLF_CFG)
+        else:
+            self._base_estimators = base_estimators
         if isinstance(stacking, str):
             self._clf_1 = {stacking: None}
         elif isinstance(stacking, dict):
@@ -244,7 +247,8 @@ class Mayou(Classifier):
             self._factory.add_classifier(key, val)
 
         # parallel on factory level -> good mixture of clfs (one uses lot of RAM, one cpu...)
-        parallel_profile = 'threads-' + str(min([len(self._factory.items()), globals_.free_cpus()]))
+        parallel_profile = 'threads-' + str(min([len(self._factory.items()),
+                                                 globals_.free_cpus()]))
 
         # fit all classifiers
         print "start fitting factory"
@@ -258,7 +262,8 @@ class Mayou(Classifier):
         index = copy.deepcopy(X.index)
 
         # parallel on factory level -> good mixture of clfs (one uses lot of RAM, one cpu...)
-        parallel_profile = 'threads-' + str(min([len(self._factory.items()), globals_.free_cpus()]))
+        parallel_profile = 'threads-' + str(min([len(self._factory.items()),
+                                                 globals_.free_cpus()]))
 
         # predict, return a dictionary
         predictions = self._factory.predict(X, parallel_profile=parallel_profile)
@@ -274,7 +279,8 @@ class Mayou(Classifier):
         index = X.index
 
         # parallel on factory level -> good mixture of clfs (one uses lot of RAM, one cpu...)
-        parallel_profile = 'threads-' + str(min([len(self._factory.items()), globals_.free_cpus()]))
+        parallel_profile = 'threads-' + str(min([len(self._factory.items()),
+                                                 globals_.free_cpus()]))
         print parallel_profile
         parallel_profile = None
         # predict, return a dictionary

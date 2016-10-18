@@ -10,7 +10,6 @@ import subprocess
 
 import io
 import os
-import re
 
 here = os.path.abspath(os.path.dirname(__file__))
 
@@ -51,7 +50,7 @@ setup(name='raredecay',
                 'raredecay.analysis',
                 'raredecay.run_config',
                 'raredecay.tools',
-      ],
+                ],
       include_package_data=True,
       zip_safe=False
       )

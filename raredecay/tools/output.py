@@ -12,15 +12,13 @@ import timeit
 import time
 import cStringIO as StringIO
 import copy
-from abc import ABCMeta, abstractmethod
 
 import matplotlib.pyplot as plt
 import cPickle as pickle
 import seaborn as sns
 
 from raredecay import meta_config
-from raredecay.tools import dev_tool, data_tools
-
+from raredecay.tools import dev_tool  # , data_tools
 
 
 class OutputHandler(object):
@@ -103,12 +101,12 @@ class OutputHandler(object):
             assert isinstance(value, str), "path is not a string: " + str(value)
             self._output_folders[key] = value.replace(" ", "_")
 
-
         # ask if you want to add something to the run_name (and folder name)
         if meta_config.PROMPT_FOR_COMMENT:
-            temp_add = str(raw_input("Enter an (optional) extension to the run-name and press 'enter':\n"))
+            prompt_message = "Enter an (optional) extension to the run-name and press 'enter':\n"
+            temp_add = str(raw_input(prompt_message))
             run_name += " " + temp_add if temp_add != "" else ""
-            #del temp_add
+            # del temp_add
             # TODO: implement promt with timeout
         self._run_name = run_name
 
@@ -123,10 +121,12 @@ class OutputHandler(object):
         while os.path.isdir(self._output_path):
             if del_existing_folders:
                 self._path_to_be_overriden = output_path
-                self._path_to_be_overriden += '' if self._path_to_be_overriden.endswith('/') else '/'
+                if not self._path_to_be_overriden.endswith('/'):
+                    self._path_to_be_overriden += '/'
             self._output_path = output_path + "_" + str(temp_i)
             temp_i += 1
-            assert temp_i < meta_config.MAX_AUTO_FOLDERS, "possible endless loop when trying to create a non-existing folder"
+            assert temp_i < meta_config.MAX_AUTO_FOLDERS, \
+                "possible endless loop when trying to create a non-existing folder"
         self._output_path += '' if output_path.endswith('/') else '/'
 
         # create subfolders
@@ -142,7 +142,6 @@ class OutputHandler(object):
         self.add_output(run_message, title="Run: " + self._run_name, importance=0,
                         subtitle="Comments about the run")
 
-
     def initialize(self, run_name="", prompt_for_comment=False):
         """Initialization for external use, no folders created, config.py logger"""
 
@@ -153,7 +152,8 @@ class OutputHandler(object):
         self.make_me_a_logger()
         # ask if you want to add something to the run_name (and folder name)
         if prompt_for_comment:
-            temp_add = str(raw_input("Enter an (optional) extension to the run-name and press 'enter':\n"))
+            prompt_message = "Enter an (optional) extension to the run-name and press 'enter':\n"
+            temp_add = str(raw_input(prompt_message))
             run_name += " " + temp_add if temp_add != "" else ""
         self._run_name = str(run_name)
 
@@ -264,9 +264,9 @@ class OutputHandler(object):
             self._formats_used.update(file_format)
 
             # change layout of figures
-    #        figure.tight_layout()
-     #       figure.set_figheight(20)
-      #      figure.set_figwidth(20)
+#            figure.tight_layout()
+#            figure.set_figheight(20)
+#            figure.set_figwidth(20)
 
             # add figure to dict for later output to file
             figure_dict = {'figure': figure, 'file_format': file_format,
@@ -399,8 +399,10 @@ class OutputHandler(object):
             concatenated to the data written before
         """
         # initialize defaults
-        assert isinstance(obj_separator, str), (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
-        assert isinstance(data_separator, str), (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
+        assert isinstance(obj_separator, str), \
+            (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
+        assert isinstance(data_separator, str), \
+            (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
         self._check_initialization()
         do_print = 5 - round(importance) < meta_config.verbosity
 
@@ -446,11 +448,11 @@ class OutputHandler(object):
 
     def finalize(self, show_plots=True, play_sound_at_end=False):
 
-        #TODO remove?: self._check_initialization(return_error=True)
+        # TODO remove?: self._check_initialization(return_error=True)
 
-#==============================================================================
-#  write all the necessary things to the output
-#==============================================================================
+        # ==============================================================================
+        #  write all the necessary things to the output
+        # ==============================================================================
 
         self.add_output("\n", title="END OF RUN " + self._run_name, importance=4)
         self.add_output(["Random generator seed", meta_config.rand_seed],
@@ -463,8 +465,10 @@ class OutputHandler(object):
         # add current version (if available)
         if self._save_output:
             try:
-                git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH, "describe"])
-                self.add_output(["Program version from Git", git_version], section="Git information",
+                git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH,
+                                                       "describe"])
+                self.add_output(["Program version from Git", git_version],
+                                section="Git information",
                                 importance=0, obj_separator=" : ")
             except:
                 meta_config.error_occured()
@@ -478,25 +482,25 @@ class OutputHandler(object):
 
         # error information
         self.add_output(["Errors encountered during run", meta_config._error_count],
-            obj_separator=" : ")
+                        obj_separator=" : ")
         self.add_output(["Warnings encountered during run", meta_config._warning_count],
-            obj_separator=" : ")
+                        obj_separator=" : ")
 
         output = copy.deepcopy(self.output)
 
-#==============================================================================
+# ==============================================================================
 #       save output to file
-#==============================================================================
+# ==============================================================================
         if self._save_output:
 
             # save figures to file
             self._figure_to_file()
 
             # Write output to file
-            #---------------------
+            # ---------------------
 
             # remove leading blank lines
-            for i in xrange(1,100):
+            for i in xrange(1, 100):
                 if not self.output.startswith("\n" * i):  # "break" condition
                     self.output = self.output[i-1:]
                     break
@@ -510,15 +514,16 @@ class OutputHandler(object):
                 meta_config.error_occured()
                 warnings.warn("Could not save output. Check the logs!", RuntimeWarning)
 
-
             # if a folder to overwrite exists, delete it and move the temp folder
             if self._path_to_be_overriden is not None:
                 if not meta_config.NO_PROMPT_ASSUME_YES:
                     stop_del = raw_input("ATTENTION! The folder " + self._path_to_be_overriden +
-                                " will be deleted and replaced with the output of the current run." +
-                                "\nTo DELETE that folder and overwrite, press ENTER.\n\n" +
-                                "If you want to keep the folder and save the current run under " +
-                                self._output_path + ", please enter any input and press enter.\n\nYour input:")
+                                         " will be deleted and replaced with the output " +
+                                         "of the current run.\nTo DELETE that folder and " +
+                                         "overwrite, press ENTER.\n\nIf you want to keep the " +
+                                         "folder and save the current run under " +
+                                         self._output_path + ", please enter any input " +
+                                         "and press enter.\n\nYour input:")
                 if stop_del == '':
                     subprocess.call(['rm', '-r', self._path_to_be_overriden])
                     subprocess.call(['mv', self._output_path, self._path_to_be_overriden])
@@ -529,7 +534,8 @@ class OutputHandler(object):
                 path = self._output_path
             print "All output saved under: " + path
             subprocess.call(['rm', path + 'run_NOT_finished'])
-            subprocess.call(['touch', path + 'run_finished_succesfully'])  # .finished shows if the run finished
+            # .finished shows if the run finished
+            subprocess.call(['touch', path + 'run_finished_succesfully'])
 
         del self.output, self._loud_end_output, self.end_output
 

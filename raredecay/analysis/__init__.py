@@ -2,11 +2,11 @@
 
 from __future__ import division, absolute_import
 
-import imp
-from raredecay import meta_config
+
+# from raredecay import meta_config
 
 
-#if not meta_config.SUPPRESS_WRONG_SKLEARN_VERSION:
+# if not meta_config.SUPPRESS_WRONG_SKLEARN_VERSION:
 #    try:
 #        temp_sklearn_info = imp.find_module('sklearn')
 #        temp_sklearn = imp.load_module('sklearn', *temp_sklearn_info)
@@ -28,10 +28,3 @@ from raredecay import meta_config
 #            "meta_config.py\n(strongly depreceated! Some parts will be " +
 #            "unusable and raise errors)")
 #            raise ImportError
-
-
-
-
-
-
-

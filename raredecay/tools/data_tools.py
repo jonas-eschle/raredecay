@@ -20,11 +20,10 @@ except ImportError:
     warnings.warn("could not import from root_numpy!")
 
 
-# both produce error (27.07.2016) when importing them if run from main.py. No problem when run as main...
+# both produce error (27.07.2016) when importing them if run from main.py.
+# No problem when run as main...
 
-
-
-from raredecay.tools import dev_tool
+# from raredecay.tools import dev_tool
 from raredecay import meta_config
 
 
@@ -54,8 +53,6 @@ def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):
     return [lower_cut, upper_cut], rejected_bkg
 
 
-
-
 def make_root_dict(path_to_rootfile, tree_name, branches):
     """Returns a root_numpy compatible "root-dict" of a root-tree
 
@@ -69,10 +66,9 @@ def make_root_dict(path_to_rootfile, tree_name, branches):
     branches : str or list[str, str, str,... ]
         The branches of the tree to use
     """
-    output = dict(
-    filenames=path_to_rootfile,
-    treename=tree_name,
-    branches=branches)
+    output = dict(filenames=path_to_rootfile,
+                  treename=tree_name,
+                  branches=branches)
     return output
 
 
@@ -90,7 +86,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         The name of the branche resp. the name in the dtype of the array.
 
     """
-    #from root_numpy import root2array, array2tree
+    # from root_numpy import root2array, array2tree
 
     from rootpy.io import root_open
     from ROOT import TObject
@@ -100,7 +96,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
         filename = rootfile.get('filenames')
     treename = rootfile.get('treename')
     new_branch = to_ndarray(new_branch)
-    new_branch.dtype =[(branch_name, 'f8')]
+    new_branch.dtype = [(branch_name, 'f8')]
 
     # write to ROOT-file
     with root_open(filename, mode='a') as f:
@@ -195,7 +191,7 @@ def is_root(data_to_check):
     if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
         assert isinstance(path_name, str), ("'filenames' of the dictionary " +
-                                        str(data_to_check) + "is not a string")
+                                            str(data_to_check) + "is not a string")
         if path_name.endswith(meta_config.ROOT_DATATYPE):
             flag = True
     return flag
@@ -288,8 +284,6 @@ def to_pandas(data_in, indices=None, columns=None, dtype=None):
 
     Convert data safely to pandas, whatever the format is.
     """
-
-
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
     if is_list(data_in):
@@ -350,7 +344,7 @@ def adv_return(return_value, save_name=None):
                 print str(return_value) + " pickled to " + save_name
         else:
             pass
-#HACK how to solve logger problem?
+# HACK how to solve logger problem?
 #            logger.error("Could not pickle data, name for file (" +
 #                         str(save_name) + ") is not a string!" +
 #                         "\n Therefore, the following data was only returned" +

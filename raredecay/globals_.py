@@ -50,44 +50,39 @@ free_cpus
 
 from __future__ import division, absolute_import
 
-import random
-
 from raredecay.tools import output
 from raredecay import meta_config
 from raredecay.run_config import config
 
-#==============================================================================
+# ==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
-#==============================================================================
+# ==============================================================================
 
 out = output.OutputHandler()
 
 cfg = config
 logger_cfg = cfg.logger_cfg  # only if not save_output
 
-#def set_output_handler(internal=True):
-#  global out
-#  if internal:
-#    out = output.OutputHandlerInt()
-#  else:
-#    out = output.OutputHandlerExt()
+# def set_output_handler(internal=True):
+#   global out
+#   if internal:
+#     out = output.OutputHandlerInt()
+#   else:
+#     out = output.OutputHandlerExt()
 
 
-
-
-
-#==============================================================================
+# ==============================================================================
 # parallel profile
-#==============================================================================
+# ==============================================================================
 
 n_cpu_used = 0
+
+
 def free_cpus():
     n_out = max([meta_config.n_cpu_max - n_cpu_used, 1])
     return n_out
 
 
-
-
-if __name__=='__main__':
+if __name__ == '__main__':
     print "Selftest start"
     print "Selftest completed"

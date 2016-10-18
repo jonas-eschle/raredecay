@@ -17,27 +17,26 @@ from raredecay import settings
 # Call this function BEFORE any other (raredecay-) package import
 settings.initialize(output_path="/home/data/output",  # TODO: valid folder
                     run_name="Test run",  # TODO: name of the folder
-                    run_message="This is a test run, hello world", # TODO:
+                    run_message="This is a test run, hello world",  # TODO:
                     prompt_for_input=True,  # TODO: will promt for input at the beginning and end
-                    n_cpu=-1)  #TODO: set n cpu
+                    n_cpu=-1)  # TODO: set n cpu
 
 from raredecay.tools.data_storage import HEPDataStorage
 from raredecay.analysis.physical_analysis import reweightCV, reweight, add_branch_to_rootfile
 
 # TODO: set the run mode
-kfolded_reweighting=True  # If True, this is for hyper-parameter testing
+kfolded_reweighting = True  # If True, this is for hyper-parameter testing
 # TODO: set the branches for the data to be loaded from the file
-all_branches = ['B_PT', 'nTracks', 'nSPDHits'#, 'B_eta'
-              , 'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV'
-              #,'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
-              #'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-              ]
+all_branches = ['B_PT', 'nTracks', 'nSPDHits',
+                'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
+                # 'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV','B_ENDVERTEX_CHI2',
+                # 'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+                ]
 
 
-
-#==============================================================================
+# ==============================================================================
 # Create the data
-#==============================================================================
+# ==============================================================================
 DATA_PATH = '/home/decay-data/'  # TODO: set your path to the data (or leave away)
 
 # TODO: set your data
@@ -57,20 +56,20 @@ mc_data = HEPDataStorage(data=mc_data, data_name="MC", data_name_addition="cut")
 
 # TODO: same as above. Apply data is the MC which you want to be reweighted
 apply_data = dict(filenames=DATA_PATH+'Bu2K1Jpsi-ee.root',
-               treename='DecayTree',
-               branches=all_branches)
+                  treename='DecayTree',
+                  branches=all_branches)
 apply_data = HEPDataStorage(data=mc_data, data_name="MC", data_name_addition="cut")
 
 
 # The data will be plotted. Using the same figure will plot over each other
-plot_branches=['B_PT', 'nTracks', 'nSPDHits', 'B_ENDVERTEX_CHI2']
+plot_branches = ['B_PT', 'nTracks', 'nSPDHits', 'B_ENDVERTEX_CHI2']
 mc_data.plot(figure="Data comparison", title="Data comparison MC vs. real data",
              columns=plot_branches)
 real_data.plot(figure="Data comparison", columns=plot_branches)
 
-#==============================================================================
+# ==============================================================================
 # Specify the hyper-parameters of the reweighter
-#==============================================================================
+# ==============================================================================
 # TODO: adjust the hyper-parameters
 reweight_cfg = dict(  # GB reweighter configuration, comments are "good" values
         n_estimators=23,  # 25
@@ -80,7 +79,6 @@ reweight_cfg = dict(  # GB reweighter configuration, comments are "good" values
         loss_regularization=7,  # 3-8
         gb_args=dict(
             subsample=0.8,  # 0.8
-            #random_state=43,
             min_samples_split=200  # 200
 
             )
@@ -88,15 +86,15 @@ reweight_cfg = dict(  # GB reweighter configuration, comments are "good" values
 
 # TODO: Columns to use for the reweighting
 reweight_columns = ['B_PT',
-                    #'nTracks',
+                    # 'nTracks',
                     'nSPDHits',
                     'B_ENDVERTEX_CHI2',
-                    #'B_eta'
+                    # 'B_eta'
                     ]
 
-#==============================================================================
+# ==============================================================================
 #  Call the reweighting function.
-#==============================================================================
+# ==============================================================================
 if kfolded_reweighting:
     scores = reweightCV(real_data=real_data, mc_data=mc_data,
                         n_folds=10,  # TODO: number of folds to split for the reweighting
@@ -110,14 +108,14 @@ if kfolded_reweighting:
                         )
 
     new_weights = scores.pop('weights')
-    #print scores  # just for curiosity, the scores will be added anyway to the output
+    # print scores  # just for curiosity, the scores will be added anyway to the output
 
-    #==============================================================================
+    # ==============================================================================
     # we could now add the weights to the root file (normaly, we dont want this to do,
     # but rather use the normal reweighting function to get new weights.
     # Remember, reweightCV is primarly to get the hyper-parameters, it is
     # self-reweighting which we norally don't want to do)
-    #==============================================================================
+    # ==============================================================================
 
 
 else:  # this is the "real" reweighting
@@ -126,8 +124,9 @@ else:  # this is the "real" reweighting
                             reweight_cfg=reweight_cfg, apply_weights=True)
     new_weights = reweight_out['weights']
 
-    # TODO: change where to save the new weights and how to name it. Will overwrite if branch exists
-    add_branch_to_rootfile(filenames = DATA_PATH + 'Bu2K1Jpsi-ee-MC.root',
+    # TODO: change where to save the new weights and how to name it.
+    # Will overwrite if branch exists
+    add_branch_to_rootfile(filenames=DATA_PATH + 'Bu2K1Jpsi-ee-MC.root',
                            treename='DecayTree',  # TODO: change name of tree to save
                            new_branch=new_weights,
                            branch_name='test1'  # TODO: change name of weights

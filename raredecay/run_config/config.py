@@ -8,16 +8,9 @@ The configuration file for external operations.
 """
 
 
-
-from raredecay import meta_config
-
-
-
 RUN_NAME = 'Classifier optimization'
 run_message = str("This could be your advertisement" +
-                " ")
-
-
+                  " ")
 
 OUTPUT_CFG = dict(
     run_name=RUN_NAME,
@@ -38,15 +31,15 @@ save_fig_cfg = dict(
 )
 
 
-#==============================================================================
+# ==============================================================================
 # LOGGER CONFIGURATION BEGIN
-#==============================================================================
+# ==============================================================================
 logger_cfg = dict(
     logging_mode='both',   # define where the logger is written to
     # take 'both', 'file', 'console' or 'no'
     log_level_file='debug',
     # specifies the level to be logged to the file
-    log_level_console='warning', #'warning',
+    log_level_console='warning',  # 'warning',
     # specify the level to be logged to the console
     overwrite_file=True,
     # specifies whether it should overwrite the log file each time

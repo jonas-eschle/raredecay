@@ -29,9 +29,9 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
     module-name changes, which can cause a crash of the program.
 """
 
-#==============================================================================
+# ==============================================================================
 # DO NOT IMPORT ANY PACKAGE (run configuration) DEPENDENCY!
-#==============================================================================
+# ==============================================================================
 from __future__ import division, absolute_import
 
 import cPickle as pickle
@@ -39,24 +39,25 @@ import multiprocessing
 import random
 
 
-#==============================================================================
+# ==============================================================================
 # Parameters which can be changed WITHOUT affecting stability of a single run.
 # Be aware: certain tasks like loading  a pickled file may fail if the file-
 # endings are changed.
-#==============================================================================
+# ==============================================================================
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # General run parameters
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-PROMPT_FOR_COMMENT=False  # let you add an extension to the run/file name
+PROMPT_FOR_COMMENT = False  # let you add an extension to the run/file name
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
 n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
-                # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
-use_stratified_folding = True  # StratifiedKFolding is better, from a statistical point of view, but
-                                # also needs more memory, mostly insignificantly but can be large
+# This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
+use_stratified_folding = True  # StratifiedKFolding is better, from a statistical point of view,
+# but also needs more memory, mostly insignificantly but can be large
+
 
 def get_n_cpu(n_cpu=None):
     """Return the number of cpus to use. None means all. Can be -1, -2..."""
@@ -84,7 +85,7 @@ def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
         if n_cpu > 1:
             n_cpu_max = n_cpu
         elif n_cpu < 0:
-            n_cpu_max = max([multiprocessing.cpu_count() + n_cpu + 1, 1])  # because -1 is "all cpus"
+            n_cpu_max = max([multiprocessing.cpu_count() + n_cpu + 1, 1])  # -1 is "all cpus"
         else:
             raise ValueError("Invalid n_cpu argument: " + str(n_cpu))
     else:
@@ -92,57 +93,58 @@ def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
 
     use_gpu = gpu_in_use if gpu_in_use is not None else use_gpu
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #  Datatype ending variables
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # The ending of a certain variable type. Change with caution and good reason.
 PICKLE_DATATYPE = "pickle"  # default: 'pickle'
 ROOT_DATATYPE = "root"  # default 'root'
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # SHARED OBJECT PATHES INPUT & OUTPUT
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # folder where the pickled objects are stored
 PICKLE_PATH = '/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/'
 # folder where the git-directory is located. Can be an empty string
-GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay/raredecay"
+GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/" + \
+               "python_workspace/raredecay/raredecay"
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #  Debug related options
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # This options should not directly affect the behaviour (except of speed etc)
 # IF the right environment is used. Don't touch until you have good reasons to do.
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
 SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
 
-#==============================================================================
+# ==============================================================================
 # Parameters which may affect stability
 # setting for example MAX_AUTO_FOLDERS to 0, it will surely not work
-#==============================================================================
-#------------------------------------------------------------------------------
+# ==============================================================================
+# ------------------------------------------------------------------------------
 #  Limits for auto-methods
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # If a folder already exists and no overwrite is in use, a new folder (with a
 # trailing number) will be created. There can be set a limit to prevent a full
 # disk in case of an endless loop-error or similar.
 MAX_AUTO_FOLDERS = 10000  # max number of auto-generated folders by initialize
 NO_PROMPT_ASSUME_YES = True  # no userinput required, assumes yes (e.g. when overwritting files)
-MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (like not able to save figure etc.)
-                        # Criticals will end the run anyway.
+MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (not able to save figure etc.)
+# Criticals will end the run anyway.
 MAX_FIGURES = 1000  # max number of figures to be plotted
 
 
-#==============================================================================
+# ==============================================================================
 # DEFAULT SETTINGS for different things
-#==============================================================================
+# ==============================================================================
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #  Output and plot configurations
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # available output folders. Do NOT CHANGE THE KEYS as modules depend on them!
 # You may add additional key-value pairs or just change some values
@@ -167,7 +169,7 @@ DEFAULT_SAVE_FIG = dict(
     file_format=['png', 'svg'],  # default: ['png', 'svg'], the file formats
                                  # to be saved to. For implementations, see OutputHandler()
     to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
-    #save_cfg=None
+    # save_cfg=None
 )
 
 # Default configuration for additional figures (plots you mostly do not care
@@ -175,7 +177,7 @@ DEFAULT_SAVE_FIG = dict(
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=['png', 'svg'],
     to_pickle=True
-    #save_cfg=None
+    # save_cfg=None
 )
 
 # A logger writes some stuff during the run just for the control of the
@@ -202,9 +204,9 @@ DEFAULT_LOGGER_CFG = dict(
     log_file_dir=DEFAULT_OUTPUT_FOLDERS.get('log')
 )
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #  Classifier configurations
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # Some modules use classifiers for different tasks where it is mostly not
 # important to have a fully optimized classifier but just a "good enough" one.
@@ -217,8 +219,10 @@ DEFAULT_CLF_XGB = dict(
     eta=0.1,  # default 0.1, learning-rate
     min_child_weight=8,  # #0 stage 2 to optimize
     max_depth=3,  # #6 stage 2 to optimize
-    gamma=4.6,  # stage 3, minimum loss-reduction required to make a split. Higher value-> more conservative
-    subsample=0.8, # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data for a tree
+    gamma=4.6,  # stage 3, minimum loss-reduction required to make a split.
+    # Higher value-> more conservative
+    subsample=0.8,  # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data
+    # for a tree
     colsample=1
 )
 
@@ -229,7 +233,7 @@ DEFAULT_CLF_TMVA = dict(
 DEFAULT_CLF_RDF = dict(
     n_estimators=150,
     max_features=None,
-    #max_depth=100
+    # max_depth=100
 )
 
 DEFAULT_CLF_GB = dict(
@@ -257,13 +261,13 @@ DEFAULT_CLF_NN = dict(
     weight_l1=0.01,
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'adagrad', 'patience': 15, 'learning_rate': 0.1, 'min_improvement': 0.01,
-               'momentum':0.5, 'nesterov':True, 'loss': 'xe'}],
+    trainers=[{'optimize': 'adagrad', 'patience': 15, 'learning_rate': 0.1,
+               'min_improvement': 0.01, 'momentum': 0.5, 'nesterov': True, 'loss': 'xe'}],
 )
 
 DEFAULT_CLF_KNN = dict(
-    n_neigh = 5
-)
+    n_neigh=5
+    )
 
 # default clf config collection
 DEFAULT_CLF_CONFIG = dict(
@@ -286,75 +290,85 @@ DEFAULT_CLF_NAME = dict(
     knn='K-Nearest Neighbour clf',
     rdf='Random Forest clf'
 )
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 #  Hyper parameter optimization
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 # The backwards feature selection uses first all features and determines the ROC AUC.
 # Then it removes one feature at a time, the one which yields the smallest difference
 # to the 'all_features' roc auc is then removed. This continues until the smallest
 # score difference is bigger then max_difference_feature_selection.
 max_difference_feature_selection = 0.08  # the biggest score difference to 'all features'
-                                         # allowed in auc when removing features
+# allowed in auc when removing features
 DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace search
 
-#==============================================================================
+# ==============================================================================
 # END OF CONFIGURABLE PARAMETERS - DO NOT CHANGE WHAT IS BELOW
-#==============================================================================
+# ==============================================================================
 
 # DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE
 # DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE
 # DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE DO NOT CROSS THIS LINE
 
 
-#==============================================================================
+# ==============================================================================
 # START INTERNAL CONFIGURATION - DO NOT CHANGE
-#==============================================================================
+# ==============================================================================
 
 run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
 
 loggers = {}
 
 verbosity = 4
+plot_verbosity = 3
+
+
 def set_verbosity(new_verbosity):
     global verbosity
     verbosity = round(new_verbosity)
     _check_verbosity(verbosity)
 
-plot_verbosity = 3
+
 def set_plot_verbosity(new_plot_verbosity):
     global plot_verbosity
     plot_verbosity = round(new_plot_verbosity)
     _check_verbosity(plot_verbosity)
 
+
 def _check_verbosity(verbosity):
     if verbosity not in range(-1, 7):
         raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
 
-#==============================================================================
+# ==============================================================================
 # Random integer generator for pseudo random generator (or other things)
-#==============================================================================
+# ==============================================================================
 
 rand_seed = random.randint(123, 1512412)  # 357422 or 566575
 random.seed(rand_seed)
+
+
 def randint():
     """Return random integer"""
     return random.randint(51, 523753)
+
 
 def set_seed(seed):
     global rand_seed
     rand_seed = seed
     random.seed(rand_seed)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # parallel profile
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
-#==============================================================================
+# ==============================================================================
 # ERROR HANDLING
-#==============================================================================
+# ==============================================================================
 
 _error_count = 0  # increases if an error happens
+_warning_count = 0  # increases if an error happens
+
+
 def error_occured(max_error_count=MAX_ERROR_COUNT):
     """Call this function every time a non-critical error (saving etc) occurs"""
     global _error_count
@@ -362,15 +376,11 @@ def error_occured(max_error_count=MAX_ERROR_COUNT):
     if _error_count >= max_error_count:
         raise RuntimeError("Too many errors encountered from different sources")
 
-_warning_count = 0  # increases if an error happens
+
 def warning_occured():
     """Call this function every time a warning occurs"""
     global _warning_count
     _warning_count += 1
-
-
-
-
 
 if __name__ == '__main__':
     pass
