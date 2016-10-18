@@ -1,1 +1,2 @@
 - remove all "take_target_from_data" and replace by automatic checking (?)
+- possibility of updating weights and targets instead of replacing

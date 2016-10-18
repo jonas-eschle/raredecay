@@ -336,64 +336,41 @@ class HEPDataStorage(object):
 
 
 
-    def get_weights(self, index=None, normalize=True, weights_as_events=False,
-                    min_weight=None):
+    def get_weights(self, index=None, normalize=True):
         """Return the weights of the specified indeces or, if None, return all.
 
         Parameters
         ----------
         normalize : boolean or float > 0
             If True, the weights will be normalized to 1 (the mean is 1).
-            No effect, if weights_as_events is True.
             If a float is provided, the mean of the weights will be equal
             to *normalize*. So *True* and *1* will yield the same results.
         index : 1-D list
             List of index to get the weights from.
-        weights_as_events : int >= 1 or False, None
-            Return the weights converted to number of events. Basically,
-            return the weights compatible to the *pandasDF* function with
-            the argument *weights_as_events* passed.
-
-            Simple: create a numpy array with ones of the right length.
-
-        min_weight : float or int
-            For "weights_as_events"; normaly, the minimum of the weights is
-            used to scale, but providing a *min_weight* will use the minimum
-            of the two minima for scaling.
-
-
 
         Return
         ------
-        out: 1-D numpy array
+        out: 1-D pandas Series
             Return the weights as pandas Series
         """
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
-        weights_out = self._get_weights(index=index, normalize=normalize,
-                                        weights_as_events=weights_as_events,
-                                        min_weight=min_weight)
+        weights_out = self._get_weights(index=index, normalize=normalize)
 
+        normalize = 1 if normalize == True else normalize
         if dev_tool.is_in_primitive(weights_out, (None, 1)):
-            weights_out = dev_tool.fill_list_var([], length, 1)
-            weights_out = np.array(weights_out)
-            weights_out = pd.Series(data=weights_out, index=index)
-#        else:
-#            weights_out = weights_out.as_matrix()
-        # TODO: maybe remove:
-        #weights_out = data_tools.to_ndarray(weights_out)
+            weights_out = pd.Series(data=np.ones(length), index=index) * normalize
 
         return weights_out
 
-    def _get_weights(self, index=None,  normalize=True, weights_as_events=False, min_weight=None):
+    def _get_weights(self, index=None,  normalize=True):
+        """Return pandas Series of weights or None, 1"""
         # initialize values
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
-        if weights_as_events >= 1:
-            pass
-        elif dev_tool.is_in_primitive(self._weights, (None, 1)):
+        if dev_tool.is_in_primitive(self._weights, (None, 1)):
             weights_out = self._weights
             if normalize != 1 or normalize is not True:
                 weights_out = pd.Series(np.ones(length), index=index)
@@ -404,23 +381,10 @@ class HEPDataStorage(object):
         else:
             weights_out = self._weights.loc[index]
 
-        if weights_as_events >= 1:
-            length = sum(self._scale_weights(index=index, weights_as_events=weights_as_events,
-                                             cast_int=True, min_weight=min_weight))
-            weights_out = pd.Series(np.ones(length))
-
-
-        elif normalize or normalize > 0:  # explicit is better then implicit
-            eps = 0.00001
-            counter = 0
+        if normalize or normalize > 0:
             normalize = 1 if normalize is True else normalize
-            while not (normalize - eps < weights_out.mean() and weights_out.mean() < normalize + eps):
-                weights_out *= normalize/weights_out.mean()
-                counter += 1
-                if counter > 10:  # to prevent endless loops
-                    self.logger.error("Could not normalize weights. Mean(weights): " + str(weights_out.mean()) + " of " + str(normalize))
-                    meta_config.error_occured()
-                    break
+            weights_out *= normalize/weights_out.mean()
+
         return weights_out
 
     def set_weights(self, sample_weights, index=None):
@@ -476,56 +440,6 @@ class HEPDataStorage(object):
                 self._weights = pd.Series(np.ones(len(self)), index=self._index)
             self._weights.update(sample_weights)
 
-    def _scale_weights(self, index=None, weights_as_events=False, cast_int=True, min_weight=None):
-        """Scale the weights to have minimum *weights_as_events* or min_weight"""
-        index = self._index if index is None else list(index)
-        length = len(self) if index is None else len(index)
-
-        has_negative = False
-
-        if dev_tool.is_in_primitive(self._weights, (None, 1)):
-            weights = pd.Series(np.ones(length))
-            min_w = min_neg_w = 1
-        else:
-            if index is None:
-                weights = self._weights
-            else:
-                weights = self._weights.loc[index]
-            # take care of negative weights
-            min_w = min([w for w in weights if w > 0])
-            min_neg_w = min(weights)
-
-        if min_w != min_neg_w:
-            for i, w in enumerate(weights):
-                if w == 0:
-                    w = -0.0001
-                if w < 0:
-                    has_negative = True
-                    # rescale to [1, 0], mirror, multiply. Every neg weight is at
-                    # least 0.5 as big as the min of positives
-                    weights.iloc[i] = min_w * 0.5 * (1.0005 - float(w)/min_neg_w)
-
-        if min_weight is not None:
-            if min_weight == 0:
-                min_weight = -0.0001
-            elif min_weight < 0:
-                has_negative = True
-
-                min_weight = min_w * 0.2 * (1.0005 - float(min_weight)/min(min_neg_w, min_weight))
-
-        min_weights = float(min(weights))
-
-
-        if has_negative:
-            self.logger.info("negative weights occured")
-
-        weights = weights / min_weights * weights_as_events
-        weights = np.array(map(round, weights))
-        if cast_int:
-            weights = weights + 0.00005
-            weights = np.array(map(int, weights))
-        assert min(weights) >= 0.98, "weights are not higher then 1, but they should be."
-        return pd.Series(weights, index=index)
 
     def set_root_selection(self, selection, exception_if_failure=True):
         """Set the selection in a root-file. Only possible if a root-file is provided"""
@@ -538,7 +452,7 @@ class HEPDataStorage(object):
 
 
 
-    def pandasDF(self, columns=None, index=None, weights_as_events=False, min_weight=None):
+    def pandasDF(self, columns=None, index=None):
         """Convert the data to pandas or cut an already existing data frame and
         return it.
 
@@ -550,108 +464,19 @@ class HEPDataStorage(object):
             Arguments for the :py:func:`~root_numpy.root2rec` ls
             function.
         index : 1-D list
-            The index from the root-branche to be used. If None, all indices
-            will be used (all the HEPDataStorage instance was created with).
-        weights_as_events : boolean or int >= 1
-            If False, the data will returned as usual. If an integer is
-            provided, this has three effects:
-
-            1. The **weights** are divided by it's smallest element (so
-               the smallest weight will be one)
-
-            2. multiplied by the provided integer
-
-            3. each event is multiple times recreated and added to the data
-               according to its (new created) weight.
-
-            As the weight of an event basically is the occurence of it, this
-            can be seen as a *weight-to-events* conversion and is useful,
-            if you have few data with sometimes high weights (which then can
-            cause statistic effects if badly distributed)
-
-            Don't forget to manually assing weights 1 and not just take
-            the weights from data.
-
-        .. note:: With highly unbalanced weights this can lead to a memory
-                  explosion!
-
-        min_weight : int or float
-            For *weights_as_events*; normaly, the minimum of the weights
-            times *weights_as_events* is taken for scaling of the weights,
-            if a *min_weight* is provided, the minimum of the weights and
-            *min_weight* times the *weights_as_events* will be taken for
-            scaling.
-
-        selection : str
-            A selection applied to **ROOT TTrees** only! For further details,
-            see the root_numpy module.
+            The index from the data to be used. If None, all data
+            will be used.
         """
-
         # initialize variables
-        index = self._index if index is None else list(index)
-        columns = self.columns if columns is None else data_tools.to_list(columns)
-
-        # flag whether we have to add new data or not (convert weights to events)
-        convert_data = (weights_as_events >= 1) and not dev_tool.is_in_primitive(self.get_weights(
-                                                        index=index), (None, 1))
+        index = None if index is None else list(index)
+        columns = None if columns is None else data_tools.to_list(columns)
 
         # create data
         data_out = self._make_df(columns=columns, index=index, copy=True)
-        if not data_out.index.tolist() == range(len(data_out)):  # if not, convert the indices to
-            data_out.reset_index(drop=True, inplace=True)
+        # TODO: leave away below?!
+#        if not data_out.index.tolist() == range(len(data_out)):  # if not, convert the indices to
+#            data_out.reset_index(drop=True, inplace=True)
 
-        # weights to number of events conversion
-        if convert_data:
-            # get new weights > weights_as_events OR > min_weight
-            weights = self._scale_weights(index=index, weights_as_events=weights_as_events,
-                                          cast_int=True, min_weight=min_weight)
-            n_rows = sum(weights)
-            starting_row = len(data_out)
-            try:
-                data_out = data_out.append(pd.DataFrame(index=range(starting_row, n_rows),
-                                                    columns=data_out.columns))
-            except MemoryError as error:
-                meta_config.error_occured()
-                self.logger.critical("Memory error occured during conversion of weights to events" +
-                                     "\nMost propably you have very large/small weights" +
-                                     "\nExtended problem report:" +
-                                     "\nWeights_as_events = " + str(weights_as_events) +
-                                     "\nmin_weight (parameter) = " + str(min_weight) +
-                                     "\nSelf._weights: " +
-                                     "\n  min = " + str(np.min(self._weights)) +
-                                     "\n  max = " + str(np.max(self._weights)) +
-                                     "\n  mean = " + str(np.mean(self._weights)) +
-                                     "\n Number of total new events (the critical part!): " +
-                                     str(n_rows)
-                                     )
-                raise error
-
-            #test
-            np_data = data_out.as_matrix()
-
-            self.logger.info("Length of data was " + str(len(weights)) + ", new one will be " + str(sum(weights)))
-            new_row = starting_row  # starting row for adding data == endrow of first dataframe
-
-            for row_ori in xrange(starting_row):
-                weight = weights.iloc[row_ori]
-                if new_row %3000 == 0:
-                    self.logger.info("adding row nr " + str(row_ori) + " with weight " + str(weight))
-                if weight == 1:
-                    continue  # there is no need to add extra data in this "special case"
-                else:
-                    for tmp_ in range(1, weight):
-                        np_data[new_row] = np_data[row_ori]
-                        #data_out.iloc[new_row] = data_out.iloc[row_ori]
-                        new_row += 1
-            self.logger.info("data_out Dataframe created")
-
-            assert new_row == n_rows, "They should be the same in the end"
-            #test
-            data_out = pd.DataFrame(np_data)
-
-        # reassign branch names after conversation.
-        # And pandas has naming "problems" if only 1 branch
-        data_out.columns = columns
         return data_out
 
     def _make_df(self, columns=None, index=None, copy=False):
@@ -707,43 +532,39 @@ class HEPDataStorage(object):
             labels_out = {key: self._label_dic.get(key) for key in columns}
         return labels_out
 
-    def set_labels(self, data_labels, add_label=True):
+    def set_labels(self, data_labels, replace=False):
         """Set the human readable data-labels (for the columns).
 
-        Sometimes you want to change the labels of columns. This can be done
-        by passing a dictionary containing the column as key and a
+        Sometimes you want to change the labels(names) of columns. This can be
+        done by passing a dictionary containing the column as key and a
         human-readable name as value.
 
         Parameters
         ----------
         data_labels : dict
             It has the form: {column: name}
-        add_label : boolean
-            If False, the existing label dictionary gets overwritten instead
-            of updated.
+        replace : boolean
         """
         if data_labels is None:
             return
         assert isinstance(data_labels, dict), "Not a dictionary"
-        self._set_data_labels(data_labels=data_labels, add_label=add_label)
+        self._set_data_labels(data_labels=data_labels, replace=replace)
 
-    def _set_data_labels(self, data_labels, add_label=True):
+    def _set_data_labels(self, data_labels, replace):
         """Update the data labels"""
-
-        if add_label:
-            self._label_dic.update(data_labels)
-        else:
+        if replace:
             self._label_dic = data_labels
+        else:
+            self._label_dic.update(data_labels)
 
-    def get_targets(self, index=None, weights_as_events=False, min_weight=None):
+    def get_targets(self, index=None):
         """Return the targets of the data **as a numpy array**."""
         # assing defaults
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
         # get targets via internal method
-        out_targets = self._get_targets(index=index, weights_as_events=weights_as_events,
-                                        min_weight=min_weight)
+        out_targets = self._get_targets(index=index)
 
         # create targets if targets are "simpel" for output
         if dev_tool.is_in_primitive(out_targets, (-1, 0, 1, None)):
@@ -754,36 +575,16 @@ class HEPDataStorage(object):
 
         return out_targets
 
-    def _get_targets(self, index=None, weights_as_events=False, min_weight=None):
-        """Return targets as pandas Series, crashes the index if weights_as_events!"""
+    def _get_targets(self, index=None):
+        """Return targets as pandas Series or primitive type"""
         # assign defaults
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
-        # If weights_as_events and the target is only primitiv, make targets
-        if dev_tool.is_in_primitive(self._target, (-1, 0, 1, None)) and weights_as_events >= 1:
-            if self._target is None:
-                self.logger.warning("Target list consists of None!")
-            out_targets = dev_tool.make_list_fill_var([], length, self._target)
+        if index is None or dev_tool.is_in_primitive(self._target, (-1, 0, 1, None)):
+            out_targets = self._target
         else:
-            if index is None or dev_tool.is_in_primitive(self._target, (-1, 0, 1, None)):
-                out_targets = self._target
-            else:
-                out_targets = self._target.loc[index]
-
-        if weights_as_events >= 1:
-            temp_target = deque()
-            weights = self._scale_weights(index, weights_as_events=weights_as_events,
-                                          cast_int=True, min_weight=min_weight)
-            assert len(weights) == len(out_targets), "wrong length of weights and targets"
-            for weight, target in itertools.izip(weights, out_targets):
-                if weight == 1:
-                    continue
-                else:
-                    weight -= 1  # one target is already contained in out_targets
-                    temp_target.append([target] * weight)
-            out_targets = out_targets.append(temp_target)
-        out_targets = pd.Series(out_targets, index=index)
+            out_targets = self._target.loc[index]
 
         return out_targets
 
@@ -804,9 +605,7 @@ class HEPDataStorage(object):
         self._target = target
 
     def make_dataset(self, second_storage=None, index=None, index_2=None, columns=None,
-                     weights_as_events=False, weights_as_events_2=False,
-                     targets_from_data=False,
-                     min_weight=None, weights_ratio=0, shuffle=False):
+                     weights_ratio=0, shuffle=False, targets_from_data=False):
 
         """Create data, targets and weights of the instance (and another one)
 
@@ -856,24 +655,13 @@ class HEPDataStorage(object):
          # TODO2: make it recursive. second storage can be a list and get
          # data via make_dataset (or similar... difficult with ratio etc...)
         # initialize values
-        if shuffle:
-             warnings.warn("Shuffle not yet implemented!!")
 
         normalize_1 = 1
         normalize_2 = 1
 
-        # set min_weight and get some later needed variables
-        if second_storage is not None:
+        if weights_ratio > 0 and second_storage is not None:
             weights_1 =self.get_weights(index=index)
             weights_2 = second_storage.get_weights(index=index_2)
-            min_weight_1 = float(min(weights_1))
-            min_weight_2 = float(min(weights_2))
-            min_w1_w2 = min((min_weight_1, min_weight_2))
-            if min_weight is not None:
-                min_weight = min((min_w1_w2, min_weight))
-
-        if weights_ratio > 0 and second_storage is not None:
-            min_weight = None  # ignore if weigths_ratio > 0
 
             sum_weight_1 = float(sum(weights_1))
             sum_weight_2 = float(sum(weights_2))
@@ -886,48 +674,10 @@ class HEPDataStorage(object):
                 ratio_2 = 1.0 / ratio_1
                 ratio_1 = 1.0
 
-            if weights_as_events in (False, None) and weights_as_events_2 in (False, None):
-                normalize_1 = ratio_1
-                normalize_2 = ratio_2
 
-            elif weights_as_events is False and weights_as_events_2 > 0:
-                ratio_1 /= min_weight_2
+            normalize_1 = ratio_1
+            normalize_2 = ratio_2
 
-                min_ratio = min((ratio_1, ratio_2))
-                ratio_1 /= min_ratio
-                ratio_2 /= min_ratio
-
-                scale_factor = weights_as_events_2 / ratio_2  # scale to weights_as_events
-
-                normalize_1 = ratio_1 * scale_factor
-                weights_as_events_2 = int(np.round(ratio_2 * scale_factor) + 0.00005)
-                print "normalize_1", normalize_1
-
-            elif weights_as_events > 0 and weights_as_events_2 is False:
-                ratio_2 /= min_weight_1
-
-                min_ratio = min((ratio_1, ratio_2))
-                ratio_1 /= min_ratio
-                ratio_2 /= min_ratio
-
-                scale_factor = weights_as_events / ratio_1  # scale to weights_as_events
-
-                weights_as_events = int(np.round(ratio_1 * scale_factor) + 0.00005)
-                normalize_2 = ratio_2 * scale_factor
-                print "normalize_2", normalize_2
-
-            else:
-                # equalize the additional factor from the weights_to_events (division by min(weight))
-                ratio_1 /= min_weight_2
-                ratio_2 /= min_weight_1
-
-                min_ratio = min((ratio_1, ratio_2))
-                ratio_1 /= min_ratio
-                ratio_2 /= min_ratio
-
-                max_converter = max((weights_as_events, weights_as_events_2))
-                weights_as_events = int(np.round(ratio_1 * max_converter) + 0.00005)
-                weights_as_events_2 = int(np.round(ratio_2 * max_converter) + 0.00005)
 
 
         if shuffle is not False:
@@ -938,13 +688,10 @@ class HEPDataStorage(object):
             else:
                 rand_seed = rand_seed_2 = None
             random.shuffle(index, random=rand_seed)
-        data = self.pandasDF(columns=columns, index=index, min_weight=min_weight,
-                             weights_as_events=weights_as_events)
+        data = self.pandasDF(columns=columns, index=index)
         if second_storage is None:
-            targets = self.get_targets(index=index, min_weight=min_weight,
-                                       weights_as_events=weights_as_events)
-        weights = self.get_weights(index=index, min_weight=min_weight,
-                                   weights_as_events=weights_as_events, normalize=normalize_1)
+            targets = self.get_targets(index=index)
+        weights = self.get_weights(index=index, normalize=normalize_1)
 
         if second_storage is not None:
             assert isinstance(second_storage, HEPDataStorage), "Wrong type, has to be a HEPDataStorage"
@@ -952,29 +699,23 @@ class HEPDataStorage(object):
                 index_2 = second_storage.index if index_2 is None else index_2
                 random.shuffle(index_2, random=rand_seed_2)
             length_1 = len(data)
-            data_2 = second_storage.pandasDF(columns=columns, index=index_2,
-                                             min_weight=min_weight,
-                                             weights_as_events=weights_as_events_2)
+            data_2 = second_storage.pandasDF(columns=columns, index=index_2)
             length_2 = len(data_2)
             data = pd.concat((data, data_2), ignore_index=True, copy=False)
 
             if targets_from_data:
-                if weights_as_events or weights_as_events_2:
-                    warnings.warn("targets_from_data for weights_to_events not working yet! most probably...")
                 targets_1 = self.get_targets()
                 targets_2 = second_storage.get_targets()
                 targets = np.concatenate(targets_1, targets_2)
             else:
                 targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
 
-            weights_2 = second_storage.get_weights(index=index_2, min_weight=min_weight,
-                                                   weights_as_events=weights_as_events_2,
-                                                   normalize=normalize_2)
+            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
             weights = np.concatenate((weights, weights_2))
 
         return data, targets, weights
 
-    def copy_storage(self, columns=None, index=None):
+    def copy_storage(self, columns=None, index=None, add_to_name=" cp"):
         """Return a copy of self with only some of the columns (and therefore
         labels etc) or indices.
 
@@ -985,6 +726,8 @@ class HEPDataStorage(object):
         index : 1-D array-like
             The indices of the rows (and corresponding weights, targets etc.)
             for the new storage.
+        add_to_name : str
+            An addition to the data_name_addition of the copy.
         """
         index = self._index if index is None else list(index)
         columns = self.columns if columns is None else columns
@@ -1001,11 +744,12 @@ class HEPDataStorage(object):
                                      sample_weights=new_weights,
                                      data_labels=new_labels, index=new_index,
                                      data_name=self.data_name,
-                                     data_name_addition=self.data_name_addition + " cp")
+                                     data_name_addition=self.data_name_addition + add_to_name)
         new_storage.columns = columns
         return new_storage
 
-    def get_LabeledDataStorage(self, columns=None, index=None, random_state=None, shuffle=False):
+# TODO: add second data_storage
+    def get_LabeledDataStorage(self, columns=None, index=None, shuffle=False):
         """Create and return an instance of class "LabeledDataStorage" from
         the REP repository.
 
@@ -1017,6 +761,7 @@ class HEPDataStorage(object):
         """
         index = self.index if index is None else list(index)
         columns = self.columns if columns is None else columns
+        random_state = meta_config.randint()
         new_lds = LabeledDataStorage(self.pandasDF(columns=columns, index=index),
                                      target=self.get_targets(index=index),
                                      sample_weight=self.get_weights(index=index),
@@ -1133,19 +878,21 @@ class HEPDataStorage(object):
         out : pandas DataFrame
             Return the feature-correlations in a pandas DataFrame
         """
+        from statsmodels.stats.weightstats import DescrStatsW
         columns = self.columns if columns is None else columns
 
         data_name = self.name
         if second_storage is not None:
             data_name += " and " + second_storage.name
-        data, _tmp, _tmp2 = self.make_dataset(second_storage=second_storage,
+        data, _tmp, weights = self.make_dataset(second_storage=second_storage,
                                               shuffle=True, columns=columns)
-        del _tmp, _tmp2
+        del _tmp
         out.save_fig(figure)
-        correlation = data.corr(method=method)
+        ds = DescrStatsW(data.as_matrix(), weights=weights)
+        correlation = ds.cov  #data.corr(method=method)
         corr_plot = sns.heatmap(correlation.T)
 
-        corr_plot.set_title("NO WEIGHTS! Correlation of " + data_name)
+        corr_plot.set_title("Correlation of " + data_name)
 
         # turn the axis label
         for item in corr_plot.get_yticklabels():
@@ -1157,9 +904,9 @@ class HEPDataStorage(object):
         return correlation
 
 
-    def plot(self, figure=None, title=None, data_name=None, bins=None, importance=3,
-             log_y_axes=False, plot_range=None, columns=None, index=None, sample_weights=None,
-             data_labels=None, see_all=False, hist_settings=None, weights_as_events=False):
+    def plot(self, figure=None, columns=None, index=None, title=None, data_name=None,
+             bins=None, log_y_axes=False, plot_range=None, sample_weights=None,
+             importance=3, see_all=False, hist_settings=None):
         """Draw histograms of the data.
 
         .. warning:: Only 99.98% of the newest plotted data will be shown to focus
@@ -1174,6 +921,10 @@ class HEPDataStorage(object):
             The name of the figure. If the figure already exists, the plots
             will be plotted in the same window (can be intentional, for
             example to compare data)
+        columns : str or list(str, str, str, ...)
+            The columns of the data to be plotted. If None, all are plotted.
+        index : list(int, int, int, ...)
+            A list of indeces to be plotted. If None, all are plotted.
         title : str
             | The title of the whole plot (NOT of the subplots). If several
               titles for the same figures are given, they will be *concatenated*.
@@ -1184,25 +935,21 @@ class HEPDataStorage(object):
             | Examples: "before cut", "after cut" etc
         bins : int
             Number of bins to plot.
-        std_save : boolean
-            If True, the figure will be saved (with
-            :py:meth:`~raredecay.tools.output.output.save_fig()`) with
-            "standard" parameters as specified in *meta_config*.
         log_y_axes : boolean
             If True, the y-axes will be scaled logarithmically.
-        plot_range : tuple or None
+        plot_range : tuple (float, float) or None
             The lower and upper range of the bins. If None, 99.98% of the data
             will be plottet automatically.
-        columns : str or list(str, str, str, ...)
-            The columns of the data to be plotted. If None, all are plotted.
-        index : list(int, int, int, ...)
-            A list of indeces to be plotted. If None, all are plotted.
         sample_weights : list containing weights
             The weights for the data, how "high" a bin is. Actually, how much
             it should account for the whole distribution or how "often" it
             occures.
-        data_labels : dict
-            Contain the column as key and the value as label
+        importance : {1, 2, 3, 4, 5}
+            The importance of the plot. The higher, the more likely it will be
+            plotted. There is a trade-off between the importance and the
+            plot_verbosity.
+        see_all : boolean
+            If True, all data (not just 99.98%) will be plotted.
         hist_settings : dict
             A dictionary containing the settings as keywords for the
             :py:func:`~matplotlib.pyplot.hist()` function.
@@ -1211,18 +958,10 @@ class HEPDataStorage(object):
 #==============================================================================
 #        initialize values
 #==============================================================================
-        # update labels
-        if dev_tool.is_in_primitive(data_labels, None):
-            data_labels = {}
-        data_labels = dict(self._label_dic, **data_labels)
-
-        # update weights
-        if dev_tool.is_in_primitive(sample_weights, None):
-            if weights_as_events in (False, None):
-                sample_weights = self.get_weights(index=index)
-        #assert ((len(sample_weights) == (len(self.get_weights(index=index))) or
-        #            dev_tool.is_in_primitive(sample_weights, None)) ,
-        #            "sample_weights is not the right lengths")
+        if sample_weights is None:
+            sample_weights = self._get_weights(index=index)
+            if dev_tool.is_in_primitive(sample_weights, 1):
+                sample_weights = None
 
         # update hist_settings
         if dev_tool.is_in_primitive(hist_settings, None):
@@ -1235,11 +974,10 @@ class HEPDataStorage(object):
             hist_settings['range'] = plot_range
 
         # create data
-        data_plot = self.pandasDF(columns=columns, index=index, weights_as_events=weights_as_events)
+        data_plot = self.pandasDF(columns=columns, index=index)
         columns = data_plot.columns.values
         self.logger.debug("plot columns from pandasDataFrame: " + str(columns))
-        if weights_as_events >= 1:
-            sample_weights=None
+
 
         # set the right number of rows and columns for the subplot
         subplot_col = int(math.ceil(math.sqrt(len(columns))))
@@ -1284,9 +1022,8 @@ class HEPDataStorage(object):
                 x_limits = hist_settings.pop('range')
             self.__figure_dic[figure].update({column: x_limits})
             plt.subplot(subplot_row, subplot_col, col_id)
-            temp1, temp2, patches = plt.hist(data_plot[column], weights=sample_weights,
-                                             log=log_y_axes, range=x_limits,
-                                             label=label_name, **hist_settings)
+            plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
+                     range=x_limits, label=label_name, **hist_settings)
             plt.title(column)
         plt.legend()
         return out_figure
@@ -1336,11 +1073,9 @@ if __name__ == '__main__':
 
     d = a.loc[[1,2,11,22]]
     pd1 = storage.pandasDF()
-    pd2 = storage.pandasDF(weights_as_events=2)
-    scaled_w = storage.get_weights(weights_as_events=2)
 
-    t1 = all(pd1 == d.reset_index(drop=True))
-    t2 = len(pd2) == 18 and all(scaled_w == np.ones(len(pd2)))
+    t1 = all(pd1.reset_index(drop=True) == d.reset_index(drop=True))
+    t2 = True
     t3 = all(storage.get_targets(index=[1, 11, 22]) == np.array([1, 1, 0]))
     works1 = t1 and t2 and t3
 
@@ -1372,12 +1107,7 @@ if __name__ == '__main__':
 
     storage3 = storage2.copy_storage(index=[3,5,7,9], columns=['B_PT', 'nTracks'])
     df11 = storage3.pandasDF()
-    df12 =  storage3.pandasDF(weights_as_events=3, min_weight=4)
     storage3.set_weights(sample_weights=[1,4,1,0.5])
-    #print "df11", df11
-    #print "df12", df12
-    #print storage3.pandasDF(weights_as_events=3, min_weight=4)
-    w3 = storage3.get_weights(weights_as_events=3)
 
     storage3.make_folds(4)
     train, test = storage3.get_fold(1)
@@ -1392,7 +1122,7 @@ if __name__ == '__main__':
 
 
 
-    t22 = all(w3 == np.ones(39))
+    t22 = True
     #print "t22 =", t22
     works2 = t21 and t22
     works = works1 and works2

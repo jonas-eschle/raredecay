@@ -62,8 +62,7 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def _make_data(original_data, target_data=None, features=None, target_from_data=False,
-                  weight_original=None, weight_target=None, conv_ori_weights=False,
-                  conv_tar_weights=False, weights_ratio=0):
+               weights_ratio=0, weights_original=None, weights_target=None):
     """Return the concatenated data, weights and labels for classifier training.
 
      Differs to only *make_dataset* from the HEPDataStorage by providing the
@@ -72,18 +71,16 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
     # make temporary weights if specific weights are given as parameters
     temp_ori_weights = None
     temp_tar_weights = None
-    if not dev_tool.is_in_primitive(weight_original, None):
+    if not dev_tool.is_in_primitive(weights_original, None):
         temp_ori_weights = original_data.get_weights()
-        original_data.set_weights(weight_original)
-    if not dev_tool.is_in_primitive(weight_target, None):
+        original_data.set_weights(weights_original)
+    if not dev_tool.is_in_primitive(weights_target, None):
         temp_tar_weights = target_data.get_weights()
-        target_data.set_weights(weight_target)
+        target_data.set_weights(weights_target)
 
     # create the data, target and weights
     data_out = original_data.make_dataset(target_data, columns=features,
                                           targets_from_data=target_from_data,
-                                          weights_as_events=conv_ori_weights,
-                                          weights_as_events_2=conv_tar_weights,
                                           weights_ratio=weights_ratio)
 
     # reassign weights if specific weights have been used
@@ -152,12 +149,12 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
     # test if input is classifier, create dict
     if isinstance(clf, (BaseEstimator, Classifier)):
-        clf = {'clf': clf, 'name': clf}
+        clf = {'clf': clf}
 
     # if clf is a string only, create dict with only the type specified
     if isinstance(clf, str):
         assert clf in __IMPLEMENTED_CLFS, "clf not implemented (yet. Make an issue;) )"
-        clf = {'clf_type': clf, 'name': clf}
+        clf = {'clf_type': clf, 'config': {}}
 
     assert isinstance(clf, dict), "Wrong data format of classifier..."
 
@@ -195,7 +192,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         elif isinstance(classifier, SklearnClassifier):
             sub_clf = classifier.clf
             if isinstance(sub_clf, RandomForestClassifier):
-                n_cpu_clf = 1
+                n_cpu_clf = sub_clf.n_jobs
                 clf_type = 'rdf'
             elif isinstance(sub_clf, AdaBoostClassifier):
                 n_cpu_clf = 1
@@ -218,15 +215,18 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             output['parallel_profile'] = None
         clf_name = meta_config.DEFAULT_CLF_NAME.get(clf_type, "classifier")
         output['name'] = clf.get('name', clf_name)
+
+    # If we do not have a classifier, we have a config dict and need to create a clf
     else:
-        if not clf.has_key('clf_type'):
+        # find the clf_type and make sure it's an implemented one
+        if 'clf_type' not in clf:
             for imp_clf in __IMPLEMENTED_CLFS:
-                if clf.has_key(imp_clf):
+                if imp_clf in clf:
                     clf['clf_type'] = imp_clf
                     clf['config'] = clf[imp_clf]
-        if not clf.has_key('clf_type'):
+        if 'clf_type' not in clf:
             raise ValueError("Invalid classifier, not implemented")
-        if not clf.has_key('name'):
+        if 'name' not in clf:
             clf['name'] = clf['clf_type']
         default_clf = dict(
             clf_type=clf['clf_type'],
@@ -284,8 +284,8 @@ def make_clf(clf, n_cpu=None, dict_only=False):
     return output
 
 
-def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
-                                 features=None, max_feature_elimination=None,
+def backward_feature_elimination(original_data, target_data=None, features=None,
+                                 clf='xgb', n_folds=10, max_feature_elimination=None,
                                  max_difference_to_best=0.08, direction='backward',
                                  take_target_from_data=False):
     """Train and score on each feature subset, eliminating features backwards.
@@ -313,14 +313,14 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
         The original data
     target_data : HEPDataStorage
         The target data
+    features : list(str, str, str,...)
+        List of strings containing the features/columns to be used for the
+        hyper-optimization or feature selection.
     clf : str {'xgb, 'rdf, 'erf', 'gb', 'ada', 'nn'} or config-dict
         For possible options, see also :py:func:`~raredecay.ml_analysis.make_clf()`
     n_folds : int > 1
         How many folds you want to split your data in when doing KFold-splits
         to measure the performance of the classifier.
-    features : list(str, str, str,...)
-        List of strings containing the features/columns to be used for the
-        hyper-optimization or feature selection.
     max_feature_elimination : int >= 1
         How many features should be eliminated before it surely stopps
     max_difference_to_best : float
@@ -411,6 +411,7 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
     else:
         n_to_eliminate = min([len(selected_features) - 1, max_feature_elimination])
 
+    iterations = 0  # for the timing
     # do-while python-style (with if-break inside)
     while n_to_eliminate > 0:
 
@@ -422,6 +423,7 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
 
         # iterate through the features and remove the ith each time
         for i, feature in enumerate(selected_features):
+            iterations += 1
             clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
             temp_features = copy.deepcopy(selected_features)
             del temp_features[i]  # remove ith feature for testing
@@ -429,8 +431,9 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
             report = clf.test_on(data[temp_features], label, weights)
             temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
             collected_scores[feature].append(round(temp_auc, 4))
-            # set time condition
-            if available_time < timeit.default_timer() - start_time and start_time > 0:
+            # set time condition, extrapolate assuming same time for each iteration
+            eet_next = (timeit.default_timer() - start_time) * (iterations + 1) / iterations
+            if available_time < eet_next and start_time > 0:
                 n_to_eliminate = 0
                 break
             if max_auc - temp_auc < difference:
@@ -483,8 +486,8 @@ def backward_feature_elimination(original_data, target_data, clf, n_folds=10,
 
 
 
-def optimize_hyper_parameters(original_data, target_data, clf, n_eval, features=None,
-                              n_checks=10, n_folds=10, generator_type='subgrid',
+def optimize_hyper_parameters(original_data, clf=None, target_data=None, features=None,
+                              n_eval=1, n_checks=10, n_folds=10, generator_type='subgrid',
                               take_target_from_data=False, **kwargs):
     """Optimize the hyperparameters of a classifier
 
@@ -651,10 +654,10 @@ def optimize_hyper_parameters(original_data, target_data, clf, n_eval, features=
 
 
 def classify(original_data=None, target_data=None, features=None, validation=10,
-             clf='xgb', importance=3, plot_importance=3, extended_report=False,
-             plot_title=None, curve_name=None, target_from_data=False,
-             get_predictions=False, weights_ratio=0,
-             conv_ori_weights=False, conv_tar_weights=False, conv_vali_weights=False):
+             clf='xgb', extended_report=False, get_predictions=False,
+             plot_title=None, curve_name=None, weights_ratio=0,
+             importance=3, plot_importance=3,
+             target_from_data=False):
     """Training and testing a classifier or distinguish a dataset
 
     Classify is a multi-purpose function which does most of the things around
@@ -749,10 +752,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
+                                          weights_ratio=weights_ratio,
                                           target_from_data=target_from_data,
-                                          conv_ori_weights=conv_ori_weights,
-                                          conv_tar_weights=conv_tar_weights,
-                                          weights_ratio=weights_ratio)
+                                          )
         data_name = original_data.name
         if target_data is not None:
             data_name += " and " + target_data.name
@@ -801,9 +803,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         make_plot = False
         clf_score = None
     elif isinstance(validation, list) and len(validation) in (1, 2):
-        data_val, target_val, weights_val = _make_data(validation[0], validation[1],
-                                                       conv_ori_weights=conv_vali_weights,
-                                                       conv_tar_weights=conv_vali_weights)
+        data_val, target_val, weights_val = _make_data(validation[0], validation[1])
         lds_test = LabeledDataStorage(data=data_val, target=target_val, sample_weight=weights_val)
     else:
         raise ValueError("Validation method " + str(validation) + " not a valid choice")
@@ -839,13 +839,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             class_rep = classification_report(y_true, y_pred, sample_weight=w_test)
             out.add_output(class_rep, section="Classification report " + clf_name,
                            importance=importance)
-            out.add_output(["accuracy NO WEIGHTS! (just for curiosity):", clf_name,
-                            ",", curve_name, ":", clf_score2], importance=importance,
-                            subtitle="Report of classify: " + str(plot_name))
             out.add_output(["recall of", clf_name, ",", curve_name, ":", clf_score],
                            importance=importance)
             binary_test = False
             plot_name = clf_name + ", recall = " + str(clf_score)
+            out.add_output(["accuracy NO WEIGHTS! (just for curiosity):", clf_name,
+                            ",", curve_name, ":", clf_score2], importance=importance,
+                            subtitle="Report of classify: " + str(plot_name))
         else:
             raise ValueError("Multi-label classification not supported")
 
@@ -1033,8 +1033,8 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
         reweight_data.set_weights(new_weights)
     return new_weights
 
-def reweight_Kfold(reweight_data_mc, reweight_data_real, n_folds=10,
-                   columns=None, reweighter='gb', meta_cfg=None, score_clf='xgb',
+def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=10,
+                   reweighter='gb', meta_cfg=None, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
     """Reweight data by "itself" for *scoring* and hyper-parameters via
     Kfolding to avoid bias.
