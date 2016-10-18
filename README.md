@@ -18,8 +18,8 @@ To get an idea of the package, have a look at the howto notebooks:
 ## Getting started right now ##
 
 If you want it the easy, fast way, have a look at the
-[Ready-to-use scripts](https://github.com/mayou36/raredecay/tree/master/scripts_readyToUse).
-All you need to do is to change every "TODO" task and you can run the script without the need of coding at all.
+[Ready-to-use scripts](https://github.com/mayou36/raredecay/tree/master/scripts_readyToUse).  
+All you need to do is to have a look at every "TODO" task and probably change them. Then you can run the script without the need of coding at all.
 
 ## Documentation and API ##
 
