@@ -163,9 +163,12 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
     if isinstance(clf.get('n_cpu'), int) and n_cpu is None:
         n_cpu = clf['n_cpu']
-    n_cpu = 1 if n_cpu is None else n_cpu
-    if n_cpu == -1:
-        n_cpu = globals_.free_cpus()
+
+    # Warning if n_cpu of clf is bigger then n_cpu, but only if not None
+    suppress_cpu_warning=False
+    if n_cpu is None:
+        suppress_cpu_warning = True
+    n_cpu = meta_config.get_n_cpu(n_cpu)
 
     # if input is dict containing a clf, make sure it's a Sklearn one
     if len(clf) == 1 and isinstance(clf.values()[0], (BaseEstimator, Classifier)):
@@ -174,10 +177,47 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         clf['clf'] = value
     if isinstance(clf.get('clf'), (BaseEstimator, Classifier)):
         classifier = clf['clf']
+        clf_type = None
         if not isinstance(classifier, Classifier):
             classifier = SklearnClassifier(clf=classifier)
         output['clf'] = classifier
-        output['name'] = clf.get('name', 'clf')
+
+        # Test which classifier it is and get parallel_profile
+        if isinstance(classifier, XGBoostClassifier):
+            n_cpu_clf = classifier.nthreads
+            clf_type = 'xgb'
+        elif isinstance(classifier, TheanetsClassifier):
+            n_cpu_clf = 1
+            clf_type = 'nn'
+        elif isinstance(classifier, TMVAClassifier):
+            n_cpu_clf = 1
+            clf_type = 'tmva'
+        elif isinstance(classifier, SklearnClassifier):
+            sub_clf = classifier.clf
+            if isinstance(sub_clf, RandomForestClassifier):
+                n_cpu_clf = 1
+                clf_type = 'rdf'
+            elif isinstance(sub_clf, AdaBoostClassifier):
+                n_cpu_clf = 1
+                clf_type = 'ada'
+            elif isinstance(sub_clf, GradientBoostingClassifier):
+                n_cpu_clf = 1
+                clf_type = 'gb'
+            elif isinstance(sub_clf, KNeighborsClassifier):
+                n_cpu_clf = 1
+                clf_type = 'knn'
+
+        if n_cpu_clf > n_cpu and not suppress_cpu_warning:
+            logger.warning("n_cpu specified at make_clf() for clf < n_cpu of clf given! is that what you want?")
+        n_cpu = max(int(n_cpu_clf / n_cpu), 1)
+        if n_cpu > 1:
+            output['n_cpu'] = n_cpu_clf
+            output['parallel_profile'] = 'threads-' + str(n_cpu)
+        else:
+            output['n_cpu'] = n_cpu_clf
+            output['parallel_profile'] = None
+        clf_name = meta_config.DEFAULT_CLF_NAME.get(clf_type, "classifier")
+        output['name'] = clf.get('name', clf_name)
     else:
         if not clf.has_key('clf_type'):
             for imp_clf in __IMPLEMENTED_CLFS:
@@ -198,31 +238,31 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
         if clf['clf_type'] == 'xgb':
             # update config dict with parallel-variables and random state
-            clf['config'].update(dict(nthreads=n_cpu, random_state=globals_.randint+4))  # overwrite entries
+            clf['config'].update(dict(nthreads=n_cpu, random_state=meta_config.randint()))  # overwrite entries
             clf_tmp = XGBoostClassifier(**clf.get('config'))
-        if clf['clf_type'] == 'tmva':
+        elif clf['clf_type'] == 'tmva':
             serial_clf = True
             clf_tmp = TMVAClassifier(**clf.get('config'))
-        if clf['clf_type'] == 'gb':
+        elif clf['clf_type'] == 'gb':
             serial_clf = True
             clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.get('config')))
-        if clf['clf_type'] == 'rdf':
-            clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
+        elif clf['clf_type'] == 'rdf':
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_config.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
-        if clf['clf_type'] == 'ada':
+        elif clf['clf_type'] == 'ada':
             serial_clf = True
-            clf['config'].update(dict(random_state=globals_.randint+43))
+            clf['config'].update(dict(random_state=meta_config.randint()))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                                    random_state=globals_.randint + 29), **clf.get('config')))
-        if clf['clf_type'] == 'knn':
-            clf['config'].update(dict(random_state=globals_.randint+919, n_jobs=n_cpu))
+                                    random_state=meta_config.randint()), **clf.get('config')))
+        elif clf['clf_type'] == 'knn':
+            clf['config'].update(dict(random_state=meta_config.randint(), n_jobs=n_cpu))
             clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
-        if clf['clf_type'] == 'rdf':
-            clf['config'].update(dict(n_jobs=n_cpu, random_state=globals_.randint+432))
+        elif clf['clf_type'] == 'rdf':
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_config.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
-        if clf['clf_type'] == 'nn':
+        elif clf['clf_type'] == 'nn':
             serial_clf = meta_config.use_gpu
-            clf['config'].update(dict(random_state=globals_.randint+43))
+            clf['config'].update(dict(random_state=meta_config.randint()))
             clf_tmp = TheanetsClassifier(**clf.get('config'))
 
         # assign classifier to output dict
@@ -663,7 +703,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         If True, make extended reports on the classifier as well as on the data,
         including feature correlation, feature importance etc.
     plot_title : str
-        A part of the title of the plots.
+        A part of the title of the plots and general name of the call. Will
+        also be printed in the output to identify with the intention this
+        function was called.
     curve_name : str
         A labeling for the plotted data.
     target_from_data : boolean
@@ -715,33 +757,39 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         if target_data is not None:
             data_name += " and " + target_data.name
 
-    clf_name = 'classifier'
-    if clf == 'xgb':
-        clf_name = 'XGBoost classifier'
-        clf = XGBoostClassifier(**dict(meta_config.DEFAULT_CLF_XGB, nthreads=globals_.free_cpus()))
-        is_parallel = True
-    elif clf == 'rdf':
-        clf_name = "RandomForest classifier"
-        cfg_clf = meta_config.DEFAULT_CLF_RDF,
-        cfg_clf = dict(n_jobs=globals_.free_cpus(), random_state=globals_.randint+432)
-        clf = SklearnClassifier(RandomForestClassifier(**cfg_clf))
-        is_parallel = True
-    elif clf == 'nn':
-        clf_name = "Theanets Neural Network"
-        cfg_clf = dict(meta_config.DEFAULT_CLF_NN, random_state=globals_.randint+1817)
-        clf = TheanetsClassifier(**cfg_clf)
-        is_parallel = True
-    elif isinstance(clf, Classifier):
-        is_parallel = True
-    else:
-        raise ValueError('Not a valid classifier or string for a clf')
+    clf_dict = make_clf(clf, n_cpu=-1)
+    clf = clf_dict['clf']
+    clf_name = clf_dict.pop('name')
+    parallel_profile = clf_dict.get('parallel_profile')
+#    if clf == 'xgb':
+#        clf_name = 'XGBoost classifier'
+#        clf = XGBoostClassifier(**dict(meta_config.DEFAULT_CLF_XGB, nthreads=globals_.free_cpus()))
+#        is_parallel = True
+#    elif clf == 'rdf':
+#        clf_name = "RandomForest classifier"
+#        cfg_clf = meta_config.DEFAULT_CLF_RDF,
+#        cfg_clf = dict(n_jobs=globals_.free_cpus(), random_state=meta_config.randint())
+#        clf = SklearnClassifier(RandomForestClassifier(**cfg_clf))
+#        is_parallel = True
+#    elif clf == 'nn':
+#        clf_name = "Theanets Neural Network"
+#        cfg_clf = dict(meta_config.DEFAULT_CLF_NN, random_state=meta_config.randint())
+#        clf = TheanetsClassifier(**cfg_clf)
+#        is_parallel = True
+#    elif isinstance(clf, Classifier):
+#        is_parallel = True
+#    else:
+#        raise ValueError('Not a valid classifier or string for a clf')
 
 
     if isinstance(validation, (float, int, long)) and validation > 1:
-        if is_parallel:
-            parallel_profile = None
-        else:
-            parallel_profile = 'threads-' + str(min(globals_.free_cpus(), validation))
+#        if is_parallel:
+#            parallel_profile = None
+#        else:
+#            parallel_profile = 'threads-' + str(min(globals_.free_cpus(), validation))
+#        # HACK START
+#        parallel_profile = 'threads-100'
+#        # HACK END
 
         clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile,
                                 stratified=meta_config.use_stratified_folding)
@@ -793,7 +841,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                            importance=importance)
             out.add_output(["accuracy NO WEIGHTS! (just for curiosity):", clf_name,
                             ",", curve_name, ":", clf_score2], importance=importance,
-                            subtitle="Report of classify")
+                            subtitle="Report of classify: " + str(plot_name))
             out.add_output(["recall of", clf_name, ",", curve_name, ":", clf_score],
                            importance=importance)
             binary_test = False
@@ -812,11 +860,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         if binary_test:
             out.save_fig(plt.figure(plot_title + " " + plot_name),
                          importance=plot_importance, **save_fig_cfg)
-            report.roc(physics_notion=True).plot(title=plot_title + "\nROC curve of" + clf_name + " on data:" +
+            report.roc(physics_notion=True).plot(title=plot_title + "\nROC curve of " + clf_name + " on data:" +
                                                    data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
-            out.save_fig(plt.figure("Learning curve" + plot_name),
+            out.save_fig(plt.figure("Learning curve " + plot_name),
                          importance=plot_importance, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " + plot_name)
         else:
@@ -833,9 +881,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                             title="Feature importance shuffling of " + plot_name)
                 out.save_fig(figure="Feature correlation matrix of " + plot_name,
                              importance=plot_importance)
-                report.features_correlation_matrix().plot()
+                report.features_correlation_matrix().plot(title="Feature correlation matrix of " + plot_name)
             out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
-            report.prediction_pdf(plot_type='bar').plot()
+            report.prediction_pdf(plot_type='bar').plot(title="Predictiond pdf of " + plot_name)
 
     if clf_score is None:
         return clf

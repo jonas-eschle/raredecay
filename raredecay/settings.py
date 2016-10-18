@@ -128,6 +128,18 @@ def figure_save_config(file_formats=['png', 'svg'], to_pickle=True, dpi=150):
     config.save_fig_cfg['dpi'] = dpi
 
 
+def set_random_seed(seed=None):
+    """Set the seed to the random generator to reproduce results
+
+    Parameters
+    ----------
+    seed : int
+        The seed for the random generator. If None, it won't change anything
+    """
+    if seed is not None:
+        globals_
+
+
 
 def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
                          run_message="This is a test-run to test the package", prompt_for_input=False):

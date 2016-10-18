@@ -448,17 +448,13 @@ class OutputHandler(object):
 
         #TODO remove?: self._check_initialization(return_error=True)
 
-
-
-        from raredecay.globals_ import randint  # here to avoid circular dependencies
-
 #==============================================================================
 #  write all the necessary things to the output
 #==============================================================================
 
         self.add_output("\n", title="END OF RUN " + self._run_name, importance=4)
-        self.add_output(["randint", randint], title="Different parameters",
-            obj_separator=" : ", importance=1)
+        self.add_output(["Random generator seed", meta_config.rand_seed],
+                        title="Different parameters", obj_separator=" : ", importance=2)
 
         # print the output which should be printed at the end of the run
         sys.stdout.write(self._loud_end_output)

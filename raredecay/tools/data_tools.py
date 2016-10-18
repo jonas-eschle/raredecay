@@ -180,7 +180,7 @@ def obj_to_string(objects, separator=None):
     assert isinstance(separator, str), "Separator not a string"
 
     objects = to_list(objects)
-    objects = [str(obj) for obj in objects if obj is not None]  # remove Nones
+    objects = [str(obj) for obj in objects if obj not in (None, "")]  # remove Nones
     string_out = ""
     for word in objects:
         string_out += word + separator if word != objects[-1] else word

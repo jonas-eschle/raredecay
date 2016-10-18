@@ -340,7 +340,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         original_data = original_data.copy_storage(columns=features)
         target_data = target_data.copy_storage(columns=features)
 
-    figure = "Plotting" + str(original_data.name) + " and " + str(target_data.get_name())
+    figure = "Plotting" + str(original_data.name) + " and " + str(target_data.name)
     original_data.plot(figure=figure, title=figure)
     target_data.plot(figure=figure)
 
@@ -426,6 +426,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     out : dict
         Return a dict containing the weights as well as the reweighter.
         The keywords are:
+
         - *reweighter* : The trained reweighter
         - *weights* : pandas Series containing the new weights of the data.
 
@@ -608,7 +609,9 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # function depending on what validation is. If it is an integer, it means:
     # do cross-validation with n(=validation) folds.
     tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                          validation=n_folds_scoring, plot_importance=4)
+                                          validation=n_folds_scoring, plot_importance=4,
+                                          plot_title="ROC AUC to distinguish data",
+                                          weights_ratio=1)
 
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means

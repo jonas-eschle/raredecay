@@ -72,11 +72,9 @@ logger_cfg = cfg.logger_cfg  # only if not save_output
 #  else:
 #    out = output.OutputHandlerExt()
 
-#==============================================================================
-# Random integer generator for pseudo random generator (or other things)
-#==============================================================================
 
-randint = random.randint(123, 1512412)  # 357422 or 566575
+
+
 
 #==============================================================================
 # parallel profile

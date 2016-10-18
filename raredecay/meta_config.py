@@ -36,6 +36,7 @@ from __future__ import division, absolute_import
 
 import cPickle as pickle
 import multiprocessing
+import random
 
 
 #==============================================================================
@@ -57,6 +58,18 @@ use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parall
 use_stratified_folding = True  # StratifiedKFolding is better, from a statistical point of view, but
                                 # also needs more memory, mostly insignificantly but can be large
 
+def get_n_cpu(n_cpu=None):
+    """Return the number of cpus to use. None means all. Can be -1, -2..."""
+    global n_cpu_max
+    if n_cpu is None:
+        n_cpu = 1
+    if isinstance(n_cpu, int):
+        if n_cpu < 0:
+            n_cpu = max([n_cpu_max + n_cpu + 1, 1])  #
+        n_cpu = min([n_cpu, n_cpu_max])
+    return n_cpu
+
+
 # set meta-config variables
 def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
     """Set the number of cpus and whether a gpu is in use or not"""
@@ -71,7 +84,7 @@ def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
         if n_cpu > 1:
             n_cpu_max = n_cpu
         elif n_cpu < 0:
-            n_cpu_max = multiprocessing.cpu_count() + n_cpu + 1  # because -1 is "all cpus"
+            n_cpu_max = max([multiprocessing.cpu_count() + n_cpu + 1, 1])  # because -1 is "all cpus"
         else:
             raise ValueError("Invalid n_cpu argument: " + str(n_cpu))
     else:
@@ -317,6 +330,21 @@ def set_plot_verbosity(new_plot_verbosity):
 def _check_verbosity(verbosity):
     if verbosity not in range(-1, 7):
         raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
+
+#==============================================================================
+# Random integer generator for pseudo random generator (or other things)
+#==============================================================================
+
+rand_seed = random.randint(123, 1512412)  # 357422 or 566575
+random.seed(rand_seed)
+def randint():
+    """Return random integer"""
+    return random.randint(51, 523753)
+
+def set_seed(seed):
+    global rand_seed
+    rand_seed = seed
+    random.seed(rand_seed)
 
 #------------------------------------------------------------------------------
 # parallel profile
