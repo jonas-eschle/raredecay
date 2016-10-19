@@ -45,10 +45,10 @@ from sklearn.metrics import accuracy_score, classification_report  # recall_scor
 # Hyperparameter optimization
 from rep.metaml import GridOptimalSearchCV, FoldingScorer, RandomParameterOptimizer
 from rep.metaml import SubgridParameterOptimizer
-from rep.metaml.gridsearch import RegressionParameterOptimizer, AnnealingParameterOptimizer
+from rep.metaml.gridsearch import RegressionParameterOptimizer  # , AnnealingParameterOptimizer
 
 from raredecay.tools import dev_tool, data_tools, data_storage
-from raredecay import globals_
+# from raredecay import globals_
 from raredecay.globals_ import out
 
 # import configuration
