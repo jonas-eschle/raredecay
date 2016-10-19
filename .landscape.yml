@@ -1,0 +1,7 @@
+strictness: medium
+pylint:
+  disable:
+    - too-many-arguments
+    - too-many-statements
+    - too-many-locals
+    - too-many-branches
