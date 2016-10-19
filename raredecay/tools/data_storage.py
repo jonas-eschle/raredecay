@@ -435,7 +435,7 @@ class HEPDataStorage(object):
     def set_root_selection(self, selection, exception_if_failure=True):
         """Set the selection in a root-file. Only possible if a root-file is provided"""
         if self._data_type == 'root':
-            self.data['selection'] == selection
+            self.data['selection'] = selection
         elif exception_if_failure:
             raise RuntimeError("selection could not be applied, no root-dict")
         else:
@@ -870,9 +870,10 @@ class HEPDataStorage(object):
         data, _tmp, weights = self.make_dataset(second_storage=second_storage,
                                                 shuffle=True, columns=columns)
         del _tmp
-        out.save_fig(figure)
+        out.save_fig(figure, importance=plot_importance)
         ds = DescrStatsW(data.as_matrix(), weights=weights)
-        correlation = ds.cov  # data.corr(method=method)
+        correlation = ds.cov
+        correlation = data.corr(method=method)
         corr_plot = sns.heatmap(correlation.T)
 
         corr_plot.set_title("Correlation of " + data_name)

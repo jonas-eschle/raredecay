@@ -279,7 +279,7 @@ def to_ndarray(data_in, dtype=None, float_array=True):
     return data_in
 
 
-def to_pandas(data_in, indices=None, columns=None, dtype=None):
+def to_pandas(data_in, index=None, columns=None, dtype=None):
     """Convert data from numpy or root to pandas dataframe.
 
     Convert data safely to pandas, whatever the format is.
@@ -289,7 +289,7 @@ def to_pandas(data_in, indices=None, columns=None, dtype=None):
     if is_list(data_in):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
-        data_in = pd.DataFrame(data_in)
+        data_in = pd.DataFrame(data_in, index=index, columns=columns)
     elif isinstance(data_in, pd.DataFrame):
         pass
     else:

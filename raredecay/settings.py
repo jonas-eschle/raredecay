@@ -99,7 +99,7 @@ def parallel_profile(n_cpu=-1, gpu_in_use=False):
     meta_config.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
 
 
-def figure_save_config(file_formats=['png', 'svg'], to_pickle=True, dpi=150):
+def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
     """Change the save-options of figures.
 
     If you initialized an output-path, the figures that are plotted during
@@ -114,6 +114,8 @@ def figure_save_config(file_formats=['png', 'svg'], to_pickle=True, dpi=150):
     file_formats : str or list[str, str, str,...]
         The possible formats to save the figures to. Currently implemented are:
         ['png', 'jpg', 'pdf', 'svg']
+
+        The default value (None) is ['png', 'svg']
     to_pickle : boolean
         If True, the matplotlib-figures will be saved as a pickle-file allowing
         for later plotting. They are saved in the output-folder.

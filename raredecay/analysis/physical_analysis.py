@@ -11,7 +11,7 @@ from __future__ import division, absolute_import
 # from memory_profiler import profile
 
 
-def test(cfg):
+def test():
     """just a test-function"""
     print "empty test function"
 
@@ -178,13 +178,13 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
 
 def _test_mayou_int():
     """Intern call to hyper_optimization"""
-    from raredecay.tools import data_storage
-
-    original_data = data_storage.HEPDataStorage()
-    target_data = data_storage.HEPDataStorage()
-
+#    from raredecay.tools import data_storage
+#
+#    original_data = data_storage.HEPDataStorage()
+#    target_data = data_storage.HEPDataStorage()
+#
 # HACK
-    clf_mayou(data1=original_data, data2=target_data)
+#    clf_mayou(data1=original_data, data2=target_data)
     print "Clf_mayou function finished"
     return
 
@@ -231,9 +231,9 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
     while True:
 
         #        pool = multiprocessing.Pool(meta_config.n_cpu_max)
-        sig = np.array([signal_data.as_matrix()[:, i] for i, col in enumerate(columns)])
+        sig = np.array([signal_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
         sig = copy.deepcopy(sig)
-        bkg = np.array([bkg_data.as_matrix()[:, i] for i, col in enumerate(columns)])
+        bkg = np.array([bkg_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
         bkg = copy.deepcopy(bkg)
         data = zip(sig, bkg, [percent_sig_to_keep] * len(columns))
         limits, rejection = [], []
@@ -350,7 +350,8 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
             tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
                                           validation=3, extended_report=extended_report,
                                           plot_title=title, weights_ratio=1)
-        out_temp[feature] = score
+            del tmp_
+            out_temp[feature] = score
 
     output['score'] = out_temp
 
@@ -603,6 +604,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                           validation=n_folds_scoring, plot_importance=4,
                                           plot_title="ROC AUC to distinguish data",
                                           weights_ratio=1)
+    del tmp_
 
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means

@@ -43,7 +43,7 @@ from rep.report.classification import ClassificationReport
 from sklearn.metrics import accuracy_score, classification_report  # recall_score,
 
 # Hyperparameter optimization
-from rep.metaml import GridOptimalSearchCV, FoldingScorer, RandomParameterOptimizer,
+from rep.metaml import GridOptimalSearchCV, FoldingScorer, RandomParameterOptimizer
 from rep.metaml import SubgridParameterOptimizer
 from rep.metaml.gridsearch import RegressionParameterOptimizer, AnnealingParameterOptimizer
 
@@ -531,8 +531,8 @@ def optimize_hyper_parameters(original_data, clf=None, target_data=None, feature
         original_data and 1 for the target_data.
     """
     # initialize variables and setting defaults
-    output = {}
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+#    output = {}
+#    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     clf_dict = make_clf(clf, n_cpu=meta_config.n_cpu_max, dict_only=True)
     config_clf = clf_dict['config']
     config_clf_cp = copy.deepcopy(config_clf)
@@ -576,7 +576,7 @@ def optimize_hyper_parameters(original_data, clf=None, target_data=None, feature
         clf_tmp['config'] = config_clf_cp
         while True:
             start_timer = timeit.default_timer()
-            optimize_hyper_parameters(original_data, target_data, clf=clf_tmp,
+            optimize_hyper_parameters(original_data, target_data=target_data, clf=clf_tmp,
                                       n_eval=n_eval_tmp, n_folds=n_folds, n_checks=n_checks_tmp,
                                       features=features, generator_type=generator_type,
                                       take_target_from_data=take_target_from_data, time_test=True)
@@ -947,14 +947,17 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
                            "\nTherefore some columns were not used!")
             meta_config.warning_occured()
 
+    # create data
+    mc_data, _t, mc_weights = _make_data(reweight_data_mc, features=columns,
+                                         weights_original=weights_mc)
+    real_data, _t, real_weights = _make_data(reweight_data_real, features=columns,
+                                             weights_original=weights_real)
+    del _t
+
     # train the reweighter
-# TODO: remove next line, accidentialy inserted?
-    # hep_ml.reweight.BinsReweighter()
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
-    reweighter.fit(original=reweight_data_mc.pandasDF(columns=columns),
-                   target=reweight_data_real.pandasDF(columns=columns),
-                   original_weight=reweight_data_mc.get_weights(),
-                   target_weight=reweight_data_real.get_weights())
+    reweighter.fit(original=mc_data, target=real_data,
+                   original_weight=mc_weights, target_weight=real_weights)
     return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
 
@@ -997,8 +1000,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
                     reweight_data.name], obj_separator="")
 
     if normalize:
-        for i in range(1):  # old... remove? TODO
-            new_weights *= new_weights.size/new_weights.sum()
+        new_weights *= new_weights.size/new_weights.sum()
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
@@ -1100,14 +1102,12 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
                    title="Reweighting Kfold", obj_separator="")
     # create variables
-    assert(n_folds >= 1 and isinstance(n_folds, int),
-           "n_folds has to be >= 1, its currently" + str(n_folds))
-    assert(isinstance(reweight_data_mc, data_storage.HEPDataStorage),
-           "wrong data type. Has to be HEPDataStorage, is currently" +
-           str(type(reweight_data_mc)))
-    assert(isinstance(reweight_data_real, data_storage.HEPDataStorage),
-           "wrong data type. Has to be HEPDataStorage, is currently" +
-           str(type(reweight_data_real)))
+    assert n_folds >= 1 and isinstance(n_folds, int), \
+        "n_folds has to be >= 1, its currently" + str(n_folds)
+    assert isinstance(reweight_data_mc, data_storage.HEPDataStorage), \
+        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_mc))
+    assert isinstance(reweight_data_real, data_storage.HEPDataStorage), \
+        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_real))
 
     new_weights_all = []
     new_weights_index = []
@@ -1172,13 +1172,14 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
 # Get the max and min for "calibration" of the possible score for the reweighted data by
 # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
             test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
-            tmp_, score_min[fold] = classify(clf=clf, validation=test_mc,
-                                             curve_name="mc as real",
-                                             importance=1, plot_importance=1)
+            _t, score_min[fold] = classify(clf=clf, validation=test_mc,
+                                           curve_name="mc as real",
+                                           importance=1, plot_importance=1)
             test_real.set_targets(1)
-            tmp_, score_max[fold] = classify(clf=clf, validation=test_real,
-                                             curve_name="real as real",
-                                             importance=1, plot_importance=1)
+            _t, score_max[fold] = classify(clf=clf, validation=test_real,
+                                           curve_name="real as real",
+                                           importance=1, plot_importance=1)
+            del _t
 
         # collect all the new weights to get a really cross-validated reweighted dataset
         new_weights_all.append(new_weights)

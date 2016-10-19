@@ -411,7 +411,7 @@ class OutputHandler(object):
 
         # enforce new line
         if (len(self.output) > 0) and (not self.output.endswith("\n")):
-            temp_out = "\n"
+            temp_out = "\n" if force_newline else ""
 
         # set title, subtitle and section with title_format, subtitle_format...
         title_f = ('=', '=')

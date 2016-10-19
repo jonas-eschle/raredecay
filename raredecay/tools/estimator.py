@@ -388,7 +388,7 @@ class Mayou(Classifier):
 
 
 if __name__ == '__main__':
-    """selftest"""
+    # selftest
     import matplotlib.pyplot as plt
 
     from rep.metaml import FoldingClassifier

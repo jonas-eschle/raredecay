@@ -126,7 +126,7 @@ else:  # this is the "real" reweighting
 
     # TODO: change where to save the new weights and how to name it.
     # Will overwrite if branch exists
-    add_branch_to_rootfile(filenames=DATA_PATH + 'Bu2K1Jpsi-ee-MC.root',
+    add_branch_to_rootfile(filename=DATA_PATH + 'Bu2K1Jpsi-ee-MC.root',
                            treename='DecayTree',  # TODO: change name of tree to save
                            new_branch=new_weights,
                            branch_name='test1'  # TODO: change name of weights
