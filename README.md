@@ -39,7 +39,7 @@ First install the very newest version of REP
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
-Then, install the raredecay package via
+Then, install the raredecay package via (assuming, *git* is installed. Otherwise, download the package as zip and install)
 ```
 pip install git+https://github.com/mayou36/raredecay.git
 ```
