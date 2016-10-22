@@ -358,7 +358,8 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     return output
 
 
-def add_branch_to_rootfile(filename, treename=None, new_branch=None, branch_name=None):
+def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
+                           overwrite=True):
     """Add a branch to a given ROOT-Tree
 
     Add some data (*new_branch*) to the ROOT-file (*filename*) into its tree
@@ -380,12 +381,16 @@ def add_branch_to_rootfile(filename, treename=None, new_branch=None, branch_name
     from raredecay.tools import data_tools
     from raredecay.globals_ import out
 
-    out.add_output(["Adding", new_branch, "as", branch_name, "to",
-                    filename], obj_separator=" ")
-
     root_data = {'filenames': filename, 'treename': treename}
-    data_tools.add_to_rootfile(root_data, new_branch=new_branch,
-                               branch_name=branch_name)
+    status = data_tools.add_to_rootfile(root_data, new_branch=new_branch,
+                                        branch_name=branch_name, overwrite=overwrite)
+    if status == 0:
+        out.add_output(["Added succesfully", new_branch, "as", branch_name, "to",
+                        filename], obj_separator=" ")
+    elif status == 1:
+        out.add_output(["Did not add", new_branch, "as", branch_name, "to",
+                        filename, "because it already exists and overwrite is set to false"],
+                       obj_separator=" ")
 
 
 def reweight(apply_data, real_data=None, mc_data=None, columns=None,

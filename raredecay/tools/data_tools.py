@@ -72,7 +72,7 @@ def make_root_dict(path_to_rootfile, tree_name, branches):
     return output
 
 
-def add_to_rootfile(rootfile, new_branch, branch_name=None):
+def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     """Adds a new branch to a given root file, overwrites.
 
 
@@ -100,8 +100,13 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None):
 
     # write to ROOT-file
     with root_open(filename, mode='a') as f:
-        array2tree(new_branch, tree=getattr(f, treename))
-        f.write("", TObject.kOverwrite)  # overwrite, does not create friends
+        tree = getattr(f, treename)
+        if overwrite or not tree.has_branch(branch_name):
+            array2tree(new_branch, tree=tree)
+            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
+            return 0
+        else:
+            return 1
 
 
 def format_data_weights(data_to_shape, weights):
