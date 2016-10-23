@@ -249,7 +249,7 @@ DEFAULT_CLF_ADA = dict(
 )
 
 DEFAULT_CLF_NN = dict(
-    layers=[300, 100],
+    layers=[500, 500, 500],
     hidden_activation='logistic',
     output_activation='linear',
     input_noise=0,  # [0,1,2,3,4,5,10,20],
@@ -260,7 +260,7 @@ DEFAULT_CLF_NN = dict(
     weight_l1=0.01,
     weight_l2=0.01,
     scaler='standard',
-    trainers=[{'optimize': 'adagrad', 'patience': 15, 'learning_rate': 0.1,
+    trainers=[{'optimize': 'adagrad', 'patience': 10, 'learning_rate': 0.1,
                'min_improvement': 0.01, 'momentum': 0.5, 'nesterov': True, 'loss': 'xe'}],
 )
 
