@@ -12,9 +12,9 @@ Basic script to estimate the number of background to be used in the different Fo
 import sys
 import argparse
 import ROOT
-#from ROOT import TFile, TLorentzVector, TVector3, TRotation, TLorentzRotation, TMath, TH1D, TCanvas, TH2D, TObject, TF1, TH1F, gStyle, TF2, TF3, TF12, TFormula
-#from ROOT import RooRealVar, RooFormulaVar, RooArgList, RooArgSet, RooLegendre, RooProdPdf, RooPolynomial, RooAddPdf, RooPlot, RooProduct, RooDataSet, RooKeysPdf
-#from ROOT import RooFit
+from ROOT import TFile, TLorentzVector, TVector3, TRotation, TLorentzRotation, TMath, TH1D, TCanvas, TH2D, TObject, TF1, TH1F, gStyle, TF2, TF3, TF12, TFormula
+from ROOT import RooRealVar, RooFormulaVar, RooArgList, RooArgSet, RooLegendre, RooProdPdf, RooPolynomial, RooAddPdf, RooPlot, RooProduct, RooDataSet, RooKeysPdf
+from ROOT import RooFit, RooCBShape, RooGaussian
 from itertools import repeat
 import itertools as it
 import csv
@@ -25,6 +25,33 @@ import numpy as np
 from array import array
 
 import sys
+
+def fit_mass(data, column='B_M'):
+
+
+    mean = RooRealVar("mean", "Mean of Double CB PDF", 5366, 5000, 6000)
+    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 8, 0, 25)
+    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 1, 0, 5)
+    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -1, 0, -5)
+    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 1, 0, 5)
+    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 1, 0, 5)
+
+#    RooCBShape cb_1
+
+
+
+
+#        fitter.makeDoubleCB(((*it_modes)+"_"+(*it_year)+"_"+(*it_trig)+"_"+(*it_nBrem)+"_"+(*it_bin)+"_pdf").c_str(),
+#                      //start   min     max
+#                        5366,   5356,   5376,   // mu; most probable value, resonance mass
+#                        8,      0,      25,     // sigma; resolution
+#                        1,      0,      5,      // alpha_0; transition point
+#                        -1,     -5,     0,      // alpha_0 other side;
+#                        1,      0,      5,      // exponent;
+#                        1,      0,      5,      // exponent other side;
+#                        0.5);
+#     }
+
 
 def fitBMassReco(File , Tree , splitVal , cutVariable ):
 #   print "calculating best cut for proba= " , splitVal
@@ -59,5 +86,12 @@ def fitBMassReco(File , Tree , splitVal , cutVariable ):
    return 4800, 14000
 
 if __name__ == '__main__':
-    print "hello world"
-    ROOT.TFile()
+    mean = RooRealVar("mean", "Mean of Gaussian", 0)
+    sigma = RooRealVar("sigma", "Width of Gaussian", 2)
+    x = RooRealVar("x", "x", -20, 20)
+    gauss1 = RooGaussian("gauss1", "Gaussian test dist", x, mean, sigma)
+    xframe = x.frame()
+    gauss1.plotOn(xframe)
+    xframe.Draw()
+    print gauss1.generate(x, 10000)
+#    data = RooDataSet("data", "Gaussian generated data-set", gauss1.generate(x, 10000))

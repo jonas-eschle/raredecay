@@ -439,7 +439,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     output = {}
 
     reweighter = data_tools.try_unpickle(reweighter)
-    if isinstance(reweighter, {'gb', 'bins'}):
+    if reweighter in ('gb', 'bins'):
         reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
                                            reweight_data_real=real_data,
                                            columns=columns,
@@ -452,7 +452,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
                                                 reweighter_trained=reweighter,
                                                 add_weights_to_data=apply_weights)
 
-    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
+#    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
     out.save_fig(plt.figure("New weights"), importance=3)
     plt.hist(output['weights'], bins=30, log=True)
 
