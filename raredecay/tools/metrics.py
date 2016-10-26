@@ -111,13 +111,15 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         "mc_data wrong type:" + str(type(mc_data)) + ", has to be HEPDataStorage"
     assert isinstance(real_data, data_storage.HEPDataStorage), \
         "real_data wrong type:" + str(type(real_data)) + ", has to be HEPDataStorage"
-    assert isinstance(clf, str),\
-        "clf has to be a string, the name of a valid classifier. Check the docs!"
+#    assert isinstance(clf, str),\
+#        "clf has to be a string, the name of a valid classifier. Check the docs!"
 
     output = {}
 
     scores = np.ones(n_checks)
     scores_max = np.ones(n_checks)  # required due to output of loop
+    scores_weighted = []
+    scores_max_weighted = []
     probas_mc = []
     probas_reweighted = []
     weights_mc = []
@@ -128,16 +130,23 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     real_mc_pred = []
 
     # initialize data
+    tmp_mc_targets = mc_data.get_targets()
+    mc_data.set_targets(0)
     real_data.make_folds(n_folds=n_folds)
-    for fold in range(n_folds):
+    for fold in range(n_checks):
         real_train, real_test = real_data.get_fold(fold)
         real_test.set_targets(1)
+
         tmp_out = ml_ana.classify(mc_data, real_train, validation=real_test, clf=clf,
                                   plot_title="train on mc reweighted/real, test on real",
                                   weights_ratio=1, get_predictions=True,
                                   plot_importance=1, importance=1)
         _t, scores[fold], pred_reweighted = tmp_out
-        del _t
+        tmp_pred = pred_reweighted['y_proba'][:, 1] * pred_reweighted['weights']
+#        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
+        scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
+
+        del _t, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -162,8 +171,16 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     output['score'] = np.round(scores.mean(), 4)
     output['score_std'] = np.round(scores.std(), 4)
 
+    # HACK
+    scores_weighted = np.array(scores_weighted)
+    out.add_output( ["Scooore weighted:", scores_weighted.mean(), " +- ",
+                     scores_weighted.std()], to_end=True)
+    #HACK END
+#    output['weighted_score'] =
+#    output['weighted_score_std'] =
+
     out.add_output(["Score train_similar (recall, lower means better): ",
-                   str(round(output['score'], 4)) + " +- " + str(round(output['score_std'], 4))],
+                   str(output['score']) + " +- " + str(output['score_std'])],
                    subtitle="Clf trained on real/mc reweight, tested on real")
     if test_max:
         output['score_max'] = np.round(scores_max.mean(), 4)
@@ -186,6 +203,8 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
                                               plot_title="mc not rew/real pred, real as target",
                                               weights_ratio=1, plot_importance=3)
         output['score_mc_pred'] = np.round(score_mc_pred, 4)
+
+    mc_data.set_targets(tmp_mc_targets)
 
     return output
 

@@ -955,6 +955,8 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     del _t
 
     # train the reweighter
+    if meta_cfg is None:
+        meta_cfg = {}
     reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
     reweighter.fit(original=mc_data, target=real_data,
                    original_weight=mc_weights, target_weight=real_weights)

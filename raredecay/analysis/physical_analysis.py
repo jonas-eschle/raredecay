@@ -598,7 +598,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # is better described in the docs of the train_similar
     scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
                                    n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                   test_predictions=False)
+                                   test_predictions=False, clf=score_clf)
 
     # We can of course also test the normal ROC curve. This is weak to overfitting
     # but anyway (if not overfitting) a nice measure. You insert two datasets
@@ -608,7 +608,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
                                           validation=n_folds_scoring, plot_importance=4,
                                           plot_title="ROC AUC to distinguish data",
-                                          weights_ratio=1)
+                                          clf=score_clf, weights_ratio=1)
     del tmp_
 
     # an example to add output with the most importand parameters. The first
