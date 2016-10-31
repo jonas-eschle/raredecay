@@ -608,7 +608,8 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
                                           validation=n_folds_scoring, plot_importance=4,
                                           plot_title="ROC AUC to distinguish data",
-                                          clf=score_clf, weights_ratio=1)
+                                          clf=score_clf, weights_ratio=1,
+                                          extended_report=scoring)
     del tmp_
 
     # an example to add output with the most importand parameters. The first

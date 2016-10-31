@@ -2,12 +2,9 @@
 """
 Created on Thu Oct 20 20:00:33 2016
 
-@author: mayou
+@author: Jonas Eschle 'Mayou36'
 """
 
-'''
-Basic script to estimate the number of background to be used in the different FoM's for the B->Kst tau tau optimisation
-'''
 
 import sys
 import argparse
@@ -50,7 +47,7 @@ def fit_mass(data, column='B_M', second_storage=None):
     lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 3, 0.0, 5)
 
     # pdf construction
-    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.5)  # , 0, 1.0)
+    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.5)
 
     crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
                               mean, sigma, alpha_0, lambda_0)
@@ -59,7 +56,7 @@ def fit_mass(data, column='B_M', second_storage=None):
     doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
                          crystalball1, crystalball2, frac)
 
-    lambda_exp = RooRealVar("lambda_exp","lambda exp pdf bkg", -0.1,-100,100.)
+    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.1, -100, 100.)
 
     bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
 
@@ -70,8 +67,6 @@ def fit_mass(data, column='B_M', second_storage=None):
                          RooArgList(doubleCB, bkg_pdf), RooArgList(nsig, nbkg))
 
     # create test dataset
-    c0 = RooRealVar("c0","coefficient #0", 5000, -20. ,20.)
-    c1 = RooRealVar("c1","coefficient #1", 10.,-200.,100.)
     mean_gauss = RooRealVar("mean_gauss", "Mean of Gaussian", 5553, -10000, 10000)
     sigma_gauss = RooRealVar("sigma_gauss", "Width of Gaussian", 20, 0.0001, 300)
     gauss1 = RooGaussian("gauss1", "Gaussian test dist", x, mean_gauss, sigma_gauss)
@@ -90,6 +85,7 @@ def fit_mass(data, column='B_M', second_storage=None):
     xframe = x.frame()
     data.plotOn(xframe)
     xframe.Draw()
+
 #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
     # HACK to get 8 cores in testing
     comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(8))
@@ -98,8 +94,6 @@ def fit_mass(data, column='B_M', second_storage=None):
 
     params = comb_pdf.getVariables()
     params.Print("v")
-
-
 
 
 #        fitter.makeDoubleCB(((*it_modes)+"_"+(*it_year)+"_"+(*it_trig)+"_"+(*it_nBrem)+"_"+(*it_bin)+"_pdf").c_str(),
@@ -114,43 +108,11 @@ def fit_mass(data, column='B_M', second_storage=None):
 #     }
 
 
-def fitBMassReco(File , Tree , splitVal , cutVariable ):
-#   print "calculating best cut for proba= " , splitVal
-   # Open Monte Carlo dataset for calculating the efficiency
-#   f = TFile('/home/hep/rsilvaco/Analysis/RareDecays/Bd2Ksttautau/Ntuples/MonteCarlo/2011/B2KstTauTau-MonteCarlo-2011-MagDown-Training.root', 'read')
-   f = TFile(File, 'read')
-   t = f.Get(Tree)
-
-   cutVal_Name = cutVariable[1:]
-#   print cutVal_Name
-   cut = str(splitVal) + cutVariable
-   B_M_calc_Nom_mpi_sel = RooRealVar('B_M_calc_Nom_mpi_sel','Hyp 1', 4000, 40000, 'MeV/c^{2}')
-   proba_GB = RooRealVar(cutVal_Name,'Probability GB', 0, 1)
-#   proba_GB = RooRealVar('proba_GB','Probability GB', 0, 1)
-   sigDataset = RooDataSet('sigDataset','Signal Dataset', RooArgSet(B_M_calc_Nom_mpi_sel, proba_GB), RooFit.Import(t), RooFit.Cut(cut))
-
-   poly = RooKeysPdf("poly","Polynomial function", B_M_calc_Nom_mpi_sel, sigDataset)
-   integral = poly.createIntegral(RooArgSet(B_M_calc_Nom_mpi_sel))
-
-   # Find the optimal
-   integral_sig = None
-   intLimit = None
-   minLimit = 4900
-   for iVal in range(minLimit, 20000, 50):
-#      print iVal
-      B_M_calc_Nom_mpi_sel.setRange("signal",4800,iVal)
-      integral_sig = poly.createIntegral(RooArgSet(B_M_calc_Nom_mpi_sel), RooFit.Range("signal"))
-      if (integral_sig.getValV() > 0.680 ):# and ( integral_sig.getValV() < 0.684 ):
-#         print splitVal, ' \t : ', iVal
-         return  4800, iVal
-   print  splitVal, ' \t : ', 14000 ,'  Out of bounds'
-   return 4800, 14000
-
 if __name__ == '__main__':
     data = "empty"
 #    data = RooDataSet("data", )
     from raredecay.tools.data_storage import HEPDataStorage
-    import numpy as np
+#    import numpy as np
     import pandas as pd
 
     data = HEPDataStorage(pd.DataFrame(np.random.normal(loc=5400, scale=50, size=(10000, 2)), columns=['x', 'y']))
