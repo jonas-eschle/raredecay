@@ -36,7 +36,7 @@ setup(name='raredecay',
       description='A package for analysis of rare particle decays with machine-learning algorithms',
       long_description=readme(),
       classifiers=[
-        'Development Status :: 10 - Alpha',
+        'Development Status :: 3 - Alpha',
         'Programming Language :: Python :: 2.7',
       ],
       keywords='particle physics analysis machine learning reweight',

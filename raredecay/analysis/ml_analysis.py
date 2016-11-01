@@ -1128,11 +1128,9 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
         # create train/test data
         if n_folds > 1:
             train_real, test_real = reweight_data_real.get_fold(fold)
-        else:
-            train_real = test_real = reweight_data_real.get_fold(fold)
-        if n_folds > 1:
             train_mc, test_mc = reweight_data_mc.get_fold(fold)
         else:
+            train_real = test_real = reweight_data_real.get_fold(fold)
             train_mc = test_mc = reweight_data_mc
 
         if mcreweighted_as_real_score:
@@ -1140,7 +1138,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
 
         # plot the first fold as example (the first one surely exists)
         plot_importance1 = 4 if fold == 0 else 1
-        if n_folds > 1:
+        if n_folds > 1 and plot_importance1 > 1:
             train_real.plot(figure="Reweighter trainer, example, fold " + str(fold),
                             importance=plot_importance1)
             train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold),
@@ -1157,7 +1155,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                                        reweighter_trained=reweighter_trained,
                                        add_weights_to_data=True)  # fold only, not full data
         # plot one for example of the new weights
-        if n_folds > 1:
+        if n_folds > 1 and plot_importance1 > 1:
             out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
             plt.hist(new_weights, bins=40, log=True)
 

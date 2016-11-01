@@ -463,7 +463,7 @@ class OutputHandler(object):
         self.output += self.end_output
 
         # add current version (if available)
-        if self._save_output:
+        if self._save_output and os.path.isdir(meta_config.GIT_DIR_PATH):
             try:
                 git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH,
                                                        "describe"])
