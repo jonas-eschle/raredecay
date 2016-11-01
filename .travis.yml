@@ -1,8 +1,7 @@
 before_install:
-- echo "test"
-# - sudo apt-get update
+- sudo apt-get -qq update
 # - sudo apt-get upgrade -y
-# - sudo apt-get install root-system
+- sudo apt-get install -y root-system
 
 language:
 - python
