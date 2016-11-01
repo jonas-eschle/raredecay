@@ -1,10 +1,13 @@
-
 dist: "xenial"
 language: python
+python:
+ - "2.7"
 before_install:
-- sudo apt-get -qq update
-# - sudo apt-get upgrade -y
-- sudo apt-get install -y root-system
+ - sudo apt-get -qq update
+ # - sudo apt-get upgrade -y
+ - sudo apt-get install -y root-system git python-pip libroot-bindings-python* libroot-roofit*
+ - sudo -E -H pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 
+install: "sudo -E -H pip install git+https://github.com/mayou36/raredecay.git"
 
 
