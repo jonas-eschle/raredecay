@@ -1,8 +1,10 @@
+
+dist: "xenial"
+language: python
 before_install:
 - sudo apt-get -qq update
 # - sudo apt-get upgrade -y
 - sudo apt-get install -y root-system
 
-language:
-- python
+
 
