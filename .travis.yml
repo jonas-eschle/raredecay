@@ -10,5 +10,6 @@ before_install:
  - sudo -E -H pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 
 install: "sudo -E -H pip install git+https://github.com/mayou36/raredecay.git"
+script: echo "hello world"
 
 
