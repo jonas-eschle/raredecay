@@ -617,31 +617,31 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     if scoring:
         output['mcreweighted_as_real_score'] = Kfold_output
 
-    # To get a good estimation for the reweighting quality, the
-    # train_similar score can be used. Its the one with training on
-    # mc reweighted/real and test on real, quite robust.
-    # Test_max is nice to know too even dough it can also be set to False if
-    # testing the same distribution over and over again, as it is the same for
-    # the same distributions (actually, it's just doing the score without the
-    # weights).
-    # test_predictions is an additional score I tried but so far I is not
-    # reliable or understandable at all. The output, the scores dictionary,
-    # is better described in the docs of the train_similar
-    scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
-                                   n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                   test_predictions=False, clf=score_clf)
+        # To get a good estimation for the reweighting quality, the
+        # train_similar score can be used. Its the one with training on
+        # mc reweighted/real and test on real, quite robust.
+        # Test_max is nice to know too even dough it can also be set to False if
+        # testing the same distribution over and over again, as it is the same for
+        # the same distributions (actually, it's just doing the score without the
+        # weights).
+        # test_predictions is an additional score I tried but so far I is not
+        # reliable or understandable at all. The output, the scores dictionary,
+        # is better described in the docs of the train_similar
+        scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
+                                       n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+                                       test_predictions=False, clf=score_clf)
 
-    # We can of course also test the normal ROC curve. This is weak to overfitting
-    # but anyway (if not overfitting) a nice measure. You insert two datasets
-    # and do the normal cross-validation on it. It's quite a multi-purpose
-    # function depending on what validation is. If it is an integer, it means:
-    # do cross-validation with n(=validation) folds.
-    tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                          validation=n_folds_scoring, plot_importance=4,
-                                          plot_title="ROC AUC to distinguish data",
-                                          clf=score_clf, weights_ratio=1,
-                                          extended_report=scoring)
-    del tmp_
+        # We can of course also test the normal ROC curve. This is weak to overfitting
+        # but anyway (if not overfitting) a nice measure. You insert two datasets
+        # and do the normal cross-validation on it. It's quite a multi-purpose
+        # function depending on what validation is. If it is an integer, it means:
+        # do cross-validation with n(=validation) folds.
+        tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
+                                              validation=n_folds_scoring, plot_importance=4,
+                                              plot_title="ROC AUC to distinguish data",
+                                              clf=score_clf, weights_ratio=1,
+                                              extended_report=scoring)
+        del tmp_
 
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
@@ -649,17 +649,17 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # file. To_end is sometimes quite useful, as it prints (and saves) the
     # arguments at the end of the file. So the important results are possibly
     # printed to the end
-    out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
-                   title='ROC AUC of mc reweighted/real KFold', to_end=True)
-    out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
-                   title='Train similar report', to_end=True)
-    if scores.get('score_max', False):
-        out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                       importance=5, to_end=True)
+        out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
+                       title='ROC AUC of mc reweighted/real KFold', to_end=True)
+        out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
+                       title='Train similar report', to_end=True)
+        if scores.get('score_max', False):
+            out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+                           importance=5, to_end=True)
+        output['train_similar'] = scores
+        output['roc_auc'] = roc_auc_score
 
     output['weights'] = new_weights
-    output['train_similar'] = scores
-    output['roc_auc'] = roc_auc_score
     if not apply_weights:
         mc_data.set_weights(old_weights)
 
