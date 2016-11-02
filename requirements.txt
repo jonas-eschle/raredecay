@@ -5,4 +5,5 @@ nose_parameterized
 root_numpy
 rootpy
 seaborn
+pytest
 

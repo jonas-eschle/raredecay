@@ -144,7 +144,9 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         _t, scores[fold], pred_reweighted = tmp_out
         tmp_pred = pred_reweighted['y_proba'][:, 1] * pred_reweighted['weights']
 #        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
+# HACK begin
         scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
+# HACK end
 
         del _t, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
@@ -172,9 +174,9 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     output['score_std'] = np.round(scores.std(), 4)
 
     # HACK
-    scores_weighted = np.array(scores_weighted)
-    out.add_output( ["Scooore weighted:", scores_weighted.mean(), " +- ",
-                     scores_weighted.std()], to_end=True)
+#    scores_weighted = np.array(scores_weighted)
+#    out.add_output( ["Scooore weighted:", scores_weighted.mean(), " +- ",
+#                     scores_weighted.std()], to_end=True)
     #HACK END
 #    output['weighted_score'] =
 #    output['weighted_score_std'] =

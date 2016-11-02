@@ -1009,7 +1009,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
 
 def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=10,
-                   reweighter='gb', meta_cfg=None, score_clf='xgb',
+                   reweighter='gb', meta_cfg=None, n_reweights=1, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
     """Reweight data by "itself" for *scoring* and hyper-parameters via
     Kfolding to avoid bias.
@@ -1070,6 +1070,15 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
         Contains the parameters for the bins/gb-reweighter. See also
         :func:`~hep_ml.reweight.BinsReweighter` and
         :func:`~hep_ml.reweight.GBReweighter`.
+    n_reweights : int
+        As the reweighting often yields different weights depending on random
+        parameters like the splitting of the data, the new weights can be
+        produced by taking the average of the weights over many reweighting
+        runs. n_reweights is the number of reweight runs to average over.
+    score_clf : clf or clf-dict or str
+        The classifier to be used for the scoring.
+        Has to be a valid argument to
+        :py:func:`~raredecay.analysis.ml_analysis.make_clf`.
     add_weights_to_data : boolean
         If True, the new weights will be added (in place) to the mc data and
         returned. Otherwise, the weights will only be returned.
@@ -1111,99 +1120,116 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     assert isinstance(reweight_data_real, data_storage.HEPDataStorage), \
         "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_real))
 
-    new_weights_all = []
-    new_weights_index = []
-
+    new_weights_tot = pd.Series(np.zeros(len(reweight_data_mc)), index=reweight_data_mc.index)
     if mcreweighted_as_real_score:
-        scores = np.ones(n_folds)
-        score_min = np.ones(n_folds)
-        score_max = np.ones(n_folds)
+        scores = np.zeros(n_folds)
+        score_min = np.zeros(n_folds)
+        score_max = np.zeros(n_folds)
+    if not add_weights_to_data:
+        old_mc_tot_weights = reweight_data_mc.get_weights()
 
     # split data to folds and loop over them
     reweight_data_mc.make_folds(n_folds=n_folds)
     reweight_data_real.make_folds(n_folds=n_folds)
     logger.info("Data created, starting folding")
-    for fold in range(n_folds):
+    for run in range(n_reweights):
+        new_weights_all = []
+        new_weights_index = []
 
-        # create train/test data
-        if n_folds > 1:
-            train_real, test_real = reweight_data_real.get_fold(fold)
-            train_mc, test_mc = reweight_data_mc.get_fold(fold)
+        for fold in range(n_folds):
+
+            # create train/test data
+            if n_folds > 1:
+                train_real, test_real = reweight_data_real.get_fold(fold)
+                train_mc, test_mc = reweight_data_mc.get_fold(fold)
+            else:
+                train_real = test_real = reweight_data_real.get_fold(fold)
+                train_mc = test_mc = reweight_data_mc
+
+            if mcreweighted_as_real_score:
+                old_mc_weights = test_mc.get_weights()
+
+            # plot the first fold as example (the first one surely exists)
+            plot_importance1 = 3 if fold == 0 else 1
+            if n_folds > 1 and plot_importance1 > 1 and run == 0:
+                train_real.plot(figure="Reweighter trainer, example, fold " + str(fold),
+                                importance=plot_importance1)
+                train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold),
+                              importance=plot_importance1)
+
+            # train reweighter on training data
+            reweighter_trained = reweight_train(reweight_data_mc=train_mc,
+                                                reweight_data_real=train_real,
+                                                columns=columns, reweighter=reweighter,
+                                                meta_cfg=meta_cfg)
+            logger.info("reweighting fold " + str(fold) + "finished of run" + str(run))
+
+            new_weights = reweight_weights(reweight_data=test_mc, columns=columns,
+                                           reweighter_trained=reweighter_trained,
+                                           add_weights_to_data=True)  # fold only, not full data
+            # plot one for example of the new weights
+            if n_folds > 1 and plot_importance1 > 1:
+                out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
+                plt.hist(new_weights, bins=40, log=True)
+
+            if mcreweighted_as_real_score:
+                # treat reweighted mc data as if it were real data target(1)
+                test_mc.set_targets(1)
+                # train clf on real and mc and see where it classifies the reweighted mc
+                clf, tmp_score = classify(train_mc, train_real, validation=test_mc,
+                                          curve_name="mc reweighted as real",
+                                          plot_title="fold " + str(fold) + " reweighted validation",
+                                          weights_ratio=1, clf=score_clf,
+                                          importance=1, plot_importance=1)
+                scores[fold] += tmp_score
+
+    # Get the max and min for "calibration" of the possible score for the reweighted data by
+    # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
+                test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
+                _t, tmp_score_min = classify(clf=clf, validation=test_mc,
+                                               curve_name="mc as real",
+                                               importance=1, plot_importance=1)
+                score_min[fold] += tmp_score_min
+                test_real.set_targets(1)
+                _t, tmp_score_max = classify(clf=clf, validation=test_real,
+                                               curve_name="real as real",
+                                               importance=1, plot_importance=1)
+                score_max[fold] += tmp_score_max
+                del _t
+
+            # collect all the new weights to get a really cross-validated reweighted dataset
+            new_weights_all.append(new_weights)
+            new_weights_index.append(test_mc.get_index())
+
+            logger.info("fold " + str(fold) + "finished")
+            # end of for-loop
+
+        # concatenate weights and index
+        if n_folds == 1:
+            new_weights_all = np.array(new_weights_all)
+            new_weights_index = np.array(new_weights_index)
         else:
-            train_real = test_real = reweight_data_real.get_fold(fold)
-            train_mc = test_mc = reweight_data_mc
+            new_weights_all = np.concatenate(new_weights_all)
+            new_weights_index = np.concatenate(new_weights_index)
+        new_weights_tot += pd.Series(new_weights_all, index=new_weights_index)
 
-        if mcreweighted_as_real_score:
-            old_mc_weights = test_mc.get_weights()
+    # after for loop for weights creation
+    new_weights_tot /= n_reweights
 
-        # plot the first fold as example (the first one surely exists)
-        plot_importance1 = 4 if fold == 0 else 1
-        if n_folds > 1 and plot_importance1 > 1:
-            train_real.plot(figure="Reweighter trainer, example, fold " + str(fold),
-                            importance=plot_importance1)
-            train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold),
-                          importance=plot_importance1)
-
-        # train reweighter on training data
-        reweighter_trained = reweight_train(reweight_data_mc=train_mc,
-                                            reweight_data_real=train_real,
-                                            columns=columns, reweighter=reweighter,
-                                            meta_cfg=meta_cfg)
-        logger.info("reweighting fold " + str(fold) + "finished")
-
-        new_weights = reweight_weights(reweight_data=test_mc, columns=columns,
-                                       reweighter_trained=reweighter_trained,
-                                       add_weights_to_data=True)  # fold only, not full data
-        # plot one for example of the new weights
-        if n_folds > 1 and plot_importance1 > 1:
-            out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
-            plt.hist(new_weights, bins=40, log=True)
-
-        if mcreweighted_as_real_score:
-            # treat reweighted mc data as if it were real data target(1)
-            test_mc.set_targets(1)
-            # train clf on real and mc and see where it classifies the reweighted mc
-            clf, scores[fold] = classify(train_mc, train_real, validation=test_mc,
-                                         curve_name="mc reweighted as real",
-                                         plot_title="fold " + str(fold) + " reweighted validation",
-                                         weights_ratio=1, clf=score_clf,
-                                         importance=1, plot_importance=1)
-
-# Get the max and min for "calibration" of the possible score for the reweighted data by
-# passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
-            test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
-            _t, score_min[fold] = classify(clf=clf, validation=test_mc,
-                                           curve_name="mc as real",
-                                           importance=1, plot_importance=1)
-            test_real.set_targets(1)
-            _t, score_max[fold] = classify(clf=clf, validation=test_real,
-                                           curve_name="real as real",
-                                           importance=1, plot_importance=1)
-            del _t
-
-        # collect all the new weights to get a really cross-validated reweighted dataset
-        new_weights_all.append(new_weights)
-        new_weights_index.append(test_mc.get_index())
-
-        logger.info("fold " + str(fold) + "finished")
-        # end of for-loop
-
-    # concatenate weights and index
-    if n_folds == 1:
-        new_weights_all = np.array(new_weights_all)
-        new_weights_index = np.array(new_weights_index)
-    else:
-        new_weights_all = np.concatenate(new_weights_all)
-        new_weights_index = np.concatenate(new_weights_index)
     if add_weights_to_data:
-        reweight_data_mc.set_weights(new_weights_all, index=new_weights_index)
+        reweight_data_mc.set_weights(new_weights_tot)
+    else:
+        reweight_data_mc.set_weights(old_mc_tot_weights)
 
     out.save_fig(figure="New weights of total mc", importance=4)
-    plt.hist(new_weights_all, bins=30, log=True)
+    plt.hist(new_weights_tot, bins=30, log=True)
     plt.title("New weights of reweighting with Kfold")
 
     # create score
     if mcreweighted_as_real_score:
+        scores /= n_reweights
+        score_min /= n_reweights
+        score_max /= n_reweights
         out.add_output("", subtitle="Kfold reweight report", importance=4,
                        section="Precision scores of classification on reweighted mc")
         score_list = [("Reweighted: ", scores, 'score_reweighted'),
@@ -1216,9 +1242,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                             " +- " + str(std)], to_end=True, importance=4)
             output[key] = mean
 
-    new_weights_all = pd.Series(new_weights_all, index=new_weights_index)
-
-    output['weights'] = new_weights_all
+    output['weights'] = new_weights_tot
     return output
 
 
