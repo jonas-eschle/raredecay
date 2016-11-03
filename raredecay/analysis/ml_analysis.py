@@ -922,10 +922,10 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     if data_tools.is_pickle(reweighter):
         return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
-    try:
-        reweighter = __REWEIGHT_MODE.get(reweighter.lower())
-    except KeyError:
+    if reweighter not in __REWEIGHT_MODE:
         raise ValueError("Reweighter invalid: " + reweighter)
+
+    reweighter = __REWEIGHT_MODE.get(reweighter.lower())
     reweighter += 'Reweighter'
 
     # logging and writing output
@@ -957,7 +957,11 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     # train the reweighter
     if meta_cfg is None:
         meta_cfg = {}
-    reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
+
+    if reweighter == "GBReweighter":
+        reweighter = hep_ml.reweight.GBReweighter(**meta_cfg)
+    elif reweighter == "BinsReweighter":
+        reweighter = hep_ml.reweight.BinsReweighter(**meta_cfg)
     reweighter.fit(original=mc_data, target=real_data,
                    original_weight=mc_weights, target_weight=real_weights)
     return data_tools.adv_return(reweighter, save_name=reweight_saveas)
@@ -988,9 +992,9 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
     Returns
     ------
-    out : numpy.array
-        Return a numpy.array of shape [n_samples] containing the new
-        weights.
+    out : pandas.Series
+        Return an instance of pandas Series of shape [n_samples] containing the
+        new weights.
     """
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
@@ -1003,6 +1007,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
     if normalize:
         new_weights *= new_weights.size/new_weights.sum()
+    new_weights = pd.Series(new_weights, index=reweight_data.index)
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights

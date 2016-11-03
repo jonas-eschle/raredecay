@@ -394,7 +394,7 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
 
 
 def reweight(apply_data, real_data=None, mc_data=None, columns=None,
-             reweighter='gb', reweight_cfg=None,
+             reweighter='gb', reweight_cfg=None, n_reweights=1,
              apply_weights=True):
     """(Train a reweighter and) apply the reweighter to get new weights
 
@@ -415,6 +415,10 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     reweight_cfg : dict
         A dict containing all the keywords and values you want to specify as
         parameters to the reweighter.
+    n_reweights : int
+        To get more stable weights, the mean of each weight over many
+        reweighting runs (training and predicting) can be used. The
+        n_reweights specifies how many runs to do.
     apply_weights : boolean
         If True, the weights will be added to the data directly, therefore
         the data-storage will be modified.
@@ -439,19 +443,30 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     output = {}
 
     reweighter = data_tools.try_unpickle(reweighter)
-    if reweighter in ('gb', 'bins'):
-        reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
-                                           reweight_data_real=real_data,
-                                           columns=columns,
-                                           meta_cfg=reweight_cfg,
-                                           reweighter=reweighter)
+    for run in range(n_reweights):
+        if reweighter in ('gb', 'bins'):
+            new_reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
+                                                   reweight_data_real=real_data,
+                                                   columns=columns,
+                                                   meta_cfg=reweight_cfg,
+                                                   reweighter=reweighter)
+        else:
+            new_reweighter = reweighter
 
-    output['reweighter'] = reweighter
-    output['weights'] = ml_ana.reweight_weights(reweight_data=apply_data,
-                                                columns=columns,
-                                                reweighter_trained=reweighter,
-                                                add_weights_to_data=apply_weights)
+        tmp_weights = ml_ana.reweight_weights(reweight_data=apply_data,
+                                              columns=columns,
+                                              reweighter_trained=new_reweighter,
+                                              add_weights_to_data=False)
+        if run == 0:
+            new_weights = tmp_weights
+        else:
+            new_weights += tmp_weights
 
+    new_weights /= n_reweights
+    if apply_weights:
+        apply_data.set_weights(new_weights)
+    output['weights'] = new_weights
+    output['reweighter'] = new_reweighter
 #    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
     out.save_fig(plt.figure("New weights"), importance=3)
     plt.hist(output['weights'], bins=30, log=True)
