@@ -284,8 +284,6 @@ class Mayou(Classifier):
         print parallel_profile
         parallel_profile = None
         # predict, return a dictionary
-        global debug2
-        debug2 += 1
         predictions = self._factory.predict_proba(X, parallel_profile=parallel_profile)
 
         # slice the arrays of predictions in the dict right
@@ -490,37 +488,7 @@ if __name__ == '__main__':
         clf = FoldingClassifier(clf, n_folds=5)
 
     clf.fit(X_train, y_train, w_train)
-    global debug2
-    print "debug2 1=", debug2
-    print "Predictions: ", clf.predict(X_test)
-    print "debug2 2=", debug2
-    print "Probabilites", clf.predict_proba(X_test)
-    print "debug2 3=", debug2
-    # report = clf.test_on(X_test, y_test, w_test)
-    report = clf.test_on_lds(lds)
-    report.roc().plot(new_plot=True)
-    print "debug2 4=", debug2
-    print "\nROC AUC = ", report.compute_metric(RocAuc())
-    print "\nOptimalAccuracy = ", report.compute_metric(OptimalAccuracy())
-    print "debug2 5=", debug2
-    print "\nOptimalAMS = ", report.compute_metric(OptimalAMS())
-    report.metrics_vs_cut(ams).plot(new_plot=True, title="ams")
-    print "\npunzi_fom = "
-    report.metrics_vs_cut(punzi_fom).plot(new_plot=True, title="punzi fom")
-    print "\nprecision measure = "
-    report.metrics_vs_cut(precision_measure).plot(new_plot=True, title="precision measure")
-    print "debug2 6=", debug2
-    print "score: ", clf.score(X_test, y_test, w_test)
-    print "debug2 7=", debug2
-    feat_imp = report.feature_importance_shuffling().plot(new_plot=True)
-    print "debug2 8=", debug2
 
-    report_stack = clf.stacker_test_on_lds(lds)
-    print "debug2 9=", debug2
-    report_stack.feature_importance_shuffling().plot(new_plot=True)
-    print "debug2 10=", debug2
-    report_stack.features_correlation_matrix().plot(new_plot=True)
-    print "debug2 11=", debug2
 
 #    report.features_correlation_matrix().plot(new_plot=True)
 

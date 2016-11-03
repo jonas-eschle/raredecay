@@ -1,4 +1,4 @@
-strictness: veryhigh
+strictness: medium
 pylint:
   disable:
     - too-many-arguments
@@ -6,7 +6,6 @@ pylint:
     - too-many-locals
     - too-many-branches
 
-max-line-lenght: 120
 python-targets:
  - 2
 
