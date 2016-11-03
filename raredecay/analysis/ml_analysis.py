@@ -1128,13 +1128,16 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     if not add_weights_to_data:
         old_mc_tot_weights = reweight_data_mc.get_weights()
 
-    # split data to folds and loop over them
-    reweight_data_mc.make_folds(n_folds=n_folds)
-    reweight_data_real.make_folds(n_folds=n_folds)
-    logger.info("Data created, starting folding")
+
     for run in range(n_reweights):
         new_weights_all = []
         new_weights_index = []
+
+        # split data to folds and loop over them
+        reweight_data_mc.make_folds(n_folds=n_folds)
+        reweight_data_real.make_folds(n_folds=n_folds)
+        logger.info("Data created, starting folding of run " + str(run) +
+                    " of total " + str(n_reweights))
 
         for fold in range(n_folds):
 
@@ -1168,7 +1171,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                                            reweighter_trained=reweighter_trained,
                                            add_weights_to_data=True)  # fold only, not full data
             # plot one for example of the new weights
-            if n_folds > 1 and plot_importance1 > 1:
+            if (n_folds > 1 and plot_importance1 > 1) or max(new_weights > 50):
                 out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
                 plt.hist(new_weights, bins=40, log=True)
 
@@ -1204,6 +1207,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
             logger.info("fold " + str(fold) + "finished")
             # end of for-loop
 
+
         # concatenate weights and index
         if n_folds == 1:
             new_weights_all = np.array(new_weights_all)
@@ -1212,6 +1216,12 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
             new_weights_all = np.concatenate(new_weights_all)
             new_weights_index = np.concatenate(new_weights_index)
         new_weights_tot += pd.Series(new_weights_all, index=new_weights_index)
+        logger.debug("Maximum of accumulated weights: " + str(max(new_weights_tot)))
+
+        out.save_fig(figure="New weights of run " + str(run), importance=3)
+        hack_array = np.array(new_weights_all)
+        plt.hist(hack_array, bins=30, log=True)
+        plt.title("New weights of reweighting at end of run " + str(run))
 
     # after for loop for weights creation
     new_weights_tot /= n_reweights
