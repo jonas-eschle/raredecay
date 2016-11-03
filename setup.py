@@ -27,7 +27,7 @@ try:
     git_version = git_version.partition('-')
     git_version = str(git_version[0])
 except:
-    git_version = '1.0.1'
+    git_version = '1.0.2'
 
 
 setup(name='raredecay',
