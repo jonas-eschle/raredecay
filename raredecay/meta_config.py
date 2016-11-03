@@ -351,6 +351,11 @@ def randint():
     return random.randint(51, 523753)
 
 
+def randfloat():
+    """Return a random float"""
+    return random.random()
+
+
 def set_seed(seed):
     global rand_seed
     rand_seed = seed

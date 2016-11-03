@@ -4,20 +4,11 @@ Created on Thu Oct 20 20:00:33 2016
 
 @author: Jonas Eschle 'Mayou36'
 """
-
-
-import sys
-import argparse
-import ROOT
-from ROOT import TFile, TLorentzVector, TVector3, TRotation, TLorentzRotation, TMath, TH1D, TCanvas, TH2D, TObject, TF1, TH1F, gStyle, TF2, TF3, TF12, TFormula
-from ROOT import RooRealVar, RooFormulaVar, RooArgList, RooArgSet, RooLegendre, RooProdPdf, RooPolynomial, RooAddPdf, RooPlot, RooProduct, RooDataSet, RooKeysPdf
-from ROOT import RooFit, RooCBShape, RooGaussian, RooExponential, RooChebychev
-import ROOT
-from itertools import repeat
-import itertools as it
-import os.path
 import numpy as np
-from array import array
+
+import ROOT
+from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet
+from ROOT import RooFit, RooCBShape, RooGaussian, RooExponential
 from root_numpy import array2tree
 
 from raredecay import meta_config
@@ -117,15 +108,3 @@ if __name__ == '__main__':
 
     data = HEPDataStorage(pd.DataFrame(np.random.normal(loc=5400, scale=50, size=(10000, 2)), columns=['x', 'y']))
     fit_mass(data=data, column='x')
-#    mean = RooRealVar("mean", "Mean of Gaussian", 5653, -10000, 10000)
-#    sigma = RooRealVar("sigma", "Width of Gaussian", 2, 0.0001, 30)
-#    x = RooRealVar("x", "x", -20, 20)
-#    gauss1 = RooGaussian("gauss1", "Gaussian test dist", x, mean, sigma)
-#    xframe = x.frame()
-#
-#    data = gauss1.generate(RooArgSet(x), 10000)
-#    gauss1.fitTo(data)
-#    data.plotOn(xframe)
-#    gauss1.plotOn(xframe)
-#    xframe.Draw()
-#    data = RooDataSet("data", "Gaussian generated data-set", gauss1.generate(x, 10000))

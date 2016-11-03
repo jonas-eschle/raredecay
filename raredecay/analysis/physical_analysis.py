@@ -394,7 +394,7 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
 
 
 def reweight(apply_data, real_data=None, mc_data=None, columns=None,
-             reweighter='gb', reweight_cfg=None,
+             reweighter='gb', reweight_cfg=None, n_reweights=1,
              apply_weights=True):
     """(Train a reweighter and) apply the reweighter to get new weights
 
@@ -415,6 +415,10 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     reweight_cfg : dict
         A dict containing all the keywords and values you want to specify as
         parameters to the reweighter.
+    n_reweights : int
+        To get more stable weights, the mean of each weight over many
+        reweighting runs (training and predicting) can be used. The
+        n_reweights specifies how many runs to do.
     apply_weights : boolean
         If True, the weights will be added to the data directly, therefore
         the data-storage will be modified.
@@ -439,19 +443,30 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     output = {}
 
     reweighter = data_tools.try_unpickle(reweighter)
-    if reweighter in ('gb', 'bins'):
-        reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
-                                           reweight_data_real=real_data,
-                                           columns=columns,
-                                           meta_cfg=reweight_cfg,
-                                           reweighter=reweighter)
+    for run in range(n_reweights):
+        if reweighter in ('gb', 'bins'):
+            new_reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
+                                                   reweight_data_real=real_data,
+                                                   columns=columns,
+                                                   meta_cfg=reweight_cfg,
+                                                   reweighter=reweighter)
+        else:
+            new_reweighter = reweighter
 
-    output['reweighter'] = reweighter
-    output['weights'] = ml_ana.reweight_weights(reweight_data=apply_data,
-                                                columns=columns,
-                                                reweighter_trained=reweighter,
-                                                add_weights_to_data=apply_weights)
+        tmp_weights = ml_ana.reweight_weights(reweight_data=apply_data,
+                                              columns=columns,
+                                              reweighter_trained=new_reweighter,
+                                              add_weights_to_data=False)
+        if run == 0:
+            new_weights = tmp_weights
+        else:
+            new_weights += tmp_weights
 
+    new_weights /= n_reweights
+    if apply_weights:
+        apply_data.set_weights(new_weights)
+    output['weights'] = new_weights
+    output['reweighter'] = new_reweighter
 #    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
     out.save_fig(plt.figure("New weights"), importance=3)
     plt.hist(output['weights'], bins=30, log=True)
@@ -570,11 +585,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
     from raredecay.globals_ import out
-    import numpy as np
 
-    new_weights_list = []
-    sum_new_weights_std = [0] * len(mc_data)
-    sum_new_weights = [0] * len(mc_data)
     output = {}
     # do the Kfold reweighting. This reweights the data with Kfolding and returns
     # the weights. If add_weights_to_data is True, the weights will automatically be
@@ -586,62 +597,43 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # real score.
     if not apply_weights:
         old_weights = mc_data.get_weights()
-    for i in range(1):  # HACK remove
-        Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
-                                             meta_cfg=reweight_cfg, columns=columns,
-                                             reweighter=reweighter, n_reweights=n_reweights,
-                                             mcreweighted_as_real_score=scoring,
-                                             n_folds=n_folds, score_clf=score_clf,
-                                             add_weights_to_data=apply_weights)
-        new_weights = Kfold_output.pop('weights')
-        new_weights.sort_index()
-
-#    # HACK
-#        if n_reweights > 1:
-#            new_weights_list.append(new_weights)
-#
-#    if n_reweights > 1:
-#
-#        for i in range(len(new_weights)):
-#            sum_new_weights_std[i] = np.std([new_weights_list[j][i] for j in range(len(new_weights_list))])
-#            sum_new_weights[i] = np.mean([new_weights_list[j][i] for j in range(len(new_weights_list))])
-#        plt.figure("sum weights std")
-#        plt.hist(sum_new_weights_std, bins=30, log=True)
-#        array1 = np.array(sum_new_weights_std)
-#        print "array 1 mean", array1.mean()
-#        print "array 1 std", array1.std()
-#        if apply_weights:
-#            mc_data.set_weights(sum_new_weights, index=range(len(sum_new_weights)))
-    #HACK END
+    Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
+                                         meta_cfg=reweight_cfg, columns=columns,
+                                         reweighter=reweighter, n_reweights=n_reweights,
+                                         mcreweighted_as_real_score=scoring,
+                                         n_folds=n_folds, score_clf=score_clf,
+                                         add_weights_to_data=apply_weights)
+    new_weights = Kfold_output.pop('weights')
+    new_weights.sort_index()
 
     if scoring:
         output['mcreweighted_as_real_score'] = Kfold_output
 
-    # To get a good estimation for the reweighting quality, the
-    # train_similar score can be used. Its the one with training on
-    # mc reweighted/real and test on real, quite robust.
-    # Test_max is nice to know too even dough it can also be set to False if
-    # testing the same distribution over and over again, as it is the same for
-    # the same distributions (actually, it's just doing the score without the
-    # weights).
-    # test_predictions is an additional score I tried but so far I is not
-    # reliable or understandable at all. The output, the scores dictionary,
-    # is better described in the docs of the train_similar
-    scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
-                                   n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                   test_predictions=False, clf=score_clf)
+        # To get a good estimation for the reweighting quality, the
+        # train_similar score can be used. Its the one with training on
+        # mc reweighted/real and test on real, quite robust.
+        # Test_max is nice to know too even dough it can also be set to False if
+        # testing the same distribution over and over again, as it is the same for
+        # the same distributions (actually, it's just doing the score without the
+        # weights).
+        # test_predictions is an additional score I tried but so far I is not
+        # reliable or understandable at all. The output, the scores dictionary,
+        # is better described in the docs of the train_similar
+        scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
+                                       n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+                                       test_predictions=False, clf=score_clf)
 
-    # We can of course also test the normal ROC curve. This is weak to overfitting
-    # but anyway (if not overfitting) a nice measure. You insert two datasets
-    # and do the normal cross-validation on it. It's quite a multi-purpose
-    # function depending on what validation is. If it is an integer, it means:
-    # do cross-validation with n(=validation) folds.
-    tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                          validation=n_folds_scoring, plot_importance=4,
-                                          plot_title="ROC AUC to distinguish data",
-                                          clf=score_clf, weights_ratio=1,
-                                          extended_report=scoring)
-    del tmp_
+        # We can of course also test the normal ROC curve. This is weak to overfitting
+        # but anyway (if not overfitting) a nice measure. You insert two datasets
+        # and do the normal cross-validation on it. It's quite a multi-purpose
+        # function depending on what validation is. If it is an integer, it means:
+        # do cross-validation with n(=validation) folds.
+        tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
+                                              validation=n_folds_scoring, plot_importance=4,
+                                              plot_title="ROC AUC to distinguish data",
+                                              clf=score_clf, weights_ratio=1,
+                                              extended_report=scoring)
+        del tmp_
 
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
@@ -649,17 +641,17 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # file. To_end is sometimes quite useful, as it prints (and saves) the
     # arguments at the end of the file. So the important results are possibly
     # printed to the end
-    out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
-                   title='ROC AUC of mc reweighted/real KFold', to_end=True)
-    out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
-                   title='Train similar report', to_end=True)
-    if scores.get('score_max', False):
-        out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                       importance=5, to_end=True)
+        out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
+                       title='ROC AUC of mc reweighted/real KFold', to_end=True)
+        out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
+                       title='Train similar report', to_end=True)
+        if scores.get('score_max', False):
+            out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+                           importance=5, to_end=True)
+        output['train_similar'] = scores
+        output['roc_auc'] = roc_auc_score
 
     output['weights'] = new_weights
-    output['train_similar'] = scores
-    output['roc_auc'] = roc_auc_score
     if not apply_weights:
         mc_data.set_weights(old_weights)
 

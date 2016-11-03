@@ -769,10 +769,9 @@ class HEPDataStorage(object):
             example, a simple 2/3-1/3 split, just specify n_folds = 3 and
             just take one fold.
         shuffle : boolean or int
-            If True or int, shuffle the data before slicing. If an int is
-            provided, it is used as seed to the pseudo-random generator.
+            If True or int, shuffle the data before slicing.
         """
-        if n_folds <= 1:
+        if not n_folds > 1:
             raise ValueError("Number of folds has to be higher then 1")
 
         self._fold_index = []
@@ -785,8 +784,7 @@ class HEPDataStorage(object):
         # get a copy of index and shuffle it if True
         temp_index = copy.deepcopy(self._make_index())
         if shuffle is not False:
-            rand_seed = shuffle if isinstance(shuffle, int) and shuffle is not True else None
-            random.shuffle(temp_index, random=rand_seed)
+            random.shuffle(temp_index, random=meta_config.randfloat)
         for i in range(n_folds):
             self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
 

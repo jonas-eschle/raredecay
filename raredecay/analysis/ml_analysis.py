@@ -922,10 +922,10 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     if data_tools.is_pickle(reweighter):
         return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
-    try:
-        reweighter = __REWEIGHT_MODE.get(reweighter.lower())
-    except KeyError:
+    if reweighter not in __REWEIGHT_MODE:
         raise ValueError("Reweighter invalid: " + reweighter)
+
+    reweighter = __REWEIGHT_MODE.get(reweighter.lower())
     reweighter += 'Reweighter'
 
     # logging and writing output
@@ -957,7 +957,11 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     # train the reweighter
     if meta_cfg is None:
         meta_cfg = {}
-    reweighter = getattr(hep_ml.reweight, reweighter)(**meta_cfg)
+
+    if reweighter == "GBReweighter":
+        reweighter = hep_ml.reweight.GBReweighter(**meta_cfg)
+    elif reweighter == "BinsReweighter":
+        reweighter = hep_ml.reweight.BinsReweighter(**meta_cfg)
     reweighter.fit(original=mc_data, target=real_data,
                    original_weight=mc_weights, target_weight=real_weights)
     return data_tools.adv_return(reweighter, save_name=reweight_saveas)
@@ -988,9 +992,9 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
     Returns
     ------
-    out : numpy.array
-        Return a numpy.array of shape [n_samples] containing the new
-        weights.
+    out : pandas.Series
+        Return an instance of pandas Series of shape [n_samples] containing the
+        new weights.
     """
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
@@ -1003,6 +1007,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
     if normalize:
         new_weights *= new_weights.size/new_weights.sum()
+    new_weights = pd.Series(new_weights, index=reweight_data.index)
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
@@ -1128,13 +1133,16 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     if not add_weights_to_data:
         old_mc_tot_weights = reweight_data_mc.get_weights()
 
-    # split data to folds and loop over them
-    reweight_data_mc.make_folds(n_folds=n_folds)
-    reweight_data_real.make_folds(n_folds=n_folds)
-    logger.info("Data created, starting folding")
+
     for run in range(n_reweights):
         new_weights_all = []
         new_weights_index = []
+
+        # split data to folds and loop over them
+        reweight_data_mc.make_folds(n_folds=n_folds)
+        reweight_data_real.make_folds(n_folds=n_folds)
+        logger.info("Data created, starting folding of run " + str(run) +
+                    " of total " + str(n_reweights))
 
         for fold in range(n_folds):
 
@@ -1168,7 +1176,9 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                                            reweighter_trained=reweighter_trained,
                                            add_weights_to_data=True)  # fold only, not full data
             # plot one for example of the new weights
-            if n_folds > 1 and plot_importance1 > 1:
+            logger.debug("Maximum of weights " + str(max(new_weights)) +
+                         " of fold " + str(fold) + " of run " + str(run))
+            if (n_folds > 1 and plot_importance1 > 1) or max(new_weights) > 50:
                 out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
                 plt.hist(new_weights, bins=40, log=True)
 
@@ -1204,6 +1214,7 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
             logger.info("fold " + str(fold) + "finished")
             # end of for-loop
 
+
         # concatenate weights and index
         if n_folds == 1:
             new_weights_all = np.array(new_weights_all)
@@ -1212,6 +1223,12 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
             new_weights_all = np.concatenate(new_weights_all)
             new_weights_index = np.concatenate(new_weights_index)
         new_weights_tot += pd.Series(new_weights_all, index=new_weights_index)
+        logger.debug("Maximum of accumulated weights: " + str(max(new_weights_tot)))
+
+        out.save_fig(figure="New weights of run " + str(run), importance=3)
+        hack_array = np.array(new_weights_all)
+        plt.hist(hack_array, bins=30, log=True)
+        plt.title("New weights of reweighting at end of run " + str(run))
 
     # after for loop for weights creation
     new_weights_tot /= n_reweights
