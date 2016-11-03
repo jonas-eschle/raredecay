@@ -1171,7 +1171,9 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                                            reweighter_trained=reweighter_trained,
                                            add_weights_to_data=True)  # fold only, not full data
             # plot one for example of the new weights
-            if (n_folds > 1 and plot_importance1 > 1) or max(new_weights > 50):
+            logger.debug("Maximum of weights " + str(max(new_weights)) +
+                         " of fold " + str(fold) + " of run " + str(run))
+            if (n_folds > 1 and plot_importance1 > 1) or max(new_weights) > 50:
                 out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
                 plt.hist(new_weights, bins=40, log=True)
 

@@ -570,11 +570,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
     from raredecay.globals_ import out
-    import numpy as np
 
-    new_weights_list = []
-    sum_new_weights_std = [0] * len(mc_data)
-    sum_new_weights = [0] * len(mc_data)
     output = {}
     # do the Kfold reweighting. This reweights the data with Kfolding and returns
     # the weights. If add_weights_to_data is True, the weights will automatically be
@@ -586,33 +582,14 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # real score.
     if not apply_weights:
         old_weights = mc_data.get_weights()
-    for i in range(1):  # HACK remove
-        Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
-                                             meta_cfg=reweight_cfg, columns=columns,
-                                             reweighter=reweighter, n_reweights=n_reweights,
-                                             mcreweighted_as_real_score=scoring,
-                                             n_folds=n_folds, score_clf=score_clf,
-                                             add_weights_to_data=apply_weights)
-        new_weights = Kfold_output.pop('weights')
-        new_weights.sort_index()
-
-#    # HACK
-#        if n_reweights > 1:
-#            new_weights_list.append(new_weights)
-#
-#    if n_reweights > 1:
-#
-#        for i in range(len(new_weights)):
-#            sum_new_weights_std[i] = np.std([new_weights_list[j][i] for j in range(len(new_weights_list))])
-#            sum_new_weights[i] = np.mean([new_weights_list[j][i] for j in range(len(new_weights_list))])
-#        plt.figure("sum weights std")
-#        plt.hist(sum_new_weights_std, bins=30, log=True)
-#        array1 = np.array(sum_new_weights_std)
-#        print "array 1 mean", array1.mean()
-#        print "array 1 std", array1.std()
-#        if apply_weights:
-#            mc_data.set_weights(sum_new_weights, index=range(len(sum_new_weights)))
-    #HACK END
+    Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
+                                         meta_cfg=reweight_cfg, columns=columns,
+                                         reweighter=reweighter, n_reweights=n_reweights,
+                                         mcreweighted_as_real_score=scoring,
+                                         n_folds=n_folds, score_clf=score_clf,
+                                         add_weights_to_data=apply_weights)
+    new_weights = Kfold_output.pop('weights')
+    new_weights.sort_index()
 
     if scoring:
         output['mcreweighted_as_real_score'] = Kfold_output
