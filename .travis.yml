@@ -16,4 +16,12 @@ before_install:
 install: "sudo -E -H pip install git+https://github.com/mayou36/raredecay.git"
 script: echo "hello world"
 
+deploy:
+ provider: pypi
+ user: mayou36
+ password: woerter8PIP!
+ distributions: "sdist bdist_wheel"
+ on:
+  branch: master
+
 

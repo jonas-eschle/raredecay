@@ -1014,7 +1014,8 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
 
 def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=10,
-                   reweighter='gb', meta_cfg=None, n_reweights=1, score_clf='xgb',
+                   reweighter='gb', meta_cfg=None, n_reweights=1,
+                   score_columns=None, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
     """Reweight data by "itself" for *scoring* and hyper-parameters via
     Kfolding to avoid bias.
@@ -1133,7 +1134,6 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     if not add_weights_to_data:
         old_mc_tot_weights = reweight_data_mc.get_weights()
 
-
     for run in range(n_reweights):
         new_weights_all = []
         new_weights_index = []
@@ -1185,9 +1185,12 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
             if mcreweighted_as_real_score:
                 # treat reweighted mc data as if it were real data target(1)
                 test_mc.set_targets(1)
+                train_mc.set_targets(0)
+                train_real.set_targets(1)
                 # train clf on real and mc and see where it classifies the reweighted mc
                 clf, tmp_score = classify(train_mc, train_real, validation=test_mc,
                                           curve_name="mc reweighted as real",
+                                          features=score_columns,
                                           plot_title="fold " + str(fold) + " reweighted validation",
                                           weights_ratio=1, clf=score_clf,
                                           importance=1, plot_importance=1)
@@ -1197,13 +1200,15 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
                 test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
-                                               curve_name="mc as real",
-                                               importance=1, plot_importance=1)
+                                             features=score_columns,
+                                             curve_name="mc as real",
+                                             importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
-                                               curve_name="real as real",
-                                               importance=1, plot_importance=1)
+                                             features=score_columns,
+                                             curve_name="real as real",
+                                             importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t
 

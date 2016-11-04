@@ -20,7 +20,7 @@ def rnd_dist():
     pass
 
 
-def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
+def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, clf='xgb',
                   test_max=True, old_mc_weights=1, test_predictions=False,
                   clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
@@ -140,6 +140,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         tmp_out = ml_ana.classify(mc_data, real_train, validation=real_test, clf=clf,
                                   plot_title="train on mc reweighted/real, test on real",
                                   weights_ratio=1, get_predictions=True,
+                                  features=features,
                                   plot_importance=1, importance=1)
         _t, scores[fold], pred_reweighted = tmp_out
         tmp_pred = pred_reweighted['y_proba'][:, 1] * pred_reweighted['weights']
@@ -161,6 +162,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
             tmp_out = ml_ana.classify(mc_data, real_train, validation=real_test,
                                       plot_title="real/mc NOT reweight trained, validate on real",
                                       weights_ratio=1, get_predictions=True, clf=clf,
+                                      features=features,
                                       plot_importance=1, importance=1)
             _t, scores_max[fold], pred_mc = tmp_out
             del _t
@@ -174,9 +176,9 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
     output['score_std'] = np.round(scores.std(), 4)
 
     # HACK
-#    scores_weighted = np.array(scores_weighted)
-#    out.add_output( ["Scooore weighted:", scores_weighted.mean(), " +- ",
-#                     scores_weighted.std()], to_end=True)
+    scores_weighted = np.array(scores_weighted)
+    out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
+                     scores_weighted.std()], to_end=True)
     #HACK END
 #    output['weighted_score'] =
 #    output['weighted_score_std'] =
@@ -193,6 +195,7 @@ def train_similar(mc_data, real_data, n_checks=10, n_folds=10, clf='xgb',
         # test on the reweighted/real predictions
         real_data.set_targets(targets=real_pred, index=real_test_index)
         tmp_, score_pred = ml_ana.classify(real_data, target_from_data=True, clf=clf_pred,
+                                           features=score_columns,
                                            plot_title="train on predictions reweighted/real, real as target",
                                            weights_ratio=1, validation=n_checks, plot_importance=3)
         output['score_pred'] = round(score_pred, 4)
