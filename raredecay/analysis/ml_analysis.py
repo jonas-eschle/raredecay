@@ -459,7 +459,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = {'auc w/o ' + key: val for key, val in collected_scores.items()}
     collected_scores['features_tot'] = temp_val
     collected_scores = pd.DataFrame(collected_scores)
-    out.add_output(["The collected scores: ", collected_scores], importance=3)
+    out.add_output(["The collected scores:\n", collected_scores], importance=3)
     output['scores'] = collected_scores
 
     if len(selected_features) > 1 and difference >= max_difference_to_best:
@@ -472,13 +472,16 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     elif len(selected_features) > 1:
         out.add_output(["Removed features and roc auc: ", roc_auc,
                         "\nFeature elimination stopped because",
-                        "max_feature_elimination was reached (feature or time limit)."],
+                        "max_feature_elimination was reached",
+                        "(max number of eliminations or time limit)."],
                        subtitle="Feature selection results")
     # if all features were removed
     else:
         out.add_output(["Removed features and roc auc: ", roc_auc,
                         "All features removed, loop stopped removing because no feature was left"],
                        subtitle="Feature selection results")
+
+    return output
 
 
 def optimize_hyper_parameters(original_data, clf=None, target_data=None, features=None,
@@ -787,8 +790,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         n_classes = len(set(lds_test.get_targets()))
         if n_classes == 2:
             clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
-            out.add_output(["ROC AUC of ", clf_name, ": ", clf_score],
-                           obj_separator="", subtitle="Report of classify",
+            out.add_output(["ROC AUC of ", clf_name, ", " , curve_name, ": ", clf_score],
+                           obj_separator="", subtitle="Report of " + plot_title,
                            importance=importance)
             plot_name = clf_name + ", AUC = " + str(clf_score)
             binary_test = True
@@ -1014,7 +1017,8 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
 
 def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=10,
-                   reweighter='gb', meta_cfg=None, n_reweights=1, score_clf='xgb',
+                   reweighter='gb', meta_cfg=None, n_reweights=1,
+                   score_columns=None, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
     """Reweight data by "itself" for *scoring* and hyper-parameters via
     Kfolding to avoid bias.
@@ -1133,7 +1137,6 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     if not add_weights_to_data:
         old_mc_tot_weights = reweight_data_mc.get_weights()
 
-
     for run in range(n_reweights):
         new_weights_all = []
         new_weights_index = []
@@ -1185,9 +1188,12 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
             if mcreweighted_as_real_score:
                 # treat reweighted mc data as if it were real data target(1)
                 test_mc.set_targets(1)
+                train_mc.set_targets(0)
+                train_real.set_targets(1)
                 # train clf on real and mc and see where it classifies the reweighted mc
                 clf, tmp_score = classify(train_mc, train_real, validation=test_mc,
                                           curve_name="mc reweighted as real",
+                                          features=score_columns,
                                           plot_title="fold " + str(fold) + " reweighted validation",
                                           weights_ratio=1, clf=score_clf,
                                           importance=1, plot_importance=1)
@@ -1197,13 +1203,15 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
                 test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
-                                               curve_name="mc as real",
-                                               importance=1, plot_importance=1)
+                                             features=score_columns,
+                                             curve_name="mc as real",
+                                             importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
-                                               curve_name="real as real",
-                                               importance=1, plot_importance=1)
+                                             features=score_columns,
+                                             curve_name="real as real",
+                                             importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t
 

@@ -313,6 +313,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         get an estimate for the feature importance.
     roc_auc : {'single', 'all', 'both'} or False
         Whether to make a training/testing with:
+
         - every single feature (-> n_feature times KFolded training)
         - all features together (-> one KFolded training)
         - both of the above
@@ -346,10 +347,11 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     out_temp = {}
     if roc_auc_single:
         for feature in features:
-            title = "Feature exploration, ROC AUC only using" + str(feature)
+            title = "Feature exploration, ROC AUC only using " + str(feature)
             tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
-                                          validation=3, extended_report=extended_report,
-                                          plot_title=title, weights_ratio=1)
+                                          curve_name="only using " + feature,
+                                          validation=n_folds, extended_report=extended_report,
+                                          plot_title=title, weights_ratio=1, plot_importance=2)
             del tmp_
             out_temp[feature] = score
 
@@ -476,7 +478,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
 
 def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                reweighter='gb', reweight_cfg=None, n_reweights=1,
-               scoring=True, n_folds_scoring=10, score_clf='xgb',
+               scoring=True, score_columns=None, n_folds_scoring=10, score_clf='xgb',
                apply_weights=True):
     """Reweight data (mc/real) in a KFolded way to unbias the reweighting
 
@@ -601,6 +603,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                          meta_cfg=reweight_cfg, columns=columns,
                                          reweighter=reweighter, n_reweights=n_reweights,
                                          mcreweighted_as_real_score=scoring,
+                                         score_columns=score_columns,
                                          n_folds=n_folds, score_clf=score_clf,
                                          add_weights_to_data=apply_weights)
     new_weights = Kfold_output.pop('weights')
@@ -621,6 +624,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # is better described in the docs of the train_similar
         scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
                                        n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+                                       features=score_columns,
                                        test_predictions=False, clf=score_clf)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
@@ -632,6 +636,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                               validation=n_folds_scoring, plot_importance=4,
                                               plot_title="ROC AUC to distinguish data",
                                               clf=score_clf, weights_ratio=1,
+                                              features=score_columns,
                                               extended_report=scoring)
         del tmp_
 

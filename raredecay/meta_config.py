@@ -352,7 +352,7 @@ def randint():
 
 
 def randfloat():
-    """Return a random float"""
+    """Return a random float between 0 and 1"""
     return random.random()
 
 

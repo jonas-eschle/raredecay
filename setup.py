@@ -20,14 +20,15 @@ with io.open(os.path.join(here, 'requirements.txt')) as f:
 def readme():
     with open('README.md') as f:
         return f.read()
-try:
-    git_version = subprocess.check_output(["git", "-C",
-                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay",
-                        "describe"])
-    git_version = git_version.partition('-')
-    git_version = str(git_version[0])
-except:
-    git_version = '1.0.2'
+#try:
+#    git_version = subprocess.check_output(["git", "-C",
+#                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay",
+#                        "describe"])
+#    git_version = git_version.partition('-')
+#    git_version = str(git_version[0])
+#except:
+#    git_version = '1.0.2'
+git_version = '1.0.3'
 
 
 setup(name='raredecay',

@@ -390,8 +390,8 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     from rep.metaml import FoldingClassifier
-    from rep.report.metrics import RocAuc, ams, OptimalAccuracy, OptimalAMS  # , significance
-    from raredecay.tools.metrics import punzi_fom, precision_measure
+#    from rep.report.metrics import RocAuc, ams, OptimalAccuracy, OptimalAMS  # , significance
+#    from raredecay.tools.metrics import punzi_fom, precision_measure
 #    from sklearn.svm import NuSVC
 #    from sklearn.naive_bayes import GaussianNB
 
