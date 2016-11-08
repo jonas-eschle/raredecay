@@ -459,7 +459,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = {'auc w/o ' + key: val for key, val in collected_scores.items()}
     collected_scores['features_tot'] = temp_val
     collected_scores = pd.DataFrame(collected_scores)
-    out.add_output(["The collected scores: ", collected_scores], importance=3)
+    out.add_output(["The collected scores:\n", collected_scores], importance=3)
     output['scores'] = collected_scores
 
     if len(selected_features) > 1 and difference >= max_difference_to_best:
@@ -472,13 +472,16 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     elif len(selected_features) > 1:
         out.add_output(["Removed features and roc auc: ", roc_auc,
                         "\nFeature elimination stopped because",
-                        "max_feature_elimination was reached (feature or time limit)."],
+                        "max_feature_elimination was reached",
+                        "(max number of eliminations or time limit)."],
                        subtitle="Feature selection results")
     # if all features were removed
     else:
         out.add_output(["Removed features and roc auc: ", roc_auc,
                         "All features removed, loop stopped removing because no feature was left"],
                        subtitle="Feature selection results")
+
+    return output
 
 
 def optimize_hyper_parameters(original_data, clf=None, target_data=None, features=None,
@@ -787,8 +790,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         n_classes = len(set(lds_test.get_targets()))
         if n_classes == 2:
             clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
-            out.add_output(["ROC AUC of ", clf_name, ": ", clf_score],
-                           obj_separator="", subtitle="Report of classify",
+            out.add_output(["ROC AUC of ", clf_name, ", " , curve_name, ": ", clf_score],
+                           obj_separator="", subtitle="Report of " + plot_title,
                            importance=importance)
             plot_name = clf_name + ", AUC = " + str(clf_score)
             binary_test = True

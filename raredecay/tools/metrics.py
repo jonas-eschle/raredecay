@@ -178,7 +178,7 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
     # HACK
     scores_weighted = np.array(scores_weighted)
     out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
-                     scores_weighted.std()], to_end=True)
+                     np.std(np.abs(scores_weighted))], to_end=True)
     #HACK END
 #    output['weighted_score'] =
 #    output['weighted_score_std'] =

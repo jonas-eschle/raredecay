@@ -547,7 +547,7 @@ class HEPDataStorage(object):
             self._label_dic.update(data_labels)
 
     def get_targets(self, index=None):
-        """Return the targets of the data **as a numpy array**."""
+        """Return the targets of the data as a pandas Series."""
         # assing defaults
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
@@ -1008,7 +1008,20 @@ class HEPDataStorage(object):
         plt.legend()
         return out_figure
 
-    def plot2Dscatter(self, x_branch, y_branch, dot_size=20, color='b', weights=None, figure=0):
+    def plot_parallel_coordinates(self, columns=None, figure=0, second_storage=None):
+
+        data, targets, weights = self.make_dataset(second_storage=second_storage,
+                                                   columns=columns)
+        targets.name = 'targets'
+        data = pd.concat([data, targets], axis=1)
+        out_figure = out.save_fig(figure)
+        pd.tools.plotting.parallel_coordinates(data, 'targets')
+
+        return out_figure
+
+
+
+    def plot2Dscatter(self, x_branch, y_branch, dot_scale=20, color='b', weights=None, figure=0):
         """Plots two columns against each other to see the distribution.
 
         The dots size is proportional to the weights, so you have a good
@@ -1020,14 +1033,14 @@ class HEPDataStorage(object):
 
         """
         # TODO: make nice again
-        out_figure = plt.figure(figure)
+        out_figure = out.save_fig(figure)
         if isinstance(weights, (int, long, float)):
             weights = dev_tool.make_list_fill_var(weights, length=len(self),
                                                   var=weights)
         else:
             weights = self.get_weights()
         assert len(weights) == len(self), "Wrong length of weigths"
-        size = [dot_size*weight for weight in weights]
+        size = weights * dot_scale
         temp_label = data_tools.obj_to_string([i for i in self._name])
         plt.scatter(self.pandasDF(columns=x_branch),
                     self.pandasDF(columns=y_branch), s=size, c=color,

@@ -15,7 +15,7 @@ import numpy as np
 import cPickle as pickle
 
 try:
-    from root_numpy import root2array, array2tree
+    from root_numpy import root2array, array2tree, array2root
 except ImportError:
     warnings.warn("could not import from root_numpy!")
 
@@ -73,7 +73,8 @@ def make_root_dict(path_to_rootfile, tree_name, branches):
 
 
 def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
-    """Adds a new branch to a given root file, overwrites.
+    """Adds a new branch to a given root file, overwrites. Overwrite not working
+    currently!
 
 
     Parameters
@@ -92,21 +93,27 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     from ROOT import TObject
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
+    branch_name = 'new_branch1' if branch_name is None else branch_name
     if isinstance(rootfile, dict):
         filename = rootfile.get('filenames')
     treename = rootfile.get('treename')
     new_branch = to_ndarray(new_branch)
-    new_branch.dtype = [(branch_name, 'f8')]
+#    new_branch.dtype = [(branch_name, 'f8')]
 
     # write to ROOT-file
+    write_to_root = False
     with root_open(filename, mode='a') as f:
         tree = getattr(f, treename)
-        if overwrite or not tree.has_branch(branch_name):
-            array2tree(new_branch, tree=tree)
-            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
-            return 0
-        else:
-            return 1
+        if not tree.has_branch(branch_name):
+            write_to_root = True
+#            array2tree(new_branch, tree=tree)
+#            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
+    if write_to_root:
+        arr = np.core.records.fromarrays([new_branch], names=branch_name)
+        array2root(arr=arr, filename=filename, treename=treename, mode='update')
+        return 0
+    else:
+        return 1
 
 
 def format_data_weights(data_to_shape, weights):

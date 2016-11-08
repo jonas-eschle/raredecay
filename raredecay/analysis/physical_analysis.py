@@ -313,6 +313,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         get an estimate for the feature importance.
     roc_auc : {'single', 'all', 'both'} or False
         Whether to make a training/testing with:
+
         - every single feature (-> n_feature times KFolded training)
         - all features together (-> one KFolded training)
         - both of the above
@@ -346,10 +347,11 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     out_temp = {}
     if roc_auc_single:
         for feature in features:
-            title = "Feature exploration, ROC AUC only using" + str(feature)
+            title = "Feature exploration, ROC AUC only using " + str(feature)
             tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
-                                          validation=3, extended_report=extended_report,
-                                          plot_title=title, weights_ratio=1)
+                                          curve_name="only using " + feature,
+                                          validation=n_folds, extended_report=extended_report,
+                                          plot_title=title, weights_ratio=1, plot_importance=2)
             del tmp_
             out_temp[feature] = score
 

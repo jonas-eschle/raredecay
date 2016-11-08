@@ -537,7 +537,7 @@ class OutputHandler(object):
             # .finished shows if the run finished
             subprocess.call(['touch', path + 'run_finished_succesfully'])
 
-        del self.output, self._loud_end_output, self.end_output
+        self.output = self._loud_end_output = self.end_output = ""
 
         if play_sound_at_end:
             try:
