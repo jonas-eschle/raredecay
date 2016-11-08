@@ -1,5 +1,6 @@
 [![Code Health](https://landscape.io/github/mayou36/raredecay/master/landscape.svg?style=flat)](https://landscape.io/github/mayou36/raredecay/master)
 [![Build Status](https://travis-ci.org/mayou36/raredecay.svg?branch=master)](https://travis-ci.org/mayou36/raredecay)
+[![PyPI version](https://badge.fury.io/py/raredecay.svg)](https://badge.fury.io/py/raredecay)
 
 
 # raredecay #
