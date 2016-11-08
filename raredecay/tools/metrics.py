@@ -21,8 +21,8 @@ def rnd_dist():
 
 
 def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, clf='xgb',
-                  test_max=True, old_mc_weights=1, test_predictions=False,
-                  clf_pred='rdf'):
+                  test_max=True, old_mc_weights=1,
+                  test_predictions=False, clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
     Minimize score.
 
@@ -195,7 +195,7 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
         # test on the reweighted/real predictions
         real_data.set_targets(targets=real_pred, index=real_test_index)
         tmp_, score_pred = ml_ana.classify(real_data, target_from_data=True, clf=clf_pred,
-                                           features=score_columns,
+                                           features=features,
                                            plot_title="train on predictions reweighted/real, real as target",
                                            weights_ratio=1, validation=n_checks, plot_importance=3)
         output['score_pred'] = round(score_pred, 4)

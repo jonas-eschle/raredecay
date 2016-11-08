@@ -113,7 +113,6 @@ if __name__ == '__main__':
     data = "empty"
 #    data = RooDataSet("data", )
     from raredecay.tools.data_storage import HEPDataStorage
-    import numpy as np
     import pandas as pd
 
     data = HEPDataStorage(pd.DataFrame(np.random.normal(loc=5400, scale=100, size=(10000, 2)), columns=['x', 'y']))
