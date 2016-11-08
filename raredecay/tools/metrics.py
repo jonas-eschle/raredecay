@@ -20,6 +20,9 @@ def rnd_dist():
     pass
 
 
+
+
+
 def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, clf='xgb',
                   test_max=True, old_mc_weights=1,
                   test_predictions=False, clf_pred='rdf'):
@@ -143,10 +146,16 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
                                   features=features,
                                   plot_importance=1, importance=1)
         _t, scores[fold], pred_reweighted = tmp_out
-        tmp_pred = pred_reweighted['y_proba'][:, 1] * pred_reweighted['weights']
-#        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
 # HACK begin
+        import matplotlib.pyplot as plt
+        reweighted_y_proba = pred_reweighted['y_proba'][:, 1]
+        tmp_pred = reweighted_y_proba * pred_reweighted['weights']
+#        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
+
         scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
+
+
+
 # HACK end
 
         del _t, tmp_pred
@@ -166,6 +175,11 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
                                       plot_importance=1, importance=1)
             _t, scores_max[fold], pred_mc = tmp_out
             del _t
+# HACK
+            tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
+            scores_max_weighted.extend(tmp_pred * (pred_mc['y_true'] * 2 - 1))
+
+# HACK END
             mc_data.set_weights(temp_weights)
             probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])
@@ -179,6 +193,16 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
     scores_weighted = np.array(scores_weighted)
     out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
                      np.std(np.abs(scores_weighted))], to_end=True)
+    scores_max_weighted = np.array(scores_max_weighted)
+    out.add_output(["EXPERIMENTAL: max score weighted:", round(scores_max_weighted.mean(),4) , " +- ",
+                     round(np.std(np.abs(scores_max_weighted)), 4)], to_end=True)
+
+    plt.figure()
+    plt.hist(scores_weighted, bins=30, normed=True)
+    plt.title("experimental score weighted")
+    plt.figure()
+    plt.hist(scores_max_weighted, bins=30, normed=True)
+    plt.title("experimental MAX score weighted")
     #HACK END
 #    output['weighted_score'] =
 #    output['weighted_score_std'] =
