@@ -459,7 +459,9 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = {'auc w/o ' + key: val for key, val in collected_scores.items()}
     collected_scores['features_tot'] = temp_val
     collected_scores = pd.DataFrame(collected_scores)
-    out.add_output(["The collected scores:\n", collected_scores], importance=3)
+    out.add_output(["The collected scores:\n"] +
+                   [collected_scores[col] for col in collected_scores],
+                   importance=3)
     output['scores'] = collected_scores
 
     if len(selected_features) > 1 and difference >= max_difference_to_best:

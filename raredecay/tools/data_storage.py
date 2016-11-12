@@ -361,6 +361,7 @@ class HEPDataStorage(object):
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
 
+        # TODO: allow other primitive weights
         if dev_tool.is_in_primitive(self._weights, (None, 1)):
             weights_out = self._weights
             if normalize != 1 or normalize is not True:
@@ -371,7 +372,7 @@ class HEPDataStorage(object):
             weights_out = self._weights
         else:
             weights_out = self._weights.loc[index]
-
+        weights_out = copy.deepcopy(weights_out)
         if normalize or normalize > 0:
             normalize = 1 if normalize is True else normalize
             weights_out *= normalize/weights_out.mean()
@@ -394,14 +395,14 @@ class HEPDataStorage(object):
         length = len(self) if index is None else len(index)
 
         if isinstance(sample_weights, (str, dict)) and self._data_type == 'root':
+            assert ((isinstance(sample_weights, list) and (len(sample_weights) == 1)) or
+                    isinstance(sample_weights, str)), "Can only be one branche"
             assert isinstance(self._data, dict), "data should be root-dict but is no more..."
             tmp_root = copy.deepcopy(self._data)
             if isinstance(sample_weights, str):
                 sample_weights = {'branches': sample_weights}
             tmp_root.update(sample_weights)
-            branche = tmp_root['branches']
-            assert ((isinstance(branche, list) and (len(branche) == 1)) or
-                    isinstance(branche, str)), "Can only be one branche"
+
             sample_weights = data_tools.to_ndarray(tmp_root)
 
         assert (dev_tool.is_in_primitive(sample_weights, (None, 1)) or
