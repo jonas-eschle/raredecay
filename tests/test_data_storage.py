@@ -43,7 +43,7 @@ def create_data():
 def pandasDF(storage):
 
     df1 = storage.pandasDF()
-    assert len(df1) == len(n_col)
+    assert len(df1) == n_col
 
 
 
