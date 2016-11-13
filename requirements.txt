@@ -6,5 +6,5 @@ root_numpy
 rootpy
 seaborn
 pytest
-
+pandas
 
