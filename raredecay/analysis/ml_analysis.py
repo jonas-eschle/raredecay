@@ -657,7 +657,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
              clf='xgb', extended_report=False, get_predictions=False,
              plot_title=None, curve_name=None, weights_ratio=0,
              importance=3, plot_importance=3,
-             target_from_data=False):
+             target_from_data=False, **kwargs):
     """Training and testing a classifier or distinguish a dataset
 
     Classify is a multi-purpose function which does most of the things around
@@ -748,8 +748,10 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     make_plot = True  # used if no validation
 
     plot_title = "classify" if plot_title is None else plot_title
-    if (original_data is None) and (target_data is not None):
-        original_data, target_data = target_data, original_data  # switch places
+
+# TODO: do we need this??
+#    if (original_data is None) and (target_data is not None):
+#        original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
                                           weights_ratio=weights_ratio,
@@ -765,6 +767,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     parallel_profile = clf_dict.get('parallel_profile')
 
     if isinstance(validation, (float, int, long)) and validation > 1:
+
+
+
         clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile,
                                 stratified=meta_config.use_stratified_folding)
         # folding-> same data for train and test

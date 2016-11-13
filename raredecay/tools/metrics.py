@@ -20,11 +20,19 @@ def rnd_dist():
     pass
 
 
+def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
+                clf='xgb', splits=5, n_folds=10):
+
+    # initialize variables
+
+
+    # loop over number of splits, split the mc data
+    for i in xrange(splits):
 
 
 
-def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, clf='xgb',
-                  test_max=True, old_mc_weights=1,
+def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
+                  clf='xgb', test_max=True, old_mc_weights=1,
                   test_predictions=False, clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
     Minimize score.
