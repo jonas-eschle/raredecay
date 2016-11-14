@@ -11,7 +11,10 @@ before_install:
  - sudo apt-get -qq update
  # - sudo apt-get upgrade -y
  - sudo apt-get install -y root-system git python-pip libroot-bindings-python* libroot-roofit*
+ - sudo -E -H pip install -U pip
  - sudo -E -H pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
+ - python -c "import sys; print '\n'.join(sys.path)"
+
 
 install: "sudo -E -H pip install -U git+https://github.com/mayou36/raredecay.git"
 script: pytest /home/travis/build/mayou36/raredecay

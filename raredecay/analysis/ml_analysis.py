@@ -720,6 +720,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     get_predictions : boolean
         If True, return a dictionary containing the prediction probabilities, the
         true y-values and maybe, in the futur, even more.
+    additional kwargs arguments :
+        original_test_weights : pandas Series
+            Weights for the test sample if you don't want to use the same
+            weights as in the training
+        target_test_weights : pandas Series
+            Weights for the test sample if you don't want to use the same
+            weights as in the training
 
     Returns
     -------
@@ -767,13 +774,23 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     parallel_profile = clf_dict.get('parallel_profile')
 
     if isinstance(validation, (float, int, long)) and validation > 1:
-
-
+        if set(('original_test_weights', 'target_test_weights')) <= set(kwargs):
+            original_weights = kwargs.get('original_test_weights', original_data.get_weights())
+            target_weights = kwargs.get('target_test_weights', target_data.get_weights())
+            # TODO: write code nicer!
+            # HACK normalization
+            print "HACK IN USE, ml_analysis, classifiy: normalization always 1 for test weights"
+            target_weights *= np.sum(original_weights) / np.sum(target_weights)
+            # HACK end
+            test_weights = pd.concat((original_weights, target_weights))
+            test_weights /= np.sum(test_weights)  # normalization, optional
+        else:
+            test_weights = weights
 
         clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile,
                                 stratified=meta_config.use_stratified_folding)
         # folding-> same data for train and test
-        lds_test = LabeledDataStorage(data=data, target=label, sample_weight=weights)
+        lds_test = LabeledDataStorage(data=data, target=label, sample_weight=test_weights)
 
     elif isinstance(validation, data_storage.HEPDataStorage):
         lds_test = validation.get_LabeledDataStorage(columns=features)
