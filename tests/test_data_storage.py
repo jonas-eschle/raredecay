@@ -25,7 +25,6 @@ branches = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight']
 branches = branches[:5]
 
 
-
 def create_weights():
     weights1 = np.array(range(1, n_row + 1)) / 10 + 1
     return weights1
@@ -44,7 +43,6 @@ def pandasDF(storage):
 
     df1 = storage.pandasDF()
     assert len(df1) == n_col
-
 
 
 def test_root_storage():
@@ -70,9 +68,9 @@ def test_root_storage():
     # start testing
     pandasDF(storage1)
 
-
     # remove root-file at the end
     os.remove(filename)
+
 
 def test_1():
     assert 1 == 1
@@ -80,4 +78,3 @@ def test_1():
 
 #if __name__ == '__main__':
 #    test_root_storage()
-
