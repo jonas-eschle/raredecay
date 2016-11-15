@@ -11,6 +11,8 @@ import os
 import random
 import string
 
+print "os path:", os.path
+
 import numpy as np
 import pandas as pd
 import math as mt

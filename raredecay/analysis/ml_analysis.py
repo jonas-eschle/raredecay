@@ -774,7 +774,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     parallel_profile = clf_dict.get('parallel_profile')
 
     if isinstance(validation, (float, int, long)) and validation > 1:
-        if set(('original_test_weights', 'target_test_weights')) <= set(kwargs):
+        if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
             original_weights = kwargs.get('original_test_weights', original_data.get_weights())
             target_weights = kwargs.get('target_test_weights', target_data.get_weights())
             # TODO: write code nicer!
