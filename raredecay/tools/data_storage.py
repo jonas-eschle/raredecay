@@ -419,12 +419,16 @@ class HEPDataStorage(object):
 
         Parameters
         ----------
-        sample_weights : 1-D array-like or list or int {1} (or str/dict for root-trees)
-            The new weights for the dataset. If the data is a root-tree file,
+        sample_weights : pandas Series or numpy array or int {1} or str/dict for root-trees
+            The new weights for the dataset.
+            If the new weights are a pandas Series, the index must match the
+            internal index
+            If the data is a root-tree file,
             a string (naming the branche) or a whole root-dict can be given,
             pointing to the weights stored.
         index : 1-D array or list or None
-            The indeces for the weights to be set
+            The indeces for the weights to be set. Only the index given will be
+            set/used as weights.
         """
         index = self._index if index is None else index
         length = len(self) if index is None else len(index)
@@ -444,7 +448,7 @@ class HEPDataStorage(object):
 
     def _set_weights(self, sample_weights, index=None):
         """Set the weights"""
-        index = self._index if index is None else index
+        index = self.index if index is None else index
         length = len(self) if index is None else len(index)
 
         if dev_tool.is_in_primitive(sample_weights, (None, 1)):

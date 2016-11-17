@@ -16,7 +16,7 @@ from raredecay.globals_ import out
 
 def rnd_dist():
     """Test reweighting by classify several random distributions. Not yet
-    known how to interpret outcome correctly"""
+    known how to interpret outcome correctly. NOT YET IMPLEMENTED!"""
     pass
 
 
@@ -55,7 +55,7 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                                                     )[1])
     out.add_output(["mayou_score mc vs mc reweighted test on mc vs real score: ",
                     score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr)],
-                    to_end=True)
+                    subtitle="Mayou score", to_end=True)
 
     output['mc_distance'] = np.mean(score_mc_vs_mcr)
 
@@ -71,6 +71,13 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                                                  # TODO: no weights ratio? (roc auc)
                                                  weights_ratio=0
                                                  )[1])
+
+    out.add_output(["mayou_score real vs mc reweighted test on mc vs real score: ",
+                    score_mcr_vs_real, "\nMean: ", np.mean(score_mcr_vs_real)],
+                    to_end=True)
+
+    output['real_distance'] = np.mean(score_mcr_vs_real)
+
 
 
 

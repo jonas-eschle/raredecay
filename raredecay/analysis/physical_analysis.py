@@ -625,7 +625,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # is better described in the docs of the train_similar
         scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
                                        n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                       features=score_columns,
+                                       features=score_columns, old_mc_weights=old_weights,
                                        test_predictions=False, clf=score_clf)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
