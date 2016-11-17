@@ -327,7 +327,7 @@ class HEPDataStorage(object):
     def labels(self):
         return self._label_dic.get(self.columns)
 
-    def get_weights(self, index=None, normalize=True):
+    def get_weights(self, index=None, normalize=True, **kwargs):
         """Return the weights of the specified indeces or, if None, return all.
 
         Parameters
@@ -346,12 +346,47 @@ class HEPDataStorage(object):
         """
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
-
-        weights_out = self._get_weights(index=index, normalize=normalize)
-
         normalize = 1 if normalize is True else normalize
+        second_storage = kwargs.get('second_storage')
+
+
+        # TODO: stopped work here
+        normalize_1 = 1
+        normalize_2 = 1
+
+        # HACK
+        weights_ratio = normalize
+
+        if weights_ratio > 0 and second_storage is not None:
+            weights_1 = self.get_weights(index=index)
+            weights_2 = second_storage.get_weights()
+
+            sum_weight_1 = float(sum(weights_1))
+            sum_weight_2 = float(sum(weights_2))
+
+            ratio_1 = weights_ratio * sum_weight_2 / sum_weight_1
+            self.logger.info("ratio_1 = " + str(ratio_1))
+            if ratio_1 >= 1:
+                ratio_2 = 1.0
+            else:
+                ratio_2 = 1.0 / ratio_1
+                ratio_1 = 1.0
+
+            normalize_1 = ratio_1
+            normalize_2 = ratio_2
+        elif weights_ratio > 0 and second_storage is None:
+            normalize_1 = weights_ratio
+        else:
+            normalize_1 = normalize_2 = None
+
+        weights_out = self._get_weights(index=index, normalize=normalize_1)
+
         if dev_tool.is_in_primitive(weights_out, (None, 1)):
-            weights_out = pd.Series(data=np.ones(length), index=index) * normalize
+            weights_out = pd.Series(data=np.ones(length), index=index) * normalize_1
+
+        if second_storage is not None:
+            weights_2 = second_storage.get_weights(normalize=normalize_2)
+            weights_out = np.concatenate((weights_out, weights_2))
 
         return weights_out
 
@@ -404,9 +439,6 @@ class HEPDataStorage(object):
             tmp_root.update(sample_weights)
 
             sample_weights = data_tools.to_ndarray(tmp_root)
-
-        assert (dev_tool.is_in_primitive(sample_weights, (None, 1)) or
-                len(sample_weights) <= length), "Invalid weights"
 
         self._set_weights(sample_weights=sample_weights, index=index)
 
@@ -628,14 +660,19 @@ class HEPDataStorage(object):
 
         ..note:: If weights_ratio is provided, this parameter is ignored.
         weights_ratio : float >= 0
-            Only works if a second data storage is provided and assumes
+            The (relative) normalization. If a second data storage is provided
+            it is assumed (will be changed in future ?)
             that the two storages can be seen as the two different targets.
             If zero, nothing happens. If it is bigger than zero, it
             represents the ratio of the sum of the weights from the first
             to the second storage. If set to 1, they both are equally
             weighted. Requires internal normalisation.
+            If no second storage is provided, it is the normalization of the
+            storage called.
 
-            Ratio := sum(weights1) / sum(weights2)
+            Ratio := sum(weights_1) / sum(weights_2) with a second storage
+            Ratio := sum(weights_1) / mean(weights_1)
+
         shuffle : boolean or int
             If True or int, the dataset will be shuffled before returned. If an
             int is provided, it will be used as a seed to the pseudo-random
@@ -643,26 +680,30 @@ class HEPDataStorage(object):
          """
         # initialize values
 
-        normalize_1 = 1
-        normalize_2 = 1
-
-        if weights_ratio > 0 and second_storage is not None:
-            weights_1 = self.get_weights(index=index)
-            weights_2 = second_storage.get_weights(index=index_2)
-
-            sum_weight_1 = float(sum(weights_1))
-            sum_weight_2 = float(sum(weights_2))
-
-            ratio_1 = weights_ratio * sum_weight_2 / sum_weight_1
-            self.logger.info("ratio_1 = " + str(ratio_1))
-            if ratio_1 >= 1:
-                ratio_2 = 1.0
-            else:
-                ratio_2 = 1.0 / ratio_1
-                ratio_1 = 1.0
-
-            normalize_1 = ratio_1
-            normalize_2 = ratio_2
+#        normalize_1 = 1
+#        normalize_2 = 1
+#
+#        if weights_ratio > 0 and second_storage is not None:
+#            weights_1 = self.get_weights(index=index)
+#            weights_2 = second_storage.get_weights(index=index_2)
+#
+#            sum_weight_1 = float(sum(weights_1))
+#            sum_weight_2 = float(sum(weights_2))
+#
+#            ratio_1 = weights_ratio * sum_weight_2 / sum_weight_1
+#            self.logger.info("ratio_1 = " + str(ratio_1))
+#            if ratio_1 >= 1:
+#                ratio_2 = 1.0
+#            else:
+#                ratio_2 = 1.0 / ratio_1
+#                ratio_1 = 1.0
+#
+#            normalize_1 = ratio_1
+#            normalize_2 = ratio_2
+#        elif weights_ratio > 0 and second_storage is None:
+#            normalize_1 = weights_ratio
+#        else:
+#            normalize_1 = None
 
         if shuffle is not False:
             index = self.index if index is None else index
@@ -675,7 +716,7 @@ class HEPDataStorage(object):
         data = self.pandasDF(columns=columns, index=index)
         if second_storage is None:
             targets = self.get_targets(index=index)
-        weights = self.get_weights(index=index, normalize=normalize_1)
+#        weights = self.get_weights(index=index, normalize=normalize_1)
 
         if second_storage is not None:
             assert isinstance(second_storage, HEPDataStorage), "Wrong type, not an HEPDataStorage"
@@ -694,8 +735,8 @@ class HEPDataStorage(object):
             else:
                 targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
 
-            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
-            weights = np.concatenate((weights, weights_2))
+#            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
+        weights = self.get_weights(normalize=weights_ratio, second_storage=second_storage)
 
         return data, targets, weights
 
@@ -1020,6 +1061,18 @@ class HEPDataStorage(object):
 
         return out_figure
 
+
+    def plot2Dhist(self, x_columns, y_columns=None):
+        """Plot a 2D hist of x_columns vs itself or y_columns"""
+
+        x_columns = self.columns if x_columns == 'all' else x_columns
+        y_columns = self.columns if y_columns == 'all' else y_columns
+        y_columns = x_columns if y_columns is None else y_columns
+
+        for x_col in x_columns:
+            for y_col in y_columns:
+                df = self.pandasDF(columns=[x_col, y_col])
+                df.plot.hexbin(x_col, y_col, gridsize=30)
 
 
     def plot2Dscatter(self, x_branch, y_branch, dot_scale=20, color='b', weights=None, figure=0):

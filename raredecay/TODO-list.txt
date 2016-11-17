@@ -1,5 +1,6 @@
 - remove all "take_target_from_data" and replace by automatic checking (?)
-- possibility of updating weights and targets instead of replacing
+ - includes adjusted weights ratio... a lot to do
+- possibility of updating weights (DONE?!) and targets instead of replacing
 - clean root data handling, removing branches, write to etc.
 - add save_to_root method to datastorage
 - add combined weights/target return to storage

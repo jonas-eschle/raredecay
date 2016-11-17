@@ -775,15 +775,29 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
     if isinstance(validation, (float, int, long)) and validation > 1:
         if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
-            original_weights = kwargs.get('original_test_weights', original_data.get_weights())
-            target_weights = kwargs.get('target_test_weights', target_data.get_weights())
-            # TODO: write code nicer!
-            # HACK normalization
-            print "HACK IN USE, ml_analysis, classifiy: normalization always 1 for test weights"
-            target_weights *= np.sum(original_weights) / np.sum(target_weights)
-            # HACK end
-            test_weights = pd.concat((original_weights, target_weights))
-            test_weights /= np.sum(test_weights)  # normalization, optional
+
+
+
+            if 'original_test_weights' in kwargs:
+                temp_original_weights = original_data.get_weights()
+                original_data.set_weights(kwargs.get('original_test_weights'))
+            if 'target_test_weights' in kwargs:
+                temp_target_weights = target_data.get_weights()
+                target_data.set_weights(kwargs.get('target_test_weights'))
+            test_weights = original_data.get_weights(second_storage=target_data,
+                                                     normalization=weights_ratio)
+            if 'original_test_weights' in kwargs:
+                original_data.set_weights(temp_original_weights)
+            if 'target_test_weights' in kwargs:
+                target_data.set_weights(temp_target_weights)
+
+#            # TODO: write code nicer!
+#            # HACK normalization
+#            print "HACK IN USE, ml_analysis, classifiy: normalization always 1 for test weights"
+#            target_weights *= np.sum(original_weights) / np.sum(target_weights)
+#            # HACK end
+#            test_weights = pd.concat((original_weights, target_weights))
+#            test_weights /= np.sum(test_weights)  # normalization, optional
         else:
             test_weights = weights
 

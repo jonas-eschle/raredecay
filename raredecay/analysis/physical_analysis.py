@@ -640,6 +640,8 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                               extended_report=scoring)
         del tmp_
 
+        metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
+                            clf=score_clf)
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
     # printing it also to the console instead of only saving it to the output

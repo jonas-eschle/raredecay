@@ -21,13 +21,40 @@ def rnd_dist():
 
 
 def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
-                clf='xgb', splits=5, n_folds=10):
+                clf='xgb', splits=2, n_folds=10):
 
     # initialize variables
+    output = {}
+    score_mc_vs_mcr = []
+    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
+
+
 
 
     # loop over number of splits, split the mc data
-    for i in xrange(splits):
+
+    mc_data.make_folds(n_folds)
+    real_data.make_folds(n_folds)
+    for fold in xrange(n_folds):
+        mc_data_train, mc_data_test = mc_data.get_fold(fold)
+        # TODO: no real folds? It is better to test on full data always?
+#        mc_data_train, mc_data_test = real_data.get_fold(fold)
+        for split in xrange(splits):
+            if split % 2 == 0:
+                mc_data_train.make_folds(2)
+            mc_normal, mc_reweighted = mc_data_train.get_fold(split % 2)
+            mc_normal.set_weights(old_mc_weights)
+            score_mc_vs_mcr.append(ml_ana.classify(original_data=mc_normal, target_data=mc_reweighted,
+                                                   features=features, validation=[mc_data_test, real_data],
+                                                    clf=clf, plot_importance=1,
+                                                    # TODO: no weights ratio? (roc auc)
+                                                    weights_ratio=0
+                                                    )[1])
+    out.add_output(["mayou_score mc vs mc reweighted test on mc vs real score: ",
+                    score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr)],
+                    to_end=True)
+
+
 
 
 
