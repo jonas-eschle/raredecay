@@ -455,6 +455,8 @@ class HEPDataStorage(object):
                 sample_weights = pd.Series(np.ones(len(index)), index=index)
         #    else:
         #        sample_weights = np.ones(length)
+        elif isinstance(sample_weights, pd.Series):
+            sample_weights = sample_weights[index]
         else:
             sample_weights = pd.Series(sample_weights, index=index, dtype='f8')
 

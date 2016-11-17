@@ -26,7 +26,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
     # initialize variables
     output = {}
     score_mc_vs_mcr = []
-    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
+    score_mcr_vs_real = []
+#    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
 
 
 
@@ -35,11 +36,13 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
 
     mc_data.make_folds(n_folds)
     real_data.make_folds(n_folds)
+
+    # mc reweighted vs mc
     for fold in xrange(n_folds):
         mc_data_train, mc_data_test = mc_data.get_fold(fold)
         # TODO: no real folds? It is better to test on full data always?
 #        mc_data_train, mc_data_test = real_data.get_fold(fold)
-        for split in xrange(splits):
+        for split in xrange(splits * 2):  # because two possibilities per split
             if split % 2 == 0:
                 mc_data_train.make_folds(2)
             mc_normal, mc_reweighted = mc_data_train.get_fold(split % 2)
@@ -55,6 +58,19 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                     to_end=True)
 
     output['mc_distance'] = np.mean(score_mc_vs_mcr)
+
+    # mc_reweighted vs real
+    for fold in xrange(n_folds):
+        real_train, real_test = real_data.get_fold(fold)
+        mc_train, mc_test = mc_data.get_fold(fold)
+        mc_test.set_weights(old_mc_weights)
+        score_mcr_vs_real.append(ml_ana.classify(original_data=mc_normal, target_data=mc_reweighted,
+                                                 features=features,
+                                                 validation=[mc_test, real_test],
+                                                 clf=clf, plot_importance=1,
+                                                 # TODO: no weights ratio? (roc auc)
+                                                 weights_ratio=0
+                                                 )[1])
 
 
 

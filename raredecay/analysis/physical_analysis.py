@@ -597,16 +597,17 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
-    if not apply_weights:
-        old_weights = mc_data.get_weights()
+#    if not apply_weights:
+    old_weights = mc_data.get_weights()
     Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
                                          meta_cfg=reweight_cfg, columns=columns,
                                          reweighter=reweighter, n_reweights=n_reweights,
                                          mcreweighted_as_real_score=scoring,
                                          score_columns=score_columns,
                                          n_folds=n_folds, score_clf=score_clf,
-                                         add_weights_to_data=apply_weights)
+                                         add_weights_to_data=True)
     new_weights = Kfold_output.pop('weights')
+    # TODO: needed below?
     new_weights.sort_index()
 
     if scoring:
@@ -641,7 +642,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         del tmp_
 
         metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
-                            clf=score_clf)
+                            clf=score_clf, old_mc_weights=old_weights)
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
     # printing it also to the console instead of only saving it to the output
