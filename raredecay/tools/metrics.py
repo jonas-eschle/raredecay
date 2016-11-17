@@ -54,7 +54,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                                                     weights_ratio=0
                                                     )[1])
     out.add_output(["mayou_score mc vs mc reweighted test on mc vs real score: ",
-                    score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr)],
+                    score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr),
+                    " +-", np.std(score_mc_vs_mcr)/mt.sqrt(len(score_mc_vs_mcr) - 1)],
                     subtitle="Mayou score", to_end=True)
 
     output['mc_distance'] = np.mean(score_mc_vs_mcr)
@@ -73,7 +74,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                                                  )[1])
 
     out.add_output(["mayou_score real vs mc reweighted test on mc vs real score: ",
-                    score_mcr_vs_real, "\nMean: ", np.mean(score_mcr_vs_real)],
+                    score_mcr_vs_real, "\nMean: ", np.mean(score_mcr_vs_real),
+                    " +-", np.std(score_mcr_vs_real)/mt.sqrt(len(score_mcr_vs_real - 1))],
                     to_end=True)
 
     output['real_distance'] = np.mean(score_mcr_vs_real)
