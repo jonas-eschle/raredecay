@@ -107,8 +107,8 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     write_to_root = False
 
     if os.path.isfile(filename):
-        with root_open(filename, mode='a') as f:
-            tree = getattr(f, treename)
+        with root_open(filename, mode='a') as root_file:
+            tree = getattr(root_file, treename)  # test
             if not tree.has_branch(branch_name):
                 write_to_root = True
     #            array2tree(new_branch, tree=tree)

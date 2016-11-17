@@ -65,7 +65,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
         real_train, real_test = real_data.get_fold(fold)
         mc_train, mc_test = mc_data.get_fold(fold)
         mc_test.set_weights(old_mc_weights)
-        score_mcr_vs_real.append(ml_ana.classify(original_data=mc_normal, target_data=mc_reweighted,
+        score_mcr_vs_real.append(ml_ana.classify(original_data=mc_train,
+                                                 target_data=real_train,
                                                  features=features,
                                                  validation=[mc_test, real_test],
                                                  clf=clf, plot_importance=1,
@@ -75,7 +76,7 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
 
     out.add_output(["mayou_score real vs mc reweighted test on mc vs real score: ",
                     score_mcr_vs_real, "\nMean: ", np.mean(score_mcr_vs_real),
-                    " +-", np.std(score_mcr_vs_real)/mt.sqrt(len(score_mcr_vs_real - 1))],
+                    " +-", np.std(score_mcr_vs_real)/mt.sqrt(len(score_mcr_vs_real) - 1)],
                     to_end=True)
 
     output['real_distance'] = np.mean(score_mcr_vs_real)
