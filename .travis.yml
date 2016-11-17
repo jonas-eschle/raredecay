@@ -18,9 +18,9 @@ before_install:
  # - python -c 'import sys; print '\n'.join(sys.path)'
 
 
-# install: "sudo -E -H pip install -U git+https://github.com/mayou36/raredecay.git"
+install: "sudo -E -H pip install -U -r requirements.txt"
 script:
- - pytest /home/travis/build/mayou36/raredecay
+ - pytest
 
 deploy:
  provider: pypi
