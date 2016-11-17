@@ -54,6 +54,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                     score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr)],
                     to_end=True)
 
+    output['mc_distance'] = np.mean(score_mc_vs_mcr)
+
 
 
 
