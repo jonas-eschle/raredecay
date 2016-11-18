@@ -20,7 +20,7 @@ before_install:
 
 install:
  - "sudo -E -H pip install -U -r requirements.txt"
- - "python setup.py install"
+ - "pip install . --no-dependencies"
 script:
  - pytest
 
