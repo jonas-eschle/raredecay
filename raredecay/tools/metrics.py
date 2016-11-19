@@ -87,7 +87,7 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
 
 
 def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
-                  clf='xgb', test_max=True, old_mc_weights=1,
+                  clf='xgb', test_max=True, test_mc=False, old_mc_weights=1,
                   test_predictions=False, clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
     Minimize score.
@@ -183,6 +183,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     output = {}
 
     scores = np.ones(n_checks)
+    scores_mc = np.ones(n_checks)
     scores_max = np.ones(n_checks)  # required due to output of loop
     scores_weighted = []
     scores_max_weighted = []
@@ -199,16 +200,29 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     tmp_mc_targets = mc_data.get_targets()
     mc_data.set_targets(0)
     real_data.make_folds(n_folds=n_folds)
+    if test_mc:
+        mc_data.make_folds(n_folds=n_folds)
     for fold in range(n_checks):
         real_train, real_test = real_data.get_fold(fold)
+        if test_mc:
+            mc_train, mc_test = mc_data.get_fold(fold)
+            mc_test.set_targets(0)
+            mc_train.set_targets(0)
         real_test.set_targets(1)
+        real_train.set_targets(1)
 
-        tmp_out = ml_ana.classify(mc_data, real_train, validation=real_test, clf=clf,
+        tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
                                   plot_title="train on mc reweighted/real, test on real",
                                   weights_ratio=1, get_predictions=True,
                                   features=features,
                                   plot_importance=1, importance=1)
-        _t, scores[fold], pred_reweighted = tmp_out
+        clf_trained, scores[fold], pred_reweighted = tmp_out
+        clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
+                                  plot_title="train on mc reweighted/real, test on mc",
+                                  weights_ratio=1, get_predictions=False,
+                                  features=features,
+                                  plot_importance=1, importance=1)
+
 # HACK begin
         import matplotlib.pyplot as plt
         reweighted_y_proba = pred_reweighted['y_proba'][:, 1]
@@ -221,7 +235,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
 
 # HACK end
 
-        del _t, tmp_pred
+        del clf_trained, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -252,6 +266,9 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     output['score'] = np.round(scores.mean(), 4)
     output['score_std'] = np.round(scores.std(), 4)
 
+
+    output['score_mc'] = np.round(scores_mc.mean(), 4)
+    output['score_mc_std'] = np.round(scores_mc.std(), 4)
     # HACK
     scores_weighted = np.array(scores_weighted)
     out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
