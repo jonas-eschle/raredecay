@@ -664,6 +664,10 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         if scores.get('score_max', False):
             out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
                            importance=5, to_end=True)
+        if scores.get('score_mc_max', False):
+            out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
+                            scores['score_mc_max_std']],
+                           importance=5, to_end=True)
         output['train_similar'] = scores
         output['roc_auc'] = roc_auc_score
 

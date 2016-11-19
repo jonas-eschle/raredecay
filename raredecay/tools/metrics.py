@@ -185,6 +185,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     scores = np.ones(n_checks)
     scores_mc = np.ones(n_checks)
     scores_max = np.ones(n_checks)  # required due to output of loop
+    scores_mc_max = np.ones(n_checks)
     scores_weighted = []
     scores_max_weighted = []
     probas_mc = []
@@ -250,8 +251,14 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                       weights_ratio=1, get_predictions=True, clf=clf,
                                       features=features,
                                       plot_importance=1, importance=1)
-            _t, scores_max[fold], pred_mc = tmp_out
-            del _t
+            clf_trained, scores_max[fold], pred_mc = tmp_out
+
+            clf_trained, scores_mc_max[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
+                                          plot_title="train on mc NOT reweighted/real, test on mc",
+                                          weights_ratio=1, get_predictions=False,
+                                          features=features,
+                                          plot_importance=1, importance=1)
+            del clf_trained
 # HACK
             tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
             scores_max_weighted.extend(tmp_pred * (pred_mc['y_true'] * 2 - 1))
@@ -293,6 +300,8 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     if test_max:
         output['score_max'] = np.round(scores_max.mean(), 4)
         output['score_max_std'] = np.round(scores_max.std(), 4)
+        output['score_mc_max'] = np.round(scores_mc_max.mean(), 4)
+        output['score_mc_max_std'] = np.round(scores_mc_max.std(), 4)
         out.add_output(["No reweighting score: ", round(output['score_max'], 4)])
 
     if test_predictions:
