@@ -4,3 +4,4 @@
 - clean root data handling, removing branches, write to etc.
 - add save_to_root method to datastorage
 - add combined weights/target return to storage
+- plotting behaviour: importance 0 should result in no plotting at all

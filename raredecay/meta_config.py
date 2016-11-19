@@ -215,7 +215,7 @@ DEFAULT_LOGGER_CFG = dict(
 # Changing this default values will surely affect your results (over- or
 # underfitting for example), but is mostly not required at all.
 DEFAULT_CLF_XGB = dict(
-    n_estimators=275,  # default 75
+    n_estimators=100,  # default 75
     eta=0.1,  # default 0.1, learning-rate
     min_child_weight=8,  # #0 stage 2 to optimize
     max_depth=3,  # #6 stage 2 to optimize

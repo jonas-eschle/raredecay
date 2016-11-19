@@ -296,7 +296,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
 
 def feature_exploration(original_data, target_data, features=None, n_folds=10,
-                        roc_auc='single', extended_report=True):
+                        clf='xgb', roc_auc='single', extended_report=True):
     """Explore the features by getting the roc auc and their feature importance
 
 
@@ -338,7 +338,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
 
     if roc_auc_all:
         ml_ana.classify(original_data, target_data, validation=n_folds,
-                        extended_report=extended_report,
+                        extended_report=extended_report, clf=clf,
                         curve_name="all features", plot_title="ROC AUC of all features")
 
     features = original_data.columns if features is None else features
@@ -349,7 +349,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         for feature in features:
             title = "Feature exploration, ROC AUC only using " + str(feature)
             tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
-                                          curve_name="only using " + feature,
+                                          curve_name="only using " + feature, clf=clf,
                                           validation=n_folds, extended_report=extended_report,
                                           plot_title=title, weights_ratio=1, plot_importance=2)
             del tmp_
@@ -479,7 +479,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
 def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                reweighter='gb', reweight_cfg=None, n_reweights=1,
                scoring=True, score_columns=None, n_folds_scoring=10, score_clf='xgb',
-               apply_weights=True):
+               mayou_score=False, apply_weights=True):
     """Reweight data (mc/real) in a KFolded way to unbias the reweighting
 
     The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
@@ -640,9 +640,9 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                               features=score_columns,
                                               extended_report=scoring)
         del tmp_
-
-        metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
-                            clf=score_clf, old_mc_weights=old_weights)
+        if mayou_score:
+            metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
+                                clf=score_clf, old_mc_weights=old_weights)
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
     # printing it also to the console instead of only saving it to the output
