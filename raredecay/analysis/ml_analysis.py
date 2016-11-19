@@ -1243,12 +1243,14 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
                                              features=score_columns,
                                              curve_name="mc as real",
+                                             weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
                                              features=score_columns,
                                              curve_name="real as real",
+                                             weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t
