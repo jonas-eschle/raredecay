@@ -479,7 +479,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
 def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                reweighter='gb', reweight_cfg=None, n_reweights=1,
                scoring=True, score_columns=None, n_folds_scoring=10, score_clf='xgb',
-               mayou_score=False, apply_weights=True):
+               mayou_score=False, extended_train_similar=False, apply_weights=True):
     """Reweight data (mc/real) in a KFolded way to unbias the reweighting
 
     The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
@@ -626,6 +626,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
                                        n_folds=n_folds_scoring, n_checks=n_folds_scoring,
                                        features=score_columns, old_mc_weights=old_weights,
+                                       test_mc=extended_train_similar,
                                        test_predictions=False, clf=score_clf)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
@@ -651,10 +652,21 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # printed to the end
         out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
                        title='ROC AUC of mc reweighted/real KFold', to_end=True)
-        out.add_output(['score:', scores['score'], "+-", scores['score_std']], importance=5,
+
+
+        out.add_output(['score:', scores['score'], "+-", scores['score_std']],
+                        importance=5,
                        title='Train similar report', to_end=True)
+        if extended_train_similar:
+            out.add_output(['\nScore_mc:', scores['score_mc'], "+-", scores['score_mc_std']],
+                           importance=5,
+                           to_end=True)
         if scores.get('score_max', False):
             out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+                           importance=5, to_end=True)
+        if scores.get('score_mc_max', False):
+            out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
+                            scores['score_mc_max_std']],
                            importance=5, to_end=True)
         output['train_similar'] = scores
         output['roc_auc'] = roc_auc_score
