@@ -49,7 +49,7 @@ setup(name='raredecay',
       extras_require={
 		     'root': ['root_numpy',
 			     'rootpy']
-      		     }
+      		     },
       packages=['raredecay',
                 'raredecay.analysis',
                 'raredecay.run_config',
