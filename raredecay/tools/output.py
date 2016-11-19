@@ -284,7 +284,7 @@ class OutputHandler(object):
 
         # check if there are figures to plot, else return
         if self._figures == {}:
-            self.logger.info("_figure_to_file called but nothing to plot")
+            self.logger.info("_figure_to_file called but nothing to save/plot")
             return None
 
         # create folders if they don't exist already
@@ -303,10 +303,12 @@ class OutputHandler(object):
                 file_path = path + extension + '/'
                 file_name = file_path + fig_name + "." + extension
                 try:
-                    fig_dict['figure'].savefig(file_name, format=extension,
+                    figure_tmp = fig_dict['figure']
+#                    figure_tmp.tight_layout()
+                    figure_tmp.savefig(file_name, format=extension,
                                                **fig_dict.get('save_cfg'))
                 except:
-                    self.logger.error("Could not save figure")
+                    self.logger.error("Could not save figure" + str(figure_tmp))
                     meta_config.error_occured()
 
             if fig_dict.get('to_pickle'):

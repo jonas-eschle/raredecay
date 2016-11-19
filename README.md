@@ -1,6 +1,7 @@
 [![Code Health](https://landscape.io/github/mayou36/raredecay/master/landscape.svg?style=flat)](https://landscape.io/github/mayou36/raredecay/master)
 [![Build Status](https://travis-ci.org/mayou36/raredecay.svg?branch=master)](https://travis-ci.org/mayou36/raredecay)
 [![PyPI version](https://badge.fury.io/py/raredecay.svg)](https://badge.fury.io/py/raredecay)
+[![Dependency Status](https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9)
 
 
 # raredecay #
@@ -37,13 +38,13 @@ The package, in its current state, requires root_numpy as well as rootpy (and th
 
 PIP package will may be uploaded in the future. Until then, use the following.
 First install the very newest version of REP  
-(the -U can be omitted if necessary, but is recommended):
+(the -U can be omitted, but is recommended to have the newest dependencies, on the other hand may crashes REPs reproducibility):
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
 Then, install the raredecay package via (assuming, *git* is installed. Otherwise, download the package as zip and install)
 ```
-pip install git+https://github.com/mayou36/raredecay.git
+pip install raredecay
 ```
 As it is a young package still under developement, it may receive regular updates and improvements and it is probably a good idea to regularly download the newest package.
 

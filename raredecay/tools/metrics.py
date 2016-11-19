@@ -16,12 +16,78 @@ from raredecay.globals_ import out
 
 def rnd_dist():
     """Test reweighting by classify several random distributions. Not yet
-    known how to interpret outcome correctly"""
+    known how to interpret outcome correctly. NOT YET IMPLEMENTED!"""
     pass
 
 
-def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, clf='xgb',
-                  test_max=True, old_mc_weights=1,
+def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
+                clf='xgb', splits=2, n_folds=10):
+
+    # initialize variables
+    output = {}
+    score_mc_vs_mcr = []
+    score_mcr_vs_real = []
+#    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
+
+
+
+
+    # loop over number of splits, split the mc data
+
+    mc_data.make_folds(n_folds)
+    real_data.make_folds(n_folds)
+
+    # mc reweighted vs mc
+    for fold in xrange(n_folds):
+        mc_data_train, mc_data_test = mc_data.get_fold(fold)
+        # TODO: no real folds? It is better to test on full data always?
+#        mc_data_train, mc_data_test = real_data.get_fold(fold)
+        for split in xrange(splits * 2):  # because two possibilities per split
+            if split % 2 == 0:
+                mc_data_train.make_folds(2)
+            mc_normal, mc_reweighted = mc_data_train.get_fold(split % 2)
+            mc_normal.set_weights(old_mc_weights)
+            score_mc_vs_mcr.append(ml_ana.classify(original_data=mc_normal, target_data=mc_reweighted,
+                                                   features=features, validation=[mc_data_test, real_data],
+                                                    clf=clf, plot_importance=1,
+                                                    # TODO: no weights ratio? (roc auc)
+                                                    weights_ratio=0
+                                                    )[1])
+    out.add_output(["mayou_score mc vs mc reweighted test on mc vs real score: ",
+                    score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr),
+                    " +-", np.std(score_mc_vs_mcr)/mt.sqrt(len(score_mc_vs_mcr) - 1)],
+                    subtitle="Mayou score", to_end=True)
+
+    output['mc_distance'] = np.mean(score_mc_vs_mcr)
+
+    # mc_reweighted vs real
+    for fold in xrange(n_folds):
+        real_train, real_test = real_data.get_fold(fold)
+        mc_train, mc_test = mc_data.get_fold(fold)
+        mc_test.set_weights(old_mc_weights)
+        score_mcr_vs_real.append(ml_ana.classify(original_data=mc_train,
+                                                 target_data=real_train,
+                                                 features=features,
+                                                 validation=[mc_test, real_test],
+                                                 clf=clf, plot_importance=1,
+                                                 # TODO: no weights ratio? (roc auc)
+                                                 weights_ratio=0
+                                                 )[1])
+
+    out.add_output(["mayou_score real vs mc reweighted test on mc vs real score: ",
+                    score_mcr_vs_real, "\nMean: ", np.mean(score_mcr_vs_real),
+                    " +-", np.std(score_mcr_vs_real)/mt.sqrt(len(score_mcr_vs_real) - 1)],
+                    to_end=True)
+
+    output['real_distance'] = np.mean(score_mcr_vs_real)
+
+
+
+
+
+
+def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
+                  clf='xgb', test_max=True, old_mc_weights=1,
                   test_predictions=False, clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
     Minimize score.
@@ -143,10 +209,16 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
                                   features=features,
                                   plot_importance=1, importance=1)
         _t, scores[fold], pred_reweighted = tmp_out
-        tmp_pred = pred_reweighted['y_proba'][:, 1] * pred_reweighted['weights']
-#        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
 # HACK begin
+        import matplotlib.pyplot as plt
+        reweighted_y_proba = pred_reweighted['y_proba'][:, 1]
+        tmp_pred = reweighted_y_proba * pred_reweighted['weights']
+#        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
+
         scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
+
+
+
 # HACK end
 
         del _t, tmp_pred
@@ -166,6 +238,11 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
                                       plot_importance=1, importance=1)
             _t, scores_max[fold], pred_mc = tmp_out
             del _t
+# HACK
+            tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
+            scores_max_weighted.extend(tmp_pred * (pred_mc['y_true'] * 2 - 1))
+
+# HACK END
             mc_data.set_weights(temp_weights)
             probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])
@@ -179,6 +256,16 @@ def train_similar(mc_data, real_data, n_checks=10, features=None, n_folds=10, cl
     scores_weighted = np.array(scores_weighted)
     out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
                      np.std(np.abs(scores_weighted))], to_end=True)
+    scores_max_weighted = np.array(scores_max_weighted)
+    out.add_output(["EXPERIMENTAL: max score weighted:", round(scores_max_weighted.mean(),4) , " +- ",
+                     round(np.std(np.abs(scores_max_weighted)), 4)], to_end=True)
+
+    plt.figure()
+    plt.hist(scores_weighted, bins=30, normed=True)
+    plt.title("experimental score weighted")
+    plt.figure()
+    plt.hist(scores_max_weighted, bins=30, normed=True)
+    plt.title("experimental MAX score weighted")
     #HACK END
 #    output['weighted_score'] =
 #    output['weighted_score_std'] =

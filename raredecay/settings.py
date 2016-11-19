@@ -15,13 +15,18 @@ import copy
 from raredecay.run_config import config
 from raredecay import meta_config
 
-
+# TODO: docs??
 def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
                run_message="This is a test-run to test the package", verbosity=3,
-               plot_verbosity=3, prompt_for_input=False,
+               plot_verbosity=3, prompt_for_input=False, no_interactive_plots=False,
                logger_console_level='warning', logger_file_level='debug',
                n_cpu=1, gpu_in_use=False):
     """Place before Imports! Initialize/change several parameters for the package"""
+
+    if no_interactive_plots:
+        import matplotlib as mpl
+        mpl.use("Agg")
+
     set_verbosity(verbosity=verbosity, plot_verbosity=plot_verbosity)
     _init_user_input(prompt_for_input=prompt_for_input)
     parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)

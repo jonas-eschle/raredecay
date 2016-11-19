@@ -3,6 +3,8 @@ dist: "xenial"
 language: python
 python:
  - "2.7"
+virtualenv:
+ system_site_packages: true
 branches:
  only:
  - develop
@@ -11,10 +13,16 @@ before_install:
  - sudo apt-get -qq update
  # - sudo apt-get upgrade -y
  - sudo apt-get install -y root-system git python-pip libroot-bindings-python* libroot-roofit*
+ - sudo -E -H pip install -U pip
  - sudo -E -H pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
+ # - python -c 'import sys; print '\n'.join(sys.path)'
 
-install: "sudo -E -H pip install git+https://github.com/mayou36/raredecay.git"
-script: echo "hello world"
+
+install:
+ - "sudo -E -H pip install -U -r requirements.txt"
+ - "pip install . --no-dependencies"
+script:
+ - pytest
 
 deploy:
  provider: pypi

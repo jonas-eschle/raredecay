@@ -296,7 +296,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
 
 def feature_exploration(original_data, target_data, features=None, n_folds=10,
-                        roc_auc='single', extended_report=True):
+                        clf='xgb', roc_auc='single', extended_report=True):
     """Explore the features by getting the roc auc and their feature importance
 
 
@@ -338,7 +338,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
 
     if roc_auc_all:
         ml_ana.classify(original_data, target_data, validation=n_folds,
-                        extended_report=extended_report,
+                        extended_report=extended_report, clf=clf,
                         curve_name="all features", plot_title="ROC AUC of all features")
 
     features = original_data.columns if features is None else features
@@ -349,7 +349,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         for feature in features:
             title = "Feature exploration, ROC AUC only using " + str(feature)
             tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
-                                          curve_name="only using " + feature,
+                                          curve_name="only using " + feature, clf=clf,
                                           validation=n_folds, extended_report=extended_report,
                                           plot_title=title, weights_ratio=1, plot_importance=2)
             del tmp_
@@ -479,7 +479,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
 def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                reweighter='gb', reweight_cfg=None, n_reweights=1,
                scoring=True, score_columns=None, n_folds_scoring=10, score_clf='xgb',
-               apply_weights=True):
+               mayou_score=False, apply_weights=True):
     """Reweight data (mc/real) in a KFolded way to unbias the reweighting
 
     The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
@@ -597,16 +597,17 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
-    if not apply_weights:
-        old_weights = mc_data.get_weights()
+#    if not apply_weights:
+    old_weights = mc_data.get_weights()
     Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
                                          meta_cfg=reweight_cfg, columns=columns,
                                          reweighter=reweighter, n_reweights=n_reweights,
                                          mcreweighted_as_real_score=scoring,
                                          score_columns=score_columns,
                                          n_folds=n_folds, score_clf=score_clf,
-                                         add_weights_to_data=apply_weights)
+                                         add_weights_to_data=True)
     new_weights = Kfold_output.pop('weights')
+    # TODO: needed below?
     new_weights.sort_index()
 
     if scoring:
@@ -624,7 +625,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # is better described in the docs of the train_similar
         scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
                                        n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                       features=score_columns,
+                                       features=score_columns, old_mc_weights=old_weights,
                                        test_predictions=False, clf=score_clf)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
@@ -639,7 +640,9 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                               features=score_columns,
                                               extended_report=scoring)
         del tmp_
-
+        if mayou_score:
+            metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
+                                clf=score_clf, old_mc_weights=old_weights)
     # an example to add output with the most importand parameters. The first
     # one can also be a single object instead of a list. do_print means
     # printing it also to the console instead of only saving it to the output

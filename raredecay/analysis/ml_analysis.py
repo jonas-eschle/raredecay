@@ -459,7 +459,9 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = {'auc w/o ' + key: val for key, val in collected_scores.items()}
     collected_scores['features_tot'] = temp_val
     collected_scores = pd.DataFrame(collected_scores)
-    out.add_output(["The collected scores:\n", collected_scores], importance=3)
+    out.add_output(["The collected scores:\n"] +
+                   [collected_scores[col] for col in collected_scores],
+                   importance=3)
     output['scores'] = collected_scores
 
     if len(selected_features) > 1 and difference >= max_difference_to_best:
@@ -655,7 +657,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
              clf='xgb', extended_report=False, get_predictions=False,
              plot_title=None, curve_name=None, weights_ratio=0,
              importance=3, plot_importance=3,
-             target_from_data=False):
+             target_from_data=False, **kwargs):
     """Training and testing a classifier or distinguish a dataset
 
     Classify is a multi-purpose function which does most of the things around
@@ -718,6 +720,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     get_predictions : boolean
         If True, return a dictionary containing the prediction probabilities, the
         true y-values and maybe, in the futur, even more.
+    additional kwargs arguments :
+        original_test_weights : pandas Series
+            Weights for the test sample if you don't want to use the same
+            weights as in the training
+        target_test_weights : pandas Series
+            Weights for the test sample if you don't want to use the same
+            weights as in the training
 
     Returns
     -------
@@ -746,8 +755,10 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     make_plot = True  # used if no validation
 
     plot_title = "classify" if plot_title is None else plot_title
-    if (original_data is None) and (target_data is not None):
-        original_data, target_data = target_data, original_data  # switch places
+
+# TODO: do we need this??
+#    if (original_data is None) and (target_data is not None):
+#        original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
                                           weights_ratio=weights_ratio,
@@ -763,10 +774,37 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     parallel_profile = clf_dict.get('parallel_profile')
 
     if isinstance(validation, (float, int, long)) and validation > 1:
+        if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
+
+
+
+            if 'original_test_weights' in kwargs:
+                temp_original_weights = original_data.get_weights()
+                original_data.set_weights(kwargs.get('original_test_weights'))
+            if 'target_test_weights' in kwargs:
+                temp_target_weights = target_data.get_weights()
+                target_data.set_weights(kwargs.get('target_test_weights'))
+            test_weights = original_data.get_weights(second_storage=target_data,
+                                                     normalization=weights_ratio)
+            if 'original_test_weights' in kwargs:
+                original_data.set_weights(temp_original_weights)
+            if 'target_test_weights' in kwargs:
+                target_data.set_weights(temp_target_weights)
+
+#            # TODO: write code nicer!
+#            # HACK normalization
+#            print "HACK IN USE, ml_analysis, classifiy: normalization always 1 for test weights"
+#            target_weights *= np.sum(original_weights) / np.sum(target_weights)
+#            # HACK end
+#            test_weights = pd.concat((original_weights, target_weights))
+#            test_weights /= np.sum(test_weights)  # normalization, optional
+        else:
+            test_weights = weights
+
         clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile,
                                 stratified=meta_config.use_stratified_folding)
         # folding-> same data for train and test
-        lds_test = LabeledDataStorage(data=data, target=label, sample_weight=weights)
+        lds_test = LabeledDataStorage(data=data, target=label, sample_weight=test_weights)
 
     elif isinstance(validation, data_storage.HEPDataStorage):
         lds_test = validation.get_LabeledDataStorage(columns=features)
@@ -1205,12 +1243,14 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
                                              features=score_columns,
                                              curve_name="mc as real",
+                                             weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
                                              features=score_columns,
                                              curve_name="real as real",
+                                             weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t

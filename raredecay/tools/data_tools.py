@@ -9,6 +9,7 @@ Contains several tools to convert, load, save and plot data
 from __future__ import division, absolute_import
 
 import warnings
+import os
 
 import pandas as pd
 import numpy as np
@@ -93,7 +94,9 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     from ROOT import TObject
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
+    write_mode = 'update'
     branch_name = 'new_branch1' if branch_name is None else branch_name
+
     if isinstance(rootfile, dict):
         filename = rootfile.get('filenames')
     treename = rootfile.get('treename')
@@ -102,15 +105,20 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
 
     # write to ROOT-file
     write_to_root = False
-    with root_open(filename, mode='a') as f:
-        tree = getattr(f, treename)
-        if not tree.has_branch(branch_name):
-            write_to_root = True
-#            array2tree(new_branch, tree=tree)
-#            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
+
+    if os.path.isfile(filename):
+        with root_open(filename, mode='a') as root_file:
+            tree = getattr(root_file, treename)  # test
+            if not tree.has_branch(branch_name):
+                write_to_root = True
+    #            array2tree(new_branch, tree=tree)
+    #            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
+    else:
+        write_mode = 'recreate'
+        write_to_root = True
     if write_to_root:
         arr = np.core.records.fromarrays([new_branch], names=branch_name)
-        array2root(arr=arr, filename=filename, treename=treename, mode='update')
+        array2root(arr=arr, filename=filename, treename=treename, mode=write_mode)
         return 0
     else:
         return 1
