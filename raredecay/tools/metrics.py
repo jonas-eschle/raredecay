@@ -183,6 +183,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     output = {}
 
     scores = np.ones(n_checks)
+    scores_shuffled = np.ones(n_checks)
     scores_mc = np.ones(n_checks)
     scores_max = np.ones(n_checks)  # required due to output of loop
     scores_mc_max = np.ones(n_checks)
@@ -208,7 +209,10 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         if test_mc:
             mc_train, mc_test = mc_data.get_fold(fold)
             mc_test.set_targets(0)
-            mc_train.set_targets(0)
+        else:
+            mc_train = mc_data.copy_storage()
+        mc_train.set_targets(0)
+
         real_test.set_targets(1)
         real_train.set_targets(1)
 
@@ -218,11 +222,27 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                   features=features,
                                   plot_importance=1, importance=1)
         clf_trained, scores[fold], pred_reweighted = tmp_out
-        clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
-                                  plot_title="train on mc reweighted/real, test on mc",
-                                  weights_ratio=1, get_predictions=False,
+
+        tmp_weights = mc_train.get_weights()
+        import copy
+        shuffled_weights = copy.deepcopy(tmp_weights)
+        import random
+        random.shuffle(shuffled_weights)
+        mc_train.set_weights(shuffled_weights)
+        tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
+                                  plot_title="train on mc reweighted/real, test on real",
+                                  weights_ratio=1, get_predictions=True,
                                   features=features,
                                   plot_importance=1, importance=1)
+        scores_shuffled[fold] = tmp_out[1]
+        mc_train.set_weights(tmp_weights)
+
+        if test_mc:
+            clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
+                                      plot_title="train on mc reweighted/real, test on mc",
+                                      weights_ratio=1, get_predictions=False,
+                                      features=features,
+                                      plot_importance=1, importance=1)
 
 # HACK begin
         import matplotlib.pyplot as plt
@@ -252,12 +272,12 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                       features=features,
                                       plot_importance=1, importance=1)
             clf_trained, scores_max[fold], pred_mc = tmp_out
-
-            clf_trained, scores_mc_max[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
-                                          plot_title="train on mc NOT reweighted/real, test on mc",
-                                          weights_ratio=1, get_predictions=False,
-                                          features=features,
-                                          plot_importance=1, importance=1)
+            if test_mc:
+                clf_trained, scores_mc_max[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
+                                              plot_title="train on mc NOT reweighted/real, test on mc",
+                                              weights_ratio=1, get_predictions=False,
+                                              features=features,
+                                              plot_importance=1, importance=1)
             del clf_trained
 # HACK
             tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
@@ -273,9 +293,14 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     output['score'] = np.round(scores.mean(), 4)
     output['score_std'] = np.round(scores.std(), 4)
 
+    output['score_shuffled'] = np.round(scores_shuffled.mean(), 4)
+    output['score_shuffled_std'] = np.round(scores_shuffled.std(), 4)
 
-    output['score_mc'] = np.round(scores_mc.mean(), 4)
-    output['score_mc_std'] = np.round(scores_mc.std(), 4)
+
+
+    if test_mc:
+        output['score_mc'] = np.round(scores_mc.mean(), 4)
+        output['score_mc_std'] = np.round(scores_mc.std(), 4)
     # HACK
     scores_weighted = np.array(scores_weighted)
     out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
@@ -300,8 +325,9 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     if test_max:
         output['score_max'] = np.round(scores_max.mean(), 4)
         output['score_max_std'] = np.round(scores_max.std(), 4)
-        output['score_mc_max'] = np.round(scores_mc_max.mean(), 4)
-        output['score_mc_max_std'] = np.round(scores_mc_max.std(), 4)
+        if test_mc:
+            output['score_mc_max'] = np.round(scores_mc_max.mean(), 4)
+            output['score_mc_max_std'] = np.round(scores_mc_max.std(), 4)
         out.add_output(["No reweighting score: ", round(output['score_max'], 4)])
 
     if test_predictions:

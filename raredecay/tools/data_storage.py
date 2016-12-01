@@ -100,6 +100,7 @@ class HEPDataStorage(object):
         # initialize data
         self._fold_index = None  # list with indeces of folds
         self._fold_status = None  # tuple (my_fold_number, total_n_folds)
+        self._length = None
         self.set_data(data=data, index=index)
 
         # data name
@@ -127,6 +128,8 @@ class HEPDataStorage(object):
         self.supertitle_fontsize = 18
 
     def __len__(self):
+        if self._length is None:
+            self._set_length()
         return self._length
 
 # TODO: remove obsolet
@@ -244,8 +247,9 @@ class HEPDataStorage(object):
 
             self._columns = columns
 
-    def _set_length(self, index):
+    def _set_length(self):
         # determine whether to set length individually from the data or not
+        index = self._index
         if index is None:
             if self._data_type == 'root':
                 temp_root_dict = copy.deepcopy(self._data)
@@ -302,7 +306,6 @@ class HEPDataStorage(object):
         self._data = data
         self._data_type = self._get_data_type(data)
 
-        self._set_length(index=index)
         self.index = index
         self.columns = columns
 

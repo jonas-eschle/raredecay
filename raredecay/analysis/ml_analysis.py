@@ -837,8 +837,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             # score returns accuracy; if only one label present, it is the same as recall
             y_true = lds_test.get_targets()
             y_pred = clf.predict(lds_test.get_data())
-            y_pred_proba = clf.predict_proba(lds_test.get_data())
+
             if get_predictions:
+                y_pred_proba = clf.predict_proba(lds_test.get_data())
                 predictions['y_proba'] = y_pred_proba
                 predictions['y_pred'] = y_pred
                 predictions['y_true'] = y_true
@@ -1243,14 +1244,14 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
                                              features=score_columns,
                                              curve_name="mc as real",
-                                             weights_ratio=1,
+#                                             weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
                                              features=score_columns,
                                              curve_name="real as real",
-                                             weights_ratio=1,
+#                                             weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t

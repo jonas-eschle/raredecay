@@ -8,14 +8,14 @@ import numpy as np
 
 import ROOT
 from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet
-from ROOT import RooFit, RooCBShape, RooGaussian, RooExponential
+from ROOT import RooFit, RooCBShape, RooGaussian, RooExponential, RooMinuit
 from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
 from root_numpy import array2tree
 
 #from raredecay import meta_config
 
 
-def fit_mass(data, column='B_M', has_bkg=True, second_storage=None):
+def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
 
     if not (isinstance(column, str) or len(column) == 1):
         raise ValueError("Fitting to several columns " + str(column) + " not supported.")
@@ -51,10 +51,22 @@ def fit_mass(data, column='B_M', has_bkg=True, second_storage=None):
 
     nsig = RooRealVar("nsig", "Number of signals events", 10000, 0, 1000000)
 
-    if has_bkg:
+    if n_bkg is None:
         nbkg = RooRealVar("nbkg", "Number of background events", 10000, 0, 1000000)
+    elif n_bkg >= 0:
+        nbkg = RooRealVar("nbkg", "Number of background events", int(n_bkg))
     else:
-        nbkg = RooRealVar("nbkg", "Number of background events", 0)
+        raise ValueError("n_bkg is not >= 0")
+
+    if n_sig is None:
+        nbkg = RooRealVar("nbkg", "Number of background events", 10000, 0, 1000000)
+    elif n_sig >= 0:
+        nbkg = RooRealVar("nbkg", "Number of background events", int(n_sig))
+    else:
+        raise ValueError("n_sig is not >= 0")
+
+    if n_sig == n_bkg == 0:
+        raise ValueError("n_sig as well as n_bkg is 0...")
 
     lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.1, -10., 10.)
     bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
@@ -86,9 +98,16 @@ def fit_mass(data, column='B_M', has_bkg=True, second_storage=None):
 
 #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
     # HACK to get 8 cores in testing
-    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(8))
-    data.plotOn(xframe)
-    comb_pdf.plotOn(xframe)
+#    result_fit = comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(8))
+
+    nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
+    nll_frame = nll_plot.frame()
+    my_nll = comb_pdf.createNLL(data, RooFit.NumCPU(8))
+    RooMinuit(my_nll).migrad()
+    my_nll.plotOn(nll_frame)
+    nll_frame.Draw()
+#    data.plotOn(xframe)
+#    comb_pdf.plotOn(xframe)
     xframe.Draw()
 
 #    return xframe
@@ -117,5 +136,5 @@ if __name__ == '__main__':
     import pandas as pd
 
     data = HEPDataStorage(pd.DataFrame(np.random.normal(loc=5400, scale=100, size=(10000, 2)), columns=['x', 'y']))
-    fit_mass(data=data, column='x', has_bkg=True)
+    fit_mass(data=data, column='x')
     print "finished"
