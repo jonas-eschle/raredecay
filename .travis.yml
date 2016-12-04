@@ -20,6 +20,8 @@ before_install:
 
 install:
  - "sudo -E -H pip install -U -r requirements.txt"
+# HACK for ROOT only
+ - "sudo -E -H pip install rootpy root_numpy"
  - "pip install .[root] --no-dependencies"
 script:
  - pytest
