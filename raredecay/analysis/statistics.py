@@ -30,8 +30,8 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
     sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 14, 0, 100)
     alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 1., 0, 5)
     alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -1, -5, 0.)
-    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 5, 0.0, 10)
-    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 7, 0.0, 15)
+    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 5, 0.0, 20)
+    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 7, 0.0, 25)
 
     # create data
     data_array = np.array([i[0] for i in data_array.as_matrix()])
@@ -98,7 +98,7 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
 
 #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
     # HACK to get 8 cores in testing
-#    result_fit = comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(8))
+    result_fit = comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(8))
 
     nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
     nll_frame = nll_plot.frame()
@@ -106,8 +106,8 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
     RooMinuit(my_nll).migrad()
     my_nll.plotOn(nll_frame)
     nll_frame.Draw()
-#    data.plotOn(xframe)
-#    comb_pdf.plotOn(xframe)
+    data.plotOn(xframe)
+    comb_pdf.plotOn(xframe)
     xframe.Draw()
 
 #    return xframe

@@ -9,9 +9,10 @@ from __future__ import division, absolute_import
 import math as mt
 import numpy as np
 
-from raredecay.tools import data_storage
+from raredecay.tools import data_storage, dev_tool
 import raredecay.analysis.ml_analysis as ml_ana
 from raredecay.globals_ import out
+
 
 
 def rnd_dist():
@@ -245,18 +246,18 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                       plot_importance=1, importance=1)
 
 # HACK begin
-        import matplotlib.pyplot as plt
-        reweighted_y_proba = pred_reweighted['y_proba'][:, 1]
-        tmp_pred = reweighted_y_proba * pred_reweighted['weights']
-#        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
-
-        scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
+#        import matplotlib.pyplot as plt
+#        reweighted_y_proba = pred_reweighted['y_proba'][:, 1]
+#        tmp_pred = reweighted_y_proba * pred_reweighted['weights']
+##        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
+#
+#        scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
 
 
 
 # HACK end
 
-        del clf_trained, tmp_pred
+#        del clf_trained, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -302,19 +303,19 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         output['score_mc'] = np.round(scores_mc.mean(), 4)
         output['score_mc_std'] = np.round(scores_mc.std(), 4)
     # HACK
-    scores_weighted = np.array(scores_weighted)
-    out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
-                     np.std(np.abs(scores_weighted))], to_end=True)
-    scores_max_weighted = np.array(scores_max_weighted)
-    out.add_output(["EXPERIMENTAL: max score weighted:", round(scores_max_weighted.mean(),4) , " +- ",
-                     round(np.std(np.abs(scores_max_weighted)), 4)], to_end=True)
+#    scores_weighted = np.array(scores_weighted)
+#    out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
+#                     np.std(np.abs(scores_weighted))], to_end=True)
+#    scores_max_weighted = np.array(scores_max_weighted)
+#    out.add_output(["EXPERIMENTAL: max score weighted:", round(scores_max_weighted.mean(),4) , " +- ",
+#                     round(np.std(np.abs(scores_max_weighted)), 4)], to_end=True)
 
-    plt.figure()
-    plt.hist(scores_weighted, bins=30, normed=True)
-    plt.title("experimental score weighted")
-    plt.figure()
-    plt.hist(scores_max_weighted, bins=30, normed=True)
-    plt.title("experimental MAX score weighted")
+#    plt.figure()
+#    plt.hist(scores_weighted, bins=30, normed=True)
+#    plt.title("experimental score weighted")
+#    plt.figure()
+#    plt.hist(scores_max_weighted, bins=30, normed=True)
+#    plt.title("experimental MAX score weighted")
     #HACK END
 #    output['weighted_score'] =
 #    output['weighted_score_std'] =
@@ -350,7 +351,47 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
 
     mc_data.set_targets(tmp_mc_targets)
 
+    output['similar_dist'] = similar_dist(predictions=np.concatenate(probas_reweighted)[:, 1],
+                                          weights=np.concatenate(weights_reweighted))
+
     return output
+
+
+def similar_dist(predictions, weights=None, true_y=1, threshold=0.5):
+    """Metric to evaluate the predictions on one label only for similarity test
+
+
+    """
+    #HACK
+    scale = 2
+    #HACK END
+    data_valid = min(predictions) < threshold < max(predictions)
+    if not data_valid:
+        raise ValueError("Predictions are all above or below the threshold")
+
+    if true_y == 0:
+        predictions = 1 - predictions
+
+    predictions -= threshold
+    predictions *= scale
+    true_pred = predictions[predictions > 0]
+    false_pred = predictions[predictions <= 0] * -1
+
+
+
+    upper_weights = lower_weights = 1
+
+    if not dev_tool.is_in_primitive(weights, None):
+        true_weights = weights[predictions > 0]
+        false_weights = weights[predictions <= 0]
+    print "wait"
+    score = sum(((np.exp(1.3 * np.square(true_pred + 0.6)) - 1.5969)* 0.5) * true_weights)
+    print "wait"
+    score -= sum(((np.sqrt(false_pred) - np.power(false_pred, 0.8)) * 2) * false_weights)
+    score /= sum(weights)
+    print "finished"
+
+    return score
 
 
 def punzi_fom(n_signal, n_background, n_sigma=5):
@@ -369,13 +410,14 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
     n_sigma : int or float
 
     """
-    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
-    if length > 1:
-        sqrt = np.sqrt(np.array(n_background))
-        term1 = np.full(length, n_sigma/2)
-    else:
-        sqrt = mt.sqrt(n_background)
-        term1 = n_sigma/2
+    # not necessary below??
+#    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
+#    if length > 1:
+#        sqrt = np.sqrt(np.array(n_background))
+#        term1 = np.full(length, n_sigma/2)
+#    else:
+    sqrt = mt.sqrt(n_background)
+    term1 = n_sigma/2
     output = n_signal / (sqrt + term1)
     return output
 

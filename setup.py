@@ -47,8 +47,8 @@ setup(name='raredecay',
       dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
       install_requires=requirements,
       extras_require={
-		     'root': ['root_numpy',
-			     'rootpy']
+                      'root': ['root_numpy',
+                               'rootpy']
       		     },
       packages=['raredecay',
                 'raredecay.analysis',

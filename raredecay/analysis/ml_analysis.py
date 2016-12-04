@@ -833,12 +833,23 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                            importance=importance)
             plot_name = clf_name + ", AUC = " + str(clf_score)
             binary_test = True
+            if get_predictions:
+                y_true = lds_test.get_targets()
+                y_pred = clf.predict(lds_test.get_data())
+                y_pred_proba = clf.predict_proba(lds_test.get_data())
+                predictions['y_proba'] = y_pred_proba
+                predictions['y_pred'] = y_pred
+                predictions['y_true'] = y_true
+
         elif n_classes == 1:
             # score returns accuracy; if only one label present, it is the same as recall
             y_true = lds_test.get_targets()
             y_pred = clf.predict(lds_test.get_data())
 
             if get_predictions:
+                #remove below TODO
+#                y_true = lds_test.get_targets()
+#                y_pred = clf.predict(lds_test.get_data())
                 y_pred_proba = clf.predict_proba(lds_test.get_data())
                 predictions['y_proba'] = y_pred_proba
                 predictions['y_pred'] = y_pred

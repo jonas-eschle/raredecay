@@ -628,6 +628,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                        features=score_columns, old_mc_weights=old_weights,
                                        test_mc=extended_train_similar,
                                        test_predictions=False, clf=score_clf)
+        out.add_output(['Similar_dist score:', scores['similar_dist']], to_end=True)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
         # but anyway (if not overfitting) a nice measure. You insert two datasets
