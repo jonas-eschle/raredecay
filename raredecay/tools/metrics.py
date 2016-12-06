@@ -88,8 +88,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
 
 
 def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
-                  clf='xgb', test_max=True, test_mc=False, old_mc_weights=1,
-                  test_predictions=False, clf_pred='rdf'):
+                  clf='xgb', test_max=True, test_shuffle=True, test_mc=False,
+                  old_mc_weights=1, test_predictions=False, clf_pred='rdf'):
     """Score for reweighting. Train clf on mc reweighted/real, test on real.
     Minimize score.
 
@@ -188,7 +188,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     scores_mc = np.ones(n_checks)
     scores_max = np.ones(n_checks)  # required due to output of loop
     scores_mc_max = np.ones(n_checks)
-    scores_weighted = []
+#    scores_weighted = []
     scores_max_weighted = []
     probas_mc = []
     probas_reweighted = []
@@ -225,18 +225,20 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         clf_trained, scores[fold], pred_reweighted = tmp_out
 
         tmp_weights = mc_train.get_weights()
-        import copy
-        shuffled_weights = copy.deepcopy(tmp_weights)
-        import random
-        random.shuffle(shuffled_weights)
-        mc_train.set_weights(shuffled_weights)
-        tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
-                                  plot_title="train on mc reweighted/real, test on real",
-                                  weights_ratio=1, get_predictions=True,
-                                  features=features,
-                                  plot_importance=1, importance=1)
-        scores_shuffled[fold] = tmp_out[1]
-        mc_train.set_weights(tmp_weights)
+
+        if test_shuffle:
+            import copy
+            shuffled_weights = copy.deepcopy(tmp_weights)
+            import random
+            random.shuffle(shuffled_weights)
+            mc_train.set_weights(shuffled_weights)
+            tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
+                                      plot_title="train on mc reweighted/real, test on real",
+                                      weights_ratio=1, get_predictions=True,
+                                      features=features,
+                                      plot_importance=1, importance=1)
+            scores_shuffled[fold] = tmp_out[1]
+            mc_train.set_weights(tmp_weights)
 
         if test_mc:
             clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
@@ -294,8 +296,9 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     output['score'] = np.round(scores.mean(), 4)
     output['score_std'] = np.round(scores.std(), 4)
 
-    output['score_shuffled'] = np.round(scores_shuffled.mean(), 4)
-    output['score_shuffled_std'] = np.round(scores_shuffled.std(), 4)
+    if test_shuffle:
+        output['score_shuffled'] = np.round(scores_shuffled.mean(), 4)
+        output['score_shuffled_std'] = np.round(scores_shuffled.std(), 4)
 
 
 
@@ -363,7 +366,7 @@ def similar_dist(predictions, weights=None, true_y=1, threshold=0.5):
 
     """
     #HACK
-    scale = 2
+    scale = 2  # otherwise, the predictions will be [-0.5, 0.5]
     #HACK END
     data_valid = min(predictions) < threshold < max(predictions)
     if not data_valid:
@@ -379,17 +382,15 @@ def similar_dist(predictions, weights=None, true_y=1, threshold=0.5):
 
 
 
-    upper_weights = lower_weights = 1
+    true_weights = false_weights = 1
 
     if not dev_tool.is_in_primitive(weights, None):
         true_weights = weights[predictions > 0]
         false_weights = weights[predictions <= 0]
-    print "wait"
     score = sum(((np.exp(1.3 * np.square(true_pred + 0.6)) - 1.5969)* 0.5) * true_weights)
-    print "wait"
     score -= sum(((np.sqrt(false_pred) - np.power(false_pred, 0.8)) * 2) * false_weights)
     score /= sum(weights)
-    print "finished"
+
 
     return score
 

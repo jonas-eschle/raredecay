@@ -49,10 +49,10 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
     doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
                          crystalball1, crystalball2, frac)
 
-    nsig = RooRealVar("nsig", "Number of signals events", 10000, 0, 1000000)
-
+#    nsig = RooRealVar("nsig", "Number of signals events", 10000, 0, 1000000)
+    #TODO: fix below
     if n_bkg is None:
-        nbkg = RooRealVar("nbkg", "Number of background events", 10000, 0, 1000000)
+        nsig = RooRealVar("nbkg", "Number of background events", 10000, 0, 1000000)
     elif n_bkg >= 0:
         nbkg = RooRealVar("nbkg", "Number of background events", int(n_bkg))
     else:
@@ -61,7 +61,7 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
     if n_sig is None:
         nbkg = RooRealVar("nbkg", "Number of background events", 10000, 0, 1000000)
     elif n_sig >= 0:
-        nbkg = RooRealVar("nbkg", "Number of background events", int(n_sig))
+        nsig = RooRealVar("nbkg", "Number of background events", int(n_sig))
     else:
         raise ValueError("n_sig is not >= 0")
 
@@ -100,12 +100,12 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, second_storage=None):
     # HACK to get 8 cores in testing
     result_fit = comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(8))
 
-    nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
-    nll_frame = nll_plot.frame()
-    my_nll = comb_pdf.createNLL(data, RooFit.NumCPU(8))
-    RooMinuit(my_nll).migrad()
-    my_nll.plotOn(nll_frame)
-    nll_frame.Draw()
+#    nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
+#    nll_frame = nll_plot.frame()
+#    my_nll = comb_pdf.createNLL(data, RooFit.NumCPU(8))
+#    RooMinuit(my_nll).migrad()
+#    my_nll.plotOn(nll_frame)
+#    nll_frame.Draw()
     data.plotOn(xframe)
     comb_pdf.plotOn(xframe)
     xframe.Draw()
