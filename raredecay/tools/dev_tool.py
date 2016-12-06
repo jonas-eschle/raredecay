@@ -125,6 +125,18 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     return logger
 
 
+def progress(n, n_tot):
+    import sys
+
+    i = float(n)/n_tot
+    percent = int(i * 100)
+    n_signs = 90
+    equals = int(n_signs * i) * '='
+    spaces = (n_signs - len(equals)) * ' '
+    sys.stdout.write("\r[" + equals + spaces + " %d%%]" % percent)
+    sys.stdout.flush()
+
+
 def add_file_handler(logger, module_name, log_file_dir, log_level='info',
                      overwrite_file=False):
     """Add a filehandler to a logger to also direct the output to a file"""

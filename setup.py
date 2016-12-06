@@ -28,7 +28,7 @@ def readme():
 #    git_version = str(git_version[0])
 #except:
 #    git_version = '1.0.2'
-git_version = '1.0.6'
+git_version = '1.0.7'
 
 
 setup(name='raredecay',
@@ -47,8 +47,8 @@ setup(name='raredecay',
       dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
       install_requires=requirements,
       extras_require={
-		     'root': ['root_numpy',
-			     'rootpy']
+                      'root': ['root_numpy',
+                               'rootpy']
       		     },
       packages=['raredecay',
                 'raredecay.analysis',

@@ -627,13 +627,19 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                        n_folds=n_folds_scoring, n_checks=n_folds_scoring,
                                        features=score_columns, old_mc_weights=old_weights,
                                        test_mc=extended_train_similar,
+                                       test_shuffle=extended_train_similar,
                                        test_predictions=False, clf=score_clf)
+        out.add_output(['Mayou FoM:', scores['similar_dist']], to_end=True)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
         # but anyway (if not overfitting) a nice measure. You insert two datasets
         # and do the normal cross-validation on it. It's quite a multi-purpose
         # function depending on what validation is. If it is an integer, it means:
         # do cross-validation with n(=validation) folds.
+        temp_mc_targets = mc_data.get_targets()
+        mc_data.set_targets(0)
+        temp_real_targets = real_data.get_targets()
+        real_data.set_targets(1)
         tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
                                               validation=n_folds_scoring, plot_importance=4,
                                               plot_title="ROC AUC to distinguish data",
@@ -668,12 +674,21 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
             out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
                             scores['score_mc_max_std']],
                            importance=5, to_end=True)
+
+        if scores.get('score_shuffled', False):
+            out.add_output(['score_shuffled:', scores['score_shuffled'], "+-",
+                            scores['score_shuffled_std']],
+                           importance=5, to_end=True)
         output['train_similar'] = scores
         output['roc_auc'] = roc_auc_score
 
     output['weights'] = new_weights
     if not apply_weights:
         mc_data.set_weights(old_weights)
+
+    if scoring:
+        mc_data.set_targets(temp_mc_targets)
+        real_data.set_targets(temp_real_targets)
 
     return output
 
