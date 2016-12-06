@@ -54,16 +54,16 @@ First install the very newest version of REP
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
-Then, install the raredecay package via (assuming, *git* is installed. Otherwise, download the package as zip and install)
+Then, install the raredecay package (without ROOT-support) via (assuming, *git* is installed. Otherwise, download the package as zip and install)
 
 ```
 pip install raredecay
 ```
 
-To make sure you can convert root-data, use
+To make sure you can convert ROOT-NTuples, use
 
 ```
-pip install raredecay['root']
+pip install raredecay[root]
 ```
 As it is a young package still under developement, it may receive regular updates and improvements and it is probably a good idea to regularly download the newest package.
 
