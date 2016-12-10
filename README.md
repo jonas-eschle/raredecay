@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/mayou36/raredecay.svg?branch=master)](https://travis-ci.org/mayou36/raredecay)
 [![PyPI version](https://badge.fury.io/py/raredecay.svg)](https://badge.fury.io/py/raredecay)
 [![Dependency Status](https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9)
-[![Code Issues](https://www.quantifiedcode.com/api/v1/project/32e3e43a2b1343d0aa420d36d15f6f9b/badge.svg)](https://www.quantifiedcode.com/app/project/32e3e43a2b1343d0aa420d36d15f6f9b)
+
 
 
 
