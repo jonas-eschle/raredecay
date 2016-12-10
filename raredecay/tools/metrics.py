@@ -230,7 +230,8 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
             import copy
             shuffled_weights = copy.deepcopy(tmp_weights)
             import random
-            random.shuffle(shuffled_weights)
+#            random.shuffle(shuffled_weights)  # errorprone!
+            shuffled_weights.reindex(np.random.permutation(shuffled_weights.index))
             mc_train.set_weights(shuffled_weights)
             tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
                                       plot_title="train on mc reweighted/real, test on real",

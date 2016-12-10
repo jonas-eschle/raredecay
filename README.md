@@ -26,11 +26,11 @@ To get an idea of the package, have a look at the howto notebooks:
 ## Minimal example ##
 Want to test whether your reweight did overfit? Use train_similar:
 
-> from raredecay.tools.data_storage import HEPDataStorage
-> from raredecay.tools.metrics import train_similar
+> from raredecay.tools.data_storage import HEPDataStorage  
+> from raredecay.tools.metrics import train_similar  
 >
-> mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)
-> real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)
+> mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
+> real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
 >
 > score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
 
