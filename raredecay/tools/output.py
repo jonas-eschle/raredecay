@@ -13,6 +13,10 @@ import time
 import cStringIO as StringIO
 import copy
 
+#DEBUG HACK
+import matplotlib as mpl
+print mpl.get_backend()
+#DEBU HACK END
 import matplotlib.pyplot as plt
 import cPickle as pickle
 import seaborn as sns
@@ -256,7 +260,7 @@ class OutputHandler(object):
             if isinstance(figure, (int, str)):
                 figure = plt.figure(figure, frameon=True)  # TODO: changeable?
 
-            file_format = ['png', 'svg'] if file_format is None else file_format
+            file_format = meta_config.DEFAULT_SAVE_FIG if file_format is None else file_format
             if isinstance(file_format, str):
                 file_format = [file_format]
             file_format = set(file_format)
@@ -271,7 +275,7 @@ class OutputHandler(object):
             # add figure to dict for later output to file
             figure_dict = {'figure': figure, 'file_format': file_format,
                            'to_pickle': to_pickle, 'plot': plot, 'save_cfg': save_cfg}
-            self._figures[figure.canvas.get_window_title()] = figure_dict
+            self._figures[figure.get_label()] = figure_dict
         else:
             self._check_initialization()
             if plot and isinstance(figure, (int, str)):

@@ -25,7 +25,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
 
     if no_interactive_plots:
         import matplotlib as mpl
-        mpl.use("Agg")
+        mpl.use("pdf")
 
     set_verbosity(verbosity=verbosity, plot_verbosity=plot_verbosity)
     _init_user_input(prompt_for_input=prompt_for_input)
@@ -40,6 +40,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     else:
         _init_output_to_file(file_path=None, run_name=run_name,
                              prompt_for_input=prompt_for_input)
+    return get_output_handler()
 
 
 def finalize(show_plots=True, play_sound_at_end=False):

@@ -2,7 +2,7 @@
 [![Build Status](https://travis-ci.org/mayou36/raredecay.svg?branch=master)](https://travis-ci.org/mayou36/raredecay)
 [![PyPI version](https://badge.fury.io/py/raredecay.svg)](https://badge.fury.io/py/raredecay)
 [![Dependency Status](https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9/badge.svg?style=flat-square)](https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9)
-[![Code Issues](https://www.quantifiedcode.com/api/v1/project/32e3e43a2b1343d0aa420d36d15f6f9b/badge.svg)](https://www.quantifiedcode.com/app/project/32e3e43a2b1343d0aa420d36d15f6f9b)
+
 
 
 
@@ -26,11 +26,11 @@ To get an idea of the package, have a look at the howto notebooks:
 ## Minimal example ##
 Want to test whether your reweight did overfit? Use train_similar:
 
-> from raredecay.tools.data_storage import HEPDataStorage
-> from raredecay.tools.metrics import train_similar
+> from raredecay.tools.data_storage import HEPDataStorage  
+> from raredecay.tools.metrics import train_similar  
 >
-> mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)
-> real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)
+> mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
+> real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
 >
 > score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
 
