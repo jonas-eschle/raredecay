@@ -14,7 +14,7 @@ run_message = str("This could be your advertisement" +
 
 OUTPUT_CFG = dict(
     run_name=RUN_NAME,
-    output_path='/home/mayou/Documents/uniphysik/Bachelor_thesis/output/',
+    output_path=None,
     del_existing_folders=False,
     output_folders=dict(
         log="log",
@@ -25,7 +25,7 @@ OUTPUT_CFG = dict(
 )
 
 save_fig_cfg = dict(
-    file_format=['png', 'svg'],
+    file_format=['png', 'pdf'],
     to_pickle=True,
     dpi=150
 )

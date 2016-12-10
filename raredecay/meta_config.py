@@ -166,7 +166,7 @@ DEFAULT_HIST_SETTINGS = dict(
 
 # Default configuration for most of the figures for save_fig from OutputHandler()
 DEFAULT_SAVE_FIG = dict(
-    file_format=['png', 'svg'],  # default: ['png', 'svg'], the file formats
+    file_format=['png', 'pdf'],  # default: ['png', 'svg'], the file formats
                                  # to be saved to. For implementations, see OutputHandler()
     to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
     # save_cfg=None
@@ -175,7 +175,7 @@ DEFAULT_SAVE_FIG = dict(
 # Default configuration for additional figures (plots you mostly do not care
 # about but may be happy to have them saved somewhere)
 DEFAULT_EXT_SAVE_FIG = dict(
-    file_format=['png', 'svg'],
+    file_format=['png', 'pdf'],
     to_pickle=True
     # save_cfg=None
 )
@@ -215,11 +215,11 @@ DEFAULT_LOGGER_CFG = dict(
 # Changing this default values will surely affect your results (over- or
 # underfitting for example), but is mostly not required at all.
 DEFAULT_CLF_XGB = dict(
-    n_estimators=100,  # default 75
+    n_estimators=150,  # default 75
     eta=0.1,  # default 0.1, learning-rate
-    min_child_weight=8,  # #0 stage 2 to optimize
-    max_depth=3,  # #6 stage 2 to optimize
-    gamma=4.6,  # stage 3, minimum loss-reduction required to make a split.
+    min_child_weight=0,  # #0 stage 2 to optimize
+    max_depth=5,  # #6 stage 2 to optimize
+    gamma=0.1,  # stage 3, minimum loss-reduction required to make a split.
     # Higher value-> more conservative
     subsample=0.8,  # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data
     # for a tree
