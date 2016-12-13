@@ -13,10 +13,6 @@ import time
 import cStringIO as StringIO
 import copy
 
-#DEBUG HACK
-import matplotlib as mpl
-print mpl.get_backend()
-#DEBU HACK END
 import matplotlib.pyplot as plt
 import cPickle as pickle
 import seaborn as sns

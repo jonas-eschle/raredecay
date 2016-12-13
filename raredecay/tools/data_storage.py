@@ -476,8 +476,12 @@ class HEPDataStorage(object):
 
     def set_root_selection(self, selection, exception_if_failure=True):
         """Set the selection in a root-file. Only possible if a root-file is provided"""
+        warnings.warn("Method set_root_selection very unsafe currently!")
+        meta_config.warning_occured()
         if self._data_type == 'root':
             self.data['selection'] = selection
+            self.set_data(self.data, columns=self.columns)
+            self.data_name_addition += "INDEX CRASHED!"
         elif exception_if_failure:
             raise RuntimeError("selection could not be applied, no root-dict")
         else:

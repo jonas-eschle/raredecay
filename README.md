@@ -63,7 +63,7 @@ pip install raredecay
 To make sure you can convert ROOT-NTuples, use
 
 ```
-pip install raredecay[root]
+pip install raredecay[root]  # *use raredecay\[root\] in a zsh-console*
 ```
 As it is a young package still under developement, it may receive regular updates and improvements and it is probably a good idea to regularly download the newest package.
 

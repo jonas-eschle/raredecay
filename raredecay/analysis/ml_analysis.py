@@ -825,7 +825,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     # test the classifier
     if validation not in (None, False):
         report = ClassificationReport({clf_name: clf}, lds_test)
-        n_classes = len(set(lds_test.get_targets()))
+        test_classes = list(set(lds_test.get_targets()))
+        n_classes = len(test_classes)
         if n_classes == 2:
             clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
             out.add_output(["ROC AUC of ", clf_name, ", " , curve_name, ": ", clf_score],
@@ -907,8 +908,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                              importance=plot_importance)
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +
                                                                 plot_name)
+            label_dict = None if binary_test else {test_classes[0]: "validation data"}
             out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
-            report.prediction_pdf(plot_type='bar').plot(title="Predictiond pdf of " + plot_name)
+            report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(title="Predictiond pdf of " + plot_name)
 
     if clf_score is None:
         return clf
