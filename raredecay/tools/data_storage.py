@@ -539,7 +539,7 @@ class HEPDataStorage(object):
             raise NotImplementedError("Unknown/not yet implemented data type")
 
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
-        data = data if index is None else data.loc[index]
+        data = data if index is None else data.ix[index]
 
         return data
 

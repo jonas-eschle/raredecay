@@ -749,10 +749,15 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         - 'weights' : the weights of the corresponding predicitons
     """
     logger.info("Starting classify with " + str(clf))
+    VALID_KWARGS = ['original_test_weights', 'target_test_weights']
+
     # initialize variables and data
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     predictions = {}
     make_plot = True  # used if no validation
+    valid_input = set(kwargs).issubset(VALID_KWARGS)
+    if not valid_input:
+        raise ValueError("Invalid kwargs:" + str([k for k in kwargs if k not in VALID_KWARGS]))
 
     plot_title = "classify" if plot_title is None else plot_title
 
@@ -881,14 +886,14 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         report.estimators[plot_name] = report.estimators.pop(clf_name)
 
         if binary_test:
-            out.save_fig(plt.figure(plot_title + " " + plot_name),
+            out.save_fig(plot_title + " " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.roc(physics_notion=True).plot(title=plot_title + "\nROC curve of " +
                                                  clf_name + " on data:" +
                                                  data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
-            out.save_fig(plt.figure("Learning curve " + plot_name),
+            out.save_fig("Learning curve " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " +
                                                                         plot_name)

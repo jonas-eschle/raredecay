@@ -34,13 +34,13 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     _init_configure_logger(console_level=logger_console_level,
                            file_level=logger_file_level)
     if output_path is not None:
-        _init_output_to_file(file_path=output_path, run_name=run_name,
-                             overwrite_existing=overwrite_existing,
-                             run_message=run_message)
+        out = _init_output_to_file(file_path=output_path, run_name=run_name,
+                                   overwrite_existing=overwrite_existing,
+                                   run_message=run_message)
     else:
-        _init_output_to_file(file_path=None, run_name=run_name,
-                             prompt_for_input=prompt_for_input)
-    return get_output_handler()
+        out = _init_output_to_file(file_path=None, run_name=run_name,
+                                   prompt_for_input=prompt_for_input)
+    return out
 
 
 def finalize(show_plots=True, play_sound_at_end=False):
@@ -168,9 +168,11 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
         out = get_output_handler()
         out.initialize_save(logger_cfg=config.logger_cfg, **config.OUTPUT_CFG)
         out.make_me_a_logger()
+
     else:
         out = get_output_handler()
         out.initialize(run_name=run_name, prompt_for_comment=prompt_for_input)
+    return out
 
 
 def _init_configure_logger(console_level='critical', file_level='debug'):

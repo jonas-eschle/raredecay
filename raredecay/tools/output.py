@@ -206,6 +206,10 @@ class OutputHandler(object):
         self.add_output(self._IO_string.getvalue(), importance=importance, **add_output_kwarg)
         return self._IO_string.getvalue()
 
+    def figure(self, *args, **kwargs):
+        """FUTURE: Wrapper around save_fig()"""
+        return self.save_fig(*args, **kwargs)
+
     def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
                  **save_cfg):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
