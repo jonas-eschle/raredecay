@@ -201,6 +201,11 @@ class OutputHandler(object):
             | Additional keyword-arguments for the
             | :py:meth:`~raredecay.tools.output.add_output()` method can be
             | passed.
+
+        Return
+        ------
+        out : str
+            Returns the collected string from the redirection.
         """
         sys.stdout = self.__SAVE_STDOUT
         self.add_output(self._IO_string.getvalue(), importance=importance, **add_output_kwarg)

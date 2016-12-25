@@ -54,7 +54,8 @@ class HEPDataStorage(object):
     __figure_dic = {}
 
     def __init__(self, data, index=None, target=None, sample_weights=None,
-                 data_name=None, data_name_addition=None, data_labels=None):
+                 data_name=None, data_name_addition=None, data_labels=None,
+                 column_alias=None):
         """Initialize instance and load data
 
         Parameters
@@ -98,6 +99,7 @@ class HEPDataStorage(object):
         self.logger = modul_logger
 
         # initialize data
+        self.column_alias = {} if column_alias is None else column_alias
         self._fold_index = None  # list with indeces of folds
         self._fold_status = None  # tuple (my_fold_number, total_n_folds)
         self._length = None
@@ -178,6 +180,10 @@ class HEPDataStorage(object):
     @fold_name.setter
     def fold_name(self, fold_name):
         self._set_name(fold_name=fold_name)
+
+    @property
+    def data_type(self):
+        return self._data_type
 
     def get_index(self):
         """Return the index used inside the DataStorage. Advanced feature."""
@@ -288,8 +294,10 @@ class HEPDataStorage(object):
     def data(self):
         return self._data
 
-    def set_data(self, data, index=None, columns=None):
+    def set_data(self, data, index=None, columns=None, column_alias=None):
 
+        if column_alias is not None:
+            self.column_alias.update(column_alias)
         self._set_data(data=data, index=index, columns=columns)
 
     def _set_data(self, data, index=None, columns=None):
@@ -541,6 +549,9 @@ class HEPDataStorage(object):
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
         data = data if index is None else data.ix[index]
 
+        if isinstance(self.column_alias, dict):
+            data.rename(columns=self.column_alias, inplace=True, copy=False)
+
         return data
 
     def get_labels(self, columns=None, as_list=False):
@@ -779,7 +790,8 @@ class HEPDataStorage(object):
 
         new_storage = HEPDataStorage(new_data, target=new_targets,
                                      sample_weights=new_weights,
-                                     data_labels=new_labels, index=new_index,
+                                     index=new_index,
+                                     column_alias=self.column_alias,
                                      data_name=self.data_name,
                                      data_name_addition=self.data_name_addition + add_to_name)
         new_storage.columns = columns

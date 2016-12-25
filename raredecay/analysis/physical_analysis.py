@@ -360,6 +360,140 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     return output
 
 
+def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=None,
+                   performance=True, metric_vs_cut='punzi',
+                   predict=False, save_real_pred=False, save_mc_pred=False):
+
+    import numpy as np
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+    from raredecay.globals_ import out
+    from raredecay.analysis.ml_analysis import classify
+    from raredecay.tools.metrics import punzi_fom, precision_measure
+
+    # check if predictions can be saved: need to be root-file and no selection applied
+    if save_real_pred:
+        if real_data.data_type != 'root':
+            raise TypeError("Real predictions should be saved but data is not a root-file but " +
+                            real_data.data_type)
+        elif not (real_data.data['selection'] is None):
+            raise ValueError("Real pred set to be saved, but has selection " +
+                             real_data.data['selection'] + " applied")
+    if save_mc_pred:
+        if mc_data.data_type != 'root':
+            raise TypeError("MC predictions should be saved but data is not a root-file but " +
+                            mc_data.data_type)
+        elif not (mc_data.data['selection'] is None):
+            raise ValueError("MC pred set to be saved, but has selection " +
+                             mc_data.data['selection'] + " applied")
+
+    bkg_sel = [bkg_sel] if not isinstance(bkg_sel, list) else bkg_sel
+
+    pred_real = []
+    pred_mc = []
+
+    if performance:
+        bkg_df = real_data.pandasDF()
+        bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
+        bkg_data = real_data.copy_storage()
+        bkg_data.set_data(bkg_df)
+        del bkg_df
+        _clf, kfold_score, pred_tmp = classify(bkg_data, mc_data, validation=n_folds, clf=clf,
+                                               get_predictions=True, extended_report=True,
+                                               features=columns, weights_ratio=1)
+
+        report = pred_tmp['report']
+
+        if metric_vs_cut == 'punzi':
+            metric = punzi_fom
+            title = "Punzi FoM vs threshold cut on " + real_data.name
+        elif metric_vs_cut == 'precision':
+            metric = precision_measure
+            title = "Precision vs threshold cut on " + real_data.name
+        elif metric_vs_cut:
+            raise ValueError("Invalid metric: " + str(metric_vs_cut))
+
+        if metric_vs_cut:
+            out.figure(title)
+            report.metrics_vs_cut(metric).plot()
+            plt.title(title)
+            plt.legend()
+
+
+    # predict to all data
+    if predict:
+
+        # make folds and loop through
+        real_data.make_folds(n_folds=n_folds)
+        mc_data.make_folds(n_folds=n_folds)
+        for i in range(n_folds):
+            real_train, real_test = real_data.get_fold(i)
+            mc_train, mc_test = mc_data.get_fold(i)
+            real_train.data_name_addition = "train"
+            real_test.data_name_addition = "test"
+#            real_train.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
+            bkg_df = real_train.pandasDF()
+
+            bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
+            real_train.set_data(bkg_df)
+            real_train.data_name_addition = "train bkg"
+#            real_train.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
+
+#            real_test.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
+#            mc_train.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
+
+            real_test_index = real_test.index
+            mc_test_index = mc_test.index
+            first_example = i == 0  # to plot only the first time
+            clf_trained, score, pred_real_tmp = classify(real_train, mc_train, validation=real_test,
+                                                         clf=clf, get_predictions=True,
+                                                         extended_report=first_example, features=columns)
+            clf_trained, score_mc, pred_mc_tmp = classify(validation=mc_test, clf=clf_trained,
+                                                          get_predictions=True,
+                                                          extended_report=first_example,
+                                                          features=columns)
+
+            # collect predictions and index
+            pred_real_tmp = pred_real_tmp['y_proba']
+            pred_real.append(pd.Series(pred_real_tmp[:,1], index=real_test_index))
+            pred_mc_tmp = pred_mc_tmp['y_proba']
+            pred_mc.append(pd.Series(pred_mc_tmp[:,1], index=mc_test_index))
+
+        # concatenate predictions and index
+        pred_real = pd.concat(pred_real)
+        pred_real.sort_index(inplace=True)
+        pred_mc = pd.concat(pred_mc)
+        pred_mc.sort_index(inplace=True)
+
+
+        # save predictions
+        if isinstance(save_real_pred, (str, int)) and predict:
+            import copy
+            root_dict = copy.deepcopy(real_data.data)
+
+            if root_dict['selection'] is not None:
+                raise ValueError("Cannot save predictions to root as selections have been applied in the script")
+            from raredecay.analysis.physical_analysis import add_branch_to_rootfile
+            add_branch_to_rootfile(filename=root_dict['filenames'],
+                                   treename=root_dict.get('treename'),
+                                   new_branch=pred_real, branch_name=save_real_pred)
+
+
+        if isinstance(save_mc_pred, (str, int)) and predict:
+            root_dict = copy.deepcopy(mc_data.data)
+
+            if root_dict['selection'] is not None:
+                raise ValueError("Cannot save predictions to root as selections have been applied in the script")
+            from raredecay.analysis.physical_analysis import add_branch_to_rootfile
+            add_branch_to_rootfile(filename=root_dict['filenames'],
+                                   treename=root_dict.get('treename'),
+                                   new_branch=pred_mc, branch_name=save_mc_pred)
+        out.figure("predictions total")
+        plt.hist(pred_real, bins=30)
+        plt.hist(pred_mc, bins=30)
+
+
 def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
                            overwrite=True):
     """Add a branch to a given ROOT-Tree

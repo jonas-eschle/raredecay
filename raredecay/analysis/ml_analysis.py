@@ -284,7 +284,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
 def backward_feature_elimination(original_data, target_data=None, features=None,
                                  clf='xgb', n_folds=10, max_feature_elimination=None,
-                                 max_difference_to_best=0.08, direction='backward',
+                                 max_difference_to_best=0.08, good_features=None,
                                  take_target_from_data=False):
     """Train and score on each feature subset, eliminating features backwards.
 
@@ -324,6 +324,10 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     max_difference_to_best : float
         The maximum difference between the "worst" features auc and the best
         (with all features) auc before it stopps.
+    good_features:
+        A list of features that won't be eliminated. The algorithm does not
+        test the metric if that feature would have been removed. This saves
+        quite a lot of time.
     take_target_from_data : boolean
         Old, will be removed. Use if target-data == None.
 
@@ -337,6 +341,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
           Basically a pandas DataFrame containing all results.
     """
     # initialize variables and setting defaults
+    direction='backward'
+    good_features = [] if good_features is None else good_features
     output = {}
     start_time = -1  # means: no time measurement on the way
     available_time = 1
@@ -376,6 +382,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 # start backward feature elimination
 # ==============================================================================
     selected_features = copy.deepcopy(features)  # explicit is better than implicit
+    selected_features = [feature for feature in selected_features if feature not in good_features]
+
     assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
 
     # starting feature selection
@@ -390,7 +398,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = {feature: [] for feature in selected_features}
     if direction == 'backward':
         clf = copy.deepcopy(original_clf)  # required, feature attribute can not be changed somehow
-        clf.fit(data[selected_features], label, weights)
+        clf.fit(data[features], label, weights)
         report = clf.test_on(data[selected_features], label, weights)
         max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
         roc_auc = OrderedDict({'all features': round(max_auc, 4)})
@@ -426,8 +434,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
             clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
             temp_features = copy.deepcopy(selected_features)
             del temp_features[i]  # remove ith feature for testing
-            clf.fit(data[temp_features], label, weights)
-            report = clf.test_on(data[temp_features], label, weights)
+            clf.fit(data[temp_features + good_features], label, weights)
+            report = clf.test_on(data[temp_features + good_features], label, weights)
             temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
             collected_scores[feature].append(round(temp_auc, 4))
             # set time condition, extrapolate assuming same time for each iteration
@@ -781,8 +789,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     if isinstance(validation, (float, int, long)) and validation > 1:
         if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
 
-
-
             if 'original_test_weights' in kwargs:
                 temp_original_weights = original_data.get_weights()
                 original_data.set_weights(kwargs.get('original_test_weights'))
@@ -840,12 +846,15 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             plot_name = clf_name + ", AUC = " + str(clf_score)
             binary_test = True
             if get_predictions:
+                # TODO: DRY, now WET
                 y_true = lds_test.get_targets()
                 y_pred = clf.predict(lds_test.get_data())
                 y_pred_proba = clf.predict_proba(lds_test.get_data())
                 predictions['y_proba'] = y_pred_proba
                 predictions['y_pred'] = y_pred
                 predictions['y_true'] = y_true
+                predictions['weights'] = lds_test.get_weights(allow_nones=True)
+                predictions['report'] = report
 
         elif n_classes == 1:
             # score returns accuracy; if only one label present, it is the same as recall
@@ -861,6 +870,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                 predictions['y_pred'] = y_pred
                 predictions['y_true'] = y_true
                 predictions['weights'] = lds_test.get_weights(allow_nones=True)
+                predictions['report'] = report
             w_test = lds_test.get_weights()
             clf_score = clf.score(lds_test.get_data(), y_true, w_test)
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)  # , sample_weight=w_test)
@@ -904,7 +914,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 #                         importance=plot_importance, **save_fig_cfg)
 #            report.learning_curve(metrics., steps=1).plot(title="Learning curve of " + plot_name)
         if extended_report:
-            if len(data.columns) > 1:
+            if len(clf.features) > 1:
                 out.save_fig(figure="Feature importance shuffling of " + plot_name,
                              importance=plot_importance)
                 report.feature_importance_shuffling().plot(

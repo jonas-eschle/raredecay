@@ -412,14 +412,15 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
     n_sigma : int or float
 
     """
-    # not necessary below??
-#    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
-#    if length > 1:
-#        sqrt = np.sqrt(np.array(n_background))
-#        term1 = np.full(length, n_sigma/2)
-#    else:
-    sqrt = mt.sqrt(n_background)
-    term1 = n_sigma/2
+#     not necessary below??
+    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
+    if length > 1:
+        sqrt = np.sqrt(np.array(n_background))
+        term1 = np.full(length, n_sigma/2)
+    else:
+
+        sqrt = mt.sqrt(n_background)
+        term1 = n_sigma/2
     output = n_signal / (sqrt + term1)
     return output
 
