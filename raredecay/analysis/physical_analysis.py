@@ -468,7 +468,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
 
         # save predictions
-        if isinstance(save_real_pred, (str, int)) and predict:
+        if isinstance(save_real_pred, (str, int)) and not isinstance(save_real_pred, bool) and predict:
             import copy
             root_dict = copy.deepcopy(real_data.data)
 
@@ -480,7 +480,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                    new_branch=pred_real, branch_name=save_real_pred)
 
 
-        if isinstance(save_mc_pred, (str, int)) and predict:
+        if isinstance(save_mc_pred, (str, int)) and not isinstance(save_mc_pred, bool) and predict:
             root_dict = copy.deepcopy(mc_data.data)
 
             if root_dict['selection'] is not None:
@@ -490,6 +490,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                    treename=root_dict.get('treename'),
                                    new_branch=pred_mc, branch_name=save_mc_pred)
         out.figure("predictions total")
+        plt.legend()
+        plt.title("Predictions of MC vs all real data")
         plt.hist(pred_real, bins=30)
         plt.hist(pred_mc, bins=30)
 
