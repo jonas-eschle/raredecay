@@ -284,7 +284,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
 def backward_feature_elimination(original_data, target_data=None, features=None,
                                  clf='xgb', n_folds=10, max_feature_elimination=None,
-                                 max_difference_to_best=0.08, good_features=None,
+                                 max_difference_to_best=0.08, keep_features=None,
                                  take_target_from_data=False):
     """Train and score on each feature subset, eliminating features backwards.
 
@@ -319,12 +319,19 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     n_folds : int > 1
         How many folds you want to split your data in when doing KFold-splits
         to measure the performance of the classifier.
-    max_feature_elimination : int >= 1
-        How many features should be eliminated before it surely stopps
+    max_feature_elimination : int >= 1 or str "hhhh:mm"
+        How many features should be maximal eliminated before it stopps or
+        how much time it can take (approximately) to do the elimination.
+        If the time runs out before other criterias are true (no features left,
+        max_difference to high...), it just returns the results so far.
     max_difference_to_best : float
-        The maximum difference between the "worst" features auc and the best
-        (with all features) auc before it stopps.
-    good_features:
+        The maximum difference between the "least worst" features auc and the best
+        (usually the one with all features) auc before it stopps.
+
+        In other words, it only eliminates features until the elimination would
+        lead to a roc auc lower by max_difference_to_best then the roc auc
+        with all features (= highest roc auc).
+    keep_features:
         A list of features that won't be eliminated. The algorithm does not
         test the metric if that feature would have been removed. This saves
         quite a lot of time.
@@ -342,7 +349,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     """
     # initialize variables and setting defaults
     direction='backward'
-    good_features = [] if good_features is None else good_features
+    keep_features = [] if keep_features is None else keep_features
     output = {}
     start_time = -1  # means: no time measurement on the way
     available_time = 1
@@ -382,7 +389,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 # start backward feature elimination
 # ==============================================================================
     selected_features = copy.deepcopy(features)  # explicit is better than implicit
-    selected_features = [feature for feature in selected_features if feature not in good_features]
+    selected_features = [feature for feature in selected_features if feature not in keep_features]
 
     assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
 
@@ -434,8 +441,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
             clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
             temp_features = copy.deepcopy(selected_features)
             del temp_features[i]  # remove ith feature for testing
-            clf.fit(data[temp_features + good_features], label, weights)
-            report = clf.test_on(data[temp_features + good_features], label, weights)
+            clf.fit(data[temp_features + keep_features], label, weights)
+            report = clf.test_on(data[temp_features + keep_features], label, weights)
             temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
             collected_scores[feature].append(round(temp_auc, 4))
             # set time condition, extrapolate assuming same time for each iteration
@@ -917,8 +924,12 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             if len(clf.features) > 1:
                 out.save_fig(figure="Feature importance shuffling of " + plot_name,
                              importance=plot_importance)
-                report.feature_importance_shuffling().plot(
-                            title="Feature importance shuffling of " + plot_name)
+                # HACK: temp_plotter1 is used to set the plot.new_plot to False,
+                # which is set to True (unfortunately) in the init of GridPlot
+                temp_plotter1 = report.feature_importance_shuffling()
+                temp_plotter1.new_plot = False
+                temp_plotter1.plot(title="Feature importance shuffling of " + plot_name)
+                # HACK END
                 out.save_fig(figure="Feature correlation matrix of " + plot_name,
                              importance=plot_importance)
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +

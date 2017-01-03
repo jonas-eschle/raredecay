@@ -52,7 +52,7 @@ import random
 PROMPT_FOR_COMMENT = False  # let you add an extension to the run/file name
 MULTITHREAD = True  # if False, no parallel work will be done
 MULTIPROCESSING = True  # requires MULTITHREAD to be true, else it's False
-n_cpu_max = 6  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
+n_cpu_max = 1  # VAGUE ESTIMATION but not a strict limit. If None, number of cores will be assigned
 use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
 # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
 use_stratified_folding = True  # StratifiedKFolding is better, from a statistical point of view,
@@ -167,7 +167,7 @@ DEFAULT_HIST_SETTINGS = dict(
 # Default configuration for most of the figures for save_fig from OutputHandler()
 DEFAULT_SAVE_FIG = dict(
     file_format=['png', 'pdf'],  # default: ['png', 'svg'], the file formats
-                                 # to be saved to. For implementations, see OutputHandler()
+    dpi=150,                     # to be saved to. For implementations, see OutputHandler()
     to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
     # save_cfg=None
 )

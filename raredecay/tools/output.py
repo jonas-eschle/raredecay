@@ -265,7 +265,7 @@ class OutputHandler(object):
             if isinstance(figure, (int, str)):
                 figure = plt.figure(figure, frameon=True)  # TODO: changeable?
 
-            file_format = meta_config.DEFAULT_SAVE_FIG if file_format is None else file_format
+            file_format = meta_config.DEFAULT_SAVE_FIG['file_format'] if file_format is None else file_format
             if isinstance(file_format, str):
                 file_format = [file_format]
             file_format = set(file_format)

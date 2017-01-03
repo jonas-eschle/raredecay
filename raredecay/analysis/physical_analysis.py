@@ -196,7 +196,7 @@ def _cut(data):
 
 
 def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
-    """Cut the bkg while maintaining a certain percent of the signal.WIP.
+    """Cut the bkg while maintaining a certain percent of the signal. WIP.
 
 
     """
@@ -311,6 +311,8 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     n_folds : int > 1
         Number of folds to split the data into to do some training/testing and
         get an estimate for the feature importance.
+    clf : str or dict or clf, see: :py:meth:`~raredecay.analysis.ml_analysis.make_clf()`
+        The classifier you want to use.
     roc_auc : {'single', 'all', 'both'} or False
         Whether to make a training/testing with:
 
@@ -339,7 +341,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     if roc_auc_all:
         ml_ana.classify(original_data, target_data, validation=n_folds,
                         extended_report=extended_report, clf=clf,
-                        curve_name="all features", plot_title="ROC AUC of all features")
+                        curve_name="all features", plot_title="ROC AUC of")
 
     features = original_data.columns if features is None else features
 
@@ -361,8 +363,8 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
 
 
 def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=None,
-                   performance=True, metric_vs_cut='punzi',
-                   predict=False, save_real_pred=False, save_mc_pred=False):
+                   performance_only=True, metric_vs_cut='punzi',
+                   save_real_pred=False, save_mc_pred=False):
 
     import numpy as np
     import pandas as pd
@@ -393,7 +395,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     pred_real = []
     pred_mc = []
 
-    if performance:
+    predict = not performance_only
+    if performance_only:
         bkg_df = real_data.pandasDF()
         bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
         bkg_data = real_data.copy_storage()
@@ -605,9 +608,9 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
         apply_data.set_weights(new_weights)
     output['weights'] = new_weights
     output['reweighter'] = new_reweighter
-#    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
-    out.save_fig(plt.figure("New weights"), importance=3)
-    plt.hist(output['weights'], bins=30, log=True)
+##    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
+#    out.save_fig(plt.figure("New weights"), importance=3)
+#    plt.hist(output['weights'], bins=30, log=True)
 
     return output
 
