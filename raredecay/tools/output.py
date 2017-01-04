@@ -55,6 +55,8 @@ class OutputHandler(object):
         sns.set_context("poster")
         plt.rc('figure', figsize=(20, 20))
 
+        setattr(self, 'print', self._print)
+
     def _check_initialization(self, return_error=False):
         if not self._is_initialized and not return_error:
             self.initialize()
@@ -215,6 +217,9 @@ class OutputHandler(object):
         """FUTURE: Wrapper around save_fig()"""
         return self.save_fig(*args, **kwargs)
 
+    def map(self, a):
+        print a
+
     def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
                  **save_cfg):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
@@ -361,6 +366,14 @@ class OutputHandler(object):
             out_str += "\n" + title_format[1] * len(title) + "\n"
         return out_str
 
+    def _print(self, data, to_end=False, importance=3, title=None,
+               subtitle=None, section=None, obj_separator=" ",
+               data_separator="\n\n", force_newline=True):
+
+        return self.add_output(data_out=data, to_end=to_end, importance=importance, title=title,
+                               subtitle=subtitle, section=section, obj_separator=obj_separator,
+                               data_separator=data_separator, force_newline=force_newline)
+
     def add_output(self, data_out, to_end=False, importance=3, title=None,
                    subtitle=None, section=None, obj_separator=" ",
                    data_separator="\n\n", force_newline=True):
@@ -454,8 +467,7 @@ class OutputHandler(object):
             print temp_out  # ?? why was there sys.stdout.write?!?
         if to_end:
             self.end_output += temp_out
-        else:
-            self.output += temp_out
+        self.output += temp_out
 
     def finalize(self, show_plots=True, play_sound_at_end=False):
 
@@ -563,3 +575,8 @@ class OutputHandler(object):
             plt.show()
 
         return output
+
+if __name__ == '__main__':
+    out = OutputHandler()
+    printer = getattr(out, 'print')
+    printer([1, 2, 3, 'testing'])

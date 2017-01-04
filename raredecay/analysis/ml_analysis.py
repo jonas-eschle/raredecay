@@ -204,7 +204,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if n_cpu_clf > n_cpu and not suppress_cpu_warning:
             logger.warning("n_cpu specified at make_clf() for clf < n_cpu of clf \
                             given! is that what you want?")
-        n_cpu = max(int(n_cpu_clf / n_cpu), 1)
+        n_cpu = max(int(n_cpu / n_cpu_clf), 1)
         if n_cpu > 1:
             output['n_cpu'] = n_cpu_clf
             output['parallel_profile'] = 'threads-' + str(n_cpu)
@@ -349,7 +349,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     """
     # initialize variables and setting defaults
     direction='backward'
-    keep_features = [] if keep_features is None else keep_features
+    keep_features = [] if keep_features is None else data_tools.to_list(keep_features)
     output = {}
     start_time = -1  # means: no time measurement on the way
     available_time = 1
@@ -371,9 +371,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
                        "Features for feature-optimization will be taken from data.")
     # We do not need to create more data than we well test on
     features = data_tools.to_list(features)
+    features = list(set(features + keep_features))
     assert features != [], "No features for optimization found"
-
-    # TODO: insert time estimation for feature optimization
 
     # initialize data
     data, label, weights = _make_data(original_data, target_data, features=features,
@@ -395,7 +394,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 
     # starting feature selection
     out.add_output(["Performing feature selection with the classifier", clf_name,
-                    "of the features", features], title="Feature selection: Backward elimination")
+                    "of the features", features], title="Feature selection: Recursive backward elimination")
     original_clf = FoldingClassifier(clf, n_folds=n_folds,
                                      stratified=meta_config.use_stratified_folding,
                                      parallel_profile=parallel_profile)
@@ -406,7 +405,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     if direction == 'backward':
         clf = copy.deepcopy(original_clf)  # required, feature attribute can not be changed somehow
         clf.fit(data[features], label, weights)
-        report = clf.test_on(data[selected_features], label, weights)
+        report = clf.test_on(data[features], label, weights)
         max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
         roc_auc = OrderedDict({'all features': round(max_auc, 4)})
         out.save_fig(figure="feature importance " + str(clf_name), importance=2, **save_fig_cfg)
