@@ -16,7 +16,7 @@ import numpy as np
 import cPickle as pickle
 
 try:
-    from root_numpy import root2array, array2tree, array2root
+    from root_numpy import root2array,  array2root
 except ImportError:
     warnings.warn("could not import from root_numpy!")
 
@@ -276,7 +276,7 @@ def to_list(data_in):
     return data_in
 
 
-def to_ndarray(data_in, dtype=None, float_array=True):
+def to_ndarray(data_in, float_array=True):
     """Convert data to numpy array (containing only floats)
 
     """

@@ -348,7 +348,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
           Basically a pandas DataFrame containing all results.
     """
     # initialize variables and setting defaults
-    direction='backward'
+    direction = 'backward'
     keep_features = [] if keep_features is None else data_tools.to_list(keep_features)
     output = {}
     start_time = -1  # means: no time measurement on the way
@@ -393,8 +393,9 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
 
     # starting feature selection
-    out.add_output(["Performing feature selection with the classifier", clf_name,
-                    "of the features", features], title="Feature selection: Recursive backward elimination")
+    out.add_output(["Performing feature selection with the classifier",
+                    clf_name, "of the features", features],
+                   title="Feature selection: Recursive backward elimination")
     original_clf = FoldingClassifier(clf, n_folds=n_folds,
                                      stratified=meta_config.use_stratified_folding,
                                      parallel_profile=parallel_profile)
@@ -775,9 +776,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
     plot_title = "classify" if plot_title is None else plot_title
 
-# TODO: do we need this??
-#    if (original_data is None) and (target_data is not None):
-#        original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
                                           weights_ratio=weights_ratio,
@@ -808,13 +806,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             if 'target_test_weights' in kwargs:
                 target_data.set_weights(temp_target_weights)
 
-#            # TODO: write code nicer!
-#            # HACK normalization
-#            print "HACK IN USE, ml_analysis, classifiy: normalization always 1 for test weights"
-#            target_weights *= np.sum(original_weights) / np.sum(target_weights)
-#            # HACK end
-#            test_weights = pd.concat((original_weights, target_weights))
-#            test_weights /= np.sum(test_weights)  # normalization, optional
         else:
             test_weights = weights
 
@@ -846,7 +837,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         n_classes = len(test_classes)
         if n_classes == 2:
             clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
-            out.add_output(["ROC AUC of ", clf_name, ", " , curve_name, ": ", clf_score],
+            out.add_output(["ROC AUC of ", clf_name, ", ", curve_name, ": ", clf_score],
                            obj_separator="", subtitle="Report of " + plot_title,
                            importance=importance)
             plot_name = clf_name + ", AUC = " + str(clf_score)
@@ -868,9 +859,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             y_pred = clf.predict(lds_test.get_data())
 
             if get_predictions:
-                #remove below TODO
-#                y_true = lds_test.get_targets()
-#                y_pred = clf.predict(lds_test.get_data())
                 y_pred_proba = clf.predict_proba(lds_test.get_data())
                 predictions['y_proba'] = y_pred_proba
                 predictions['y_pred'] = y_pred
@@ -935,7 +923,8 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                                                                 plot_name)
             label_dict = None if binary_test else {test_classes[0]: "validation data"}
             out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
-            report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(title="Predictiond pdf of " + plot_name)
+            report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
+                                        title="Predictiond pdf of " + plot_name)
 
     if clf_score is None:
         return clf
@@ -1011,7 +1000,7 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     # logging and writing output
     msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
-    # TODO: columns = reweight_data_mc.columns if columns is None else columns
+
     out.add_output(msg + ["\nData used:\n", reweight_data_mc.name, " and ",
                    reweight_data_real.name, "\ncolumns used for the reweighter training:\n",
                    columns], section="Training the reweighter", obj_separator=" ")
@@ -1271,25 +1260,25 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                 clf, tmp_score = classify(train_mc, train_real, validation=test_mc,
                                           curve_name="mc reweighted as real",
                                           features=score_columns,
-                                          plot_title="fold " + str(fold) + " reweighted validation",
+                                          plot_title="fold {} reweighted validation".format(fold),
                                           weights_ratio=1, clf=score_clf,
                                           importance=1, plot_importance=1)
                 scores[fold] += tmp_score
 
     # Get the max and min for "calibration" of the possible score for the reweighted data by
     # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
-                test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
+                test_mc.set_weights(old_mc_weights)
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
                                              features=score_columns,
                                              curve_name="mc as real",
-#                                             weights_ratio=1,
+                                             # weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
                                              features=score_columns,
                                              curve_name="real as real",
-#                                             weights_ratio=1,
+                                             # weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t
@@ -1300,7 +1289,6 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
 
             logger.info("fold " + str(fold) + "finished")
             # end of for-loop
-
 
         # concatenate weights and index
         if n_folds == 1:

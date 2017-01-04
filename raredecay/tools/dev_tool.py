@@ -31,7 +31,7 @@ def syspath_append(verboise=False):
     # sys.path = sys.path[:len(sys.path)-n_to_remove]
     # used to remove unnecessary bindings
     for path in config.pathes_to_add:
-        """get the sys.path and add pathes if they are not already contained"""
+        # get the sys.path and add pathes if they are not already contained
         if path not in sys.path:
             try:
                 sys.path.append(path)
@@ -234,7 +234,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     return flag
 
 
-def play_sound(duration=0.3, frequency=440, change=False):
+def play_sound(duration=0.3, frequency=440):
     """ Play a single frequency (Hertz) for a given time (seconds).
     """
     freq = frequency

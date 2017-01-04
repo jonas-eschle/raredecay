@@ -251,7 +251,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
                 percent_sig_to_keep -= stepsize
             else:
                 break
-        elif percent_sig_to_keep >= percent_end and percent_sig_to_keep < 100:
+        elif percent_end <= percent_sig_to_keep < 100:
             percent_end += stepsize
             stepsize *= (100 - stepsize) / 100
         elif percent_sig_to_keep < percent_end:
@@ -423,7 +423,6 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             plt.title(title)
             plt.legend()
 
-
     # predict to all data
     if predict:
 
@@ -435,40 +434,35 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             mc_train, mc_test = mc_data.get_fold(i)
             real_train.data_name_addition = "train"
             real_test.data_name_addition = "test"
-#            real_train.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
             bkg_df = real_train.pandasDF()
 
             bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
             real_train.set_data(bkg_df)
             real_train.data_name_addition = "train bkg"
-#            real_train.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
-
-#            real_test.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
-#            mc_train.plot(figure="train, train bkg vs test vs mc" + str(i), columns=score_columns)
 
             real_test_index = real_test.index
             mc_test_index = mc_test.index
             first_example = i == 0  # to plot only the first time
-            clf_trained, score, pred_real_tmp = classify(real_train, mc_train, validation=real_test,
-                                                         clf=clf, get_predictions=True,
-                                                         extended_report=first_example, features=columns)
-            clf_trained, score_mc, pred_mc_tmp = classify(validation=mc_test, clf=clf_trained,
-                                                          get_predictions=True,
-                                                          extended_report=first_example,
-                                                          features=columns)
+            clf_trained, _, pred_real_tmp = classify(real_train, mc_train, validation=real_test,
+                                                     clf=clf, get_predictions=True,
+                                                     extended_report=first_example,
+                                                     features=columns)
+            clf_trained, _, pred_mc_tmp = classify(validation=mc_test, clf=clf_trained,
+                                                   get_predictions=True,
+                                                   extended_report=first_example,
+                                                   features=columns)
 
             # collect predictions and index
             pred_real_tmp = pred_real_tmp['y_proba']
-            pred_real.append(pd.Series(pred_real_tmp[:,1], index=real_test_index))
+            pred_real.append(pd.Series(pred_real_tmp[:, 1], index=real_test_index))
             pred_mc_tmp = pred_mc_tmp['y_proba']
-            pred_mc.append(pd.Series(pred_mc_tmp[:,1], index=mc_test_index))
+            pred_mc.append(pd.Series(pred_mc_tmp[:, 1], index=mc_test_index))
 
         # concatenate predictions and index
         pred_real = pd.concat(pred_real)
         pred_real.sort_index(inplace=True)
         pred_mc = pd.concat(pred_mc)
         pred_mc.sort_index(inplace=True)
-
 
         # save predictions
         if isinstance(save_real_pred, (str, int)) and not isinstance(save_real_pred, bool) and predict:
@@ -477,18 +471,17 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
             if root_dict['selection'] is not None:
                 raise ValueError("Cannot save predictions to root as selections have been applied in the script")
-            from raredecay.analysis.physical_analysis import add_branch_to_rootfile
+
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
                                    new_branch=pred_real, branch_name=save_real_pred)
-
 
         if isinstance(save_mc_pred, (str, int)) and not isinstance(save_mc_pred, bool) and predict:
             root_dict = copy.deepcopy(mc_data.data)
 
             if root_dict['selection'] is not None:
                 raise ValueError("Cannot save predictions to root as selections have been applied in the script")
-            from raredecay.analysis.physical_analysis import add_branch_to_rootfile
+
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
                                    new_branch=pred_mc, branch_name=save_mc_pred)
@@ -576,10 +569,8 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     """
     import raredecay.analysis.ml_analysis as ml_ana
 
-    from raredecay.globals_ import out
+#    from raredecay.globals_ import out
     from raredecay.tools import data_tools
-
-    import matplotlib.pyplot as plt
 
     output = {}
 
@@ -608,9 +599,6 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
         apply_data.set_weights(new_weights)
     output['weights'] = new_weights
     output['reweighter'] = new_reweighter
-##    apply_data.plot(figure="Data for reweights apply", data_name="gb weights")
-#    out.save_fig(plt.figure("New weights"), importance=3)
-#    plt.hist(output['weights'], bins=30, log=True)
 
     return output
 
@@ -798,9 +786,8 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
                        title='ROC AUC of mc reweighted/real KFold', to_end=True)
 
-
         out.add_output(['score:', scores['score'], "+-", scores['score_std']],
-                        importance=5,
+                       importance=5,
                        title='Train similar report', to_end=True)
         if extended_train_similar:
             out.add_output(['\nScore_mc:', scores['score_mc'], "+-", scores['score_mc_std']],

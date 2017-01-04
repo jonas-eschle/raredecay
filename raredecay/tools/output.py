@@ -217,9 +217,6 @@ class OutputHandler(object):
         """FUTURE: Wrapper around save_fig()"""
         return self.save_fig(*args, **kwargs)
 
-    def map(self, a):
-        print a
-
     def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
                  **save_cfg):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
@@ -471,8 +468,6 @@ class OutputHandler(object):
 
     def finalize(self, show_plots=True, play_sound_at_end=False):
 
-        # TODO remove?: self._check_initialization(return_error=True)
-
         # ==============================================================================
         #  write all the necessary things to the output
         # ==============================================================================
@@ -575,8 +570,3 @@ class OutputHandler(object):
             plt.show()
 
         return output
-
-if __name__ == '__main__':
-    out = OutputHandler()
-    printer = getattr(out, 'print')
-    printer([1, 2, 3, 'testing'])

@@ -442,7 +442,6 @@ class HEPDataStorage(object):
             set/used as weights.
         """
         index = self._index if index is None else index
-        length = len(self) if index is None else len(index)
 
         if isinstance(sample_weights, (str, dict)) and self._data_type == 'root':
             assert ((isinstance(sample_weights, list) and (len(sample_weights) == 1)) or
@@ -781,17 +780,17 @@ class HEPDataStorage(object):
         index = self._index if index is None else list(index)
         columns = self.columns if columns is None else columns
 
-        new_labels = self.get_labels(columns=columns)
         new_data = copy.deepcopy(self.data)
 
         new_targets = copy.deepcopy(self._get_targets(index=index))
         new_weights = copy.deepcopy(self._get_weights(index=index))
         new_index = copy.deepcopy(index)
+        new_column_alias = copy.deepcopy(self.column_alias)
 
         new_storage = HEPDataStorage(new_data, target=new_targets,
                                      sample_weights=new_weights,
                                      index=new_index,
-                                     column_alias=self.column_alias,
+                                     column_alias=new_column_alias,
                                      data_name=self.data_name,
                                      data_name_addition=self.data_name_addition + add_to_name)
         new_storage.columns = columns
@@ -1058,7 +1057,7 @@ class HEPDataStorage(object):
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
             # only plot in range x_limits, otherwise the plot is too big
-            x_limits = self.__figure_dic.get(figure).get(column, None)
+            x_limits = self.__figure_dic.get(figure).get(column)
             lower, upper = np.percentile(np.hstack(data_plot[column]),
                                          [0.01, 99.99])
             if dev_tool.is_in_primitive(x_limits, None):
