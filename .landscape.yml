@@ -8,6 +8,12 @@ pylint:
 
 python-targets:
  - 2
+ 
+pep8:
+  full: true
+  
+doc-warnings: true
+max-line-length: 110
 
 
 
