@@ -154,7 +154,8 @@
 
 
 <div class="viewcode-block" id="OutputHandler"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler">[docs]</a><span class="k">class</span> <span class="nc">OutputHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Class for output handling&quot;&quot;&quot;</span>
+
+    <span class="sd">&quot;&quot;&quot;Class for output handling.&quot;&quot;&quot;</span>
 
     <span class="n">__SAVE_STDOUT</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span>
     <span class="n">_IMPLEMENTED_FORMATS</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="s1">&#39;png&#39;</span><span class="p">,</span> <span class="s1">&#39;jpg&#39;</span><span class="p">,</span> <span class="s1">&#39;pdf&#39;</span><span class="p">,</span> <span class="s1">&#39;svg&#39;</span><span class="p">])</span>
@@ -162,6 +163,8 @@
     <span class="n">_REPLACE_CHAR</span> <span class="o">=</span> <span class="n">_MOST_REPLACE_CHAR</span> <span class="o">+</span> <span class="p">[</span><span class="s1">&#39;/&#39;</span><span class="p">]</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize an output handler&quot;&quot;&quot;</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">end_output</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_loud_end_output</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -197,7 +200,7 @@
 
 <div class="viewcode-block" id="OutputHandler.initialize_save"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.initialize_save">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">output_path</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">run_message</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">output_folders</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                         <span class="n">del_existing_folders</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">logger_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initializes the run. Creates the neccesary folders.</span>
+        <span class="sd">&quot;&quot;&quot;Initialize the run. Create the neccesary folders.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -209,6 +212,9 @@
 <span class="sd">            folders (logfile, figures, output etc)</span>
 <span class="sd">        run_name : str</span>
 <span class="sd">            The name of the run and also of the output folder.</span>
+<span class="sd">        run_message : str</span>
+<span class="sd">            A message that is displayed below the titel: a further comment</span>
+<span class="sd">            on what you do in the script</span>
 <span class="sd">        output_folders : dict</span>
 <span class="sd">            Contain the name of the folders for the different outputs. For the</span>
 <span class="sd">            available keys</span>
@@ -277,7 +283,7 @@
                         <span class="n">subtitle</span><span class="o">=</span><span class="s2">&quot;Comments about the run&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="OutputHandler.initialize"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.initialize">[docs]</a>    <span class="k">def</span> <span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">prompt_for_comment</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialization for external use, no folders created, config.py logger&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Initialization for external use, no folders created, config.py logger.&quot;&quot;&quot;</span>
 
         <span class="c1"># initialize defaults</span>
         <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">logger_cfg</span>
@@ -292,7 +298,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_run_name</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_name</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="OutputHandler.get_logger_path"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.get_logger_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_logger_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the path for the log folder&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return the path for the log folder.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_output</span><span class="p">:</span>
             <span class="n">path_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_folders</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;log&#39;</span><span class="p">)</span>
             <span class="n">path_out</span> <span class="o">+=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">path_out</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;/&#39;</span>
@@ -301,7 +307,7 @@
         <span class="k">return</span> <span class="n">path_out</span></div>
 
 <div class="viewcode-block" id="OutputHandler.get_plots_path"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.get_plots_path">[docs]</a>    <span class="k">def</span> <span class="nf">get_plots_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the path for the log folder&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return the path for the log folder.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_save_output</span><span class="p">:</span>
             <span class="n">path_out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_path</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_folders</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;plots&#39;</span><span class="p">)</span>
             <span class="n">path_out</span> <span class="o">+=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">path_out</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="k">else</span> <span class="s1">&#39;/&#39;</span>
@@ -310,21 +316,22 @@
         <span class="k">return</span> <span class="n">path_out</span></div>
 
 <div class="viewcode-block" id="OutputHandler.make_me_a_logger"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.make_me_a_logger">[docs]</a>    <span class="k">def</span> <span class="nf">make_me_a_logger</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create a logger in OutputHandler instance. Dependency &quot;hack&quot;. Call</span>
-<span class="sd">        after :py:meth:`~raredecay.tools.output.OutputHandler.initialize_save()`</span>
+        <span class="sd">&quot;&quot;&quot;Create a logger in OutputHandler instance. Dependency &quot;hack&quot;.</span>
+
+<span class="sd">        Call after :py:meth:`~raredecay.tools.output.OutputHandler.initialize_save()`</span>
 <span class="sd">        has ben called.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># create logger</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">make_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="o">**</span><span class="bp">self</span><span class="o">.</span><span class="n">_logger_cfg</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="OutputHandler.IO_to_string"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.IO_to_string">[docs]</a>    <span class="k">def</span> <span class="nf">IO_to_string</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Redericts stdout (print etc.) to string&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Rederict stdout (print etc.) to string.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_IO_string</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_IO_string</span> <span class="o">=</span> <span class="n">StringIO</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
         <span class="n">sys</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_IO_string</span></div>
 
 <div class="viewcode-block" id="OutputHandler.IO_to_sys"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.IO_to_sys">[docs]</a>    <span class="k">def</span> <span class="nf">IO_to_sys</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">importance</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="o">**</span><span class="n">add_output_kwarg</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Directs stdout back to the sys.stdout and return/save string to output</span>
+        <span class="sd">&quot;&quot;&quot;Direct stdout back to the sys.stdout and return/save string to output.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -346,7 +353,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_IO_string</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
 
 <div class="viewcode-block" id="OutputHandler.figure"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.figure">[docs]</a>    <span class="k">def</span> <span class="nf">figure</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;FUTURE: Wrapper around save_fig()&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;FUTURE: Wrapper around save_fig().&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">save_fig</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="OutputHandler.save_fig"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.save_fig">[docs]</a>    <span class="k">def</span> <span class="nf">save_fig</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">figure</span><span class="p">,</span> <span class="n">importance</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">file_format</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">to_pickle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
@@ -381,15 +388,12 @@
 <span class="sd">            If you don&#39;t want to save it, enter a blank list.</span>
 <span class="sd">        to_pickle : boolean</span>
 <span class="sd">            If True, the plot will be saved to a pickle file.</span>
-<span class="sd">        plot : boolean</span>
-<span class="sd">            If True, the figure will be showed when calling *show()*. If</span>
-<span class="sd">            False, the figure will only be saved but not plotted.</span>
 <span class="sd">        **save_cfg : keyword args</span>
 <span class="sd">            Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`</span>
 
 <span class="sd">        Return</span>
 <span class="sd">        ------</span>
-<span class="sd">        out : matplotlib.pyplot.figure</span>
+<span class="sd">        out : :py:class:`~matplotlib.pyplot.figure`</span>
 <span class="sd">            Return the figure.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">plot</span> <span class="o">=</span> <span class="mi">5</span> <span class="o">-</span> <span class="nb">round</span><span class="p">(</span><span class="n">importance</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">meta_config</span><span class="o">.</span><span class="n">plot_verbosity</span>  <span class="c1"># to plot or not to plot</span>
@@ -423,7 +427,7 @@
         <span class="k">return</span> <span class="n">figure</span></div>
 
     <span class="k">def</span> <span class="nf">_figure_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Write all figures from the _figures dictionary to file&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Write all figures from the _figures dictionary to file.&quot;&quot;&quot;</span>
 
         <span class="c1"># check if there are figures to plot, else return</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_figures</span> <span class="o">==</span> <span class="p">{}:</span>
@@ -449,7 +453,7 @@
                     <span class="n">figure_tmp</span> <span class="o">=</span> <span class="n">fig_dict</span><span class="p">[</span><span class="s1">&#39;figure&#39;</span><span class="p">]</span>
 <span class="c1">#                    figure_tmp.tight_layout()</span>
                     <span class="n">figure_tmp</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span> <span class="nb">format</span><span class="o">=</span><span class="n">extension</span><span class="p">,</span>
-                                               <span class="o">**</span><span class="n">fig_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;save_cfg&#39;</span><span class="p">))</span>
+                                       <span class="o">**</span><span class="n">fig_dict</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;save_cfg&#39;</span><span class="p">))</span>
                 <span class="k">except</span><span class="p">:</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Could not save figure&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">figure_tmp</span><span class="p">))</span>
                     <span class="n">meta_config</span><span class="o">.</span><span class="n">error_occured</span><span class="p">()</span>
@@ -599,6 +603,16 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">output</span> <span class="o">+=</span> <span class="n">temp_out</span></div>
 
 <div class="viewcode-block" id="OutputHandler.finalize"><a class="viewcode-back" href="../../../raredecay.tools.output.html#raredecay.tools.output.OutputHandler.finalize">[docs]</a>    <span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">show_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">play_sound_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Finalize the run. Save everything and plot.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        show_plots : boolean</span>
+<span class="sd">            If True, show the plots. Equivalent to writing plt.show().</span>
+<span class="sd">        play_sound_at_end : boolean</span>
+<span class="sd">            If True, tries to play a beep-sound at the end of a run to let you</span>
+<span class="sd">            know it finished.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># ==============================================================================</span>
         <span class="c1">#  write all the necessary things to the output</span>

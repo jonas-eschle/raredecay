@@ -204,7 +204,7 @@
 
 <span class="c1"># set meta-config variables</span>
 <div class="viewcode-block" id="set_parallel_profile"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_parallel_profile">[docs]</a><span class="k">def</span> <span class="nf">set_parallel_profile</span><span class="p">(</span><span class="n">n_cpu</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">stratified_kfolding</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Set the number of cpus and whether a gpu is in use or not&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Set the number of cpus and whether a gpu is in use or not.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">MULTIPROCESSING</span><span class="p">,</span> <span class="n">MULTITHREAD</span><span class="p">,</span> <span class="n">n_cpu_max</span><span class="p">,</span> <span class="n">use_gpu</span><span class="p">,</span> <span class="n">use_stratified_folding</span>
     <span class="n">use_stratified_folding</span> <span class="o">=</span> <span class="n">stratified_kfolding</span>
     <span class="n">MULTIPROCESSING</span> <span class="o">=</span> <span class="n">MULTITHREAD</span> <span class="o">=</span> <span class="kc">True</span>
@@ -456,12 +456,14 @@
 
 
 <div class="viewcode-block" id="set_verbosity"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_verbosity">[docs]</a><span class="k">def</span> <span class="nf">set_verbosity</span><span class="p">(</span><span class="n">new_verbosity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the verbosity.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">verbosity</span>
     <span class="n">verbosity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">new_verbosity</span><span class="p">)</span>
     <span class="n">_check_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="set_plot_verbosity"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_plot_verbosity">[docs]</a><span class="k">def</span> <span class="nf">set_plot_verbosity</span><span class="p">(</span><span class="n">new_plot_verbosity</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the plot verbosity.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">plot_verbosity</span>
     <span class="n">plot_verbosity</span> <span class="o">=</span> <span class="nb">round</span><span class="p">(</span><span class="n">new_plot_verbosity</span><span class="p">)</span>
     <span class="n">_check_verbosity</span><span class="p">(</span><span class="n">plot_verbosity</span><span class="p">)</span></div>
@@ -480,16 +482,17 @@
 
 
 <div class="viewcode-block" id="randint"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.randint">[docs]</a><span class="k">def</span> <span class="nf">randint</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Return random integer&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Return random integer.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">randint</span><span class="p">(</span><span class="mi">51</span><span class="p">,</span> <span class="mi">523753</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="randfloat"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.randfloat">[docs]</a><span class="k">def</span> <span class="nf">randfloat</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Return a random float between 0 and 1&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Return a random float between 0 and 1.&quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">random</span><span class="o">.</span><span class="n">random</span><span class="p">()</span></div>
 
 
 <div class="viewcode-block" id="set_seed"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.set_seed">[docs]</a><span class="k">def</span> <span class="nf">set_seed</span><span class="p">(</span><span class="n">seed</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Set the global random seed.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">rand_seed</span>
     <span class="n">rand_seed</span> <span class="o">=</span> <span class="n">seed</span>
     <span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="n">rand_seed</span><span class="p">)</span></div>
@@ -507,7 +510,7 @@
 
 
 <div class="viewcode-block" id="error_occured"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.error_occured">[docs]</a><span class="k">def</span> <span class="nf">error_occured</span><span class="p">(</span><span class="n">max_error_count</span><span class="o">=</span><span class="n">MAX_ERROR_COUNT</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Call this function every time a non-critical error (saving etc) occurs&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Call this function every time a non-critical error (saving etc) occurs.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_error_count</span>
     <span class="n">_error_count</span> <span class="o">+=</span> <span class="mi">1</span>
     <span class="k">if</span> <span class="n">_error_count</span> <span class="o">&gt;=</span> <span class="n">max_error_count</span><span class="p">:</span>
@@ -515,7 +518,7 @@
 
 
 <div class="viewcode-block" id="warning_occured"><a class="viewcode-back" href="../../raredecay.meta_config.html#raredecay.meta_config.warning_occured">[docs]</a><span class="k">def</span> <span class="nf">warning_occured</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Call this function every time a warning occurs&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Call this function every time a warning occurs.&quot;&quot;&quot;</span>
     <span class="k">global</span> <span class="n">_warning_count</span>
     <span class="n">_warning_count</span> <span class="o">+=</span> <span class="mi">1</span></div>
 

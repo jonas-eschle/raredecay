@@ -1508,6 +1508,24 @@
     <span class="k">return</span> <span class="n">output</span></div>
 
 
+<div class="viewcode-block" id="best_metric_cut"><a class="viewcode-back" href="../../../raredecay.analysis.ml_analysis.html#raredecay.analysis.ml_analysis.best_metric_cut">[docs]</a><span class="k">def</span> <span class="nf">best_metric_cut</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_data</span><span class="p">,</span> <span class="n">prediction_branch</span><span class="p">,</span> <span class="n">metric</span><span class="o">=</span><span class="s1">&#39;precision&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Find the best cut for a given metric&quot;&quot;&quot;</span>
+
+    <span class="kn">from</span> <span class="nn">rep.report.metrics</span> <span class="k">import</span> <span class="n">OptimalMetric</span>
+
+    <span class="n">data</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="n">mc_data</span><span class="o">.</span><span class="n">make_dataset</span><span class="p">(</span><span class="n">real_data</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">prediction_branch</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()[</span><span class="mi">0</span><span class="p">,</span> <span class="p">:]</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">data</span><span class="p">,</span> <span class="n">data</span><span class="p">)))</span>
+    <span class="n">metric_optimal</span> <span class="o">=</span> <span class="n">OptimalMetric</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+    <span class="n">best_cut</span><span class="p">,</span> <span class="n">best_metric</span> <span class="o">=</span> <span class="n">metric_optimal</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                                                   <span class="n">proba</span><span class="o">=</span><span class="n">data</span><span class="p">,</span>
+                                                   <span class="n">sample_weight</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
+    <span class="n">best_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">best_metric</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;best_threshold_cut&#39;</span><span class="p">:</span> <span class="n">best_cut</span><span class="p">[</span><span class="n">best_index</span><span class="p">],</span>
+              <span class="s1">&#39;best_metric&#39;</span><span class="p">:</span> <span class="n">best_metric</span><span class="p">[</span><span class="n">best_index</span><span class="p">]}</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
 <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;main&quot;</span><span class="p">:</span>
     <span class="nb">print</span> <span class="s1">&#39;test&#39;</span>
 </pre></div>

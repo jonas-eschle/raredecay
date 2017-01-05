@@ -153,7 +153,53 @@
                <span class="n">plot_verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">prompt_for_input</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">no_interactive_plots</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                <span class="n">logger_console_level</span><span class="o">=</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="n">logger_file_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span>
                <span class="n">n_cpu</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Place before Imports! Initialize/change several parameters for the package&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Place before Imports! Initialize/change several parameters for the package.</span>
+
+<span class="sd">    Initialize a run and return an output handler. Most of the implemented</span>
+<span class="sd">    function have things to plot or print, which are given to the output</span>
+<span class="sd">    handler. You can also add output to it by yourself.</span>
+
+<span class="sd">    If an output_path is specified, all the output collected will be saved</span>
+<span class="sd">    at the end of the run by calling :py:func:`~raredecay.settings.finalize`</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    output_path : str or None</span>
+<span class="sd">        If a string is provided, it is taken as the path to a folder, in which</span>
+<span class="sd">        a folder containing all the output of the run will be created.</span>
+
+<span class="sd">        If None, the output won&#39; be saved.</span>
+<span class="sd">    run_name : str</span>
+<span class="sd">        The name of the run as well as of the folder that gets created.</span>
+<span class="sd">    overwrite_existing : boolean</span>
+<span class="sd">        If True and the folder (run-name) exists already, it will be over-written.</span>
+<span class="sd">        Else a number will be added to the name to create a new folder.</span>
+<span class="sd">    run_message : str</span>
+<span class="sd">        A message, will be displayed in the output at the beginning.</span>
+<span class="sd">    verbosity : int {0, 1, 2, 3, 4, 5}</span>
+<span class="sd">        How much of the output will be printed. There is a tradeoff between</span>
+<span class="sd">        verbosity and importance.</span>
+<span class="sd">    plot_verbosity : int {0, 1, 2, 3, 4, 5}</span>
+<span class="sd">        How much of the plots will be plotted for show. There is a tradeoff between</span>
+<span class="sd">        plot_verbosity and plot_importance.</span>
+<span class="sd">    prompt_for_input : boolean</span>
+<span class="sd">        If True, at the beginning of the run, a string can be entered to extend</span>
+<span class="sd">        the run-name.</span>
+<span class="sd">    no_interactive_plots : boolean</span>
+<span class="sd">        If True, the matplotlib backend is changed to a non-interactive one.</span>
+<span class="sd">        This is required if no X-server is run, as for example on grids is</span>
+<span class="sd">        the case.</span>
+<span class="sd">    logger_console_level : str {&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;}</span>
+<span class="sd">        The logger level on the consol</span>
+<span class="sd">    logger_file_level : str {&#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;}</span>
+<span class="sd">        The logger level for files. Ignored if no output-path is specified.</span>
+<span class="sd">    n_cpu : int</span>
+<span class="sd">        The number of cpus to use. Can be a negative number as well, where</span>
+<span class="sd">        -1 means all, -2 all but one, -3 all but 2 etc.</span>
+<span class="sd">    gpu_in_use : boolean</span>
+<span class="sd">        If True, the parallelisation for Theanets is switched of in order to be</span>
+<span class="sd">        able to use it with (a single) gpu.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">if</span> <span class="n">no_interactive_plots</span><span class="p">:</span>
         <span class="kn">import</span> <span class="nn">matplotlib</span> <span class="k">as</span> <span class="nn">mpl</span>
@@ -176,7 +222,7 @@
 
 
 <div class="viewcode-block" id="finalize"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.finalize">[docs]</a><span class="k">def</span> <span class="nf">finalize</span><span class="p">(</span><span class="n">show_plots</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">play_sound_at_end</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Finalize the run, (save figures and output) and return output</span>
+    <span class="sd">&quot;&quot;&quot;Finalize the run, (save figures and output) and return output.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -192,7 +238,7 @@
 
 
 <div class="viewcode-block" id="set_verbosity"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.set_verbosity">[docs]</a><span class="k">def</span> <span class="nf">set_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">plot_verbosity</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Change the verbosity of the package&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Change the verbosity of the package.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">verbosity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
         <span class="n">meta_config</span><span class="o">.</span><span class="n">set_verbosity</span><span class="p">(</span><span class="n">verbosity</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">plot_verbosity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -200,7 +246,7 @@
 
 
 <div class="viewcode-block" id="get_output_handler"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.get_output_handler">[docs]</a><span class="k">def</span> <span class="nf">get_output_handler</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`</span>
+    <span class="sd">&quot;&quot;&quot;Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`.</span>
 
 <span class="sd">    This can be used to add output (text as well as figures) and save them</span>
 <span class="sd">    easely. For more information see the docs of the OutputHandler</span>
@@ -210,7 +256,7 @@
 
 
 <div class="viewcode-block" id="parallel_profile"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.parallel_profile">[docs]</a><span class="k">def</span> <span class="nf">parallel_profile</span><span class="p">(</span><span class="n">n_cpu</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">gpu_in_use</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Set the parallel profile, the n_cpu to use</span>
+    <span class="sd">&quot;&quot;&quot;Set the parallel profile, the n_cpu to use.</span>
 
 <span class="sd">    Most of the functions do not have a number of threads option. You can</span>
 <span class="sd">    change that here by either:</span>
@@ -268,7 +314,7 @@
 
 
 <div class="viewcode-block" id="set_random_seed"><a class="viewcode-back" href="../../raredecay.settings.html#raredecay.settings.set_random_seed">[docs]</a><span class="k">def</span> <span class="nf">set_random_seed</span><span class="p">(</span><span class="n">seed</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Set the seed to the random generator to reproduce results</span>
+    <span class="sd">&quot;&quot;&quot;Set the seed to the random generator to reproduce results.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -282,7 +328,7 @@
 <span class="k">def</span> <span class="nf">_init_output_to_file</span><span class="p">(</span><span class="n">file_path</span><span class="p">,</span> <span class="n">run_name</span><span class="o">=</span><span class="s2">&quot;Test run&quot;</span><span class="p">,</span> <span class="n">overwrite_existing</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                          <span class="n">run_message</span><span class="o">=</span><span class="s2">&quot;This is a test-run to test the package&quot;</span><span class="p">,</span>
                          <span class="n">prompt_for_input</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Saves output to file&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Saves output to file,&quot;&quot;&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">run_name</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">)),</span> <span class="s2">&quot;run_name has to be a string or int&quot;</span>
     <span class="n">config</span><span class="o">.</span><span class="n">RUN_NAME</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_name</span><span class="p">)</span>
     <span class="n">config</span><span class="o">.</span><span class="n">OUTPUT_CFG</span><span class="p">[</span><span class="s1">&#39;run_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">run_name</span><span class="p">)</span>
@@ -308,7 +354,7 @@
 
 
 <span class="k">def</span> <span class="nf">_init_configure_logger</span><span class="p">(</span><span class="n">console_level</span><span class="o">=</span><span class="s1">&#39;critical&#39;</span><span class="p">,</span> <span class="n">file_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Call before imports! Set the logger-level</span>
+    <span class="sd">&quot;&quot;&quot;Call before imports! Set the logger-level.</span>
 
 <span class="sd">    The package contains several loggers which will print/save to file some</span>
 <span class="sd">    information. What kind of information is handled can be changed by this</span>
@@ -345,7 +391,7 @@
 
 
 <span class="k">def</span> <span class="nf">_init_user_input</span><span class="p">(</span><span class="n">prompt_for_input</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;If called, you will be asked for input to name the specific run&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;If called, you will be asked for input to name the specific run.&quot;&quot;&quot;</span>
     <span class="n">meta_config</span><span class="o">.</span><span class="n">NO_PROMPT_ASSUME_YES</span> <span class="o">=</span> <span class="ow">not</span> <span class="n">prompt_for_input</span>
     <span class="n">meta_config</span><span class="o">.</span><span class="n">PROMPT_FOR_COMMENT</span> <span class="o">=</span> <span class="n">prompt_for_input</span>
 </pre></div>

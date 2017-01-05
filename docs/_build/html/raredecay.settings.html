@@ -174,7 +174,7 @@ for later plotting. They are saved in the output-folder.</li>
 <dl class="function">
 <dt id="raredecay.settings.finalize">
 <code class="descclassname">raredecay.settings.</code><code class="descname">finalize</code><span class="sig-paren">(</span><em>show_plots=True</em>, <em>play_sound_at_end=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.finalize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Finalize the run, (save figures and output) and return output</p>
+<dd><p>Finalize the run, (save figures and output) and return output.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -193,7 +193,7 @@ you first have to press enter to show them.</li>
 <dl class="function">
 <dt id="raredecay.settings.get_output_handler">
 <code class="descclassname">raredecay.settings.</code><code class="descname">get_output_handler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#get_output_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.get_output_handler" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return an output handler, instance of <a class="reference internal" href="raredecay.tools.output.html#raredecay.tools.output.OutputHandler" title="raredecay.tools.output.OutputHandler"><code class="xref py py-class docutils literal"><span class="pre">OutputHandler()</span></code></a></p>
+<dd><p>Return an output handler, instance of <a class="reference internal" href="raredecay.tools.output.html#raredecay.tools.output.OutputHandler" title="raredecay.tools.output.OutputHandler"><code class="xref py py-class docutils literal"><span class="pre">OutputHandler()</span></code></a>.</p>
 <p>This can be used to add output (text as well as figures) and save them
 easely. For more information see the docs of the OutputHandler</p>
 </dd></dl>
@@ -201,13 +201,51 @@ easely. For more information see the docs of the OutputHandler</p>
 <dl class="function">
 <dt id="raredecay.settings.initialize">
 <code class="descclassname">raredecay.settings.</code><code class="descname">initialize</code><span class="sig-paren">(</span><em>output_path=None</em>, <em>run_name='Test run'</em>, <em>overwrite_existing=False</em>, <em>run_message='This is a test-run to test the package'</em>, <em>verbosity=3</em>, <em>plot_verbosity=3</em>, <em>prompt_for_input=False</em>, <em>no_interactive_plots=False</em>, <em>logger_console_level='warning'</em>, <em>logger_file_level='debug'</em>, <em>n_cpu=1</em>, <em>gpu_in_use=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Place before Imports! Initialize/change several parameters for the package</p>
+<dd><p>Place before Imports! Initialize/change several parameters for the package.</p>
+<p>Initialize a run and return an output handler. Most of the implemented
+function have things to plot or print, which are given to the output
+handler. You can also add output to it by yourself.</p>
+<p>If an output_path is specified, all the output collected will be saved
+at the end of the run by calling <a class="reference internal" href="#raredecay.settings.finalize" title="raredecay.settings.finalize"><code class="xref py py-func docutils literal"><span class="pre">finalize()</span></code></a></p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>output_path</strong> (<em>str</em><em> or </em><em>None</em>) &#8211; <p>If a string is provided, it is taken as the path to a folder, in which
+a folder containing all the output of the run will be created.</p>
+<p>If None, the output won&#8217; be saved.</p>
+</li>
+<li><strong>run_name</strong> (<em>str</em>) &#8211; The name of the run as well as of the folder that gets created.</li>
+<li><strong>overwrite_existing</strong> (<em>boolean</em>) &#8211; If True and the folder (run-name) exists already, it will be over-written.
+Else a number will be added to the name to create a new folder.</li>
+<li><strong>run_message</strong> (<em>str</em>) &#8211; A message, will be displayed in the output at the beginning.</li>
+<li><strong>verbosity</strong> (<em>int {0</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>3</em><em>, </em><em>4</em><em>, </em><em>5}</em>) &#8211; How much of the output will be printed. There is a tradeoff between
+verbosity and importance.</li>
+<li><strong>plot_verbosity</strong> (<em>int {0</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>3</em><em>, </em><em>4</em><em>, </em><em>5}</em>) &#8211; How much of the plots will be plotted for show. There is a tradeoff between
+plot_verbosity and plot_importance.</li>
+<li><strong>prompt_for_input</strong> (<em>boolean</em>) &#8211; If True, at the beginning of the run, a string can be entered to extend
+the run-name.</li>
+<li><strong>no_interactive_plots</strong> (<em>boolean</em>) &#8211; If True, the matplotlib backend is changed to a non-interactive one.
+This is required if no X-server is run, as for example on grids is
+the case.</li>
+<li><strong>logger_console_level</strong> (<em>str {'debug'</em><em>, </em><em>'info'</em><em>, </em><em>'warning'</em><em>, </em><em>'error'</em><em>, </em><em>'critical'}</em>) &#8211; The logger level on the consol</li>
+<li><strong>logger_file_level</strong> (<em>str {'debug'</em><em>, </em><em>'info'</em><em>, </em><em>'warning'</em><em>, </em><em>'error'</em><em>, </em><em>'critical'}</em>) &#8211; The logger level for files. Ignored if no output-path is specified.</li>
+<li><strong>n_cpu</strong> (<em>int</em>) &#8211; The number of cpus to use. Can be a negative number as well, where
+-1 means all, -2 all but one, -3 all but 2 etc.</li>
+<li><strong>gpu_in_use</strong> (<em>boolean</em>) &#8211; If True, the parallelisation for Theanets is switched of in order to be
+able to use it with (a single) gpu.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">
 <dt id="raredecay.settings.parallel_profile">
 <code class="descclassname">raredecay.settings.</code><code class="descname">parallel_profile</code><span class="sig-paren">(</span><em>n_cpu=-1</em>, <em>gpu_in_use=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#parallel_profile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.parallel_profile" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the parallel profile, the n_cpu to use</p>
+<dd><p>Set the parallel profile, the n_cpu to use.</p>
 <p>Most of the functions do not have a number of threads option. You can
 change that here by either:</p>
 <ul class="simple">
@@ -238,7 +276,7 @@ other implemented gpu assistance.</li>
 <dl class="function">
 <dt id="raredecay.settings.set_random_seed">
 <code class="descclassname">raredecay.settings.</code><code class="descname">set_random_seed</code><span class="sig-paren">(</span><em>seed=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#set_random_seed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.set_random_seed" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set the seed to the random generator to reproduce results</p>
+<dd><p>Set the seed to the random generator to reproduce results.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -252,7 +290,7 @@ other implemented gpu assistance.</li>
 <dl class="function">
 <dt id="raredecay.settings.set_verbosity">
 <code class="descclassname">raredecay.settings.</code><code class="descname">set_verbosity</code><span class="sig-paren">(</span><em>verbosity=3</em>, <em>plot_verbosity=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#set_verbosity"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.set_verbosity" title="Permalink to this definition">¶</a></dt>
-<dd><p>Change the verbosity of the package</p>
+<dd><p>Change the verbosity of the package.</p>
 </dd></dl>
 
 </div>

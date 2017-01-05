@@ -216,22 +216,19 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># initialize logger</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">modul_logger</span>
-                <span class="c1"># initialize index</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># initialize index</span>
+        <span class="c1"># self._index = None</span>
 
         <span class="c1"># initialize data</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># self._data = None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_data_type</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">column_alias</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">column_alias</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">column_alias</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fold_index</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># list with indeces of folds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fold_status</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># tuple (my_fold_number, total_n_folds)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_length</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_columns</span> <span class="o">=</span> <span class="kc">None</span>
-
-
-
-
+        <span class="c1"># self._columns = None</span>
 
         <span class="c1"># data name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>

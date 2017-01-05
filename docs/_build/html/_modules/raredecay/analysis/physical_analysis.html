@@ -529,8 +529,12 @@
 <span class="sd">    save_mc_pred : str or False</span>
 <span class="sd">        If provided, the predictions of the MC will be saved to its</span>
 <span class="sd">        root-tree with the branch name specified here.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
 
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : float, float</span>
+<span class="sd">        If a metric_vs_cut is specified, the best cut and metric is returned</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
     <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
     <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
@@ -540,6 +544,7 @@
     <span class="kn">from</span> <span class="nn">raredecay.tools.metrics</span> <span class="k">import</span> <span class="n">punzi_fom</span><span class="p">,</span> <span class="n">precision_measure</span>
 
     <span class="c1"># check if predictions can be saved: need to be root-file and no selection applied</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">if</span> <span class="n">save_real_pred</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">real_data</span><span class="o">.</span><span class="n">data_type</span> <span class="o">!=</span> <span class="s1">&#39;root&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Real predictions should be saved but data is not a root-file but &quot;</span> <span class="o">+</span>
@@ -587,6 +592,14 @@
             <span class="n">report</span><span class="o">.</span><span class="n">metrics_vs_cut</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span><span class="o">.</span><span class="n">plot</span><span class="p">()</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">title</span><span class="p">)</span>
             <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">()</span>
+            <span class="kn">from</span> <span class="nn">rep.report.metrics</span> <span class="k">import</span> <span class="n">OptimalMetric</span>
+            <span class="n">metric_optimal</span> <span class="o">=</span> <span class="n">OptimalMetric</span><span class="p">(</span><span class="n">metric</span><span class="p">)</span>
+            <span class="n">best_cut</span><span class="p">,</span> <span class="n">best_metric</span> <span class="o">=</span> <span class="n">metric_optimal</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">y_true</span><span class="o">=</span><span class="n">pred_tmp</span><span class="p">[</span><span class="s1">&#39;y_true&#39;</span><span class="p">],</span>
+                                                           <span class="n">proba</span><span class="o">=</span><span class="n">pred_tmp</span><span class="p">[</span><span class="s1">&#39;y_proba&#39;</span><span class="p">],</span>
+                                                           <span class="n">sample_weight</span><span class="o">=</span><span class="n">pred_tmp</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">])</span>
+            <span class="n">best_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">best_metric</span><span class="p">)</span>
+            <span class="n">output</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;best_threshold_cut&#39;</span><span class="p">:</span> <span class="n">best_cut</span><span class="p">[</span><span class="n">best_index</span><span class="p">],</span>
+                      <span class="s1">&#39;best_metric&#39;</span><span class="p">:</span> <span class="n">best_metric</span><span class="p">[</span><span class="n">best_index</span><span class="p">]}</span>
 
     <span class="c1"># predict to all data</span>
     <span class="k">if</span> <span class="n">predict</span><span class="p">:</span>
@@ -655,6 +668,8 @@
         <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;Predictions of MC vs all real data&quot;</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">pred_real</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
         <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">pred_mc</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span>
 
 
 <div class="viewcode-block" id="add_branch_to_rootfile"><a class="viewcode-back" href="../../../raredecay.analysis.physical_analysis.html#raredecay.analysis.physical_analysis.add_branch_to_rootfile">[docs]</a><span class="k">def</span> <span class="nf">add_branch_to_rootfile</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">treename</span><span class="p">,</span> <span class="n">new_branch</span><span class="p">,</span> <span class="n">branch_name</span><span class="p">,</span>

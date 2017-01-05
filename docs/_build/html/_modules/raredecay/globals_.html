@@ -211,6 +211,7 @@
 
 
 <div class="viewcode-block" id="free_cpus"><a class="viewcode-back" href="../../raredecay.globals_.html#raredecay.globals_.free_cpus">[docs]</a><span class="k">def</span> <span class="nf">free_cpus</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;Return the number of free cpus, 1 if no or one are free&quot;&quot;&quot;</span>
     <span class="n">n_out</span> <span class="o">=</span> <span class="nb">max</span><span class="p">([</span><span class="n">meta_config</span><span class="o">.</span><span class="n">n_cpu_max</span> <span class="o">-</span> <span class="n">n_cpu_used</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span>
     <span class="k">return</span> <span class="n">n_out</span></div>
 

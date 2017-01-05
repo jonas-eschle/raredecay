@@ -500,8 +500,7 @@
 
 
 <div class="viewcode-block" id="punzi_fom"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.punzi_fom">[docs]</a><span class="k">def</span> <span class="nf">punzi_fom</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="n">n_background</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;:math:`a^2 + b^2 = c^2`</span>
-<span class="sd">    Return the Punzi Figure of Merit = :math:`frac{S}{\sqrt(B) + n_sigma/2}`.</span>
+    <span class="sd">&quot;&quot;&quot;Return the Punzi Figure of Merit = :math:`\\frac{S}{\sqrt(B) + n_{\sigma}/2}`.</span>
 
 <span class="sd">    The Punzi FoM is mostly used for the detection of rare decays to prevent</span>
 <span class="sd">    the metric of cutting off all the background and leaving us with only a</span>
@@ -530,7 +529,7 @@
 
 
 <div class="viewcode-block" id="precision_measure"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.precision_measure">[docs]</a><span class="k">def</span> <span class="nf">precision_measure</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="n">n_background</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the precision measure: s / sqrt(s + b).&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Return the precision measure = :math:`\\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}`.&quot;&quot;&quot;</span>
     <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_signal</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_signal</span> <span class="o">+</span> <span class="n">n_background</span><span class="p">))</span>

@@ -155,17 +155,18 @@
 <dt id="raredecay.tools.output.OutputHandler">
 <em class="property">class </em><code class="descclassname">raredecay.tools.output.</code><code class="descname">OutputHandler</code><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">object</span></code></p>
-<p>Class for output handling</p>
+<p>Class for output handling.</p>
+<p>Initialize an output handler</p>
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.IO_to_string">
 <code class="descname">IO_to_string</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.IO_to_string"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.IO_to_string" title="Permalink to this definition">¶</a></dt>
-<dd><p>Redericts stdout (print etc.) to string</p>
+<dd><p>Rederict stdout (print etc.) to string.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.IO_to_sys">
 <code class="descname">IO_to_sys</code><span class="sig-paren">(</span><em>importance=3</em>, <em>**add_output_kwarg</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.IO_to_sys"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.IO_to_sys" title="Permalink to this definition">¶</a></dt>
-<dd><p>Directs stdout back to the sys.stdout and return/save string to output</p>
+<dd><p>Direct stdout back to the sys.stdout and return/save string to output.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -239,36 +240,50 @@ concatenated to the data written before</li>
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.figure">
 <code class="descname">figure</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.figure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.figure" title="Permalink to this definition">¶</a></dt>
-<dd><p>FUTURE: Wrapper around save_fig()</p>
+<dd><p>FUTURE: Wrapper around save_fig().</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.finalize">
 <code class="descname">finalize</code><span class="sig-paren">(</span><em>show_plots=True</em>, <em>play_sound_at_end=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.finalize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.finalize" title="Permalink to this definition">¶</a></dt>
-<dd></dd></dl>
+<dd><p>Finalize the run. Save everything and plot.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>show_plots</strong> (<em>boolean</em>) &#8211; If True, show the plots. Equivalent to writing plt.show().</li>
+<li><strong>play_sound_at_end</strong> (<em>boolean</em>) &#8211; If True, tries to play a beep-sound at the end of a run to let you
+know it finished.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
 
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.get_logger_path">
 <code class="descname">get_logger_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.get_logger_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.get_logger_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the path for the log folder</p>
+<dd><p>Return the path for the log folder.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.get_plots_path">
 <code class="descname">get_plots_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.get_plots_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.get_plots_path" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the path for the log folder</p>
+<dd><p>Return the path for the log folder.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.initialize">
 <code class="descname">initialize</code><span class="sig-paren">(</span><em>run_name=''</em>, <em>prompt_for_comment=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.initialize" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initialization for external use, no folders created, config.py logger</p>
+<dd><p>Initialization for external use, no folders created, config.py logger.</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.initialize_save">
 <code class="descname">initialize_save</code><span class="sig-paren">(</span><em>output_path</em>, <em>run_name=''</em>, <em>run_message=''</em>, <em>output_folders=None</em>, <em>del_existing_folders=False</em>, <em>logger_cfg=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.initialize_save"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.initialize_save" title="Permalink to this definition">¶</a></dt>
-<dd><p>Initializes the run. Creates the neccesary folders.</p>
+<dd><p>Initialize the run. Create the neccesary folders.</p>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
@@ -279,6 +294,8 @@ concatenated to the data written before</li>
 created (named after the run) which will contain all the output
 folders (logfile, figures, output etc)</li>
 <li><strong>run_name</strong> (<em>str</em>) &#8211; The name of the run and also of the output folder.</li>
+<li><strong>run_message</strong> (<em>str</em>) &#8211; A message that is displayed below the titel: a further comment
+on what you do in the script</li>
 <li><strong>output_folders</strong> (<em>dict</em>) &#8211; Contain the name of the folders for the different outputs. For the
 available keys
 see <code class="xref py py-const docutils literal"><span class="pre">__DEFAULT_OUTPUT_FOLDERS</span></code>.</li>
@@ -297,8 +314,8 @@ taken.</li>
 <dl class="method">
 <dt id="raredecay.tools.output.OutputHandler.make_me_a_logger">
 <code class="descname">make_me_a_logger</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/output.html#OutputHandler.make_me_a_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.output.OutputHandler.make_me_a_logger" title="Permalink to this definition">¶</a></dt>
-<dd><p>Create a logger in OutputHandler instance. Dependency &#8220;hack&#8221;. Call
-after <a class="reference internal" href="#raredecay.tools.output.OutputHandler.initialize_save" title="raredecay.tools.output.OutputHandler.initialize_save"><code class="xref py py-meth docutils literal"><span class="pre">initialize_save()</span></code></a>
+<dd><p>Create a logger in OutputHandler instance. Dependency &#8220;hack&#8221;.</p>
+<p>Call after <a class="reference internal" href="#raredecay.tools.output.OutputHandler.initialize_save" title="raredecay.tools.output.OutputHandler.initialize_save"><code class="xref py py-meth docutils literal"><span class="pre">initialize_save()</span></code></a>
 has ben called.</p>
 </dd></dl>
 
@@ -333,8 +350,6 @@ Therefore, a 0 corresponds to &#8220;no plot&#8221; and a 5 means &#8220;always 
 <li><strong>file_format</strong> (<em>str</em><em> or </em><em>list</em><em>(</em><em>str</em><em>, </em><em>str</em><em>, </em><em>str</em><em>,</em><em>..</em><em>)</em><em></em>) &#8211; The ending of the desired format, example: &#8216;png&#8217; (default).
 If you don&#8217;t want to save it, enter a blank list.</li>
 <li><strong>to_pickle</strong> (<em>boolean</em>) &#8211; If True, the plot will be saved to a pickle file.</li>
-<li><strong>plot</strong> (<em>boolean</em>) &#8211; If True, the figure will be showed when calling <em>show()</em>. If
-False, the figure will only be saved but not plotted.</li>
 <li><strong>**save_cfg</strong> (<em>keyword args</em>) &#8211; Will be used as arguments in <code class="xref py py-func docutils literal"><span class="pre">savefig()</span></code></li>
 </ul>
 </td>
@@ -342,7 +357,7 @@ False, the figure will only be saved but not plotted.</li>
 <tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> &#8211; Return the figure.</p>
 </td>
 </tr>
-<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">matplotlib.pyplot.figure</p>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><code class="xref py py-class docutils literal"><span class="pre">figure</span></code></p>
 </td>
 </tr>
 </tbody>

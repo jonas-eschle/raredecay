@@ -154,14 +154,13 @@
 <dl class="function">
 <dt id="raredecay.tools.metrics.precision_measure">
 <code class="descclassname">raredecay.tools.metrics.</code><code class="descname">precision_measure</code><span class="sig-paren">(</span><em>n_signal</em>, <em>n_background</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#precision_measure"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.precision_measure" title="Permalink to this definition">¶</a></dt>
-<dd><p>Return the precision measure: s / sqrt(s + b).</p>
+<dd><p>Return the precision measure = <span class="math">\(\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}\)</span>.</p>
 </dd></dl>
 
 <dl class="function">
 <dt id="raredecay.tools.metrics.punzi_fom">
 <code class="descclassname">raredecay.tools.metrics.</code><code class="descname">punzi_fom</code><span class="sig-paren">(</span><em>n_signal</em>, <em>n_background</em>, <em>n_sigma=5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#punzi_fom"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.punzi_fom" title="Permalink to this definition">¶</a></dt>
-<dd><p><span class="math">\(a^2 + b^2 = c^2\)</span>
-Return the Punzi Figure of Merit = <span class="math">\(frac{S}{\sqrt(B) + n_sigma/2}\)</span>.</p>
+<dd><p>Return the Punzi Figure of Merit = <span class="math">\(\frac{S}{\sqrt(B) + n_{\sigma}/2}\)</span>.</p>
 <p>The Punzi FoM is mostly used for the detection of rare decays to prevent
 the metric of cutting off all the background and leaving us with only a
 very few signals.</p>
