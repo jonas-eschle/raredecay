@@ -1,4 +1,4 @@
-strictness: veryhigh
+strictness: medium
 pylint:
   disable:
     - too-many-arguments
@@ -8,7 +8,7 @@ pylint:
 
 ignore-paths:
   - raredecay/tools/estimator.py
-
+  - docs/conf.py
 python-targets:
  - 2
  

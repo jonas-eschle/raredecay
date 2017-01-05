@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>&lt;no title&gt; &mdash; raredecay 1.1.0 documentation</title>
+  <title>Statistics &mdash; raredecay 1.1.0 documentation</title>
   
 
   
@@ -33,7 +33,10 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="raredecay 1.1.0 documentation" href="index.html"/> 
+    <link rel="top" title="raredecay 1.1.0 documentation" href="index.html"/>
+        <link rel="up" title="Analysis" href="raredecay.analysis.html"/>
+        <link rel="next" title="Tools" href="raredecay.tools.html"/>
+        <link rel="prev" title="Physical Analysis with ML" href="raredecay.analysis.physical_analysis.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -82,8 +85,18 @@
           
             
             
-                <ul>
-<li class="toctree-l1"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a></li>
+                <ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">Raredecay Analysis Package</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.analysis.html">Analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.ml_analysis.html">Machine Learning</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.physical_analysis.html">Physical Analysis with ML</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Statistics</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">Tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">Run Settings</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -114,11 +127,15 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>&lt;no title&gt;</li>
+          <li><a href="raredecay.html">Raredecay Analysis Package</a> &raquo;</li>
+      
+          <li><a href="raredecay.analysis.html">Analysis</a> &raquo;</li>
+      
+    <li>Statistics</li>
       <li class="wy-breadcrumbs-aside">
         
           
-            <a href="_sources/subst.rst.txt" rel="nofollow"> View page source</a>
+            <a href="_sources/raredecay.analysis.statistics.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
@@ -128,16 +145,32 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <dl class="docutils">
-<dt>importance</dt>
- <span class="classifier-delimiter">:</span> <span class="classifier">int {0, 1, 2, 3, 4, 5}</span><dd>The higher the importance, the more likely the plots will be shown.
-All output will be saved anyway.</dd>
-</dl>
+  <div class="section" id="module-raredecay.analysis.statistics">
+<span id="statistics"></span><h1>Statistics<a class="headerlink" href="#module-raredecay.analysis.statistics" title="Permalink to this headline">¶</a></h1>
+<p>Created on Thu Oct 20 20:00:33 2016</p>
+<p>&#64;author: Jonas Eschle &#8216;Mayou36&#8217;</p>
+<p>This modul contains several tools like fits.</p>
+<dl class="function">
+<dt id="raredecay.analysis.statistics.fit_mass">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">fit_mass</code><span class="sig-paren">(</span><em>data</em>, <em>column='B_M'</em>, <em>n_bkg=None</em>, <em>n_sig=None</em>, <em>blind=False</em>, <em>second_storage=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#fit_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.fit_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mass-fit but blind function not yet implemented</p>
+</dd></dl>
+
+</div>
 
 
            </div>
           </div>
           <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.tools.html" class="btn btn-neutral float-right" title="Tools" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.analysis.physical_analysis.html" class="btn btn-neutral" title="Physical Analysis with ML" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
   
 
   <hr/>

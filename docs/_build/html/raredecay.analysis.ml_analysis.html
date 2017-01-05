@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Machine Learning &mdash; raredecay 1.0.9 documentation</title>
+  <title>Machine Learning &mdash; raredecay 1.1.0 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="raredecay 1.0.9 documentation" href="index.html"/>
+    <link rel="top" title="raredecay 1.1.0 documentation" href="index.html"/>
         <link rel="up" title="Analysis" href="raredecay.analysis.html"/>
         <link rel="next" title="Physical Analysis with ML" href="raredecay.analysis.physical_analysis.html"/>
         <link rel="prev" title="Analysis" href="raredecay.analysis.html"/> 
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.0.9
+                1.1.0
               </div>
             
           
@@ -90,6 +90,7 @@
 <li class="toctree-l2 current"><a class="reference internal" href="raredecay.analysis.html">Analysis</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Machine Learning</a></li>
 <li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.physical_analysis.html">Physical Analysis with ML</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.statistics.html">Statistics</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">Tools</a></li>
@@ -602,11 +603,10 @@ But be aware, that you can easily screw up things by overfitting.</dd>
 <li><strong>mc_data</strong> (<a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The Monte-Carlo data to compare with the real data.</li>
 <li><strong>real_data</strong> (<a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; Same as <em>mc_data</em> but for the real data.</li>
 <li><strong>columns</strong> (<em>list of strings</em>) &#8211; The columns/features/branches you want to use for the reweighting.</li>
-<li><strong>reweighter</strong> (<em>{'gb'</em><em>, </em><em>'bins'}</em>) &#8211; <p>Specify which reweighter to be used.
-- <strong>gb</strong>: The GradientBoosted Reweighter from REP,</p>
-<blockquote>
-<div><code class="xref py py-func docutils literal"><span class="pre">GBReweighter()</span></code></div></blockquote>
+<li><strong>reweighter</strong> (<em>{'gb'</em><em>, </em><em>'bins'}</em>) &#8211; <p>Specify which reweighter to be used.</p>
 <ul>
+<li><strong>gb</strong>: The GradientBoosted Reweighter from REP,
+<code class="xref py py-func docutils literal"><span class="pre">GBReweighter()</span></code></li>
 <li><strong>bins</strong>: The simple bins reweighter from REP,
 <code class="xref py py-func docutils literal"><span class="pre">BinsReweighter()</span></code></li>
 </ul>
@@ -717,7 +717,7 @@ new weights.</p>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.9',
+            VERSION:'1.1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

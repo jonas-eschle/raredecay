@@ -1,0 +1,334 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.analysis.statistics &mdash; raredecay 1.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="raredecay 1.1.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">Raredecay Analysis Package</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.analysis.statistics</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.analysis.statistics</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Oct 20 20:00:33 2016</span>
+
+<span class="sd">@author: Jonas Eschle &#39;Mayou36&#39;</span>
+
+<span class="sd">This modul contains several tools like fits.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">ROOT</span>
+<span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="n">RooRealVar</span><span class="p">,</span> <span class="n">RooArgList</span><span class="p">,</span> <span class="n">RooArgSet</span><span class="p">,</span> <span class="n">RooAddPdf</span><span class="p">,</span> <span class="n">RooDataSet</span>
+<span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="n">RooFit</span><span class="p">,</span> <span class="n">RooCBShape</span><span class="p">,</span> <span class="n">RooExponential</span>
+<span class="c1"># from ROOT import RooGaussian, RooMinuit</span>
+<span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="n">TCanvas</span>  <span class="c1"># HACK to prevent not plotting canvas by root_numpy import. BUG.</span>
+<span class="kn">from</span> <span class="nn">root_numpy</span> <span class="k">import</span> <span class="n">array2tree</span>
+
+<span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
+
+<span class="c1"># from raredecay import meta_config</span>
+
+
+<div class="viewcode-block" id="fit_mass"><a class="viewcode-back" href="../../../raredecay.analysis.statistics.html#raredecay.analysis.statistics.fit_mass">[docs]</a><span class="k">def</span> <span class="nf">fit_mass</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;B_M&#39;</span><span class="p">,</span> <span class="n">n_bkg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_sig</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">blind</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">second_storage</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Mass-fit but blind function not yet implemented&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">column</span><span class="p">,</span> <span class="nb">str</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">column</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Fitting to several columns &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">column</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; not supported.&quot;</span><span class="p">)</span>
+    <span class="n">data_array</span><span class="p">,</span> <span class="n">_t1</span><span class="p">,</span> <span class="n">_t2</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">make_dataset</span><span class="p">(</span><span class="n">second_storage</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">column</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">_t1</span><span class="p">,</span> <span class="n">_t2</span>
+
+    <span class="c1"># double crystalball variables</span>
+    <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">data_array</span><span class="p">[</span><span class="n">column</span><span class="p">]),</span> <span class="nb">max</span><span class="p">(</span><span class="n">data_array</span><span class="p">[</span><span class="n">column</span><span class="p">])</span>
+<span class="c1">#    x_low = RooRealVar(&quot;x&quot;, &quot;x variable&quot;, min_x, 5100)</span>
+<span class="c1">#    x_high = RooRealVar(&quot;x&quot;, &quot;x variable&quot;, 5400, max_x)</span>
+<span class="c1">#    x = x_low + x_high</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;x variable&quot;</span><span class="p">,</span> <span class="n">min_x</span><span class="p">,</span> <span class="n">max_x</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;mean&quot;</span><span class="p">,</span> <span class="s2">&quot;Mean of Double CB PDF&quot;</span><span class="p">,</span> <span class="mi">5300</span><span class="p">,</span> <span class="mi">5000</span><span class="p">,</span> <span class="mi">6000</span><span class="p">)</span>
+    <span class="n">sigma</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;sigma&quot;</span><span class="p">,</span> <span class="s2">&quot;Sigma of Double CB PDF&quot;</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">)</span>
+    <span class="n">alpha_0</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;alpha_0&quot;</span><span class="p">,</span> <span class="s2">&quot;alpha_0 of one side&quot;</span><span class="p">,</span> <span class="mf">1.</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+    <span class="n">alpha_1</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;alpha_1&quot;</span><span class="p">,</span> <span class="s2">&quot;alpha_1 of other side&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">5</span><span class="p">,</span> <span class="mf">0.</span><span class="p">)</span>
+    <span class="n">lambda_0</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;lambda_0&quot;</span><span class="p">,</span> <span class="s2">&quot;Exponent of one side&quot;</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">20</span><span class="p">)</span>
+    <span class="n">lambda_1</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;lambda_1&quot;</span><span class="p">,</span> <span class="s2">&quot;Exponent of other side&quot;</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mi">25</span><span class="p">)</span>
+
+    <span class="c1"># create data</span>
+    <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">data_array</span><span class="o">.</span><span class="n">as_matrix</span><span class="p">()])</span>
+    <span class="n">data_array</span><span class="o">.</span><span class="n">dtype</span> <span class="o">=</span> <span class="p">[(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">float64</span><span class="p">)]</span>
+    <span class="n">tree1</span> <span class="o">=</span> <span class="n">array2tree</span><span class="p">(</span><span class="n">data_array</span><span class="p">,</span> <span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">data_np</span> <span class="o">=</span> <span class="n">RooDataSet</span><span class="p">(</span><span class="s2">&quot;data_np&quot;</span><span class="p">,</span> <span class="s2">&quot;Data generated by numpy&quot;</span><span class="p">,</span> <span class="n">RooArgSet</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">RooFit</span><span class="o">.</span><span class="n">Import</span><span class="p">(</span><span class="n">tree1</span><span class="p">))</span>
+
+    <span class="c1"># pdf construction</span>
+    <span class="n">frac</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;frac&quot;</span><span class="p">,</span> <span class="s2">&quot;Fraction of crystal ball pdfs&quot;</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">)</span>
+
+    <span class="n">crystalball1</span> <span class="o">=</span> <span class="n">RooCBShape</span><span class="p">(</span><span class="s2">&quot;crystallball1&quot;</span><span class="p">,</span> <span class="s2">&quot;First CrystalBall PDF&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span>
+                              <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha_0</span><span class="p">,</span> <span class="n">lambda_0</span><span class="p">)</span>
+    <span class="n">crystalball2</span> <span class="o">=</span> <span class="n">RooCBShape</span><span class="p">(</span><span class="s2">&quot;crystallball2&quot;</span><span class="p">,</span> <span class="s2">&quot;Second CrystalBall PDF&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span>
+                              <span class="n">mean</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">alpha_1</span><span class="p">,</span> <span class="n">lambda_1</span><span class="p">)</span>
+    <span class="n">doubleCB</span> <span class="o">=</span> <span class="n">RooAddPdf</span><span class="p">(</span><span class="s2">&quot;doubleCB&quot;</span><span class="p">,</span> <span class="s2">&quot;Double CrystalBall PDF&quot;</span><span class="p">,</span>
+                         <span class="n">crystalball1</span><span class="p">,</span> <span class="n">crystalball2</span><span class="p">,</span> <span class="n">frac</span><span class="p">)</span>
+
+<span class="c1">#    nsig = RooRealVar(&quot;nsig&quot;, &quot;Number of signals events&quot;, 10000, 0, 1000000)</span>
+    <span class="c1"># TODO: fix below</span>
+    <span class="k">if</span> <span class="n">n_bkg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nbkg</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;nbkg&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of background events&quot;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">n_bkg</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">nbkg</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;nbkg&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of background events&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_bkg</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_bkg is not &gt;= 0 or None&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_sig</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">nsig</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;nsig&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of signal events&quot;</span><span class="p">,</span> <span class="mi">10000</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1000000</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">n_sig</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">nsig</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;nsig&quot;</span><span class="p">,</span> <span class="s2">&quot;Number of signal events&quot;</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">n_sig</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_sig is not &gt;= 0&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">n_sig</span> <span class="o">==</span> <span class="n">n_bkg</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;n_sig as well as n_bkg is 0...&quot;</span><span class="p">)</span>
+
+    <span class="n">lambda_exp</span> <span class="o">=</span> <span class="n">RooRealVar</span><span class="p">(</span><span class="s2">&quot;lambda_exp&quot;</span><span class="p">,</span> <span class="s2">&quot;lambda exp pdf bkg&quot;</span><span class="p">,</span> <span class="o">-</span><span class="mf">0.1</span><span class="p">,</span> <span class="o">-</span><span class="mf">10.</span><span class="p">,</span> <span class="mf">10.</span><span class="p">)</span>
+    <span class="n">bkg_pdf</span> <span class="o">=</span> <span class="n">RooExponential</span><span class="p">(</span><span class="s2">&quot;bkg_pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;Background PDF exp&quot;</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">lambda_exp</span><span class="p">)</span>
+
+    <span class="n">comb_pdf</span> <span class="o">=</span> <span class="n">RooAddPdf</span><span class="p">(</span><span class="s2">&quot;comb_pdf&quot;</span><span class="p">,</span> <span class="s2">&quot;Combined DoubleCB and bkg PDF&quot;</span><span class="p">,</span>
+                         <span class="n">RooArgList</span><span class="p">(</span><span class="n">doubleCB</span><span class="p">,</span> <span class="n">bkg_pdf</span><span class="p">),</span> <span class="n">RooArgList</span><span class="p">(</span><span class="n">nsig</span><span class="p">,</span> <span class="n">nbkg</span><span class="p">))</span>
+
+    <span class="c1"># create test dataset</span>
+<span class="c1">#    mean_gauss = RooRealVar(&quot;mean_gauss&quot;, &quot;Mean of Gaussian&quot;, 5553, -10000, 10000)</span>
+<span class="c1">#    sigma_gauss = RooRealVar(&quot;sigma_gauss&quot;, &quot;Width of Gaussian&quot;, 20, 0.0001, 300)</span>
+<span class="c1">#    gauss1 = RooGaussian(&quot;gauss1&quot;, &quot;Gaussian test dist&quot;, x, mean_gauss, sigma_gauss)</span>
+<span class="c1">#    lambda_data = RooRealVar(&quot;lambda_data&quot;, &quot;lambda exp data&quot;, -.002)</span>
+<span class="c1">#    exp_data = RooExponential(&quot;exp_data&quot;, &quot;data example exp&quot;, x, lambda_data)</span>
+<span class="c1">#    frac_data = RooRealVar(&quot;frac_data&quot;, &quot;Fraction PDF of data&quot;, 0.15)</span>
+<span class="c1">#</span>
+<span class="c1">#    data_pdf = RooAddPdf(&quot;data_pdf&quot;, &quot;Data PDF&quot;, gauss1, exp_data, frac_data)</span>
+<span class="c1">#    data = data_pdf.generate(RooArgSet(x), 30000)</span>
+
+<span class="c1">#    HACK</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">data_np</span>
+    <span class="nb">print</span> <span class="n">data</span>
+
+<span class="c1">#    data.printValue()</span>
+<span class="c1">#    xframe = x.frame()</span>
+<span class="c1">#    data_pdf.plotOn(xframe)</span>
+
+<span class="c1">#    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))</span>
+    <span class="c1"># HACK to get 8 cores in testing</span>
+
+    <span class="n">result_fit</span> <span class="o">=</span> <span class="n">comb_pdf</span><span class="o">.</span><span class="n">fitTo</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">RooFit</span><span class="o">.</span><span class="n">Extended</span><span class="p">(</span><span class="n">ROOT</span><span class="o">.</span><span class="n">kTRUE</span><span class="p">),</span> <span class="n">RooFit</span><span class="o">.</span><span class="n">NumCPU</span><span class="p">(</span><span class="mi">8</span><span class="p">))</span>
+    <span class="nb">print</span> <span class="n">nsig</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="n">n_sig</span><span class="p">)</span>
+    <span class="n">sframe</span> <span class="o">=</span> <span class="n">nsig</span><span class="o">.</span><span class="n">frame</span><span class="p">()</span>
+    <span class="n">lnL</span> <span class="o">=</span> <span class="n">comb_pdf</span><span class="o">.</span><span class="n">createNLL</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">lnProfileL</span> <span class="o">=</span> <span class="n">lnL</span><span class="o">.</span><span class="n">createProfile</span><span class="p">(</span><span class="n">ROOT</span><span class="o">.</span><span class="n">RooArgSet</span><span class="p">(</span><span class="n">nsig</span><span class="p">))</span>
+    <span class="n">lnProfileL</span><span class="o">.</span><span class="n">plotOn</span><span class="p">(</span><span class="n">sframe</span><span class="p">)</span>
+    <span class="n">sframe</span><span class="o">.</span><span class="n">Draw</span><span class="p">()</span>
+
+<span class="c1">#    nll_plot = RooRealVar(&quot;nll_plot&quot;, &quot;NLL plotting range&quot;, 0.01, 0.99)</span>
+<span class="c1">#    nll_frame = nll_plot.frame()</span>
+<span class="c1">#    my_nll = comb_pdf.createNLL(data, RooFit.NumCPU(8))</span>
+<span class="c1">#    RooMinuit(my_nll).migrad()</span>
+<span class="c1">#    my_nll.plotOn(nll_frame)</span>
+<span class="c1">#    nll_frame.Draw()</span>
+<span class="c1">#    data.plotOn(xframe)</span>
+<span class="c1">#    comb_pdf.plotOn(xframe)</span>
+<span class="c1">#    xframe.Draw()</span>
+
+<span class="c1">#    return xframe</span>
+
+    <span class="n">params</span> <span class="o">=</span> <span class="n">comb_pdf</span><span class="o">.</span><span class="n">getVariables</span><span class="p">()</span>
+    <span class="n">params</span><span class="o">.</span><span class="n">Print</span><span class="p">(</span><span class="s2">&quot;v&quot;</span><span class="p">)</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;empty&quot;</span>
+<span class="c1">#    data = RooDataSet(&quot;data&quot;, )</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools.data_storage</span> <span class="k">import</span> <span class="n">HEPDataStorage</span>
+    <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+    <span class="n">data</span> <span class="o">=</span> <span class="n">HEPDataStorage</span><span class="p">(</span><span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">loc</span><span class="o">=</span><span class="mi">5400</span><span class="p">,</span> <span class="n">scale</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">10000</span><span class="p">,</span> <span class="mi">2</span><span class="p">)),</span>
+                                       <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]))</span>
+    <span class="n">fit_mass</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">column</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="nb">print</span> <span class="s2">&quot;finished&quot;</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'1.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

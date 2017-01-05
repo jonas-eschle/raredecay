@@ -993,6 +993,7 @@ def reweight_train(mc_data, real_data, columns=None,
         The columns/features/branches you want to use for the reweighting.
     reweighter : {'gb', 'bins'}
         Specify which reweighter to be used.
+
         - **gb**: The GradientBoosted Reweighter from REP,
           :func:`~hep_ml.reweight.GBReweighter`
         - **bins**: The simple bins reweighter from REP,
@@ -1378,8 +1379,18 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
 
 def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision'):
     """Find the best cut for a given metric"""
+    import numpy as np
 
     from rep.report.metrics import OptimalMetric
+
+    from raredecay.tools.metrics import punzi_fom, precision_measure
+
+    if metric == 'punzi':
+        metric = punzi_fom
+    elif metric == 'precision':
+        metric = precision_measure
+    elif metric:
+        raise ValueError("Invalid metric: " + str(metric))
 
     data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
     data = data.T.as_matrix()[0, :]
@@ -1388,6 +1399,10 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision'):
     best_cut, best_metric = metric_optimal.compute(y_true=target,
                                                    proba=data,
                                                    sample_weight=weights)
+    metric_optimal.plot_vs_cut(y_true=target, proba=data, sample_weight=weights).plot(new_plot=True)
+    print "best cut", best_cut
+    print "best metric", best_metric
+    best_metric = np.nan_to_num(best_metric)
     best_index = np.argmax(best_metric)
     output = {'best_threshold_cut': best_cut[best_index],
               'best_metric': best_metric[best_index]}

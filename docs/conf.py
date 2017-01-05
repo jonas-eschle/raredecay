@@ -39,8 +39,7 @@ extensions = [
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',  # converts numpy doc style to python style
-    'sphinx.ext.mathjax',
-    'sphinx.ext.mathbase'
+    'sphinx.ext.mathjax'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -69,7 +68,7 @@ author = u'Jonas Eschle'
 # built documents.
 #
 # The short X.Y version.
-version = u'1.0.9'
+version = u'1.1.0'
 # The full version, including alpha/beta/rc tags.
 release = version
 
@@ -438,7 +437,9 @@ epub_exclude_files = ['search.html']
 #
 # epub_use_index = True
 
-rst_epilog = """"""
+rst_epilog = """
+.. |reweightingCV_quality_measure_link| replace:: mayou36.bitbucket.org/presenation/reweightingCV_quality_measure.pdf
+"""
 
 ml_analysis_docstring = """
 .. |test_ref_1| replace:: This is a test reference, the first one

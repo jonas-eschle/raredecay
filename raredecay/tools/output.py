@@ -534,7 +534,7 @@ class OutputHandler(object):
             # remove leading blank lines
             for i in xrange(1, 100):
                 if not self.output.startswith("\n" * i):  # "break" condition
-                    self.output = self.output[i-1:]
+                    self.output = self.output[i - 1:]
                     break
 
             temp_out_file = self._output_path + self._output_folders.get('results') + '/output.txt'

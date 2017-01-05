@@ -674,9 +674,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
       weights for the mc data.
 
     To know, how well the reweighter worked, different stategies can be used
-    and are implemented, for further information also see: TODO, IMPLEMENT
-    REWEIGHT PRÄSI.
-
+    and are implemented, for further information also see: |reweightingCV_quality_measure_link|
     Parameters
     ----------
     real_data : |hepds_type|

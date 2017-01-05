@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Metrics &mdash; raredecay 1.0.9 documentation</title>
+  <title>Metrics &mdash; raredecay 1.1.0 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="genindex.html"/>
         <link rel="search" title="Search" href="search.html"/>
-    <link rel="top" title="raredecay 1.0.9 documentation" href="index.html"/>
+    <link rel="top" title="raredecay 1.1.0 documentation" href="index.html"/>
         <link rel="up" title="Tools" href="raredecay.tools.html"/>
         <link rel="next" title="Output Handler" href="raredecay.tools.output.html"/>
         <link rel="prev" title="Developer Tools" href="raredecay.tools.dev_tool.html"/> 
@@ -64,7 +64,7 @@
             
             
               <div class="version">
-                1.0.9
+                1.1.0
               </div>
             
           
@@ -255,6 +255,34 @@ the <em>test_predictions</em>.</li>
 </table>
 </dd></dl>
 
+<dl class="function">
+<dt id="raredecay.tools.metrics.similar_dist">
+<code class="descclassname">raredecay.tools.metrics.</code><code class="descname">similar_dist</code><span class="sig-paren">(</span><em>predictions</em>, <em>weights=None</em>, <em>true_y=1</em>, <em>threshold=0.5</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#similar_dist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.similar_dist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Metric to evaluate the predictions on one label only for similarity test.</p>
+<p>This metric is used inside the mayou_score</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>predictions</strong> (<code class="xref py py-class docutils literal"><span class="pre">array</span></code>) &#8211; The predicitons</li>
+<li><strong>weights</strong> (<em>array-like</em>) &#8211; The weights for the predictions</li>
+<li><strong>true_y</strong> (<em>{0</em><em> , </em><em>1}</em>) &#8211; The &#8220;true&#8221; label of the data</li>
+<li><strong>threshold</strong> (<em>float</em>) &#8211; The threshold for the predictions to decide whether a point belongs
+to 0 or 1.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.tools.metrics.mayou_score">
+<code class="descclassname">raredecay.tools.metrics.</code><code class="descname">mayou_score</code><span class="sig-paren">(</span><em>mc_data</em>, <em>real_data</em>, <em>features=None</em>, <em>old_mc_weights=1</em>, <em>clf='xgb'</em>, <em>splits=2</em>, <em>n_folds=10</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/tools/metrics.html#mayou_score"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.tools.metrics.mayou_score" title="Permalink to this definition">¶</a></dt>
+<dd><p>An experimental score using a &#8220;loss&#8221; function for data-similarity</p>
+</dd></dl>
+
 </div>
 
 
@@ -298,7 +326,7 @@ the <em>test_predictions</em>.</li>
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'./',
-            VERSION:'1.0.9',
+            VERSION:'1.1.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true

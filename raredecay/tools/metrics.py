@@ -382,7 +382,7 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
         Number of background observed as signal (= fpr; false positiv rate)
     n_sigma : int or float
 
-    """
+    """ # pylint:disable=anomalous-backslash-in-string
 #     not necessary below??
     length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
     if length > 1:
@@ -397,7 +397,7 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
 
 
 def precision_measure(n_signal, n_background):
-    """Return the precision measure = :math:`\\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}`."""
+    """Return the precision measure = :math:`\\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}`."""  # pylint:disable=anomalous-backslash-in-string
     length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
     if length > 1:
         sqrt = np.sqrt(np.array(n_signal + n_background))
