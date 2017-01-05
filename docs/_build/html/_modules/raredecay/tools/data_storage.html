@@ -135,22 +135,21 @@
 <span class="sd">Created on Thu Apr  7 22:10:29 2016</span>
 
 <span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+
+<span class="sd">This module contains the data handling. The main part is the class which</span>
+<span class="sd">takes data, weights, targets, names and converts automatically, plots and more.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="c1"># debug</span>
 <span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span>
 
 <span class="kn">import</span> <span class="nn">copy</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
-<span class="c1"># import cProfile as profile</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">import</span> <span class="nn">random</span>
 
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
 <span class="kn">import</span> <span class="nn">seaborn</span> <span class="k">as</span> <span class="nn">sns</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">math</span>
-<span class="kn">import</span> <span class="nn">random</span>
-<span class="c1"># from collections import deque</span>
-<span class="c1"># import itertools</span>
 
 <span class="kn">from</span> <span class="nn">rep.data.storage</span> <span class="k">import</span> <span class="n">LabeledDataStorage</span>
 
@@ -164,7 +163,7 @@
     <span class="n">out_imported</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="kn">from</span> <span class="nn">raredecay</span> <span class="k">import</span> <span class="n">meta_config</span>
 
-<span class="c1"># TODO: import config not needed??</span>
+<span class="c1"># TODO: import config not needed?? remove because its from the old structure</span>
 <span class="c1"># import configuration</span>
 <span class="kn">import</span> <span class="nn">importlib</span>
 <span class="c1"># from raredecay import meta_config</span>
@@ -173,12 +172,8 @@
 
 
 <div class="viewcode-block" id="HEPDataStorage"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage">[docs]</a><span class="k">class</span> <span class="nc">HEPDataStorage</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; A wrapper around pandas.DataFrame and an extension to the</span>
-<span class="sd">    LabeledDataStorage.</span>
+    <span class="sd">&quot;&quot;&quot;Data-storage for data, weights, targets; conversion; plots and more&quot;&quot;&quot;</span>
 
-
-
-<span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># define constants for independence</span>
     <span class="n">__ROOT_DATATYPE</span> <span class="o">=</span> <span class="n">meta_config</span><span class="o">.</span><span class="n">ROOT_DATATYPE</span>
 
@@ -186,13 +181,12 @@
     <span class="n">__figure_dic</span> <span class="o">=</span> <span class="p">{}</span>
 
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sample_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">data_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_name_addition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_labels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                 <span class="n">column_alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Initialize instance and load data</span>
+                 <span class="n">data_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_name_addition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">column_alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initialize instance and load data.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        data : (root-tree dict, pandas DataFrame)</span>
+<span class="sd">        data : |data_type|</span>
 <span class="sd">            The data itself. This can be two different types</span>
 
 <span class="sd">            - **root-tree dict** (*root-dict*):</span>
@@ -206,9 +200,9 @@
 <span class="sd">            The indices of the data that will be used.</span>
 <span class="sd">        target : list or 1-D array or int {0, 1}</span>
 <span class="sd">            Labels the data for the machine learning. Usually the y.</span>
-<span class="sd">        sample_weights : 1-D array or {1, None}</span>
-<span class="sd">            Contains the weights of the samples.</span>
-<span class="sd">        .. note:: If None or 1 specified, 1 will be assumed for all.</span>
+<span class="sd">        sample_weights : |sample_weights_type|</span>
+<span class="sd">            |sample_weights_docstring|</span>
+<span class="sd">            .. note:: If None or 1 specified, 1 will be assumed for all.</span>
 <span class="sd">        data_name : str</span>
 <span class="sd">            | Name of the data, human-readable. Displayed in the title of</span>
 <span class="sd">              plots.</span>
@@ -217,25 +211,27 @@
 <span class="sd">            | Additional remarks to the data, human readable. Displayed in</span>
 <span class="sd">              the title of plots.</span>
 <span class="sd">            | *Example: &#39;reweighted&#39;, &#39;shuffled&#39;, &#39;5 GeV cut applied&#39; etc.*</span>
-<span class="sd">        data_labels : dict with strings {column name: human readable name}</span>
-<span class="sd">            | Human-readable names for the columns, displayed in the plot.</span>
-<span class="sd">            | Dictionary has to contain the exact column (=branch) name of</span>
-<span class="sd">              the data</span>
-<span class="sd">            | All not specified labels will be auto-labeled by the branch</span>
-<span class="sd">              name itself.</span>
-
-<span class="sd">            | *Good practice*: keep a dictionary containing all possible lables</span>
-<span class="sd">              and hand it over every time.</span>
+<span class="sd">        column_alias : |column_alias_type|</span>
+<span class="sd">            |column_alias_docstring|</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># initialize logger</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">modul_logger</span>
+                <span class="c1"># initialize index</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># initialize data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_type</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">column_alias</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">column_alias</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">column_alias</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fold_index</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># list with indeces of folds</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_fold_status</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># tuple (my_fold_number, total_n_folds)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_length</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">set_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_columns</span> <span class="o">=</span> <span class="kc">None</span>
+
+
+
+
 
         <span class="c1"># data name</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_name</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">]</span>
@@ -247,10 +243,11 @@
         <span class="c1"># initialize targets</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_target</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)</span>
 
-        <span class="c1"># data-labels human readable, initialize with the column name</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span> <span class="o">=</span> <span class="p">{}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span> <span class="o">=</span> <span class="p">{</span><span class="n">col</span><span class="p">:</span> <span class="n">col</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">}</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_labels</span><span class="p">(</span><span class="n">data_labels</span><span class="o">=</span><span class="n">data_labels</span><span class="p">)</span>
+<span class="c1">#        # data-labels human readable, initialize with the column name</span>
+<span class="c1">#        self._label_dic = {}</span>
+<span class="c1">#        self._label_dic = {col: col for col in self.columns if self._label_dic.get(col) is None}</span>
+        <span class="c1"># TODO: delete?</span>
+<span class="c1">#        self.set_labels(data_labels=data_labels)</span>
 
         <span class="c1"># initialize weights</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span> <span class="o">=</span> <span class="kc">None</span>
@@ -268,13 +265,13 @@
 
 <span class="c1"># TODO: remove obsolet</span>
 <div class="viewcode-block" id="HEPDataStorage.get_name"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_name">[docs]</a>    <span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the human-readable name of the data as a string&quot;&quot;&quot;</span>
-        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Depreceated, will be removed. Use obj.name instead.&quot;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
+        <span class="sd">&quot;&quot;&quot;Return the human-readable name of the data as a string.&quot;&quot;&quot;</span>
+        <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Depreceated, obj.get_name() will be removed. Use obj.name instead.&quot;</span><span class="p">,</span> <span class="ne">FutureWarning</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_name</span><span class="p">()</span></div>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the **full** human-readable name of the data as a string&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return the **full** human-readable name of the data as a string.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_name</span><span class="p">()</span>
 
     <span class="k">def</span> <span class="nf">_get_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -282,23 +279,26 @@
         <span class="k">return</span> <span class="n">out_str</span>
 
     <span class="k">def</span> <span class="nf">_set_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">data_name_addition</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fold_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the data name&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Set the data name.&quot;&quot;&quot;</span>
         <span class="c1"># set the new name in self._name</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">([</span><span class="n">data_name</span><span class="p">,</span> <span class="n">data_name_addition</span><span class="p">,</span> <span class="n">fold_name</span><span class="p">]):</span>
             <span class="k">if</span> <span class="n">name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">name</span>
 
-<span class="c1">#TODO: change the naming into a dict</span>
+<span class="c1"># TODO: change the naming into a dict?</span>
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The name of the data.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_name_addition</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The data name addition.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">fold_name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The name of the fold (like *fold 2 of 5*).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
 
     <span class="nd">@data_name</span><span class="o">.</span><span class="n">setter</span>
@@ -315,6 +315,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;&quot;Return the data-type like &#39;root&#39;, &#39;df&#39; etc.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_type</span>
 
 <div class="viewcode-block" id="HEPDataStorage.get_index"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_index">[docs]</a>    <span class="k">def</span> <span class="nf">get_index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -324,11 +325,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the *real* index as a list&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;The internal index&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_index</span><span class="p">()</span>
 
     <span class="nd">@index</span><span class="o">.</span><span class="n">setter</span>
     <span class="k">def</span> <span class="nf">index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_index</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
 
     <span class="k">def</span> <span class="nf">_make_index</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -365,6 +367,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">columns</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;The columns/branches of the data&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_columns</span>
 
     <span class="nd">@columns</span><span class="o">.</span><span class="n">setter</span>
@@ -405,7 +408,7 @@
 
     <span class="nd">@staticmethod</span>
     <span class="k">def</span> <span class="nf">_get_data_type</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the type of the data</span>
+        <span class="sd">&quot;&quot;&quot;Return the type of the data.</span>
 
 <span class="sd">        - &#39;df&#39; : pandas DataFrame</span>
 <span class="sd">        - &#39;root&#39;: root-file</span>
@@ -424,16 +427,30 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span> <span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return the data as is without conversion, e.g. a root-dict, pandasDF etc.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
 <div class="viewcode-block" id="HEPDataStorage.set_data"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.set_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">column_alias</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the data and also change index and columns.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        data : |data_type|</span>
+<span class="sd">            The new data</span>
+<span class="sd">        index : |index_type|</span>
+<span class="sd">            |index_docstring|</span>
+<span class="sd">        columns : list(str, str, str,...)</span>
+<span class="sd">            The columns for the data to use</span>
+<span class="sd">        column_alias : |column_alias_type|</span>
+<span class="sd">            |column_alias_docstring|</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="n">column_alias</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">column_alias</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">column_alias</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_data</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_set_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the data, length- and columns-attribute</span>
+        <span class="sd">&quot;&quot;&quot;Set the data, length- and columns-attribute.</span>
 
 <span class="sd">        Convert the data to the right (root-dict, df etc.) format (and save).</span>
 <span class="sd">        Also set the length and columns.</span>
@@ -465,10 +482,10 @@
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Other dataformats are not yet implemented&quot;</span><span class="p">)</span>
 
 <span class="c1"># TODO: implement pickleable data?</span>
-
-    <span class="nd">@property</span>
-    <span class="k">def</span> <span class="nf">labels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+<span class="c1">#</span>
+<span class="c1">#    @property</span>
+<span class="c1">#    def labels(self):</span>
+<span class="c1">#        return self._label_dic.get(self.columns)</span>
 
 <div class="viewcode-block" id="HEPDataStorage.get_weights"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_weights">[docs]</a>    <span class="k">def</span> <span class="nf">get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the weights of the specified indeces or, if None, return all.</span>
@@ -479,8 +496,8 @@
 <span class="sd">            If True, the weights will be normalized to 1 (the mean is 1).</span>
 <span class="sd">            If a float is provided, the mean of the weights will be equal</span>
 <span class="sd">            to *normalize*. So *True* and *1* will yield the same results.</span>
-<span class="sd">        index : 1-D list</span>
-<span class="sd">            List of index to get the weights from.</span>
+<span class="sd">        index : |index_type|</span>
+<span class="sd">            |index_docstring</span>
 
 <span class="sd">        Return</span>
 <span class="sd">        ------</span>
@@ -492,8 +509,6 @@
         <span class="n">normalize</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">normalize</span>
         <span class="n">second_storage</span> <span class="o">=</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;second_storage&#39;</span><span class="p">)</span>
 
-
-        <span class="c1"># TODO: stopped work here</span>
         <span class="n">normalize_1</span> <span class="o">=</span> <span class="mi">1</span>
         <span class="n">normalize_2</span> <span class="o">=</span> <span class="mi">1</span>
 
@@ -534,7 +549,7 @@
         <span class="k">return</span> <span class="n">weights_out</span></div>
 
     <span class="k">def</span> <span class="nf">_get_weights</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return pandas Series of weights or None, 1&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return pandas Series of weights or None, 1.&quot;&quot;&quot;</span>
         <span class="c1"># initialize values</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
         <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
@@ -553,7 +568,7 @@
         <span class="n">weights_out</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">weights_out</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">normalize</span> <span class="ow">or</span> <span class="n">normalize</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="n">normalize</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">normalize</span>
-            <span class="n">weights_out</span> <span class="o">*=</span> <span class="n">normalize</span><span class="o">/</span><span class="n">weights_out</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+            <span class="n">weights_out</span> <span class="o">*=</span> <span class="n">normalize</span> <span class="o">/</span> <span class="n">weights_out</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
 
         <span class="k">return</span> <span class="n">weights_out</span>
 
@@ -562,13 +577,8 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        sample_weights : pandas Series or numpy array or int {1} or str/dict for root-trees</span>
-<span class="sd">            The new weights for the dataset.</span>
-<span class="sd">            If the new weights are a pandas Series, the index must match the</span>
-<span class="sd">            internal index</span>
-<span class="sd">            If the data is a root-tree file,</span>
-<span class="sd">            a string (naming the branche) or a whole root-dict can be given,</span>
-<span class="sd">            pointing to the weights stored.</span>
+<span class="sd">        sample_weights : |sample_weights_type|</span>
+<span class="sd">            |sample_weights_docstring|</span>
 <span class="sd">        index : 1-D array or list or None</span>
 <span class="sd">            The indeces for the weights to be set. Only the index given will be</span>
 <span class="sd">            set/used as weights.</span>
@@ -614,7 +624,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_weights</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">sample_weights</span><span class="p">)</span>
 
 <div class="viewcode-block" id="HEPDataStorage.set_root_selection"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.set_root_selection">[docs]</a>    <span class="k">def</span> <span class="nf">set_root_selection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">selection</span><span class="p">,</span> <span class="n">exception_if_failure</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the selection in a root-file. Only possible if a root-file is provided&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Set the selection in a root-file. Only possible if a root-file is provided.&quot;&quot;&quot;</span>
         <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Method set_root_selection very unsafe currently!&quot;</span><span class="p">)</span>
         <span class="n">meta_config</span><span class="o">.</span><span class="n">warning_occured</span><span class="p">()</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_type</span> <span class="o">==</span> <span class="s1">&#39;root&#39;</span><span class="p">:</span>
@@ -627,19 +637,17 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;selection not applied, no root-dict&quot;</span><span class="p">)</span></div>
 
 <div class="viewcode-block" id="HEPDataStorage.pandasDF"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.pandasDF">[docs]</a>    <span class="k">def</span> <span class="nf">pandasDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Convert the data to pandas or cut an already existing data frame and</span>
-<span class="sd">        return it.</span>
+        <span class="sd">&quot;&quot;&quot;Return a pandas DataFrame representation of the data</span>
 
-<span class="sd">        Return a pandas DataFrame</span>
+<span class="sd">        Return a pandas DataFrame.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ---------</span>
 <span class="sd">        columns : str</span>
 <span class="sd">            Arguments for the :py:func:`~root_numpy.root2rec` ls</span>
 <span class="sd">            function.</span>
-<span class="sd">        index : 1-D list</span>
-<span class="sd">            The index from the data to be used. If None, all data</span>
-<span class="sd">            will be used.</span>
+<span class="sd">        index : |index_type|</span>
+<span class="sd">            |index_docstring|</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># initialize variables</span>
         <span class="n">index</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
@@ -685,54 +693,55 @@
 
         <span class="k">return</span> <span class="n">data</span>
 
-<div class="viewcode-block" id="HEPDataStorage.get_labels"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_labels">[docs]</a>    <span class="k">def</span> <span class="nf">get_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">as_list</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the human readable branch-labels of the data.</span>
+<span class="c1">#    def get_labels(self, columns=None, as_list=False):</span>
+<span class="c1">#        &quot;&quot;&quot;Return the human readable branch-labels of the data.</span>
+<span class="c1">#</span>
+<span class="c1">#        Parameters</span>
+<span class="c1">#        ----------</span>
+<span class="c1">#        columns : list with str or str</span>
+<span class="c1">#            The labels of the columns to return</span>
+<span class="c1">#        as_list : boolean</span>
+<span class="c1">#            If true, the labels will be returned as a list instead of a dict.</span>
+<span class="c1">#</span>
+<span class="c1">#        Return</span>
+<span class="c1">#        ------</span>
+<span class="c1">#        out : list or dict</span>
+<span class="c1">#            Return a list or dict containing the labels.</span>
+<span class="c1">#        &quot;&quot;&quot;</span>
+<span class="c1">#        if columns is None:</span>
+<span class="c1">#            columns = self.columns</span>
+<span class="c1">#        columns = data_tools.to_list(columns)</span>
+<span class="c1">#        if as_list:</span>
+<span class="c1">#            labels_out = [self._label_dic.get(col, col) for col in columns]</span>
+<span class="c1">#        else:</span>
+<span class="c1">#            labels_out = {key: self._label_dic.get(key) for key in columns}</span>
+<span class="c1">#        return labels_out</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        columns : list with str or str</span>
-<span class="sd">            The labels of the columns to return</span>
-<span class="sd">        as_list : boolean</span>
-<span class="sd">            If true, the labels will be returned as a list instead of a dict.</span>
-
-<span class="sd">        Return</span>
-<span class="sd">        ------</span>
-<span class="sd">        out : list or dict</span>
-<span class="sd">            Return a list or dict containing the labels.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span>
-        <span class="n">columns</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">as_list</span><span class="p">:</span>
-            <span class="n">labels_out</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">col</span><span class="p">,</span> <span class="n">col</span><span class="p">)</span> <span class="k">for</span> <span class="n">col</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">labels_out</span> <span class="o">=</span> <span class="p">{</span><span class="n">key</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">}</span>
-        <span class="k">return</span> <span class="n">labels_out</span></div>
-
-<div class="viewcode-block" id="HEPDataStorage.set_labels"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.set_labels">[docs]</a>    <span class="k">def</span> <span class="nf">set_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_labels</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the human readable data-labels (for the columns).</span>
-
-<span class="sd">        Sometimes you want to change the labels(names) of columns. This can be</span>
-<span class="sd">        done by passing a dictionary containing the column as key and a</span>
-<span class="sd">        human-readable name as value.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        data_labels : dict</span>
-<span class="sd">            It has the form: {column: name}</span>
-<span class="sd">        replace : boolean</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">data_labels</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">return</span>
-        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_labels</span><span class="p">,</span> <span class="nb">dict</span><span class="p">),</span> <span class="s2">&quot;Not a dictionary&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_set_data_labels</span><span class="p">(</span><span class="n">data_labels</span><span class="o">=</span><span class="n">data_labels</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="n">replace</span><span class="p">)</span></div>
-
-    <span class="k">def</span> <span class="nf">_set_data_labels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_labels</span><span class="p">,</span> <span class="n">replace</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Update the data labels&quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">replace</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span> <span class="o">=</span> <span class="n">data_labels</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_label_dic</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">data_labels</span><span class="p">)</span>
+        <span class="c1"># TODO: delete?</span>
+<span class="c1">#    def set_labels(self, data_labels, replace=False):</span>
+<span class="c1">#        &quot;&quot;&quot;Set the human readable data-labels (for the columns).</span>
+<span class="c1">#</span>
+<span class="c1">#        Sometimes you want to change the labels(names) of columns. This can be</span>
+<span class="c1">#        done by passing a dictionary containing the column as key and a</span>
+<span class="c1">#        human-readable name as value.</span>
+<span class="c1">#</span>
+<span class="c1">#        Parameters</span>
+<span class="c1">#        ----------</span>
+<span class="c1">#        data_labels : dict</span>
+<span class="c1">#            It has the form: {column: name}</span>
+<span class="c1">#        replace : boolean</span>
+<span class="c1">#        &quot;&quot;&quot;</span>
+<span class="c1">#        if data_labels is None:</span>
+<span class="c1">#            return</span>
+<span class="c1">#        assert isinstance(data_labels, dict), &quot;Not a dictionary&quot;</span>
+<span class="c1">#        self._set_data_labels(data_labels=data_labels, replace=replace)</span>
+<span class="c1">#</span>
+<span class="c1">#    def _set_data_labels(self, data_labels, replace):</span>
+<span class="c1">#        &quot;&quot;&quot;Update the data labels&quot;&quot;&quot;</span>
+<span class="c1">#        if replace:</span>
+<span class="c1">#            self._label_dic = data_labels</span>
+<span class="c1">#        else:</span>
+<span class="c1">#            self._label_dic.update(data_labels)</span>
 
 <div class="viewcode-block" id="HEPDataStorage.get_targets"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_targets">[docs]</a>    <span class="k">def</span> <span class="nf">get_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Return the targets of the data as a pandas Series.&quot;&quot;&quot;</span>
@@ -753,7 +762,7 @@
         <span class="k">return</span> <span class="n">out_targets</span></div>
 
     <span class="k">def</span> <span class="nf">_get_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return targets as pandas Series or primitive type&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Return targets as pandas Series or primitive type.&quot;&quot;&quot;</span>
         <span class="c1"># assign defaults</span>
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">list</span><span class="p">(</span><span class="n">index</span><span class="p">)</span>
         <span class="c1"># length = len(self) if index is None else len(index)</span>
@@ -766,15 +775,15 @@
         <span class="k">return</span> <span class="n">out_targets</span>
 
 <div class="viewcode-block" id="HEPDataStorage.set_targets"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.set_targets">[docs]</a>    <span class="k">def</span> <span class="nf">set_targets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the targets of the data. Either a list-like object or</span>
-<span class="sd">        {-1, 0, 1, None}&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Set the targets of the data. Either an array-like object or {0, 1}.&quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">is_in_primitive</span><span class="p">(</span><span class="n">targets</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
             <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">targets</span><span class="p">),</span> <span class="s2">&quot;Invalid targets&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_set_target</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">targets</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">)</span></div>
 
     <span class="k">def</span> <span class="nf">_set_target</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Set the target. Attention with Series, index must be the same as data-index&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Set the target. Attention with Series, index must be the same as data-index.&quot;&quot;&quot;</span>
+
         <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_index</span> <span class="k">if</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">is_in_primitive</span><span class="p">(</span><span class="n">index</span><span class="p">)</span> <span class="k">else</span> <span class="n">index</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">)):</span>
             <span class="n">target</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">index</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -783,8 +792,7 @@
 
 <div class="viewcode-block" id="HEPDataStorage.make_dataset"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.make_dataset">[docs]</a>    <span class="k">def</span> <span class="nf">make_dataset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">second_storage</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index_2</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
                      <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">targets_from_data</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-
-        <span class="sd">&quot;&quot;&quot;Create data, targets and weights of the instance (and another one)</span>
+        <span class="sd">&quot;&quot;&quot;Create data, targets and weights of the instance (and another one).</span>
 
 <span class="sd">        In machine-learning, it is very often required to have data, it&#39;s</span>
 <span class="sd">        targets (or labeling, the &#39;y&#39;) and the weights. In most cases, we</span>
@@ -799,21 +807,14 @@
 <span class="sd">        :py:class:`~raredecay.tools.data_storage.HEPDataStorage`</span>
 <span class="sd">            A second data-storage. If provided, the data/targets/weights</span>
 <span class="sd">            will be concatenated and returned as one.</span>
-<span class="sd">        index : list(int, int, int, ...)</span>
+<span class="sd">        index : |index_type|</span>
 <span class="sd">            The index for the **calling** (the *first*) storage instance.</span>
+<span class="sd">            |index_docstring|</span>
 <span class="sd">        index_2 : list(int, int, int, ...)</span>
 <span class="sd">            The index for the (optional) **second storage instance**.</span>
+<span class="sd">            |index_docstring|</span>
 <span class="sd">        columns : list(str, str, str, ...)</span>
 <span class="sd">            The columns to be used of **both** data-storages.</span>
-<span class="sd">        weights_as_events : int</span>
-<span class="sd">            Convert the weights to number of events. Argument specifies the</span>
-<span class="sd">            minimum weight (if not provided by min_weights).</span>
-<span class="sd">        min_weight : float</span>
-<span class="sd">            To scale the weights to events, the weights get divided by the</span>
-<span class="sd">            lowest weight. If a min_weights is provided *and* it is lower</span>
-<span class="sd">            then the smallest weight, the min_weight will be used instead.</span>
-
-<span class="sd">        ..note:: If weights_ratio is provided, this parameter is ignored.</span>
 <span class="sd">        weights_ratio : float &gt;= 0</span>
 <span class="sd">            The (relative) normalization. If a second data storage is provided</span>
 <span class="sd">            it is assumed (will be changed in future ?)</span>
@@ -821,7 +822,7 @@
 <span class="sd">            If zero, nothing happens. If it is bigger than zero, it</span>
 <span class="sd">            represents the ratio of the sum of the weights from the first</span>
 <span class="sd">            to the second storage. If set to 1, they both are equally</span>
-<span class="sd">            weighted. Requires internal normalisation.</span>
+<span class="sd">            weighted.</span>
 <span class="sd">            If no second storage is provided, it is the normalization of the</span>
 <span class="sd">            storage called.</span>
 
@@ -832,6 +833,8 @@
 <span class="sd">            If True or int, the dataset will be shuffled before returned. If an</span>
 <span class="sd">            int is provided, it will be used as a seed to the pseudo-random</span>
 <span class="sd">            generator.</span>
+<span class="sd">        targets_from_data</span>
+<span class="sd">            OUTDATED, dont use it. Use two datastorage, one labeled 0, one 1</span>
 <span class="sd">         &quot;&quot;&quot;</span>
         <span class="c1"># initialize values</span>
 
@@ -896,16 +899,16 @@
         <span class="k">return</span> <span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">weights</span></div>
 
 <div class="viewcode-block" id="HEPDataStorage.copy_storage"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.copy_storage">[docs]</a>    <span class="k">def</span> <span class="nf">copy_storage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">add_to_name</span><span class="o">=</span><span class="s2">&quot; cp&quot;</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return a copy of self with only some of the columns (and therefore</span>
-<span class="sd">        labels etc) or indices.</span>
+        <span class="sd">&quot;&quot;&quot;Return a copy of self (with only some of the columns, indices etc).</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        columns : str or list(str, str, str, ...)</span>
 <span class="sd">            The columns which will be in the new storage.</span>
-<span class="sd">        index : 1-D array-like</span>
+<span class="sd">        index : |index_type|</span>
 <span class="sd">            The indices of the rows (and corresponding weights, targets etc.)</span>
 <span class="sd">            for the new storage.</span>
+<span class="sd">            |index_docstring|</span>
 <span class="sd">        add_to_name : str</span>
 <span class="sd">            An addition to the data_name_addition of the copy.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -930,8 +933,17 @@
 
 <span class="c1"># TODO: add second data_storage</span>
 <div class="viewcode-block" id="HEPDataStorage.get_LabeledDataStorage"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_LabeledDataStorage">[docs]</a>    <span class="k">def</span> <span class="nf">get_LabeledDataStorage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create and return an instance of class &quot;LabeledDataStorage&quot; from</span>
-<span class="sd">        the REP repository.</span>
+        <span class="sd">&quot;&quot;&quot;Create and return an instance of class &quot;LabeledDataStorage&quot; from the REP repository.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        columns : str or list(str, str, str, ...)</span>
+<span class="sd">            The columns to use for the LabeledDataStorage.</span>
+<span class="sd">        index : |index_type|</span>
+<span class="sd">            |index_docstring|</span>
+<span class="sd">        shuffle : boolean</span>
+<span class="sd">            Argument is passed to the LabeledDataStorage. If True, the data</span>
+<span class="sd">            will be shuffled.</span>
 
 <span class="sd">        Return</span>
 <span class="sd">        ------</span>
@@ -949,8 +961,7 @@
         <span class="k">return</span> <span class="n">new_lds</span></div>
 
 <div class="viewcode-block" id="HEPDataStorage.make_folds"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.make_folds">[docs]</a>    <span class="k">def</span> <span class="nf">make_folds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Create shuffled train-test folds which can be accessed via</span>
-<span class="sd">        :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`</span>
+        <span class="sd">&quot;&quot;&quot;Create shuffled train-test folds which can be accessed via :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`.</span>
 
 <span class="sd">        Split the data into n folds (for usage in KFold validaten etc.).</span>
 <span class="sd">        Then every fold consists of a train dataset, which consists of</span>
@@ -976,7 +987,7 @@
 
         <span class="c1"># split indices of shuffled list</span>
         <span class="n">length</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-        <span class="n">temp_indeces</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">length</span><span class="o">/</span><span class="n">n_folds</span><span class="p">))</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">)]</span>
+        <span class="n">temp_indeces</span> <span class="o">=</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="n">n_folds</span><span class="p">))</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">)]</span>
         <span class="n">temp_indeces</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">length</span><span class="p">)</span>  <span class="c1"># add last index. len(index) = n_folds + 1</span>
 
         <span class="c1"># get a copy of index and shuffle it if True</span>
@@ -987,13 +998,13 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">_fold_index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">temp_index</span><span class="p">[</span><span class="n">temp_indeces</span><span class="p">[</span><span class="n">i</span><span class="p">]:</span><span class="n">temp_indeces</span><span class="p">[</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]])</span></div>
 
 <div class="viewcode-block" id="HEPDataStorage.get_fold"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_fold">[docs]</a>    <span class="k">def</span> <span class="nf">get_fold</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">fold</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return the specified fold: train and test data as instance of</span>
-<span class="sd">        :py:class:`~raredecay.tools.data_storage.HEPDataStorage`</span>
+        <span class="sd">&quot;&quot;&quot;Return the specified fold: train and test data as instance of :py:class:`~raredecay.tools.data_storage.HEPDataStorage`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        fold : int</span>
 <span class="sd">            The number of the fold to return. From 0 to n_folds - 1</span>
+
 <span class="sd">        Return</span>
 <span class="sd">        ------</span>
 <span class="sd">        out : tuple(HEPDataStorage, HEPDataStorage)</span>
@@ -1019,8 +1030,7 @@
         <span class="k">return</span> <span class="n">train_DS</span><span class="p">,</span> <span class="n">test_DS</span></div>
 
 <div class="viewcode-block" id="HEPDataStorage.get_n_folds"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.get_n_folds">[docs]</a>    <span class="k">def</span> <span class="nf">get_n_folds</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Return how many folds are currently availabe or 0 if no folds</span>
-<span class="sd">        have been created</span>
+        <span class="sd">&quot;&quot;&quot;Return how many folds are currently availabe or 0 if no folds have been created.</span>
 
 <span class="sd">        Return</span>
 <span class="sd">        ------</span>
@@ -1102,8 +1112,8 @@
 <span class="sd">            example to compare data)</span>
 <span class="sd">        columns : str or list(str, str, str, ...)</span>
 <span class="sd">            The columns of the data to be plotted. If None, all are plotted.</span>
-<span class="sd">        index : list(int, int, int, ...)</span>
-<span class="sd">            A list of indeces to be plotted. If None, all are plotted.</span>
+<span class="sd">        index : |index_type|</span>
+<span class="sd">            |index_docstring|</span>
 <span class="sd">        title : str</span>
 <span class="sd">            | The title of the whole plot (NOT of the subplots). If several</span>
 <span class="sd">              titles for the same figures are given, they will be *concatenated*.</span>
@@ -1119,14 +1129,12 @@
 <span class="sd">        plot_range : tuple (float, float) or None</span>
 <span class="sd">            The lower and upper range of the bins. If None, 99.98% of the data</span>
 <span class="sd">            will be plottet automatically.</span>
-<span class="sd">        sample_weights : list containing weights</span>
+<span class="sd">        sample_weights : pandas Series</span>
 <span class="sd">            The weights for the data, how &quot;high&quot; a bin is. Actually, how much</span>
 <span class="sd">            it should account for the whole distribution or how &quot;often&quot; it</span>
-<span class="sd">            occures.</span>
-<span class="sd">        importance : {1, 2, 3, 4, 5}</span>
-<span class="sd">            The importance of the plot. The higher, the more likely it will be</span>
-<span class="sd">            plotted. There is a trade-off between the importance and the</span>
-<span class="sd">            plot_verbosity.</span>
+<span class="sd">            occures. If None is specified, the weights are taken from the data.</span>
+<span class="sd">        importance : |importance_type|</span>
+<span class="sd">            |importance_docstring|</span>
 <span class="sd">        see_all : boolean</span>
 <span class="sd">            If True, all data (not just 99.98%) will be plotted.</span>
 <span class="sd">        hist_settings : dict</span>
@@ -1159,7 +1167,7 @@
 
         <span class="c1"># set the right number of rows and columns for the subplot</span>
         <span class="n">subplot_col</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">))))</span>
-        <span class="n">subplot_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">))</span><span class="o">/</span><span class="n">subplot_col</span><span class="p">))</span>
+        <span class="n">subplot_row</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">columns</span><span class="p">))</span> <span class="o">/</span> <span class="n">subplot_col</span><span class="p">))</span>
 
         <span class="c1"># assign a free figure if argument is None</span>
         <span class="k">if</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">is_in_primitive</span><span class="p">(</span><span class="n">figure</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
@@ -1207,6 +1215,11 @@
         <span class="k">return</span> <span class="n">out_figure</span></div>
 
 <div class="viewcode-block" id="HEPDataStorage.plot_parallel_coordinates"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.plot_parallel_coordinates">[docs]</a>    <span class="k">def</span> <span class="nf">plot_parallel_coordinates</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">second_storage</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot the parallel coordinates.</span>
+
+<span class="sd">        .. warning::</span>
+<span class="sd">            No weights supported so far!</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">data</span><span class="p">,</span> <span class="n">targets</span><span class="p">,</span> <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_dataset</span><span class="p">(</span><span class="n">second_storage</span><span class="o">=</span><span class="n">second_storage</span><span class="p">,</span>
                                                    <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">)</span>
@@ -1219,7 +1232,17 @@
 
 
 <div class="viewcode-block" id="HEPDataStorage.plot2Dhist"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.plot2Dhist">[docs]</a>    <span class="k">def</span> <span class="nf">plot2Dhist</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_columns</span><span class="p">,</span> <span class="n">y_columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plot a 2D hist of x_columns vs itself or y_columns&quot;&quot;&quot;</span>
+        <span class="sd">&quot;&quot;&quot;Plot a 2D hist of x_columns vs itself or y_columns.</span>
+
+<span class="sd">        .. warning:: this can produce A LOT of plots! (x_columns * y_columns)</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        x_columns : list(str, str, str,...)</span>
+<span class="sd">            The x columns to plot agains</span>
+<span class="sd">        y_columns : list(str, str, str,...)</span>
+<span class="sd">            The y columns to plot agains</span>
+<span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">x_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">x_columns</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="k">else</span> <span class="n">x_columns</span>
         <span class="n">y_columns</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">y_columns</span> <span class="o">==</span> <span class="s1">&#39;all&#39;</span> <span class="k">else</span> <span class="n">y_columns</span>
@@ -1231,8 +1254,8 @@
                 <span class="n">df</span><span class="o">.</span><span class="n">plot</span><span class="o">.</span><span class="n">hexbin</span><span class="p">(</span><span class="n">x_col</span><span class="p">,</span> <span class="n">y_col</span><span class="p">,</span> <span class="n">gridsize</span><span class="o">=</span><span class="mi">30</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="HEPDataStorage.plot2Dscatter"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.plot2Dscatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot2Dscatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_branch</span><span class="p">,</span> <span class="n">y_branch</span><span class="p">,</span> <span class="n">dot_scale</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;Plots two columns against each other to see the distribution.</span>
+<div class="viewcode-block" id="HEPDataStorage.plot2Dscatter"><a class="viewcode-back" href="../../../raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage.plot2Dscatter">[docs]</a>    <span class="k">def</span> <span class="nf">plot2Dscatter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">x_branch</span><span class="p">,</span> <span class="n">y_branch</span><span class="p">,</span> <span class="n">dot_scale</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">figure</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Plot two columns against each other to see the distribution.</span>
 
 <span class="sd">        The dots size is proportional to the weights, so you have a good</span>
 <span class="sd">        overview on the data and the weights.</span>
@@ -1240,15 +1263,24 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        x_branch : str</span>
+<span class="sd">            The x column to plot</span>
+<span class="sd">        x_branch : str</span>
+<span class="sd">            Thy y column to plot</span>
+<span class="sd">        dot_scale : int or float</span>
+<span class="sd">            The overall scaling factor for the dots</span>
+<span class="sd">        color : str</span>
+<span class="sd">            A valid (matplotlib.pyplot-compatible) color</span>
+<span class="sd">        figure : str or int or figure</span>
+<span class="sd">            The figure to be plotted in</span>
 
+<span class="sd">        Return</span>
+<span class="sd">        ------</span>
+<span class="sd">        out : figure</span>
+<span class="sd">            Return the figure</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># TODO: make nice again</span>
         <span class="n">out_figure</span> <span class="o">=</span> <span class="n">out</span><span class="o">.</span><span class="n">save_fig</span><span class="p">(</span><span class="n">figure</span><span class="p">)</span>
-        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="n">long</span><span class="p">,</span> <span class="nb">float</span><span class="p">)):</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">make_list_fill_var</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="n">length</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span>
-                                                  <span class="n">var</span><span class="o">=</span><span class="n">weights</span><span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
+        <span class="n">weights</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_weights</span><span class="p">()</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="p">),</span> <span class="s2">&quot;Wrong length of weigths&quot;</span>
         <span class="n">size</span> <span class="o">=</span> <span class="n">weights</span> <span class="o">*</span> <span class="n">dot_scale</span>
         <span class="n">temp_label</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">obj_to_string</span><span class="p">([</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_name</span><span class="p">])</span>
@@ -1263,72 +1295,98 @@
 
 <span class="c1"># TODO: add correlation matrix</span>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="c1">#if __name__ == &#39;__main__&#39;:</span>
+<span class="c1">#</span>
+<span class="c1">#    n_tested = 0</span>
+<span class="c1">#</span>
+<span class="c1">#    b = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [51, 52, 53]])</span>
+<span class="c1">#    a = pd.DataFrame(b, columns=[&#39;one&#39;, &#39;two&#39;, &#39;three&#39;], index=[1, 2, 11, 22, 33])</span>
+<span class="c1">#    c = copy.deepcopy(a)</span>
+<span class="c1">#    storage = HEPDataStorage(a, index=[1, 2, 11, 22], target=[1, 1, 1, 0],</span>
+<span class="c1">#                             sample_weights=[1, 2, 1, 0.5],</span>
+<span class="c1">#                             data_name=&quot;my_data&quot;, data_name_addition=&quot;and addition&quot;)</span>
+<span class="c1">#    n_tested += 1</span>
+<span class="c1">#</span>
+<span class="c1">#    d = a.loc[[1, 2, 11, 22]]</span>
+<span class="c1">#    pd1 = storage.pandasDF()</span>
+<span class="c1">#</span>
+<span class="c1">#    t1 = all(pd1.reset_index(drop=True) == d.reset_index(drop=True))</span>
+<span class="c1">#    t2 = True</span>
+<span class="c1">#    t3 = all(storage.get_targets(index=[1, 11, 22]) == np.array([1, 1, 0]))</span>
+<span class="c1">#    works1 = t1 and t2 and t3</span>
+<span class="c1">#</span>
+<span class="c1">#    print &quot;storage with DataFrame works:&quot;, works1</span>
+<span class="c1">#</span>
+<span class="c1">#    DATA_PATH = &#39;/home/mayou/Big_data/Uni/decay-data/&#39;</span>
+<span class="c1">#    all_branches = [&#39;B_PT&#39;, &#39;nTracks&#39;, &#39;nSPDHits&#39;,</span>
+<span class="c1">#                    &#39;B_FDCHI2_OWNPV&#39;, &#39;B_DIRA_OWNPV&#39;,</span>
+<span class="c1">#                    &#39;B_IPCHI2_OWNPV&#39;, &#39;l1_PT&#39;, &#39;l1_IPCHI2_OWNPV&#39;, &#39;B_ENDVERTEX_CHI2&#39;,</span>
+<span class="c1">#                    &#39;h1_IPCHI2_OWNPV&#39;, &#39;h1_PT&#39;, &#39;h1_TRACK_TCHI2NDOF&#39;</span>
+<span class="c1">#                    ]</span>
+<span class="c1">#    mc_file = &#39;CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root&#39;</span>
+<span class="c1">#    cut_Bu2K1Jpsi_mc = dict(</span>
+<span class="c1">#        filenames=DATA_PATH+&#39;cut_data/&#39;+mc_file,</span>
+<span class="c1">#        treename=&#39;DecayTree&#39;,</span>
+<span class="c1">#        branches=all_branches</span>
+<span class="c1">#</span>
+<span class="c1">#    )</span>
+<span class="c1">#</span>
+<span class="c1">#    root_data = dict(data=cut_Bu2K1Jpsi_mc,</span>
+<span class="c1">#                     sample_weights=None,</span>
+<span class="c1">#                     data_name=&quot;B-&gt;K1 J/Psi monte-carlo&quot;,</span>
+<span class="c1">#                     data_name_addition=&quot;cut&quot;</span>
+<span class="c1">#                     )</span>
+<span class="c1">#</span>
+<span class="c1">#    storage2 = HEPDataStorage(**root_data)</span>
+<span class="c1">#</span>
+<span class="c1">#    storage2.plot_correlation(storage2)</span>
+<span class="c1">#</span>
+<span class="c1">#    storage3 = storage2.copy_storage(index=[3, 5, 7, 9], columns=[&#39;B_PT&#39;, &#39;nTracks&#39;])</span>
+<span class="c1">#    df11 = storage3.pandasDF()</span>
+<span class="c1">#    storage3.set_weights(sample_weights=[1, 4, 1, 0.5])</span>
+<span class="c1">#</span>
+<span class="c1">#    storage3.make_folds(4)</span>
+<span class="c1">#    train, test = storage3.get_fold(1)</span>
+<span class="c1">#    print train.pandasDF(), &quot;\n&quot;, test.pandasDF()</span>
+<span class="c1">#    train.make_folds(3)</span>
+<span class="c1">#    train1, test1 = train.get_fold(1)</span>
+<span class="c1">#    print train1.pandasDF(), &quot;\n&quot;, test1.pandasDF()</span>
+<span class="c1">#    t21 = isinstance(storage2.pandasDF(), pd.DataFrame)</span>
+<span class="c1">#    print &quot;t21 = &quot;, t21</span>
+<span class="c1">#</span>
+<span class="c1">#    t22 = True</span>
+<span class="c1">#    works2 = t21 and t22</span>
+<span class="c1">#    works = works1 and works2</span>
+<span class="c1">#    print &quot;DataFrame works:&quot;, works</span>
+<span class="c1">#    plt.show()</span>
+<span class="c1">#</span>
+<span class="c1">#    print &quot;Selftest finished, tested &quot; + str(n_tested) + &quot; functions.&quot;</span>
 
-    <span class="n">n_tested</span> <span class="o">=</span> <span class="mi">0</span>
-
-    <span class="n">b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="mi">11</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">13</span><span class="p">],</span> <span class="p">[</span><span class="mi">21</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">23</span><span class="p">],</span> <span class="p">[</span><span class="mi">31</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">33</span><span class="p">],</span> <span class="p">[</span><span class="mi">41</span><span class="p">,</span> <span class="mi">42</span><span class="p">,</span> <span class="mi">43</span><span class="p">],</span> <span class="p">[</span><span class="mi">51</span><span class="p">,</span> <span class="mi">52</span><span class="p">,</span> <span class="mi">53</span><span class="p">]])</span>
-    <span class="n">a</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;one&#39;</span><span class="p">,</span> <span class="s1">&#39;two&#39;</span><span class="p">,</span> <span class="s1">&#39;three&#39;</span><span class="p">],</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">,</span> <span class="mi">33</span><span class="p">])</span>
-    <span class="n">c</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
-    <span class="n">storage</span> <span class="o">=</span> <span class="n">HEPDataStorage</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span>
-                             <span class="n">sample_weights</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">],</span>
-                             <span class="n">data_name</span><span class="o">=</span><span class="s2">&quot;my_data&quot;</span><span class="p">,</span> <span class="n">data_name_addition</span><span class="o">=</span><span class="s2">&quot;and addition&quot;</span><span class="p">)</span>
-    <span class="n">n_tested</span> <span class="o">+=</span> <span class="mi">1</span>
-
-    <span class="n">d</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">loc</span><span class="p">[[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">]]</span>
-    <span class="n">pd1</span> <span class="o">=</span> <span class="n">storage</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">()</span>
-
-    <span class="n">t1</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">pd1</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span> <span class="o">==</span> <span class="n">d</span><span class="o">.</span><span class="n">reset_index</span><span class="p">(</span><span class="n">drop</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
-    <span class="n">t2</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">t3</span> <span class="o">=</span> <span class="nb">all</span><span class="p">(</span><span class="n">storage</span><span class="o">.</span><span class="n">get_targets</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">11</span><span class="p">,</span> <span class="mi">22</span><span class="p">])</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]))</span>
-    <span class="n">works1</span> <span class="o">=</span> <span class="n">t1</span> <span class="ow">and</span> <span class="n">t2</span> <span class="ow">and</span> <span class="n">t3</span>
-
-    <span class="nb">print</span> <span class="s2">&quot;storage with DataFrame works:&quot;</span><span class="p">,</span> <span class="n">works1</span>
-
-    <span class="n">DATA_PATH</span> <span class="o">=</span> <span class="s1">&#39;/home/mayou/Big_data/Uni/decay-data/&#39;</span>
-    <span class="n">all_branches</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;B_PT&#39;</span><span class="p">,</span> <span class="s1">&#39;nTracks&#39;</span><span class="p">,</span> <span class="s1">&#39;nSPDHits&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;B_FDCHI2_OWNPV&#39;</span><span class="p">,</span> <span class="s1">&#39;B_DIRA_OWNPV&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;B_IPCHI2_OWNPV&#39;</span><span class="p">,</span> <span class="s1">&#39;l1_PT&#39;</span><span class="p">,</span> <span class="s1">&#39;l1_IPCHI2_OWNPV&#39;</span><span class="p">,</span> <span class="s1">&#39;B_ENDVERTEX_CHI2&#39;</span><span class="p">,</span>
-                    <span class="s1">&#39;h1_IPCHI2_OWNPV&#39;</span><span class="p">,</span> <span class="s1">&#39;h1_PT&#39;</span><span class="p">,</span> <span class="s1">&#39;h1_TRACK_TCHI2NDOF&#39;</span>
-                    <span class="p">]</span>
-    <span class="n">mc_file</span> <span class="o">=</span> <span class="s1">&#39;CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root&#39;</span>
-    <span class="n">cut_Bu2K1Jpsi_mc</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">filenames</span><span class="o">=</span><span class="n">DATA_PATH</span><span class="o">+</span><span class="s1">&#39;cut_data/&#39;</span><span class="o">+</span><span class="n">mc_file</span><span class="p">,</span>
-        <span class="n">treename</span><span class="o">=</span><span class="s1">&#39;DecayTree&#39;</span><span class="p">,</span>
-        <span class="n">branches</span><span class="o">=</span><span class="n">all_branches</span>
-
-    <span class="p">)</span>
-
-    <span class="n">root_data</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">cut_Bu2K1Jpsi_mc</span><span class="p">,</span>
-                     <span class="n">sample_weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                     <span class="n">data_name</span><span class="o">=</span><span class="s2">&quot;B-&gt;K1 J/Psi monte-carlo&quot;</span><span class="p">,</span>
-                     <span class="n">data_name_addition</span><span class="o">=</span><span class="s2">&quot;cut&quot;</span>
-                     <span class="p">)</span>
-
-    <span class="n">storage2</span> <span class="o">=</span> <span class="n">HEPDataStorage</span><span class="p">(</span><span class="o">**</span><span class="n">root_data</span><span class="p">)</span>
-
-    <span class="n">storage2</span><span class="o">.</span><span class="n">plot_correlation</span><span class="p">(</span><span class="n">storage2</span><span class="p">)</span>
-
-    <span class="n">storage3</span> <span class="o">=</span> <span class="n">storage2</span><span class="o">.</span><span class="n">copy_storage</span><span class="p">(</span><span class="n">index</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">9</span><span class="p">],</span> <span class="n">columns</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;B_PT&#39;</span><span class="p">,</span> <span class="s1">&#39;nTracks&#39;</span><span class="p">])</span>
-    <span class="n">df11</span> <span class="o">=</span> <span class="n">storage3</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">()</span>
-    <span class="n">storage3</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">sample_weights</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mf">0.5</span><span class="p">])</span>
-
-    <span class="n">storage3</span><span class="o">.</span><span class="n">make_folds</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
-    <span class="n">train</span><span class="p">,</span> <span class="n">test</span> <span class="o">=</span> <span class="n">storage3</span><span class="o">.</span><span class="n">get_fold</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="n">train</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">test</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">()</span>
-    <span class="n">train</span><span class="o">.</span><span class="n">make_folds</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">train1</span><span class="p">,</span> <span class="n">test1</span> <span class="o">=</span> <span class="n">train</span><span class="o">.</span><span class="n">get_fold</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="n">train1</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">(),</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">test1</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">()</span>
-    <span class="n">t21</span> <span class="o">=</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">storage2</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">(),</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="s2">&quot;t21 = &quot;</span><span class="p">,</span> <span class="n">t21</span>
-
-    <span class="n">t22</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">works2</span> <span class="o">=</span> <span class="n">t21</span> <span class="ow">and</span> <span class="n">t22</span>
-    <span class="n">works</span> <span class="o">=</span> <span class="n">works1</span> <span class="ow">and</span> <span class="n">works2</span>
-    <span class="nb">print</span> <span class="s2">&quot;DataFrame works:&quot;</span><span class="p">,</span> <span class="n">works</span>
-    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
-
-    <span class="nb">print</span> <span class="s2">&quot;Selftest finished, tested &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_tested</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; functions.&quot;</span>
+<span class="c1">#==============================================================================</span>
+<span class="c1"># Docs</span>
+<span class="c1">#==============================================================================</span>
+<span class="n">data_storage_docstring</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">.. |data_type| replace:: root-tree dict (:py:func:`~raredecay.tools.data_tools.make_root_dict`) or :py:class:`~pd.DataFrame`</span>
+<span class="s2">.. |sample_weights_type| replace:: :py:class:`~pd.Series` or :py:class:`~np.array`</span>
+<span class="s2">    or int </span><span class="si">{1}</span><span class="s2"> or str/dict for root-trees (:py:func:`~raredecay.tools.data_tools.make_root_dict`)</span>
+<span class="s2">.. |sample_weights_docstring| replace::</span>
+<span class="s2">            The new weights for the dataset.</span>
+<span class="s2">            If the new weights are a pandas Series, the index must match the</span>
+<span class="s2">            internal index</span>
+<span class="s2">            If the data is a root-tree file,</span>
+<span class="s2">            a string (naming the branche) or a whole root-dict can be given,</span>
+<span class="s2">            pointing to the weights stored.</span>
+<span class="s2">.. |index_type| replace:: list or :py:class:`~np.array`</span>
+<span class="s2">.. |index_docstring| replace:: The index of the data to use.</span>
+<span class="s2">.. |column_alias_type| replace:: dict{str: str, str: str, ...}</span>
+<span class="s2">.. |column_alias_docstring| replace::</span>
+<span class="s2">            To change the name of a branch. The argument should be a dict looking like</span>
+<span class="s2">            {&#39;current_branch_name_in_root_tree/DataFrame&#39;: &#39;desired_name&#39;}.</span>
+<span class="s2">            The current_branch has to exist in the root-tree or DataFrame,</span>
+<span class="s2">            the desired_name can be anything.</span>
+<span class="s2">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">]</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">+=</span> <span class="n">data_storage_docstring</span>
 </pre></div>
 
            </div>
@@ -1371,6 +1429,7 @@
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

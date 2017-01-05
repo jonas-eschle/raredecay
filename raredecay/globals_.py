@@ -79,6 +79,7 @@ n_cpu_used = 0
 
 
 def free_cpus():
+    """Return the number of free cpus, 1 if no or one are free"""
     n_out = max([meta_config.n_cpu_max - n_cpu_used, 1])
     return n_out
 

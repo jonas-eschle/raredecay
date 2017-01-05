@@ -1,37 +1,26 @@
 sudo: required
-dist: "xenial"
+dist: xenial
 language: python
 python:
- - "2.7"
+- '2.7'
 virtualenv:
- system_site_packages: true
-# branches:
-#  only:
-#  - develop
-#  - master
+  system_site_packages: true
 before_install:
- - sudo apt-get -qq update
- # - sudo apt-get upgrade -y
- - sudo apt-get install -y root-system git python-pip libroot-bindings-python* libroot-roofit*
- - sudo -E -H pip install -U pip
- - sudo -E -H pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
- # - python -c 'import sys; print '\n'.join(sys.path)'
-
-
+- sudo apt-get -qq update
+- sudo apt-get install -y root-system git python-pip libroot-bindings-python* libroot-roofit*
+- sudo -E -H pip install -U pip
+- sudo -E -H pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 install:
- - "sudo -E -H pip install -U -r requirements.txt"
-# HACK for ROOT only
- - "sudo -E -H pip install rootpy root_numpy"
- - "pip install .[root] --no-dependencies"
+- sudo -E -H pip install -U -r requirements.txt
+- sudo -E -H pip install rootpy root_numpy
+- pip install .[root] --no-dependencies
 script:
- - pytest
-
+- pytest
 deploy:
- provider: pypi
- user: mayou36
- password: woerter8PIP!
- distributions: "sdist bdist_wheel"
- on:
-  branch: master
-
-
+  provider: pypi
+  user: mayou36
+  password:
+    secure: W+Q364bkGe+kjqJLN6gQPbtbnURb4hDqBwxeAoEPLvwqrh5GmrGsECo2vzCccTswtEhamvgImlIHuX8TgJzKWzmqqhr6RqO+yS6WXwVmEUIx+95ApKq3Bn+yCGtX8qpEpO/iEFOorVgetM7iesMHMR5QotuOalCyax6c40ZFZ8PUzdUYCukZsO2o1IDdynOf4A5hkR1Zhz56FEISml2vFURXy2LoTBWmPrIfWVh7nRzZLCgicwlpQz41+i3KwgU+jWoQeBC9+paj4O5LZhdJu9hodm8Xsf4iBNau4ClJOF82TI2vDC/t4nAliLhRuR/AfWVjr67VLPJRlgKx6TvQ2bMJki152dzVQHWhuxeh7rRwDvKeg14FaMNjfZJc5wQmHjWcrlV5S017f8k9nesmcUP4uLmmfbRd5sYwLHWj1g8qNZxZOz87kk8p6gCjElQX7rYVZhVf6cPq0F55myD7jaIHHRx8zbtTHZ9E/VEv6+UvO8K8VoJme+p28JaCUo/qhsfcQBgQGR4W8Bj9CxqZK92tFd4j5N6i0dYSJ8pYbCnqH5yNgTi17QtjpBAztEGjs6ZiTS78YDuNLw2DOkRN1Tym4fFlc2k1/WuVc/ZtFLUfxz+NRulK4Q+9riFSco+EupTcO7zw4VrmUjzJ8Lt+r1p0h7eCt9gN+FEqZ0Odkds=
+  distributions: sdist bdist_wheel
+  on:
+    branch: master

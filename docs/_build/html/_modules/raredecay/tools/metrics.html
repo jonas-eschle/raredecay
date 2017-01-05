@@ -146,24 +146,15 @@
 <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
 
 
-
-<span class="k">def</span> <span class="nf">rnd_dist</span><span class="p">():</span>
-    <span class="sd">&quot;&quot;&quot;Test reweighting by classify several random distributions. Not yet</span>
-<span class="sd">    known how to interpret outcome correctly. NOT YET IMPLEMENTED!&quot;&quot;&quot;</span>
-    <span class="k">pass</span>
-
-
 <span class="k">def</span> <span class="nf">mayou_score</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_data</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">old_mc_weights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="n">clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;An experimental score using a &quot;loss&quot; function for data-similarity&quot;&quot;&quot;</span>
 
     <span class="c1"># initialize variables</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="n">score_mc_vs_mcr</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">score_mcr_vs_real</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="c1">#    splits *= 2  # because every split is done with fold 0 and 1 (&lt;- 2 *)</span>
-
-
-
 
     <span class="c1"># loop over number of splits, split the mc data</span>
 
@@ -180,16 +171,18 @@
                 <span class="n">mc_data_train</span><span class="o">.</span><span class="n">make_folds</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
             <span class="n">mc_normal</span><span class="p">,</span> <span class="n">mc_reweighted</span> <span class="o">=</span> <span class="n">mc_data_train</span><span class="o">.</span><span class="n">get_fold</span><span class="p">(</span><span class="n">split</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
             <span class="n">mc_normal</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">old_mc_weights</span><span class="p">)</span>
-            <span class="n">score_mc_vs_mcr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">original_data</span><span class="o">=</span><span class="n">mc_normal</span><span class="p">,</span> <span class="n">target_data</span><span class="o">=</span><span class="n">mc_reweighted</span><span class="p">,</span>
-                                                   <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span> <span class="n">validation</span><span class="o">=</span><span class="p">[</span><span class="n">mc_data_test</span><span class="p">,</span> <span class="n">real_data</span><span class="p">],</span>
-                                                    <span class="n">clf</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span> <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-                                                    <span class="c1"># TODO: no weights ratio? (roc auc)</span>
-                                                    <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">0</span>
-                                                    <span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">score_mc_vs_mcr</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">original_data</span><span class="o">=</span><span class="n">mc_normal</span><span class="p">,</span>
+                                                   <span class="n">target_data</span><span class="o">=</span><span class="n">mc_reweighted</span><span class="p">,</span>
+                                                   <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+                                                   <span class="n">validation</span><span class="o">=</span><span class="p">[</span><span class="n">mc_data_test</span><span class="p">,</span> <span class="n">real_data</span><span class="p">],</span>
+                                                   <span class="n">clf</span><span class="o">=</span><span class="n">clf</span><span class="p">,</span> <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                   <span class="c1"># TODO: no weights ratio? (roc auc)</span>
+                                                   <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">0</span>
+                                                   <span class="p">)[</span><span class="mi">1</span><span class="p">])</span>
     <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;mayou_score mc vs mc reweighted test on mc vs real score: &quot;</span><span class="p">,</span>
                     <span class="n">score_mc_vs_mcr</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Mean: &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">score_mc_vs_mcr</span><span class="p">),</span>
-                    <span class="s2">&quot; +-&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">score_mc_vs_mcr</span><span class="p">)</span><span class="o">/</span><span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">score_mc_vs_mcr</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
-                    <span class="n">subtitle</span><span class="o">=</span><span class="s2">&quot;Mayou score&quot;</span><span class="p">,</span> <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="s2">&quot; +-&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">score_mc_vs_mcr</span><span class="p">)</span> <span class="o">/</span> <span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">score_mc_vs_mcr</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
+                   <span class="n">subtitle</span><span class="o">=</span><span class="s2">&quot;Mayou score&quot;</span><span class="p">,</span> <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">output</span><span class="p">[</span><span class="s1">&#39;mc_distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">score_mc_vs_mcr</span><span class="p">)</span>
 
@@ -209,8 +202,8 @@
 
     <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;mayou_score real vs mc reweighted test on mc vs real score: &quot;</span><span class="p">,</span>
                     <span class="n">score_mcr_vs_real</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Mean: &quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">score_mcr_vs_real</span><span class="p">),</span>
-                    <span class="s2">&quot; +-&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">score_mcr_vs_real</span><span class="p">)</span><span class="o">/</span><span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">score_mcr_vs_real</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
-                    <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+                    <span class="s2">&quot; +-&quot;</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">std</span><span class="p">(</span><span class="n">score_mcr_vs_real</span><span class="p">)</span> <span class="o">/</span> <span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">score_mcr_vs_real</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)],</span>
+                   <span class="n">to_end</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="n">output</span><span class="p">[</span><span class="s1">&#39;real_distance&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">score_mcr_vs_real</span><span class="p">)</span>
 
@@ -222,15 +215,13 @@
 <div class="viewcode-block" id="train_similar"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.train_similar">[docs]</a><span class="k">def</span> <span class="nf">train_similar</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_data</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_checks</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
                   <span class="n">clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">test_max</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">test_shuffle</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">test_mc</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
                   <span class="n">old_mc_weights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">test_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">clf_pred</span><span class="o">=</span><span class="s1">&#39;rdf&#39;</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Score for reweighting. Train clf on mc reweighted/real, test on real.</span>
-<span class="sd">    Minimize score.</span>
+    <span class="sd">&quot;&quot;&quot;Score for reweighting. Train clf on mc reweighted/real, test on real; minimize score.</span>
 
 <span class="sd">    Enter two datasets and evaluate the score described below. Return a</span>
 <span class="sd">    dictionary containing the different scores. The test_predictions is</span>
 <span class="sd">    another scoring, which is built upon the train_similar method.</span>
 
-<span class="sd">    Scoring method description</span>
-<span class="sd">    ^^^^^^^^^^^^^^^^^^^^^^^^^^</span>
+<span class="sd">    **Scoring method description**</span>
 
 <span class="sd">    **Idea**:</span>
 <span class="sd">    A clf is trained on the reweighted mc as well as on the real data of a</span>
@@ -250,8 +241,8 @@
 <span class="sd">    only observed for &quot;artificial&quot; distributions (even dough, of course, we</span>
 <span class="sd">    do not know if it affects real distributions aswell partly)</span>
 
-<span class="sd">    Output explanation</span>
-<span class="sd">    ^^^^^^^^^^^^^^^^^^</span>
+<span class="sd">    **Output explanation**</span>
+
 <span class="sd">    The return is a dictionary containing several values. Of course, only the</span>
 <span class="sd">    values, which are set to be evaluated, are contained. The keys are:</span>
 
@@ -372,23 +363,13 @@
             <span class="n">mc_train</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">tmp_weights</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="n">test_mc</span><span class="p">:</span>
-            <span class="n">clf_trained</span><span class="p">,</span> <span class="n">scores_mc</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">validation</span><span class="o">=</span><span class="n">mc_test</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">clf_trained</span><span class="p">,</span>
-                                      <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;train on mc reweighted/real, test on mc&quot;</span><span class="p">,</span>
-                                      <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                      <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
-                                      <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">importance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-
-<span class="c1"># HACK begin</span>
-<span class="c1">#        import matplotlib.pyplot as plt</span>
-<span class="c1">#        reweighted_y_proba = pred_reweighted[&#39;y_proba&#39;][:, 1]</span>
-<span class="c1">#        tmp_pred = reweighted_y_proba * pred_reweighted[&#39;weights&#39;]</span>
-<span class="c1">##        assert (True * 1 == 1 and False * 1 == 0), &quot;Boolean to int behavour changed unexpected&quot;</span>
-<span class="c1">#</span>
-<span class="c1">#        scores_weighted.extend(tmp_pred * (pred_reweighted[&#39;y_true&#39;] * 2 - 1))  # True=1, False=-1</span>
-
-
-
-<span class="c1"># HACK end</span>
+            <span class="n">clf_trained</span><span class="p">,</span> <span class="n">scores_mc</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">validation</span><span class="o">=</span><span class="n">mc_test</span><span class="p">,</span>
+                                                           <span class="n">clf</span><span class="o">=</span><span class="n">clf_trained</span><span class="p">,</span>
+                                                           <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;train on mc reweighted/real, test on mc&quot;</span><span class="p">,</span>
+                                                           <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                           <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+                                                           <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                           <span class="n">importance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 
 <span class="c1">#        del clf_trained, tmp_pred</span>
         <span class="n">probas_reweighted</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pred_reweighted</span><span class="p">[</span><span class="s1">&#39;y_proba&#39;</span><span class="p">])</span>
@@ -408,10 +389,12 @@
             <span class="n">clf_trained</span><span class="p">,</span> <span class="n">scores_max</span><span class="p">[</span><span class="n">fold</span><span class="p">],</span> <span class="n">pred_mc</span> <span class="o">=</span> <span class="n">tmp_out</span>
             <span class="k">if</span> <span class="n">test_mc</span><span class="p">:</span>
                 <span class="n">clf_trained</span><span class="p">,</span> <span class="n">scores_mc_max</span><span class="p">[</span><span class="n">fold</span><span class="p">]</span> <span class="o">=</span> <span class="n">ml_ana</span><span class="o">.</span><span class="n">classify</span><span class="p">(</span><span class="n">validation</span><span class="o">=</span><span class="n">mc_test</span><span class="p">,</span> <span class="n">clf</span><span class="o">=</span><span class="n">clf_trained</span><span class="p">,</span>
-                                              <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;train on mc NOT reweighted/real, test on mc&quot;</span><span class="p">,</span>
-                                              <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">get_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-                                              <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
-                                              <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">importance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+                                                                   <span class="n">plot_title</span><span class="o">=</span><span class="s2">&quot;train on mc NOT reweighted/real, test on mc&quot;</span><span class="p">,</span>
+                                                                   <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                                   <span class="n">get_predictions</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                                                                   <span class="n">features</span><span class="o">=</span><span class="n">features</span><span class="p">,</span>
+                                                                   <span class="n">plot_importance</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                                                   <span class="n">importance</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
             <span class="k">del</span> <span class="n">clf_trained</span>
 <span class="c1"># HACK</span>
             <span class="n">tmp_pred</span> <span class="o">=</span> <span class="n">pred_mc</span><span class="p">[</span><span class="s1">&#39;y_proba&#39;</span><span class="p">][:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">pred_mc</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span>
@@ -431,28 +414,9 @@
         <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_shuffled&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores_shuffled</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
         <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_shuffled_std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores_shuffled</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
 
-
-
     <span class="k">if</span> <span class="n">test_mc</span><span class="p">:</span>
         <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_mc&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores_mc</span><span class="o">.</span><span class="n">mean</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
         <span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_mc_std&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="n">scores_mc</span><span class="o">.</span><span class="n">std</span><span class="p">(),</span> <span class="mi">4</span><span class="p">)</span>
-    <span class="c1"># HACK</span>
-<span class="c1">#    scores_weighted = np.array(scores_weighted)</span>
-<span class="c1">#    out.add_output([&quot;EXPERIMENTAL: score weighted:&quot;, scores_weighted.mean(), &quot; +- &quot;,</span>
-<span class="c1">#                     np.std(np.abs(scores_weighted))], to_end=True)</span>
-<span class="c1">#    scores_max_weighted = np.array(scores_max_weighted)</span>
-<span class="c1">#    out.add_output([&quot;EXPERIMENTAL: max score weighted:&quot;, round(scores_max_weighted.mean(),4) , &quot; +- &quot;,</span>
-<span class="c1">#                     round(np.std(np.abs(scores_max_weighted)), 4)], to_end=True)</span>
-
-<span class="c1">#    plt.figure()</span>
-<span class="c1">#    plt.hist(scores_weighted, bins=30, normed=True)</span>
-<span class="c1">#    plt.title(&quot;experimental score weighted&quot;)</span>
-<span class="c1">#    plt.figure()</span>
-<span class="c1">#    plt.hist(scores_max_weighted, bins=30, normed=True)</span>
-<span class="c1">#    plt.title(&quot;experimental MAX score weighted&quot;)</span>
-    <span class="c1">#HACK END</span>
-<span class="c1">#    output[&#39;weighted_score&#39;] =</span>
-<span class="c1">#    output[&#39;weighted_score_std&#39;] =</span>
 
     <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;Score train_similar (recall, lower means better): &quot;</span><span class="p">,</span>
                    <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;score&#39;</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot; +- &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="s1">&#39;score_std&#39;</span><span class="p">])],</span>
@@ -492,13 +456,25 @@
 
 
 <span class="k">def</span> <span class="nf">similar_dist</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">true_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Metric to evaluate the predictions on one label only for similarity test</span>
+    <span class="sd">&quot;&quot;&quot;Metric to evaluate the predictions on one label only for similarity test.</span>
 
+<span class="sd">    This metric is used inside the mayou_score</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    predictions : :py:class:`~np.array`</span>
+<span class="sd">        The predicitons</span>
+<span class="sd">    weights : array-like</span>
+<span class="sd">        The weights for the predictions</span>
+<span class="sd">    true_y : {0 , 1}</span>
+<span class="sd">        The &quot;true&quot; label of the data</span>
+<span class="sd">    threshold : float</span>
+<span class="sd">        The threshold for the predictions to decide whether a point belongs</span>
+<span class="sd">        to 0 or 1.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1">#HACK</span>
+    <span class="c1"># HACK</span>
     <span class="n">scale</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1"># otherwise, the predictions will be [-0.5, 0.5]</span>
-    <span class="c1">#HACK END</span>
+    <span class="c1"># HACK END</span>
     <span class="n">data_valid</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span> <span class="o">&lt;</span> <span class="nb">max</span><span class="p">(</span><span class="n">predictions</span><span class="p">)</span>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">data_valid</span><span class="p">:</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Predictions are all above or below the threshold&quot;</span><span class="p">)</span>
@@ -511,23 +487,21 @@
     <span class="n">true_pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">predictions</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
     <span class="n">false_pred</span> <span class="o">=</span> <span class="n">predictions</span><span class="p">[</span><span class="n">predictions</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="o">-</span><span class="mi">1</span>
 
-
-
     <span class="n">true_weights</span> <span class="o">=</span> <span class="n">false_weights</span> <span class="o">=</span> <span class="mi">1</span>
 
     <span class="k">if</span> <span class="ow">not</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">is_in_primitive</span><span class="p">(</span><span class="n">weights</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
         <span class="n">true_weights</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">predictions</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">]</span>
         <span class="n">false_weights</span> <span class="o">=</span> <span class="n">weights</span><span class="p">[</span><span class="n">predictions</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">]</span>
-    <span class="n">score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(((</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">true_pred</span> <span class="o">+</span> <span class="mf">0.6</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.5969</span><span class="p">)</span><span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">true_weights</span><span class="p">)</span>
+    <span class="n">score</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(((</span><span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="mf">1.3</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">square</span><span class="p">(</span><span class="n">true_pred</span> <span class="o">+</span> <span class="mf">0.6</span><span class="p">))</span> <span class="o">-</span> <span class="mf">1.5969</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.5</span><span class="p">)</span> <span class="o">*</span> <span class="n">true_weights</span><span class="p">)</span>
     <span class="n">score</span> <span class="o">-=</span> <span class="nb">sum</span><span class="p">(((</span><span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">false_pred</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">power</span><span class="p">(</span><span class="n">false_pred</span><span class="p">,</span> <span class="mf">0.8</span><span class="p">))</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span> <span class="o">*</span> <span class="n">false_weights</span><span class="p">)</span>
     <span class="n">score</span> <span class="o">/=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">weights</span><span class="p">)</span>
-
 
     <span class="k">return</span> <span class="n">score</span>
 
 
 <div class="viewcode-block" id="punzi_fom"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.punzi_fom">[docs]</a><span class="k">def</span> <span class="nf">punzi_fom</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="n">n_background</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the Punzi Figure of Merit metric: S / (sqrt(B) + n_sigma/2)</span>
+    <span class="sd">&quot;&quot;&quot;:math:`a^2 + b^2 = c^2`</span>
+<span class="sd">    Return the Punzi Figure of Merit = :math:`frac{S}{\sqrt(B) + n_sigma/2}`.</span>
 
 <span class="sd">    The Punzi FoM is mostly used for the detection of rare decays to prevent</span>
 <span class="sd">    the metric of cutting off all the background and leaving us with only a</span>
@@ -546,17 +520,17 @@
     <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_signal</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_background</span><span class="p">))</span>
-        <span class="n">term1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">n_sigma</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">term1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">length</span><span class="p">,</span> <span class="n">n_sigma</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
 
         <span class="n">sqrt</span> <span class="o">=</span> <span class="n">mt</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">n_background</span><span class="p">)</span>
-        <span class="n">term1</span> <span class="o">=</span> <span class="n">n_sigma</span><span class="o">/</span><span class="mi">2</span>
+        <span class="n">term1</span> <span class="o">=</span> <span class="n">n_sigma</span> <span class="o">/</span> <span class="mi">2</span>
     <span class="n">output</span> <span class="o">=</span> <span class="n">n_signal</span> <span class="o">/</span> <span class="p">(</span><span class="n">sqrt</span> <span class="o">+</span> <span class="n">term1</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">output</span></div>
 
 
 <div class="viewcode-block" id="precision_measure"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.precision_measure">[docs]</a><span class="k">def</span> <span class="nf">precision_measure</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="n">n_background</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Return the precision measure: s / sqrt(s + b)&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Return the precision measure: s / sqrt(s + b).&quot;&quot;&quot;</span>
     <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_signal</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
         <span class="n">sqrt</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">n_signal</span> <span class="o">+</span> <span class="n">n_background</span><span class="p">))</span>
@@ -606,6 +580,7 @@
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

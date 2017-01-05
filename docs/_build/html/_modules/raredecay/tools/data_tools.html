@@ -148,7 +148,7 @@
 <span class="kn">import</span> <span class="nn">cPickle</span> <span class="k">as</span> <span class="nn">pickle</span>
 
 <span class="k">try</span><span class="p">:</span>
-    <span class="kn">from</span> <span class="nn">root_numpy</span> <span class="k">import</span> <span class="n">root2array</span><span class="p">,</span>  <span class="n">array2root</span>
+    <span class="kn">from</span> <span class="nn">root_numpy</span> <span class="k">import</span> <span class="n">root2array</span><span class="p">,</span> <span class="n">array2root</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
     <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;could not import from root_numpy!&quot;</span><span class="p">)</span>
 
@@ -181,13 +181,13 @@
 
     <span class="n">lower_cut</span><span class="p">,</span> <span class="n">upper_cut</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">percentile</span><span class="p">)</span>
     <span class="n">cut_bkg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">count_nonzero</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">logical_or</span><span class="p">(</span><span class="n">bkg_data</span> <span class="o">&lt;</span> <span class="n">lower_cut</span><span class="p">,</span> <span class="n">bkg_data</span> <span class="o">&gt;</span> <span class="n">upper_cut</span><span class="p">))</span>
-    <span class="n">rejected_bkg</span> <span class="o">=</span> <span class="p">(</span><span class="n">bkg_length_before</span> <span class="o">-</span> <span class="n">cut_bkg</span><span class="p">)</span><span class="o">/</span><span class="n">bkg_length</span>
+    <span class="n">rejected_bkg</span> <span class="o">=</span> <span class="p">(</span><span class="n">bkg_length_before</span> <span class="o">-</span> <span class="n">cut_bkg</span><span class="p">)</span> <span class="o">/</span> <span class="n">bkg_length</span>
 
     <span class="k">return</span> <span class="p">[</span><span class="n">lower_cut</span><span class="p">,</span> <span class="n">upper_cut</span><span class="p">],</span> <span class="n">rejected_bkg</span>
 
 
 <div class="viewcode-block" id="make_root_dict"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.make_root_dict">[docs]</a><span class="k">def</span> <span class="nf">make_root_dict</span><span class="p">(</span><span class="n">path_to_rootfile</span><span class="p">,</span> <span class="n">tree_name</span><span class="p">,</span> <span class="n">branches</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Returns a root_numpy compatible &quot;root-dict&quot; of a root-tree</span>
+    <span class="sd">&quot;&quot;&quot;Returns a root_numpy compatible &quot;root-dict&quot; of a root-tree.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -206,8 +206,9 @@
 
 
 <span class="k">def</span> <span class="nf">add_to_rootfile</span><span class="p">(</span><span class="n">rootfile</span><span class="p">,</span> <span class="n">new_branch</span><span class="p">,</span> <span class="n">branch_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Adds a new branch to a given root file, overwrites. Overwrite not working</span>
-<span class="sd">    currently!</span>
+    <span class="sd">&quot;&quot;&quot;Adds a new branch to a given root file.</span>
+
+<span class="sd">    .. warning:: Overwrite not working currently!</span>
 
 
 <span class="sd">    Parameters</span>
@@ -218,7 +219,6 @@
 <span class="sd">        A one-dimensional numpy array that contains the data.</span>
 <span class="sd">    branch_name : str</span>
 <span class="sd">        The name of the branche resp. the name in the dtype of the array.</span>
-
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="c1"># from root_numpy import root2array, array2tree</span>
 
@@ -255,7 +255,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="mi">1</span>
 
-
+<span class="c1"># TODO: remove? outdated</span>
 <span class="k">def</span> <span class="nf">format_data_weights</span><span class="p">(</span><span class="n">data_to_shape</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Format the data and the weights perfectly. Same length and more.</span>
 
@@ -337,8 +337,7 @@
 
 
 <div class="viewcode-block" id="is_root"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_root">[docs]</a><span class="k">def</span> <span class="nf">is_root</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Check whether a given data is a root file. Needs dicts to be True!</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Check whether a given data is a root file. Needs dicts to be True.&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
         <span class="n">path_name</span> <span class="o">=</span> <span class="n">data_to_check</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;filenames&#39;</span><span class="p">)</span>
@@ -350,8 +349,7 @@
 
 
 <div class="viewcode-block" id="is_list"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_list">[docs]</a><span class="k">def</span> <span class="nf">is_list</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Check whether the given data is a list</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot; Check whether the given data is a list.&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
         <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
@@ -359,8 +357,7 @@
 
 
 <div class="viewcode-block" id="is_ndarray"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_ndarray">[docs]</a><span class="k">def</span> <span class="nf">is_ndarray</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Check whether a given data is an ndarray.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Check whether a given data is an ndarray.&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
         <span class="n">flag</span> <span class="o">=</span> <span class="kc">True</span>
@@ -368,6 +365,7 @@
 
 
 <div class="viewcode-block" id="is_pickle"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_pickle">[docs]</a><span class="k">def</span> <span class="nf">is_pickle</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if the file is a pickled file (checks the ending).&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
         <span class="k">if</span> <span class="n">data_to_check</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">meta_config</span><span class="o">.</span><span class="n">PICKLE_DATATYPE</span><span class="p">):</span>
@@ -409,8 +407,12 @@
 
 
 <div class="viewcode-block" id="to_ndarray"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_ndarray">[docs]</a><span class="k">def</span> <span class="nf">to_ndarray</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">float_array</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Convert data to numpy array (containing only floats)</span>
+    <span class="sd">&quot;&quot;&quot;Convert data to numpy array (containing only floats).</span>
 
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_in : any reasonable data</span>
+<span class="sd">        The data to be converted</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">is_root</span><span class="p">(</span><span class="n">data_in</span><span class="p">):</span>
         <span class="n">data_in</span> <span class="o">=</span> <span class="n">root2array</span><span class="p">(</span><span class="o">**</span><span class="n">data_in</span><span class="p">)</span>  <span class="c1"># why **? it&#39;s a root dict</span>
@@ -431,10 +433,14 @@
     <span class="k">return</span> <span class="n">data_in</span></div>
 
 
-<div class="viewcode-block" id="to_pandas"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_pandas">[docs]</a><span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="to_pandas"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_pandas">[docs]</a><span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert data from numpy or root to pandas dataframe.</span>
 
 <span class="sd">    Convert data safely to pandas, whatever the format is.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data_in : any reasonable data</span>
+<span class="sd">        The data to be converted</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">is_root</span><span class="p">(</span><span class="n">data_in</span><span class="p">):</span>
         <span class="n">data_in</span> <span class="o">=</span> <span class="n">root2array</span><span class="p">(</span><span class="o">**</span><span class="n">data_in</span><span class="p">)</span>  <span class="c1"># why **? it&#39;s a root dict</span>
@@ -450,7 +456,7 @@
 
 
 <div class="viewcode-block" id="adv_return"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.adv_return">[docs]</a><span class="k">def</span> <span class="nf">adv_return</span><span class="p">(</span><span class="n">return_value</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Save the value if save_name specified, otherwise just return input</span>
+    <span class="sd">&quot;&quot;&quot;Save the value if save_name specified, otherwise just return input.</span>
 
 <span class="sd">    Can be wrapped around the return value. Without any arguments, the return</span>
 <span class="sd">    of your function will be exactly the same. With arguments, the value can</span>
@@ -505,24 +511,24 @@
 
 
 <div class="viewcode-block" id="try_unpickle"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.try_unpickle">[docs]</a><span class="k">def</span> <span class="nf">try_unpickle</span><span class="p">(</span><span class="n">file_to_unpickle</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Try to unpickle a file and return, otherwise just return input&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;Try to unpickle a file and return, otherwise just return input.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">is_pickle</span><span class="p">(</span><span class="n">file_to_unpickle</span><span class="p">):</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">meta_config</span><span class="o">.</span><span class="n">PICKLE_PATH</span> <span class="o">+</span> <span class="n">file_to_unpickle</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
             <span class="n">file_to_unpickle</span> <span class="o">=</span> <span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">file_to_unpickle</span></div>
 
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="nb">print</span> <span class="s2">&quot;running selftest&quot;</span>
-    <span class="n">root_dict</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span>
-        <span class="n">filenames</span><span class="o">=</span><span class="s1">&#39;/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root&#39;</span><span class="p">,</span>
-        <span class="n">branches</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;B_PT&#39;</span><span class="p">,</span> <span class="s1">&#39;nTracks&#39;</span><span class="p">],</span>
-        <span class="n">treename</span><span class="o">=</span><span class="s1">&#39;DecayTree&#39;</span><span class="p">,</span>
-        <span class="n">selection</span><span class="o">=</span><span class="s1">&#39;B_PT &gt; 10000&#39;</span>
-        <span class="p">)</span>
-    <span class="n">df1</span> <span class="o">=</span> <span class="n">to_pandas</span><span class="p">(</span><span class="n">root_dict</span><span class="p">)</span>
-    <span class="nb">print</span> <span class="n">df1</span>
-    <span class="nb">print</span> <span class="s2">&quot;selftest completed!&quot;</span>
+<span class="c1">#if __name__ == &#39;__main__&#39;:</span>
+<span class="c1">#    print &quot;running selftest&quot;</span>
+<span class="c1">#    root_dict = dict(</span>
+<span class="c1">#        filenames=&#39;/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root&#39;,</span>
+<span class="c1">#        branches=[&#39;B_PT&#39;, &#39;nTracks&#39;],</span>
+<span class="c1">#        treename=&#39;DecayTree&#39;,</span>
+<span class="c1">#        selection=&#39;B_PT &gt; 10000&#39;</span>
+<span class="c1">#        )</span>
+<span class="c1">#    df1 = to_pandas(root_dict)</span>
+<span class="c1">#    print df1</span>
+<span class="c1">#    print &quot;selftest completed!&quot;</span>
 </pre></div>
 
            </div>
@@ -565,6 +571,7 @@
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

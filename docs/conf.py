@@ -38,7 +38,9 @@ extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
     'sphinx.ext.viewcode',
-    'sphinx.ext.napoleon'
+    'sphinx.ext.napoleon',  # converts numpy doc style to python style
+    'sphinx.ext.mathjax',
+    'sphinx.ext.mathbase'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -436,9 +438,9 @@ epub_exclude_files = ['search.html']
 #
 # epub_use_index = True
 
+rst_epilog = """"""
 
-
-rst_epilog = """
+ml_analysis_docstring = """
 .. |test_ref_1| replace:: This is a test reference, the first one
 .. |importance_docstring| replace::        The higher the importance, the more likely the output will be printed. All output will be saved anyway if an output path was initialized.
 .. |importance_type| replace:: int {0, 1, 2, 3, 4, 5}
@@ -450,3 +452,5 @@ rst_epilog = """
         original_data and 1 for the target_data.
 .. |hepds_type| replace:: :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
 """
+rst_epilog += ml_analysis_docstring
+

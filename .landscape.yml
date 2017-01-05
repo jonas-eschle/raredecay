@@ -6,6 +6,9 @@ pylint:
     - too-many-locals
     - too-many-branches
 
+ignore-paths:
+  - raredecay/tools/estimator.py
+
 python-targets:
  - 2
  

@@ -3,22 +3,21 @@
 Created on Thu Apr  7 22:10:29 2016
 
 @author: Jonas Eschle "Mayou36"
+
+This module contains the data handling. The main part is the class which
+takes data, weights, targets, names and converts automatically, plots and more.
 """
-# debug
 from __future__ import division, absolute_import
 
 import copy
 import warnings
-# import cProfile as profile
+import math
+import random
 
 import pandas as pd
 import seaborn as sns
 import numpy as np
 import matplotlib.pyplot as plt
-import math
-import random
-# from collections import deque
-# import itertools
 
 from rep.data.storage import LabeledDataStorage
 
@@ -32,7 +31,7 @@ except ImportError:
     out_imported = False
 from raredecay import meta_config
 
-# TODO: import config not needed??
+# TODO: import config not needed?? remove because its from the old structure
 # import configuration
 import importlib
 # from raredecay import meta_config
@@ -41,12 +40,8 @@ modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 class HEPDataStorage(object):
-    """ A wrapper around pandas.DataFrame and an extension to the
-    LabeledDataStorage.
+    """Data-storage for data, weights, targets; conversion; plots and more"""
 
-
-
-    """
     # define constants for independence
     __ROOT_DATATYPE = meta_config.ROOT_DATATYPE
 
@@ -54,13 +49,12 @@ class HEPDataStorage(object):
     __figure_dic = {}
 
     def __init__(self, data, index=None, target=None, sample_weights=None,
-                 data_name=None, data_name_addition=None, data_labels=None,
-                 column_alias=None):
-        """Initialize instance and load data
+                 data_name=None, data_name_addition=None, column_alias=None):
+        """Initialize instance and load data.
 
         Parameters
         ----------
-        data : (root-tree dict, pandas DataFrame)
+        data : |data_type|
             The data itself. This can be two different types
 
             - **root-tree dict** (*root-dict*):
@@ -74,9 +68,9 @@ class HEPDataStorage(object):
             The indices of the data that will be used.
         target : list or 1-D array or int {0, 1}
             Labels the data for the machine learning. Usually the y.
-        sample_weights : 1-D array or {1, None}
-            Contains the weights of the samples.
-        .. note:: If None or 1 specified, 1 will be assumed for all.
+        sample_weights : |sample_weights_type|
+            |sample_weights_docstring|
+            .. note:: If None or 1 specified, 1 will be assumed for all.
         data_name : str
             | Name of the data, human-readable. Displayed in the title of
               plots.
@@ -85,25 +79,24 @@ class HEPDataStorage(object):
             | Additional remarks to the data, human readable. Displayed in
               the title of plots.
             | *Example: 'reweighted', 'shuffled', '5 GeV cut applied' etc.*
-        data_labels : dict with strings {column name: human readable name}
-            | Human-readable names for the columns, displayed in the plot.
-            | Dictionary has to contain the exact column (=branch) name of
-              the data
-            | All not specified labels will be auto-labeled by the branch
-              name itself.
-
-            | *Good practice*: keep a dictionary containing all possible lables
-              and hand it over every time.
+        column_alias : |column_alias_type|
+            |column_alias_docstring|
         """
         # initialize logger
         self.logger = modul_logger
 
+        # initialize index
+        # self._index = None
+
         # initialize data
+        # self._data = None
+        self._data_type = None
         self.column_alias = {} if column_alias is None else column_alias
         self._fold_index = None  # list with indeces of folds
         self._fold_status = None  # tuple (my_fold_number, total_n_folds)
         self._length = None
         self.set_data(data=data, index=index)
+        # self._columns = None
 
         # data name
         self._name = ["", "", ""]
@@ -115,10 +108,11 @@ class HEPDataStorage(object):
         # initialize targets
         self._set_target(target=target)
 
-        # data-labels human readable, initialize with the column name
-        self._label_dic = {}
-        self._label_dic = {col: col for col in self.columns if self._label_dic.get(col) is None}
-        self.set_labels(data_labels=data_labels)
+#        # data-labels human readable, initialize with the column name
+#        self._label_dic = {}
+#        self._label_dic = {col: col for col in self.columns if self._label_dic.get(col) is None}
+        # TODO: delete?
+#        self.set_labels(data_labels=data_labels)
 
         # initialize weights
         self._weights = None
@@ -136,13 +130,13 @@ class HEPDataStorage(object):
 
 # TODO: remove obsolet
     def get_name(self):
-        """Return the human-readable name of the data as a string"""
-        warnings.warn("Depreceated, will be removed. Use obj.name instead.", FutureWarning)
+        """Return the human-readable name of the data as a string."""
+        warnings.warn("Depreceated, obj.get_name() will be removed. Use obj.name instead.", FutureWarning)
         return self._get_name()
 
     @property
     def name(self):
-        """Return the **full** human-readable name of the data as a string"""
+        """Return the **full** human-readable name of the data as a string."""
         return self._get_name()
 
     def _get_name(self):
@@ -150,23 +144,26 @@ class HEPDataStorage(object):
         return out_str
 
     def _set_name(self, data_name=None, data_name_addition=None, fold_name=None):
-        """Set the data name"""
+        """Set the data name."""
         # set the new name in self._name
         for i, name in enumerate([data_name, data_name_addition, fold_name]):
             if name is not None:
                 self._name[i] = name
 
-#TODO: change the naming into a dict
+# TODO: change the naming into a dict?
     @property
     def data_name(self):
+        """The name of the data."""
         return self._name[0]
 
     @property
     def data_name_addition(self):
+        """The data name addition."""
         return self._name[1]
 
     @property
     def fold_name(self):
+        """The name of the fold (like *fold 2 of 5*)."""
         return self._name[2]
 
     @data_name.setter
@@ -183,6 +180,7 @@ class HEPDataStorage(object):
 
     @property
     def data_type(self):
+        """"Return the data-type like 'root', 'df' etc."""
         return self._data_type
 
     def get_index(self):
@@ -192,11 +190,12 @@ class HEPDataStorage(object):
 
     @property
     def index(self):
-        """Return the *real* index as a list"""
+        """The internal index"""
         return self._make_index()
 
     @index.setter
     def index(self, index):
+
         self._set_index(index)
 
     def _make_index(self, index=None):
@@ -233,6 +232,7 @@ class HEPDataStorage(object):
 
     @property
     def columns(self):
+        """The columns/branches of the data"""
         return self._columns
 
     @columns.setter
@@ -273,7 +273,7 @@ class HEPDataStorage(object):
 
     @staticmethod
     def _get_data_type(data):
-        """Return the type of the data
+        """Return the type of the data.
 
         - 'df' : pandas DataFrame
         - 'root': root-file
@@ -292,16 +292,30 @@ class HEPDataStorage(object):
 
     @property
     def data(self):
+        """Return the data as is without conversion, e.g. a root-dict, pandasDF etc."""
         return self._data
 
     def set_data(self, data, index=None, columns=None, column_alias=None):
+        """Set the data and also change index and columns.
+
+        Parameters
+        ----------
+        data : |data_type|
+            The new data
+        index : |index_type|
+            |index_docstring|
+        columns : list(str, str, str,...)
+            The columns for the data to use
+        column_alias : |column_alias_type|
+            |column_alias_docstring|
+        """
 
         if column_alias is not None:
             self.column_alias.update(column_alias)
         self._set_data(data=data, index=index, columns=columns)
 
     def _set_data(self, data, index=None, columns=None):
-        """Set the data, length- and columns-attribute
+        """Set the data, length- and columns-attribute.
 
         Convert the data to the right (root-dict, df etc.) format (and save).
         Also set the length and columns.
@@ -333,10 +347,10 @@ class HEPDataStorage(object):
             raise NotImplementedError("Other dataformats are not yet implemented")
 
 # TODO: implement pickleable data?
-
-    @property
-    def labels(self):
-        return self._label_dic.get(self.columns)
+#
+#    @property
+#    def labels(self):
+#        return self._label_dic.get(self.columns)
 
     def get_weights(self, index=None, normalize=True, **kwargs):
         """Return the weights of the specified indeces or, if None, return all.
@@ -347,8 +361,8 @@ class HEPDataStorage(object):
             If True, the weights will be normalized to 1 (the mean is 1).
             If a float is provided, the mean of the weights will be equal
             to *normalize*. So *True* and *1* will yield the same results.
-        index : 1-D list
-            List of index to get the weights from.
+        index : |index_type|
+            |index_docstring
 
         Return
         ------
@@ -360,8 +374,6 @@ class HEPDataStorage(object):
         normalize = 1 if normalize is True else normalize
         second_storage = kwargs.get('second_storage')
 
-
-        # TODO: stopped work here
         normalize_1 = 1
         normalize_2 = 1
 
@@ -402,7 +414,7 @@ class HEPDataStorage(object):
         return weights_out
 
     def _get_weights(self, index=None,  normalize=True):
-        """Return pandas Series of weights or None, 1"""
+        """Return pandas Series of weights or None, 1."""
         # initialize values
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
@@ -421,7 +433,7 @@ class HEPDataStorage(object):
         weights_out = copy.deepcopy(weights_out)
         if normalize or normalize > 0:
             normalize = 1 if normalize is True else normalize
-            weights_out *= normalize/weights_out.mean()
+            weights_out *= normalize / weights_out.mean()
 
         return weights_out
 
@@ -430,13 +442,8 @@ class HEPDataStorage(object):
 
         Parameters
         ----------
-        sample_weights : pandas Series or numpy array or int {1} or str/dict for root-trees
-            The new weights for the dataset.
-            If the new weights are a pandas Series, the index must match the
-            internal index
-            If the data is a root-tree file,
-            a string (naming the branche) or a whole root-dict can be given,
-            pointing to the weights stored.
+        sample_weights : |sample_weights_type|
+            |sample_weights_docstring|
         index : 1-D array or list or None
             The indeces for the weights to be set. Only the index given will be
             set/used as weights.
@@ -482,7 +489,7 @@ class HEPDataStorage(object):
             self._weights.update(sample_weights)
 
     def set_root_selection(self, selection, exception_if_failure=True):
-        """Set the selection in a root-file. Only possible if a root-file is provided"""
+        """Set the selection in a root-file. Only possible if a root-file is provided."""
         warnings.warn("Method set_root_selection very unsafe currently!")
         meta_config.warning_occured()
         if self._data_type == 'root':
@@ -495,19 +502,17 @@ class HEPDataStorage(object):
             self.logger.error("selection not applied, no root-dict")
 
     def pandasDF(self, columns=None, index=None):
-        """Convert the data to pandas or cut an already existing data frame and
-        return it.
+        """Return a pandas DataFrame representation of the data
 
-        Return a pandas DataFrame
+        Return a pandas DataFrame.
 
         Parameters
         ---------
         columns : str
             Arguments for the :py:func:`~root_numpy.root2rec` ls
             function.
-        index : 1-D list
-            The index from the data to be used. If None, all data
-            will be used.
+        index : |index_type|
+            |index_docstring|
         """
         # initialize variables
         index = None if index is None else list(index)
@@ -553,54 +558,55 @@ class HEPDataStorage(object):
 
         return data
 
-    def get_labels(self, columns=None, as_list=False):
-        """Return the human readable branch-labels of the data.
+#    def get_labels(self, columns=None, as_list=False):
+#        """Return the human readable branch-labels of the data.
+#
+#        Parameters
+#        ----------
+#        columns : list with str or str
+#            The labels of the columns to return
+#        as_list : boolean
+#            If true, the labels will be returned as a list instead of a dict.
+#
+#        Return
+#        ------
+#        out : list or dict
+#            Return a list or dict containing the labels.
+#        """
+#        if columns is None:
+#            columns = self.columns
+#        columns = data_tools.to_list(columns)
+#        if as_list:
+#            labels_out = [self._label_dic.get(col, col) for col in columns]
+#        else:
+#            labels_out = {key: self._label_dic.get(key) for key in columns}
+#        return labels_out
 
-        Parameters
-        ----------
-        columns : list with str or str
-            The labels of the columns to return
-        as_list : boolean
-            If true, the labels will be returned as a list instead of a dict.
-
-        Return
-        ------
-        out : list or dict
-            Return a list or dict containing the labels.
-        """
-        if columns is None:
-            columns = self.columns
-        columns = data_tools.to_list(columns)
-        if as_list:
-            labels_out = [self._label_dic.get(col, col) for col in columns]
-        else:
-            labels_out = {key: self._label_dic.get(key) for key in columns}
-        return labels_out
-
-    def set_labels(self, data_labels, replace=False):
-        """Set the human readable data-labels (for the columns).
-
-        Sometimes you want to change the labels(names) of columns. This can be
-        done by passing a dictionary containing the column as key and a
-        human-readable name as value.
-
-        Parameters
-        ----------
-        data_labels : dict
-            It has the form: {column: name}
-        replace : boolean
-        """
-        if data_labels is None:
-            return
-        assert isinstance(data_labels, dict), "Not a dictionary"
-        self._set_data_labels(data_labels=data_labels, replace=replace)
-
-    def _set_data_labels(self, data_labels, replace):
-        """Update the data labels"""
-        if replace:
-            self._label_dic = data_labels
-        else:
-            self._label_dic.update(data_labels)
+        # TODO: delete?
+#    def set_labels(self, data_labels, replace=False):
+#        """Set the human readable data-labels (for the columns).
+#
+#        Sometimes you want to change the labels(names) of columns. This can be
+#        done by passing a dictionary containing the column as key and a
+#        human-readable name as value.
+#
+#        Parameters
+#        ----------
+#        data_labels : dict
+#            It has the form: {column: name}
+#        replace : boolean
+#        """
+#        if data_labels is None:
+#            return
+#        assert isinstance(data_labels, dict), "Not a dictionary"
+#        self._set_data_labels(data_labels=data_labels, replace=replace)
+#
+#    def _set_data_labels(self, data_labels, replace):
+#        """Update the data labels"""
+#        if replace:
+#            self._label_dic = data_labels
+#        else:
+#            self._label_dic.update(data_labels)
 
     def get_targets(self, index=None):
         """Return the targets of the data as a pandas Series."""
@@ -621,7 +627,7 @@ class HEPDataStorage(object):
         return out_targets
 
     def _get_targets(self, index=None):
-        """Return targets as pandas Series or primitive type"""
+        """Return targets as pandas Series or primitive type."""
         # assign defaults
         index = self._index if index is None else list(index)
         # length = len(self) if index is None else len(index)
@@ -634,15 +640,15 @@ class HEPDataStorage(object):
         return out_targets
 
     def set_targets(self, targets, index=None):
-        """Set the targets of the data. Either a list-like object or
-        {-1, 0, 1, None}"""
+        """Set the targets of the data. Either an array-like object or {0, 1}."""
 
         if not dev_tool.is_in_primitive(targets, (-1, 0, 1, None)):
             assert len(self) == len(targets), "Invalid targets"
         self._set_target(target=targets, index=index)
 
     def _set_target(self, target, index=None):
-        """Set the target. Attention with Series, index must be the same as data-index"""
+        """Set the target. Attention with Series, index must be the same as data-index."""
+
         index = self._index if dev_tool.is_in_primitive(index) else index
         if isinstance(target, (list, np.ndarray, pd.Series)):
             target = pd.Series(target, index=index, copy=True)
@@ -651,8 +657,7 @@ class HEPDataStorage(object):
 
     def make_dataset(self, second_storage=None, index=None, index_2=None, columns=None,
                      weights_ratio=0, shuffle=False, targets_from_data=False):
-
-        """Create data, targets and weights of the instance (and another one)
+        """Create data, targets and weights of the instance (and another one).
 
         In machine-learning, it is very often required to have data, it's
         targets (or labeling, the 'y') and the weights. In most cases, we
@@ -667,21 +672,14 @@ class HEPDataStorage(object):
         :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
             A second data-storage. If provided, the data/targets/weights
             will be concatenated and returned as one.
-        index : list(int, int, int, ...)
+        index : |index_type|
             The index for the **calling** (the *first*) storage instance.
+            |index_docstring|
         index_2 : list(int, int, int, ...)
             The index for the (optional) **second storage instance**.
+            |index_docstring|
         columns : list(str, str, str, ...)
             The columns to be used of **both** data-storages.
-        weights_as_events : int
-            Convert the weights to number of events. Argument specifies the
-            minimum weight (if not provided by min_weights).
-        min_weight : float
-            To scale the weights to events, the weights get divided by the
-            lowest weight. If a min_weights is provided *and* it is lower
-            then the smallest weight, the min_weight will be used instead.
-
-        ..note:: If weights_ratio is provided, this parameter is ignored.
         weights_ratio : float >= 0
             The (relative) normalization. If a second data storage is provided
             it is assumed (will be changed in future ?)
@@ -689,7 +687,7 @@ class HEPDataStorage(object):
             If zero, nothing happens. If it is bigger than zero, it
             represents the ratio of the sum of the weights from the first
             to the second storage. If set to 1, they both are equally
-            weighted. Requires internal normalisation.
+            weighted.
             If no second storage is provided, it is the normalization of the
             storage called.
 
@@ -700,6 +698,8 @@ class HEPDataStorage(object):
             If True or int, the dataset will be shuffled before returned. If an
             int is provided, it will be used as a seed to the pseudo-random
             generator.
+        targets_from_data
+            OUTDATED, dont use it. Use two datastorage, one labeled 0, one 1
          """
         # initialize values
 
@@ -764,16 +764,16 @@ class HEPDataStorage(object):
         return data, targets, weights
 
     def copy_storage(self, columns=None, index=None, add_to_name=" cp"):
-        """Return a copy of self with only some of the columns (and therefore
-        labels etc) or indices.
+        """Return a copy of self (with only some of the columns, indices etc).
 
         Parameters
         ----------
         columns : str or list(str, str, str, ...)
             The columns which will be in the new storage.
-        index : 1-D array-like
+        index : |index_type|
             The indices of the rows (and corresponding weights, targets etc.)
             for the new storage.
+            |index_docstring|
         add_to_name : str
             An addition to the data_name_addition of the copy.
         """
@@ -798,8 +798,17 @@ class HEPDataStorage(object):
 
 # TODO: add second data_storage
     def get_LabeledDataStorage(self, columns=None, index=None, shuffle=False):
-        """Create and return an instance of class "LabeledDataStorage" from
-        the REP repository.
+        """Create and return an instance of class "LabeledDataStorage" from the REP repository.
+
+        Parameters
+        ----------
+        columns : str or list(str, str, str, ...)
+            The columns to use for the LabeledDataStorage.
+        index : |index_type|
+            |index_docstring|
+        shuffle : boolean
+            Argument is passed to the LabeledDataStorage. If True, the data
+            will be shuffled.
 
         Return
         ------
@@ -817,8 +826,7 @@ class HEPDataStorage(object):
         return new_lds
 
     def make_folds(self, n_folds=10, shuffle=True):
-        """Create shuffled train-test folds which can be accessed via
-        :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
+        """Create shuffled train-test folds which can be accessed via :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`.
 
         Split the data into n folds (for usage in KFold validaten etc.).
         Then every fold consists of a train dataset, which consists of
@@ -844,7 +852,7 @@ class HEPDataStorage(object):
 
         # split indices of shuffled list
         length = len(self)
-        temp_indeces = [int(round(length/n_folds)) * i for i in range(n_folds)]
+        temp_indeces = [int(round(length / n_folds)) * i for i in range(n_folds)]
         temp_indeces.append(length)  # add last index. len(index) = n_folds + 1
 
         # get a copy of index and shuffle it if True
@@ -855,13 +863,13 @@ class HEPDataStorage(object):
             self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
 
     def get_fold(self, fold):
-        """Return the specified fold: train and test data as instance of
-        :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
+        """Return the specified fold: train and test data as instance of :py:class:`~raredecay.tools.data_storage.HEPDataStorage`.
 
         Parameters
         ----------
         fold : int
             The number of the fold to return. From 0 to n_folds - 1
+
         Return
         ------
         out : tuple(HEPDataStorage, HEPDataStorage)
@@ -887,8 +895,7 @@ class HEPDataStorage(object):
         return train_DS, test_DS
 
     def get_n_folds(self):
-        """Return how many folds are currently availabe or 0 if no folds
-        have been created
+        """Return how many folds are currently availabe or 0 if no folds have been created.
 
         Return
         ------
@@ -970,8 +977,8 @@ class HEPDataStorage(object):
             example to compare data)
         columns : str or list(str, str, str, ...)
             The columns of the data to be plotted. If None, all are plotted.
-        index : list(int, int, int, ...)
-            A list of indeces to be plotted. If None, all are plotted.
+        index : |index_type|
+            |index_docstring|
         title : str
             | The title of the whole plot (NOT of the subplots). If several
               titles for the same figures are given, they will be *concatenated*.
@@ -987,14 +994,12 @@ class HEPDataStorage(object):
         plot_range : tuple (float, float) or None
             The lower and upper range of the bins. If None, 99.98% of the data
             will be plottet automatically.
-        sample_weights : list containing weights
+        sample_weights : pandas Series
             The weights for the data, how "high" a bin is. Actually, how much
             it should account for the whole distribution or how "often" it
-            occures.
-        importance : {1, 2, 3, 4, 5}
-            The importance of the plot. The higher, the more likely it will be
-            plotted. There is a trade-off between the importance and the
-            plot_verbosity.
+            occures. If None is specified, the weights are taken from the data.
+        importance : |importance_type|
+            |importance_docstring|
         see_all : boolean
             If True, all data (not just 99.98%) will be plotted.
         hist_settings : dict
@@ -1027,7 +1032,7 @@ class HEPDataStorage(object):
 
         # set the right number of rows and columns for the subplot
         subplot_col = int(math.ceil(math.sqrt(len(columns))))
-        subplot_row = int(math.ceil(float(len(columns))/subplot_col))
+        subplot_row = int(math.ceil(float(len(columns)) / subplot_col))
 
         # assign a free figure if argument is None
         if dev_tool.is_in_primitive(figure, None):
@@ -1075,6 +1080,11 @@ class HEPDataStorage(object):
         return out_figure
 
     def plot_parallel_coordinates(self, columns=None, figure=0, second_storage=None):
+        """Plot the parallel coordinates.
+
+        .. warning::
+            No weights supported so far!
+        """
 
         data, targets, weights = self.make_dataset(second_storage=second_storage,
                                                    columns=columns)
@@ -1087,7 +1097,17 @@ class HEPDataStorage(object):
 
 
     def plot2Dhist(self, x_columns, y_columns=None):
-        """Plot a 2D hist of x_columns vs itself or y_columns"""
+        """Plot a 2D hist of x_columns vs itself or y_columns.
+
+        .. warning:: this can produce A LOT of plots! (x_columns * y_columns)
+
+        Parameters
+        ----------
+        x_columns : list(str, str, str,...)
+            The x columns to plot agains
+        y_columns : list(str, str, str,...)
+            The y columns to plot agains
+        """
 
         x_columns = self.columns if x_columns == 'all' else x_columns
         y_columns = self.columns if y_columns == 'all' else y_columns
@@ -1099,8 +1119,8 @@ class HEPDataStorage(object):
                 df.plot.hexbin(x_col, y_col, gridsize=30)
 
 
-    def plot2Dscatter(self, x_branch, y_branch, dot_scale=20, color='b', weights=None, figure=0):
-        """Plots two columns against each other to see the distribution.
+    def plot2Dscatter(self, x_branch, y_branch, dot_scale=20, color='b', figure=None):
+        """Plot two columns against each other to see the distribution.
 
         The dots size is proportional to the weights, so you have a good
         overview on the data and the weights.
@@ -1108,15 +1128,24 @@ class HEPDataStorage(object):
         Parameters
         ----------
         x_branch : str
+            The x column to plot
+        x_branch : str
+            Thy y column to plot
+        dot_scale : int or float
+            The overall scaling factor for the dots
+        color : str
+            A valid (matplotlib.pyplot-compatible) color
+        figure : str or int or figure
+            The figure to be plotted in
 
+        Return
+        ------
+        out : figure
+            Return the figure
         """
         # TODO: make nice again
         out_figure = out.save_fig(figure)
-        if isinstance(weights, (int, long, float)):
-            weights = dev_tool.make_list_fill_var(weights, length=len(self),
-                                                  var=weights)
-        else:
-            weights = self.get_weights()
+        weights = self.get_weights()
         assert len(weights) == len(self), "Wrong length of weigths"
         size = weights * dot_scale
         temp_label = data_tools.obj_to_string([i for i in self._name])
@@ -1131,69 +1160,95 @@ class HEPDataStorage(object):
 
 # TODO: add correlation matrix
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
+#
+#    n_tested = 0
+#
+#    b = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [51, 52, 53]])
+#    a = pd.DataFrame(b, columns=['one', 'two', 'three'], index=[1, 2, 11, 22, 33])
+#    c = copy.deepcopy(a)
+#    storage = HEPDataStorage(a, index=[1, 2, 11, 22], target=[1, 1, 1, 0],
+#                             sample_weights=[1, 2, 1, 0.5],
+#                             data_name="my_data", data_name_addition="and addition")
+#    n_tested += 1
+#
+#    d = a.loc[[1, 2, 11, 22]]
+#    pd1 = storage.pandasDF()
+#
+#    t1 = all(pd1.reset_index(drop=True) == d.reset_index(drop=True))
+#    t2 = True
+#    t3 = all(storage.get_targets(index=[1, 11, 22]) == np.array([1, 1, 0]))
+#    works1 = t1 and t2 and t3
+#
+#    print "storage with DataFrame works:", works1
+#
+#    DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/'
+#    all_branches = ['B_PT', 'nTracks', 'nSPDHits',
+#                    'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
+#                    'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV', 'B_ENDVERTEX_CHI2',
+#                    'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
+#                    ]
+#    mc_file = 'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root'
+#    cut_Bu2K1Jpsi_mc = dict(
+#        filenames=DATA_PATH+'cut_data/'+mc_file,
+#        treename='DecayTree',
+#        branches=all_branches
+#
+#    )
+#
+#    root_data = dict(data=cut_Bu2K1Jpsi_mc,
+#                     sample_weights=None,
+#                     data_name="B->K1 J/Psi monte-carlo",
+#                     data_name_addition="cut"
+#                     )
+#
+#    storage2 = HEPDataStorage(**root_data)
+#
+#    storage2.plot_correlation(storage2)
+#
+#    storage3 = storage2.copy_storage(index=[3, 5, 7, 9], columns=['B_PT', 'nTracks'])
+#    df11 = storage3.pandasDF()
+#    storage3.set_weights(sample_weights=[1, 4, 1, 0.5])
+#
+#    storage3.make_folds(4)
+#    train, test = storage3.get_fold(1)
+#    print train.pandasDF(), "\n", test.pandasDF()
+#    train.make_folds(3)
+#    train1, test1 = train.get_fold(1)
+#    print train1.pandasDF(), "\n", test1.pandasDF()
+#    t21 = isinstance(storage2.pandasDF(), pd.DataFrame)
+#    print "t21 = ", t21
+#
+#    t22 = True
+#    works2 = t21 and t22
+#    works = works1 and works2
+#    print "DataFrame works:", works
+#    plt.show()
+#
+#    print "Selftest finished, tested " + str(n_tested) + " functions."
 
-    n_tested = 0
-
-    b = np.array([[11, 12, 13], [21, 22, 23], [31, 32, 33], [41, 42, 43], [51, 52, 53]])
-    a = pd.DataFrame(b, columns=['one', 'two', 'three'], index=[1, 2, 11, 22, 33])
-    c = copy.deepcopy(a)
-    storage = HEPDataStorage(a, index=[1, 2, 11, 22], target=[1, 1, 1, 0],
-                             sample_weights=[1, 2, 1, 0.5],
-                             data_name="my_data", data_name_addition="and addition")
-    n_tested += 1
-
-    d = a.loc[[1, 2, 11, 22]]
-    pd1 = storage.pandasDF()
-
-    t1 = all(pd1.reset_index(drop=True) == d.reset_index(drop=True))
-    t2 = True
-    t3 = all(storage.get_targets(index=[1, 11, 22]) == np.array([1, 1, 0]))
-    works1 = t1 and t2 and t3
-
-    print "storage with DataFrame works:", works1
-
-    DATA_PATH = '/home/mayou/Big_data/Uni/decay-data/'
-    all_branches = ['B_PT', 'nTracks', 'nSPDHits',
-                    'B_FDCHI2_OWNPV', 'B_DIRA_OWNPV',
-                    'B_IPCHI2_OWNPV', 'l1_PT', 'l1_IPCHI2_OWNPV', 'B_ENDVERTEX_CHI2',
-                    'h1_IPCHI2_OWNPV', 'h1_PT', 'h1_TRACK_TCHI2NDOF'
-                    ]
-    mc_file = 'CUT-Bu2K1Jpsi-mm-DecProdCut-MC-2012-MagAll-Stripping20r0p3-Sim08g-withMCtruth.root'
-    cut_Bu2K1Jpsi_mc = dict(
-        filenames=DATA_PATH+'cut_data/'+mc_file,
-        treename='DecayTree',
-        branches=all_branches
-
-    )
-
-    root_data = dict(data=cut_Bu2K1Jpsi_mc,
-                     sample_weights=None,
-                     data_name="B->K1 J/Psi monte-carlo",
-                     data_name_addition="cut"
-                     )
-
-    storage2 = HEPDataStorage(**root_data)
-
-    storage2.plot_correlation(storage2)
-
-    storage3 = storage2.copy_storage(index=[3, 5, 7, 9], columns=['B_PT', 'nTracks'])
-    df11 = storage3.pandasDF()
-    storage3.set_weights(sample_weights=[1, 4, 1, 0.5])
-
-    storage3.make_folds(4)
-    train, test = storage3.get_fold(1)
-    print train.pandasDF(), "\n", test.pandasDF()
-    train.make_folds(3)
-    train1, test1 = train.get_fold(1)
-    print train1.pandasDF(), "\n", test1.pandasDF()
-    t21 = isinstance(storage2.pandasDF(), pd.DataFrame)
-    print "t21 = ", t21
-
-    t22 = True
-    works2 = t21 and t22
-    works = works1 and works2
-    print "DataFrame works:", works
-    plt.show()
-
-    print "Selftest finished, tested " + str(n_tested) + " functions."
+#==============================================================================
+# Docs
+#==============================================================================
+data_storage_docstring = """
+.. |data_type| replace:: root-tree dict (:py:func:`~raredecay.tools.data_tools.make_root_dict`) or :py:class:`~pd.DataFrame`
+.. |sample_weights_type| replace:: :py:class:`~pd.Series` or :py:class:`~np.array`
+    or int {1} or str/dict for root-trees (:py:func:`~raredecay.tools.data_tools.make_root_dict`)
+.. |sample_weights_docstring| replace::
+            The new weights for the dataset.
+            If the new weights are a pandas Series, the index must match the
+            internal index
+            If the data is a root-tree file,
+            a string (naming the branche) or a whole root-dict can be given,
+            pointing to the weights stored.
+.. |index_type| replace:: list or :py:class:`~np.array`
+.. |index_docstring| replace:: The index of the data to use.
+.. |column_alias_type| replace:: dict{str: str, str: str, ...}
+.. |column_alias_docstring| replace::
+            To change the name of a branch. The argument should be a dict looking like
+            {'current_branch_name_in_root_tree/DataFrame': 'desired_name'}.
+            The current_branch has to exist in the root-tree or DataFrame,
+            the desired_name can be anything.
+"""
+import sys
+sys.modules[__name__].__doc__ += data_storage_docstring

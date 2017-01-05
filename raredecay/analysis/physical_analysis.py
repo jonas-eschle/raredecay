@@ -397,8 +397,12 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     save_mc_pred : str or False
         If provided, the predictions of the MC will be saved to its
         root-tree with the branch name specified here.
-    """
 
+    Return
+    ------
+    out : float, float
+        If a metric_vs_cut is specified, the best cut and metric is returned
+    """
     import numpy as np
     import pandas as pd
     import matplotlib.pyplot as plt
@@ -408,6 +412,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     from raredecay.tools.metrics import punzi_fom, precision_measure
 
     # check if predictions can be saved: need to be root-file and no selection applied
+    output = {}
     if save_real_pred:
         if real_data.data_type != 'root':
             raise TypeError("Real predictions should be saved but data is not a root-file but " +
@@ -455,6 +460,14 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             report.metrics_vs_cut(metric).plot()
             plt.title(title)
             plt.legend()
+            from rep.report.metrics import OptimalMetric
+            metric_optimal = OptimalMetric(metric)
+            best_cut, best_metric = metric_optimal.compute(y_true=pred_tmp['y_true'],
+                                                           proba=pred_tmp['y_proba'],
+                                                           sample_weight=pred_tmp['weights'])
+            best_index = np.argmax(best_metric)
+            output = {'best_threshold_cut': best_cut[best_index],
+                      'best_metric': best_metric[best_index]}
 
     # predict to all data
     if predict:
@@ -523,6 +536,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         plt.title("Predictions of MC vs all real data")
         plt.hist(pred_real, bins=30)
         plt.hist(pred_mc, bins=30)
+
+    return output
 
 
 def add_branch_to_rootfile(filename, treename, new_branch, branch_name,

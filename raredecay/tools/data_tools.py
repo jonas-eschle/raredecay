@@ -16,7 +16,7 @@ import numpy as np
 import cPickle as pickle
 
 try:
-    from root_numpy import root2array,  array2root
+    from root_numpy import root2array, array2root
 except ImportError:
     warnings.warn("could not import from root_numpy!")
 
@@ -49,13 +49,13 @@ def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):
 
     lower_cut, upper_cut = np.percentile(signal_data, percentile)
     cut_bkg = np.count_nonzero(np.logical_or(bkg_data < lower_cut, bkg_data > upper_cut))
-    rejected_bkg = (bkg_length_before - cut_bkg)/bkg_length
+    rejected_bkg = (bkg_length_before - cut_bkg) / bkg_length
 
     return [lower_cut, upper_cut], rejected_bkg
 
 
 def make_root_dict(path_to_rootfile, tree_name, branches):
-    """Returns a root_numpy compatible "root-dict" of a root-tree
+    """Returns a root_numpy compatible "root-dict" of a root-tree.
 
     Parameters
     ----------
@@ -74,8 +74,9 @@ def make_root_dict(path_to_rootfile, tree_name, branches):
 
 
 def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
-    """Adds a new branch to a given root file, overwrites. Overwrite not working
-    currently!
+    """Adds a new branch to a given root file.
+
+    .. warning:: Overwrite not working currently!
 
 
     Parameters
@@ -86,7 +87,6 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
         A one-dimensional numpy array that contains the data.
     branch_name : str
         The name of the branche resp. the name in the dtype of the array.
-
     """
     # from root_numpy import root2array, array2tree
 
@@ -123,7 +123,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     else:
         return 1
 
-
+# TODO: remove? outdated
 def format_data_weights(data_to_shape, weights):
     """Format the data and the weights perfectly. Same length and more.
 
@@ -205,8 +205,7 @@ def obj_to_string(objects, separator=None):
 
 
 def is_root(data_to_check):
-    """Check whether a given data is a root file. Needs dicts to be True!
-    """
+    """Check whether a given data is a root file. Needs dicts to be True."""
     flag = False
     if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
@@ -218,8 +217,7 @@ def is_root(data_to_check):
 
 
 def is_list(data_to_check):
-    """ Check whether the given data is a list
-    """
+    """ Check whether the given data is a list."""
     flag = False
     if isinstance(data_to_check, list):
         flag = True
@@ -227,8 +225,7 @@ def is_list(data_to_check):
 
 
 def is_ndarray(data_to_check):
-    """Check whether a given data is an ndarray.
-    """
+    """Check whether a given data is an ndarray."""
     flag = False
     if isinstance(data_to_check, np.ndarray):
         flag = True
@@ -236,6 +233,7 @@ def is_ndarray(data_to_check):
 
 
 def is_pickle(data_to_check):
+    """Check if the file is a pickled file (checks the ending)."""
     flag = False
     if isinstance(data_to_check, str):
         if data_to_check.endswith(meta_config.PICKLE_DATATYPE):
@@ -277,8 +275,12 @@ def to_list(data_in):
 
 
 def to_ndarray(data_in, float_array=True):
-    """Convert data to numpy array (containing only floats)
+    """Convert data to numpy array (containing only floats).
 
+    Parameters
+    ----------
+    data_in : any reasonable data
+        The data to be converted
     """
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
@@ -299,10 +301,14 @@ def to_ndarray(data_in, float_array=True):
     return data_in
 
 
-def to_pandas(data_in, index=None, columns=None, dtype=None):
+def to_pandas(data_in, index=None, columns=None):
     """Convert data from numpy or root to pandas dataframe.
 
     Convert data safely to pandas, whatever the format is.
+    Parameters
+    ----------
+    data_in : any reasonable data
+        The data to be converted
     """
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
@@ -318,7 +324,7 @@ def to_pandas(data_in, index=None, columns=None, dtype=None):
 
 
 def adv_return(return_value, save_name=None):
-    """Save the value if save_name specified, otherwise just return input
+    """Save the value if save_name specified, otherwise just return input.
 
     Can be wrapped around the return value. Without any arguments, the return
     of your function will be exactly the same. With arguments, the value can
@@ -373,21 +379,21 @@ def adv_return(return_value, save_name=None):
 
 
 def try_unpickle(file_to_unpickle):
-    """Try to unpickle a file and return, otherwise just return input"""
+    """Try to unpickle a file and return, otherwise just return input."""
     if is_pickle(file_to_unpickle):
         with open(meta_config.PICKLE_PATH + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
 
 
-if __name__ == '__main__':
-    print "running selftest"
-    root_dict = dict(
-        filenames='/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root',
-        branches=['B_PT', 'nTracks'],
-        treename='DecayTree',
-        selection='B_PT > 10000'
-        )
-    df1 = to_pandas(root_dict)
-    print df1
-    print "selftest completed!"
+#if __name__ == '__main__':
+#    print "running selftest"
+#    root_dict = dict(
+#        filenames='/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root',
+#        branches=['B_PT', 'nTracks'],
+#        treename='DecayTree',
+#        selection='B_PT > 10000'
+#        )
+#    df1 = to_pandas(root_dict)
+#    print df1
+#    print "selftest completed!"

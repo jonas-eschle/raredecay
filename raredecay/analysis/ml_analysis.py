@@ -1100,7 +1100,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
         Return an instance of pandas Series of shape [n_samples] containing the
         new weights.
     """
-    normalize = 1 if normalize is True else normnormalize
+    normalize = 1 if normalize is True else normalize
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
@@ -1375,6 +1375,24 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
     output['weights'] = new_weights_tot
     return output
 
+
+def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision'):
+    """Find the best cut for a given metric"""
+
+    from rep.report.metrics import OptimalMetric
+
+    data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
+    data = data.T.as_matrix()[0, :]
+    data = np.transpose(np.array((1 - data, data)))
+    metric_optimal = OptimalMetric(metric)
+    best_cut, best_metric = metric_optimal.compute(y_true=target,
+                                                   proba=data,
+                                                   sample_weight=weights)
+    best_index = np.argmax(best_metric)
+    output = {'best_threshold_cut': best_cut[best_index],
+              'best_metric': best_metric[best_index]}
+
+    return output
 
 if __name__ == "main":
     print 'test'

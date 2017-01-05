@@ -21,7 +21,53 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
                plot_verbosity=3, prompt_for_input=False, no_interactive_plots=False,
                logger_console_level='warning', logger_file_level='debug',
                n_cpu=1, gpu_in_use=False):
-    """Place before Imports! Initialize/change several parameters for the package"""
+    """Place before Imports! Initialize/change several parameters for the package.
+
+    Initialize a run and return an output handler. Most of the implemented
+    function have things to plot or print, which are given to the output
+    handler. You can also add output to it by yourself.
+
+    If an output_path is specified, all the output collected will be saved
+    at the end of the run by calling :py:func:`~raredecay.settings.finalize`
+
+    Parameters
+    ----------
+    output_path : str or None
+        If a string is provided, it is taken as the path to a folder, in which
+        a folder containing all the output of the run will be created.
+
+        If None, the output won' be saved.
+    run_name : str
+        The name of the run as well as of the folder that gets created.
+    overwrite_existing : boolean
+        If True and the folder (run-name) exists already, it will be over-written.
+        Else a number will be added to the name to create a new folder.
+    run_message : str
+        A message, will be displayed in the output at the beginning.
+    verbosity : int {0, 1, 2, 3, 4, 5}
+        How much of the output will be printed. There is a tradeoff between
+        verbosity and importance.
+    plot_verbosity : int {0, 1, 2, 3, 4, 5}
+        How much of the plots will be plotted for show. There is a tradeoff between
+        plot_verbosity and plot_importance.
+    prompt_for_input : boolean
+        If True, at the beginning of the run, a string can be entered to extend
+        the run-name.
+    no_interactive_plots : boolean
+        If True, the matplotlib backend is changed to a non-interactive one.
+        This is required if no X-server is run, as for example on grids is
+        the case.
+    logger_console_level : str {'debug', 'info', 'warning', 'error', 'critical'}
+        The logger level on the consol
+    logger_file_level : str {'debug', 'info', 'warning', 'error', 'critical'}
+        The logger level for files. Ignored if no output-path is specified.
+    n_cpu : int
+        The number of cpus to use. Can be a negative number as well, where
+        -1 means all, -2 all but one, -3 all but 2 etc.
+    gpu_in_use : boolean
+        If True, the parallelisation for Theanets is switched of in order to be
+        able to use it with (a single) gpu.
+    """
 
     if no_interactive_plots:
         import matplotlib as mpl
@@ -44,7 +90,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
 
 
 def finalize(show_plots=True, play_sound_at_end=False):
-    """Finalize the run, (save figures and output) and return output
+    """Finalize the run, (save figures and output) and return output.
 
     Parameters
     ----------
@@ -60,7 +106,7 @@ def finalize(show_plots=True, play_sound_at_end=False):
 
 
 def set_verbosity(verbosity=3, plot_verbosity=3):
-    """Change the verbosity of the package"""
+    """Change the verbosity of the package."""
     if verbosity is not None:
         meta_config.set_verbosity(verbosity)
     if plot_verbosity is not None:
@@ -68,7 +114,7 @@ def set_verbosity(verbosity=3, plot_verbosity=3):
 
 
 def get_output_handler():
-    """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`
+    """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`.
 
     This can be used to add output (text as well as figures) and save them
     easely. For more information see the docs of the OutputHandler
@@ -78,7 +124,7 @@ def get_output_handler():
 
 
 def parallel_profile(n_cpu=-1, gpu_in_use=False):
-    """Set the parallel profile, the n_cpu to use
+    """Set the parallel profile, the n_cpu to use.
 
     Most of the functions do not have a number of threads option. You can
     change that here by either:
@@ -136,7 +182,7 @@ def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
 
 
 def set_random_seed(seed=None):
-    """Set the seed to the random generator to reproduce results
+    """Set the seed to the random generator to reproduce results.
 
     Parameters
     ----------
@@ -150,7 +196,7 @@ def set_random_seed(seed=None):
 def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
                          run_message="This is a test-run to test the package",
                          prompt_for_input=False):
-    """Saves output to file"""
+    """Saves output to file,"""
     assert isinstance(run_name, (str, int)), "run_name has to be a string or int"
     config.RUN_NAME = str(run_name)
     config.OUTPUT_CFG['run_name'] = str(run_name)
@@ -176,7 +222,7 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
 
 
 def _init_configure_logger(console_level='critical', file_level='debug'):
-    """Call before imports! Set the logger-level
+    """Call before imports! Set the logger-level.
 
     The package contains several loggers which will print/save to file some
     information. What kind of information is handled can be changed by this
@@ -213,6 +259,6 @@ def _init_configure_logger(console_level='critical', file_level='debug'):
 
 
 def _init_user_input(prompt_for_input=True):
-    """If called, you will be asked for input to name the specific run"""
+    """If called, you will be asked for input to name the specific run."""
     meta_config.NO_PROMPT_ASSUME_YES = not prompt_for_input
     meta_config.PROMPT_FOR_COMMENT = prompt_for_input

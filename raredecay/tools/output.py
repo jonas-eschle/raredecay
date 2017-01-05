@@ -22,7 +22,8 @@ from raredecay.tools import dev_tool  # , data_tools
 
 
 class OutputHandler(object):
-    """Class for output handling"""
+
+    """Class for output handling."""
 
     __SAVE_STDOUT = sys.stdout
     _IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
@@ -30,6 +31,8 @@ class OutputHandler(object):
     _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
 
     def __init__(self):
+        """Initialize an output handler"""
+
         self.output = ""
         self.end_output = ""
         self._loud_end_output = ""
@@ -65,7 +68,7 @@ class OutputHandler(object):
 
     def initialize_save(self, output_path, run_name="", run_message="", output_folders=None,
                         del_existing_folders=False, logger_cfg=None):
-        """Initializes the run. Creates the neccesary folders.
+        """Initialize the run. Create the neccesary folders.
 
         Parameters
         ----------
@@ -77,6 +80,9 @@ class OutputHandler(object):
             folders (logfile, figures, output etc)
         run_name : str
             The name of the run and also of the output folder.
+        run_message : str
+            A message that is displayed below the titel: a further comment
+            on what you do in the script
         output_folders : dict
             Contain the name of the folders for the different outputs. For the
             available keys
@@ -145,7 +151,7 @@ class OutputHandler(object):
                         subtitle="Comments about the run")
 
     def initialize(self, run_name="", prompt_for_comment=False):
-        """Initialization for external use, no folders created, config.py logger"""
+        """Initialization for external use, no folders created, config.py logger."""
 
         # initialize defaults
         from raredecay.globals_ import logger_cfg
@@ -160,7 +166,7 @@ class OutputHandler(object):
         self._run_name = str(run_name)
 
     def get_logger_path(self):
-        """Return the path for the log folder"""
+        """Return the path for the log folder."""
         if self._save_output:
             path_out = self._output_path + self._output_folders.get('log')
             path_out += '' if path_out.endswith('/') else '/'
@@ -169,7 +175,7 @@ class OutputHandler(object):
         return path_out
 
     def get_plots_path(self):
-        """Return the path for the log folder"""
+        """Return the path for the log folder."""
         if self._save_output:
             path_out = self._output_path + self._output_folders.get('plots')
             path_out += '' if path_out.endswith('/') else '/'
@@ -178,21 +184,22 @@ class OutputHandler(object):
         return path_out
 
     def make_me_a_logger(self):
-        """Create a logger in OutputHandler instance. Dependency "hack". Call
-        after :py:meth:`~raredecay.tools.output.OutputHandler.initialize_save()`
+        """Create a logger in OutputHandler instance. Dependency "hack".
+
+        Call after :py:meth:`~raredecay.tools.output.OutputHandler.initialize_save()`
         has ben called.
         """
         # create logger
         self.logger = dev_tool.make_logger(__name__, **self._logger_cfg)
 
     def IO_to_string(self):
-        """Redericts stdout (print etc.) to string"""
+        """Rederict stdout (print etc.) to string."""
         self._IO_string = ""
         self._IO_string = StringIO.StringIO()
         sys.stdout = self._IO_string
 
     def IO_to_sys(self, importance=3, **add_output_kwarg):
-        """Directs stdout back to the sys.stdout and return/save string to output
+        """Direct stdout back to the sys.stdout and return/save string to output.
 
         Parameters
         ----------
@@ -214,7 +221,7 @@ class OutputHandler(object):
         return self._IO_string.getvalue()
 
     def figure(self, *args, **kwargs):
-        """FUTURE: Wrapper around save_fig()"""
+        """FUTURE: Wrapper around save_fig()."""
         return self.save_fig(*args, **kwargs)
 
     def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
@@ -249,15 +256,12 @@ class OutputHandler(object):
             If you don't want to save it, enter a blank list.
         to_pickle : boolean
             If True, the plot will be saved to a pickle file.
-        plot : boolean
-            If True, the figure will be showed when calling *show()*. If
-            False, the figure will only be saved but not plotted.
         **save_cfg : keyword args
             Will be used as arguments in :py:func:`~matplotlib.pyplot.savefig()`
 
         Return
         ------
-        out : matplotlib.pyplot.figure
+        out : :py:class:`~matplotlib.pyplot.figure`
             Return the figure.
         """
         plot = 5 - round(importance) < meta_config.plot_verbosity  # to plot or not to plot
@@ -291,7 +295,7 @@ class OutputHandler(object):
         return figure
 
     def _figure_to_file(self):
-        """Write all figures from the _figures dictionary to file"""
+        """Write all figures from the _figures dictionary to file."""
 
         # check if there are figures to plot, else return
         if self._figures == {}:
@@ -317,7 +321,7 @@ class OutputHandler(object):
                     figure_tmp = fig_dict['figure']
 #                    figure_tmp.tight_layout()
                     figure_tmp.savefig(file_name, format=extension,
-                                               **fig_dict.get('save_cfg'))
+                                       **fig_dict.get('save_cfg'))
                 except:
                     self.logger.error("Could not save figure" + str(figure_tmp))
                     meta_config.error_occured()
@@ -467,6 +471,16 @@ class OutputHandler(object):
         self.output += temp_out
 
     def finalize(self, show_plots=True, play_sound_at_end=False):
+        """Finalize the run. Save everything and plot.
+
+        Parameters
+        ----------
+        show_plots : boolean
+            If True, show the plots. Equivalent to writing plt.show().
+        play_sound_at_end : boolean
+            If True, tries to play a beep-sound at the end of a run to let you
+            know it finished.
+        """
 
         # ==============================================================================
         #  write all the necessary things to the output

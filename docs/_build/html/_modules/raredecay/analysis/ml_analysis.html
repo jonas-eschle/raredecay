@@ -1232,7 +1232,7 @@
 <span class="sd">        Return an instance of pandas Series of shape [n_samples] containing the</span>
 <span class="sd">        new weights.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">normalize</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">normnormalize</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">normalize</span>
 
     <span class="n">reweighter_trained</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter_trained</span><span class="p">)</span>
     <span class="n">new_weights</span> <span class="o">=</span> <span class="n">reweighter_trained</span><span class="o">.</span><span class="n">predict_weights</span><span class="p">(</span><span class="n">reweight_data</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">),</span>
@@ -1552,6 +1552,7 @@
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

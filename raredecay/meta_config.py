@@ -72,7 +72,7 @@ def get_n_cpu(n_cpu=None):
 
 # set meta-config variables
 def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
-    """Set the number of cpus and whether a gpu is in use or not"""
+    """Set the number of cpus and whether a gpu is in use or not."""
     global MULTIPROCESSING, MULTITHREAD, n_cpu_max, use_gpu, use_stratified_folding
     use_stratified_folding = stratified_kfolding
     MULTIPROCESSING = MULTITHREAD = True
@@ -324,12 +324,14 @@ plot_verbosity = 3
 
 
 def set_verbosity(new_verbosity):
+    """Set the verbosity."""
     global verbosity
     verbosity = round(new_verbosity)
     _check_verbosity(verbosity)
 
 
 def set_plot_verbosity(new_plot_verbosity):
+    """Set the plot verbosity."""
     global plot_verbosity
     plot_verbosity = round(new_plot_verbosity)
     _check_verbosity(plot_verbosity)
@@ -348,16 +350,17 @@ random.seed(rand_seed)
 
 
 def randint():
-    """Return random integer"""
+    """Return random integer."""
     return random.randint(51, 523753)
 
 
 def randfloat():
-    """Return a random float between 0 and 1"""
+    """Return a random float between 0 and 1."""
     return random.random()
 
 
 def set_seed(seed):
+    """Set the global random seed."""
     global rand_seed
     rand_seed = seed
     random.seed(rand_seed)
@@ -375,7 +378,7 @@ _warning_count = 0  # increases if an error happens
 
 
 def error_occured(max_error_count=MAX_ERROR_COUNT):
-    """Call this function every time a non-critical error (saving etc) occurs"""
+    """Call this function every time a non-critical error (saving etc) occurs."""
     global _error_count
     _error_count += 1
     if _error_count >= max_error_count:
@@ -383,7 +386,7 @@ def error_occured(max_error_count=MAX_ERROR_COUNT):
 
 
 def warning_occured():
-    """Call this function every time a warning occurs"""
+    """Call this function every time a warning occurs."""
     global _warning_count
     _warning_count += 1
 
