@@ -441,6 +441,11 @@ rst_epilog = """
 .. |reweightingCV_quality_measure_link| replace:: mayou36.bitbucket.org/presenation/reweightingCV_quality_measure.pdf
 """
 
+metrics_docstring = """
+.. |implemented_primitive_metrics| replace:: {punzi (:py:func:`~raredecay.tools.metrics.punzi_fom`), precision (:py:func:`~raredecay.tools.metrics.precision_measure`)}
+
+"""
+
 ml_analysis_docstring = """
 .. |test_ref_1| replace:: This is a test reference, the first one
 .. |importance_docstring| replace::        The higher the importance, the more likely the output will be printed. All output will be saved anyway if an output path was initialized.
@@ -454,4 +459,5 @@ ml_analysis_docstring = """
 .. |hepds_type| replace:: :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
 """
 rst_epilog += ml_analysis_docstring
+rst_epilog += metrics_docstring
 

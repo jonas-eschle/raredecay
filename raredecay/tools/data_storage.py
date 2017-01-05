@@ -380,6 +380,8 @@ class HEPDataStorage(object):
         # HACK
         weights_ratio = normalize
 
+        # TODO: implement if targets are different
+
         if weights_ratio > 0 and second_storage is not None:
             weights_1 = self.get_weights(index=index)
             weights_2 = second_storage.get_weights()
@@ -618,7 +620,7 @@ class HEPDataStorage(object):
         out_targets = self._get_targets(index=index)
 
         # create targets if targets are "simpel" for output
-        if dev_tool.is_in_primitive(out_targets, (-1, 0, 1, None)):
+        if isinstance(out_targets, (int, float, None)):
             if self._target is None:
                 self.logger.warning("Target list consists of None!")
             out_targets = dev_tool.make_list_fill_var([], length, self._target)
@@ -746,19 +748,19 @@ class HEPDataStorage(object):
             if shuffle is not False:
                 index_2 = second_storage.index if index_2 is None else index_2
                 random.shuffle(index_2, random=rand_seed_2)
-            length_1 = len(data)
             data_2 = second_storage.pandasDF(columns=columns, index=index_2)
-            length_2 = len(data_2)
             data = pd.concat((data, data_2), ignore_index=True, copy=False)
 
-            if targets_from_data:
-                targets_1 = self.get_targets()
-                targets_2 = second_storage.get_targets()
-                targets = np.concatenate(targets_1, targets_2)
-            else:
-                targets = np.concatenate((np.zeros(length_1), np.ones(length_2)))
+            targets_1 = self.get_targets()
+            targets_2 = second_storage.get_targets()
+            targets = np.concatenate((targets_1, targets_2))
+
+            if max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2) and weights_ratio > 0:
+                raise ValueError("Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio"+
+                                 "not yet implemented. Please make an issue!")
 
 #            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
+
         weights = self.get_weights(normalize=weights_ratio, second_storage=second_storage)
 
         return data, targets, weights

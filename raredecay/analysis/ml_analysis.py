@@ -270,7 +270,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             serial_clf = True
             clf['config'].update(dict(random_state=meta_config.randint()))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                                    random_state=meta_config.randint()), **clf.get('config')))
+                random_state=meta_config.randint()), **clf.get('config')))
         elif clf['clf_type'] == 'knn':
             clf['config'].update(dict(random_state=meta_config.randint(), n_jobs=n_cpu))
             clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
@@ -1377,31 +1377,59 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
     return output
 
 
-def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision'):
-    """Find the best cut for a given metric"""
-    import numpy as np
+def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
+                    plot_importance=3):
+    """Find the best threshold cut for a given metric.
 
+    Test the metric for every possible threshold cut and returns the highest
+    value. Plots the metric versus cuts as well.
+
+    Parameters
+    ----------
+    mc_data : |hepds_type|
+        The MC data
+    real_data : |hepds_type|
+        The real data
+    prediction_branch : str
+        The branch name containing the predictions to test.
+    metric : str |implemented_primitive_metrics| or simple metric
+        Can be a valid string pointing to a metric or a simple metric taking
+        only tpr and fpr: metric(tpr, fpr, weights=None)
+    plot_importance : |plot_importance_type|
+        |plot_importance_docstring|
+
+    Return
+    ------
+    out : dict
+        Return a dict containing the best threshold cut as well as the metric
+        value. The keywords are:
+
+            - **best_threshold_cut**: the best cut on the predictions
+            - **best_metric**: the value of the metric when applying the best
+              cut.
+    """
     from rep.report.metrics import OptimalMetric
 
     from raredecay.tools.metrics import punzi_fom, precision_measure
 
+    metric_name = metric
     if metric == 'punzi':
         metric = punzi_fom
     elif metric == 'precision':
         metric = precision_measure
-    elif metric:
-        raise ValueError("Invalid metric: " + str(metric))
 
     data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
     data = data.T.as_matrix()[0, :]
     data = np.transpose(np.array((1 - data, data)))
     metric_optimal = OptimalMetric(metric)
+
     best_cut, best_metric = metric_optimal.compute(y_true=target,
                                                    proba=data,
                                                    sample_weight=weights)
-    metric_optimal.plot_vs_cut(y_true=target, proba=data, sample_weight=weights).plot(new_plot=True)
-    print "best cut", best_cut
-    print "best metric", best_metric
+    out.figure(str(metric_name) + " vs cut", importance=plot_importance)
+    title = "{0} vs cut of {1} and {2}".format(str(metric_name), real_data.name, mc_data.name)
+    metric_optimal.plot_vs_cut(y_true=target, proba=data, sample_weight=weights).plot(title=title)
+
     best_metric = np.nan_to_num(best_metric)
     best_index = np.argmax(best_metric)
     output = {'best_threshold_cut': best_cut[best_index],
