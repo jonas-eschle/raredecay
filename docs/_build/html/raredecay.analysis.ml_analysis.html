@@ -227,8 +227,41 @@ Basically a pandas DataFrame containing all results.</li>
 
 <dl class="function">
 <dt id="raredecay.analysis.ml_analysis.best_metric_cut">
-<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">best_metric_cut</code><span class="sig-paren">(</span><em>mc_data</em>, <em>real_data</em>, <em>prediction_branch</em>, <em>metric='precision'</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#best_metric_cut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.best_metric_cut" title="Permalink to this definition">¶</a></dt>
-<dd><p>Find the best cut for a given metric</p>
+<code class="descclassname">raredecay.analysis.ml_analysis.</code><code class="descname">best_metric_cut</code><span class="sig-paren">(</span><em>mc_data</em>, <em>real_data</em>, <em>prediction_branch</em>, <em>metric='precision'</em>, <em>plot_importance=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/ml_analysis.html#best_metric_cut"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.ml_analysis.best_metric_cut" title="Permalink to this definition">¶</a></dt>
+<dd><p>Find the best threshold cut for a given metric.</p>
+<p>Test the metric for every possible threshold cut and returns the highest
+value. Plots the metric versus cuts as well.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>mc_data</strong> (<a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The MC data</li>
+<li><strong>real_data</strong> (<a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The real data</li>
+<li><strong>prediction_branch</strong> (<em>str</em>) &#8211; The branch name containing the predictions to test.</li>
+<li><strong>metric</strong> (str {punzi (<a class="reference internal" href="raredecay.tools.metrics.html#raredecay.tools.metrics.punzi_fom" title="raredecay.tools.metrics.punzi_fom"><code class="xref py py-func docutils literal"><span class="pre">punzi_fom()</span></code></a>), precision (<a class="reference internal" href="raredecay.tools.metrics.html#raredecay.tools.metrics.precision_measure" title="raredecay.tools.metrics.precision_measure"><code class="xref py py-func docutils literal"><span class="pre">precision_measure()</span></code></a>)} or simple metric) &#8211; Can be a valid string pointing to a metric or a simple metric taking
+only tpr and fpr: metric(tpr, fpr, weights=None)</li>
+<li><strong>plot_importance</strong> (int {0, 1, 2, 3, 4, 5}) &#8211; The higher the importance, the more likely the plots will be shown. All plots will be saved anyway if an output path was initialized.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>out</strong> &#8211; Return a dict containing the best threshold cut as well as the metric
+value. The keywords are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>best_threshold_cut</strong>: the best cut on the predictions</li>
+<li><strong>best_metric</strong>: the value of the metric when applying the best
+cut.</li>
+</ul>
+</div></blockquote>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">dict</p>
+</td>
+</tr>
+</tbody>
+</table>
 </dd></dl>
 
 <dl class="function">

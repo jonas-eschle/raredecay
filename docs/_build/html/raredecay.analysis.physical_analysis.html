@@ -268,18 +268,21 @@ weights for the 1/n leftover. This is done n times resulting in unbiased
 weights for the mc data.</li>
 </ul>
 <p>To know, how well the reweighter worked, different stategies can be used
-and are implemented, for further information also see: TODO, IMPLEMENT
-REWEIGHT PRÄSI.</p>
+and are implemented, for further information also see: mayou36.bitbucket.org/presenation/reweightingCV_quality_measure.pdf
+:param real_data: The real data
+:type real_data: <a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>
+:param mc_data: The mc data
+:type mc_data: <a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>
+:param columns: The branches to use for the reweighting.
+:type columns: list(str, str, str, ...)
+:param n_folds: Number of folds to split the data for the reweighting. Usually, the</p>
+<blockquote>
+<div>higher the better.</div></blockquote>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>real_data</strong> (<a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The real data</li>
-<li><strong>mc_data</strong> (<a class="reference internal" href="raredecay.tools.data_storage.html#raredecay.tools.data_storage.HEPDataStorage" title="raredecay.tools.data_storage.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The mc data</li>
-<li><strong>columns</strong> (<em>list</em><em>(</em><em>str</em><em>, </em><em>str</em><em>, </em><em>str</em><em>, </em><em>..</em><em>)</em><em></em>) &#8211; The branches to use for the reweighting.</li>
-<li><strong>n_folds</strong> (<em>int &gt; 1</em>) &#8211; Number of folds to split the data for the reweighting. Usually, the
-higher the better.</li>
 <li><strong>reweighter</strong> (<em>str {'gb'</em><em>, </em><em>'bins'}</em>) &#8211; Which reweighter to use, either the Gradient Boosted reweighter or the
 (normally used) Bins reweighter (both from <em>hep_ml</em>)</li>
 <li><strong>reweight_cfg</strong> (<em>dict</em>) &#8211; A dict containing all the keyword arguments for the configuration of
