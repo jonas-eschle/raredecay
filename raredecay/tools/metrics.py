@@ -98,7 +98,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     another scoring, which is built upon the train_similar method.
 
     Scoring method description
-    --------------------------
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^
 
     **Idea**:
     A clf is trained on the reweighted mc as well as on the real data of a
@@ -119,7 +119,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     do not know if it affects real distributions aswell partly)
 
     Output explanation
-    ------------------
+    ^^^^^^^^^^^^^^^^^^
     The return is a dictionary containing several values. Of course, only the
     values, which are set to be evaluated, are contained. The keys are:
 

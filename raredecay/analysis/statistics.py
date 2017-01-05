@@ -3,32 +3,35 @@
 Created on Thu Oct 20 20:00:33 2016
 
 @author: Jonas Eschle 'Mayou36'
+
+This modul contains several tools like fits.
 """
 import numpy as np
 
 import ROOT
 from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet
-from ROOT import RooFit, RooCBShape, RooGaussian, RooExponential, RooMinuit
+from ROOT import RooFit, RooCBShape, RooExponential
+# from ROOT import RooGaussian, RooMinuit
 from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
 from root_numpy import array2tree
 
 from raredecay.globals_ import out
 
-#from raredecay import meta_config
+# from raredecay import meta_config
 
 
 def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False, second_storage=None):
+    """Mass-fit but blind function not yet implemented"""
 
     if not (isinstance(column, str) or len(column) == 1):
         raise ValueError("Fitting to several columns " + str(column) + " not supported.")
     data_array, _t1, _t2 = data.make_dataset(second_storage, columns=column)
     del _t1, _t2
 
-
     # double crystalball variables
     min_x, max_x = min(data_array[column]), max(data_array[column])
-    x_low = RooRealVar("x", "x variable", min_x, 5100)
-    x_high = RooRealVar("x", "x variable", 5400, max_x)
+#    x_low = RooRealVar("x", "x variable", min_x, 5100)
+#    x_high = RooRealVar("x", "x variable", 5400, max_x)
 #    x = x_low + x_high
     x = RooRealVar("x", "x variable", min_x, max_x)
     mean = RooRealVar("mean", "Mean of Double CB PDF", 5300, 5000, 6000)
@@ -55,7 +58,7 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False, second_sto
                          crystalball1, crystalball2, frac)
 
 #    nsig = RooRealVar("nsig", "Number of signals events", 10000, 0, 1000000)
-    #TODO: fix below
+    # TODO: fix below
     if n_bkg is None:
         nbkg = RooRealVar("nbkg", "Number of background events", 10000, 0, 1000000)
     elif n_bkg >= 0:
@@ -98,9 +101,6 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False, second_sto
 #    xframe = x.frame()
 #    data_pdf.plotOn(xframe)
 
-
-
-
 #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
     # HACK to get 8 cores in testing
 
@@ -126,19 +126,6 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False, second_sto
 
     params = comb_pdf.getVariables()
     params.Print("v")
-#    tmp_ = input("Press enter to continue")
-
-
-#        fitter.makeDoubleCB(((*it_modes)+"_"+(*it_year)+"_"+(*it_trig)+"_"+(*it_nBrem)+"_"+(*it_bin)+"_pdf").c_str(),
-#                      //start   min     max
-#                        5366,   5356,   5376,   // mu; most probable value, resonance mass
-#                        8,      0,      25,     // sigma; resolution
-#                        1,      0,      5,      // alpha_0; transition point
-#                        -1,     -5,     0,      // alpha_0 other side;
-#                        1,      0,      5,      // exponent;
-#                        1,      0,      5,      // exponent other side;
-#                        0.5);
-#     }
 
 
 if __name__ == '__main__':
@@ -147,6 +134,7 @@ if __name__ == '__main__':
     from raredecay.tools.data_storage import HEPDataStorage
     import pandas as pd
 
-    data = HEPDataStorage(pd.DataFrame(np.random.normal(loc=5400, scale=100, size=(10000, 2)), columns=['x', 'y']))
+    data = HEPDataStorage(pd.DataFrame(np.random.normal(loc=5400, scale=100, size=(10000, 2)),
+                                       columns=['x', 'y']))
     fit_mass(data=data, column='x')
     print "finished"

@@ -67,8 +67,8 @@ class OutputHandler(object):
                         del_existing_folders=False, logger_cfg=None):
         """Initializes the run. Creates the neccesary folders.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         Best Practice: enter a whole config file
 
         output_path : str
@@ -194,8 +194,8 @@ class OutputHandler(object):
     def IO_to_sys(self, importance=3, **add_output_kwarg):
         """Directs stdout back to the sys.stdout and return/save string to output
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         importance : int {0, 1, 2, 3, 4, 5}
             | The importance of the output. The higher, the more likely it will
             | be added to the output. To not add it at all but only rederict
@@ -223,7 +223,7 @@ class OutputHandler(object):
         certain figure at the end of the run.
 
         To create and save a figure, you just enter an already created or a new
-        figure as a parameter and specify the fileformats it should be saved
+        figure as a Parameters and specify the fileformats it should be saved
         to. The figure can also be pickled so that it can be re-plotted
         anytime.
 
@@ -232,8 +232,8 @@ class OutputHandler(object):
             (by calling :py:meth:`~raredecay.tools.output.OutputHandler.finalize`)
             so any change you made until the end will be applied to the plot.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         figure : instance of :class:`matplotlib.figure.Figure` (e.g. returned
             by :func:`matplotlib.figure`)
             The figure to be saved.
@@ -344,8 +344,8 @@ class OutputHandler(object):
         """Create a title/subtitle/section in the reST-format and return it as
         a string.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         title : str
             The title in words
         title_format : (str, str)
@@ -388,8 +388,8 @@ class OutputHandler(object):
 
             - Add title, subtitle and section on top of the data.
 
-        Parameter
-        ---------
+        Parameters
+        ----------
         data_out : obj or list(obj, obj, obj, ...)
             The data to be added to the output. Has to be convertible to str!
         to_end : boolean

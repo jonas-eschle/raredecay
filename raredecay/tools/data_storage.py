@@ -61,14 +61,14 @@ class HEPDataStorage(object):
         Parameters
         ----------
         data : (root-tree dict, pandas DataFrame)
+            The data itself. This can be two different types
 
             - **root-tree dict** (*root-dict*):
-            |   Dictionary which specifies all the information to convert a root-
-               tree to an array. Directly given to :py:func:`~root_numpy.root2rec`
-
+              Dictionary which specifies all the information to convert a root-
+              tree to an array. Directly given to :py:func:`~root_numpy.root2rec`
             - **pandas DataFrame**:
-            |   A pandas DataFrame. The index (if not explicitly defined)
-                and column names will be taken.
+              A pandas DataFrame. The index (if not explicitly defined)
+              and column names will be taken.
 
         index : 1-D array-like
             The indices of the data that will be used.

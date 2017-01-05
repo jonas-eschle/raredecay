@@ -4,21 +4,22 @@ Created on Sat Mar 26 16:49:45 2016
 
 @author: Jonas Eschle "Mayou36"
 
-Contains the different run-modes for the machine-learning algorithms.
+This module provides high-level function, which often contain an essential
+part of a complete MVA. The functions are sometimes quite verbous, both
+in plotting as well as in printing, but always also return the important
+values.
 """
 from __future__ import division, absolute_import
 
-# from memory_profiler import profile
-
 
 def test():
-    """just a test-function"""
+    """just a test-function."""
     print "empty test function"
 
 
 # @profile
 def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
-    """DEVELOPEMENT, WIP. Test a setup of clf involving bagging and stacking"""
+    """DEVELOPEMENT, WIP. Test a setup of clf involving bagging and stacking."""
     # import raredecay.analysis.ml_analysis as ml_ana
     # import pandas as pd
     import copy
@@ -176,19 +177,6 @@ def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
     print output
 
 
-def _test_mayou_int():
-    """Intern call to hyper_optimization"""
-#    from raredecay.tools import data_storage
-#
-#    original_data = data_storage.HEPDataStorage()
-#    target_data = data_storage.HEPDataStorage()
-#
-# HACK
-#    clf_mayou(data1=original_data, data2=target_data)
-    print "Clf_mayou function finished"
-    return
-
-
 def _cut(data):
     from raredecay.tools import data_tools
 
@@ -196,10 +184,7 @@ def _cut(data):
 
 
 def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
-    """Cut the bkg while maintaining a certain percent of the signal. WIP.
-
-
-    """
+    """Cut the bkg while maintaining a certain percent of the signal. WIP."""
 
     # from raredecay import meta_config
     from raredecay.tools import data_tools
@@ -285,8 +270,8 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
     out.add_output(keep, section="All limits")
     bkg_rejection = sum([i['reduction'] for i in applied_cuts.itervalues()])
     out.add_output(["summed up Bkg rejection: ", bkg_rejection, "True rejection: ",
-                    100.0 - (bkg_len_cut/bkg_length), " True remaining signal: ",
-                    signal_len_cut/signal_length], section="Total bkg rejection")
+                    100.0 - (bkg_len_cut / bkg_length), " True remaining signal: ",
+                    signal_len_cut / signal_length], section="Total bkg rejection")
     print signal_len_cut
     print signal_length
     print bkg_len_cut
@@ -297,14 +282,17 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
 def feature_exploration(original_data, target_data, features=None, n_folds=10,
                         clf='xgb', roc_auc='single', extended_report=True):
-    """Explore the features by getting the roc auc and their feature importance
+    """Explore the features by getting the roc auc and their feature importance.
 
+    An essential part is to have a rough idea of how discriminating the
+    features are. A classifier is trained on each single feature and all
+    together, correlations and feature importance are plottet if wanted.
 
     Parameters
     ----------
-    original_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    original_data : |hepds_type|
         One dataset
-    target_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    target_data : |hepds_type|
         The other dataset
     features : list(str, str, str,...)
         The features/branches/columns to explore
@@ -365,6 +353,51 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
 def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=None,
                    performance_only=True, metric_vs_cut='punzi',
                    save_real_pred=False, save_mc_pred=False):
+    """Train on bkg and MC, test metric, performance and predict probabilities.
+
+    The goal of an MVA is to have certain probabilities predicted for each
+    event to make further cuts on the data-sample and reduce the background.
+
+    There are two modes to run:
+        - **performance_only**: train a clf K-folded on the background and the
+          MC and predict, then create the ROC-curve and plot a metric. This
+          is to get an idea of how well the classifier performs as well as
+          to find the optimal cutoff-value on the predictions.
+        - **prediction_mode**: (*set performance_only to False*) train a clf
+          on the bkg and MC and predict K-folded the probabilities for all
+          data (bkg, MC and the rest) without any event occuring in the
+          training-set as well as in the test-set. If a name is given to
+          *save_mc_pred* respectively *save_real_pred*, the predicitions will
+          be saved to the root-file the data was taken from.
+
+    Parameters
+    ----------
+    real_data : |hepds_type|
+        The real data
+    mc_data : |hepds_type|
+        The MC data (signal)
+    bkg_sel : str or [str]
+        A string pointing to a column in the root-tree which tells if an event
+        belongs to the bkg (1) to train on or not (0). This typically is
+        something like this: (B_M > 5700) or similar
+    clf : str or clf or dict, see :py:func:`~raredecay.analysis.ml_analysis.make_clf()`
+        The classifier to be used.
+    n_folds : int > 1
+        The number of folds to use for the training
+    columns : list(str, str, str,...)
+        The columns to train on
+    performance_only : boolean
+        If True, the function is run in performance mode and does not predict
+        but only creates a ROC-curve and a metric-vs-cut.
+    metric_vs_cut : str {'punzi', 'precision'}
+        The metric to test on the predictions.
+    save_real_pred : str or False
+        If provided, the predictions of the real data will be saved to its
+        root-tree with the branch name specified here.
+    save_mc_pred : str or False
+        If provided, the predictions of the MC will be saved to its
+        root-tree with the branch name specified here.
+    """
 
     import numpy as np
     import pandas as pd
@@ -494,7 +527,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
 def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
                            overwrite=True):
-    """Add a branch to a given ROOT-Tree
+    """Add a branch to a given ROOT-Tree.
 
     Add some data (*new_branch*) to the ROOT-file (*filename*) into its tree
     (*treename*) under the branch (*branch_name*)
@@ -511,6 +544,8 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
         The name of the branch the data will be written too. This can either be
         a new one or an already existing one, which then will be overwritten.
         No "friend" will be created.
+    overwrite : boolean
+        NOT IMPLEMENTED!
     """
     from raredecay.tools import data_tools
     from raredecay.globals_ import out
@@ -530,15 +565,19 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
 def reweight(apply_data, real_data=None, mc_data=None, columns=None,
              reweighter='gb', reweight_cfg=None, n_reweights=1,
              apply_weights=True):
-    """(Train a reweighter and) apply the reweighter to get new weights
+    """(Train a reweighter and) apply the reweighter to get new weights.
+
+    Train a reweighter from the real data and the corresponding MC differences.
+    Then, try to correct the apply data (MC as well) the same as the first
+    MC would have been corrected to look like its real counterpart.
 
     Parameters
     ----------
-    apply_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    apply_data : |hepds_type|
         The data which shall be corrected
-    real_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    real_data : |hepds_type|
         The real data to train the reweighter on
-    mc_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    mc_data : |hepds_type|
         The MC data to train the reweighter on
     columns : list(str, str, str,...)
         The branches to use for the reweighting process.
@@ -577,8 +616,8 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     reweighter = data_tools.try_unpickle(reweighter)
     for run in range(n_reweights):
         if reweighter in ('gb', 'bins'):
-            new_reweighter = ml_ana.reweight_train(reweight_data_mc=mc_data,
-                                                   reweight_data_real=real_data,
+            new_reweighter = ml_ana.reweight_train(mc_data=mc_data,
+                                                   real_data=real_data,
                                                    columns=columns,
                                                    meta_cfg=reweight_cfg,
                                                    reweighter=reweighter)
@@ -607,11 +646,11 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                reweighter='gb', reweight_cfg=None, n_reweights=1,
                scoring=True, score_columns=None, n_folds_scoring=10, score_clf='xgb',
                mayou_score=False, extended_train_similar=False, apply_weights=True):
-    """Reweight data (mc/real) in a KFolded way to unbias the reweighting
+    """Reweight data MC/real in a K-Fold way to unbias the reweighting.
 
-    The Gradient Boosted Reweighter (from hep_ml) is quite sensitive to its
-    hyperparameters. Therefore, it is good to ged an estimation for the
-    reweighting quality by reweighting the data and "test" it (compare how
+    Sophisticated reweighting-algorithms can be quite sensitive to its
+    hyperparameters. Therefore, it is good to get an estimation for the
+    reweighting quality by reweighting the data itself and "test" it (compare how
     similar the reweighted to the real one is). In order to get an unbiased
     reweighting, a KFolding procedure is applied:
 
@@ -625,9 +664,9 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
     Parameters
     ----------
-    real_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    real_data : |hepds_type|
         The real data
-    mc_data : :py:class:`~raredecay.tools.data_storage.HEPDataStorage()`
+    mc_data : |hepds_type|
         The mc data
     columns : list(str, str, str, ...)
         The branches to use for the reweighting.
@@ -689,12 +728,21 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
           data and therefore the classifier will be able to predict nearly
           every real data as real (only *one single point*, the one with
           the high weight, will be predicted as mc, the rest as real)
+    score_columns : list(str, str, str,...)
+        The columns to use for the scoring. They should not be the same as for
+        the reweighting in order to unbias the score. It is usually a good
+        idea to use the same branches as will be used for the selection
+        training later on.
     n_folds_scoring : int > 1
         The number of folds to split the data into for the scoring
         described above.
     score_clf : str or dict or clf
         The classifier to use for the scoring. For an overview of what can be
         used, see :py:function:`~raredecay.analysis.ml_analysis.make_clf()`.
+    mayou_score : boolean
+        If True, the experimental *mayou_score* will be generated.
+    extended_train_similar : boolean
+        If True, an experimental score will be generated.
     apply_weights : boolean
         If True, set the new weights to the MC data in place. This changes the
         weights in the data-storage.
@@ -718,7 +766,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     output = {}
     # do the Kfold reweighting. This reweights the data with Kfolding and returns
     # the weights. If add_weights_to_data is True, the weights will automatically be
-    # added to the reweight_data_mc (or here, reweight_mc). To get an estimate
+    # added to the mc_data (or here, reweight_mc). To get an estimate
     # wheter it has over-fitted, you can get the mcreweighted_as_real_score.
     # This trains a clf on mc/real and tests it on mc, mc reweighted, real
     # but both labeled with the same target as the real data in training
@@ -726,7 +774,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # real score.
 #    if not apply_weights:
     old_weights = mc_data.get_weights()
-    Kfold_output = ml_ana.reweight_Kfold(reweight_data_mc=mc_data, reweight_data_real=real_data,
+    Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
                                          meta_cfg=reweight_cfg, columns=columns,
                                          reweighter=reweighter, n_reweights=n_reweights,
                                          mcreweighted_as_real_score=scoring,
