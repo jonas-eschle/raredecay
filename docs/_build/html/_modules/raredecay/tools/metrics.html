@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>raredecay.tools.metrics &mdash; raredecay 1.1.0 documentation</title>
+  <title>raredecay.tools.metrics &mdash; raredecay 1.1.1 documentation</title>
   
 
   
@@ -33,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="raredecay 1.1.0 documentation" href="../../../index.html"/>
+    <link rel="top" title="raredecay 1.1.1 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -62,7 +62,7 @@
             
             
               <div class="version">
-                1.1.0
+                1.1.1
               </div>
             
           
@@ -142,13 +142,13 @@
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_storage</span><span class="p">,</span> <span class="n">dev_tool</span>
-<span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
-<span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
 
 
 <div class="viewcode-block" id="mayou_score"><a class="viewcode-back" href="../../../raredecay.tools.metrics.html#raredecay.tools.metrics.mayou_score">[docs]</a><span class="k">def</span> <span class="nf">mayou_score</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real_data</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">old_mc_weights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="n">clf</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span> <span class="n">splits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;An experimental score using a &quot;loss&quot; function for data-similarity&quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
 
     <span class="c1"># initialize variables</span>
     <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
@@ -295,6 +295,8 @@
 <span class="sd">        A dictionary conaining the different scores. Description see above.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+    <span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>
     <span class="c1"># initialize variables</span>
     <span class="k">assert</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">n_checks</span> <span class="o">&lt;=</span> <span class="n">n_folds</span> <span class="ow">and</span> <span class="n">n_folds</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;wrong n_checks/n_folds. Check the docs&quot;</span>
     <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">),</span> \
@@ -514,7 +516,7 @@
 <span class="sd">        Number of background observed as signal (= fpr; false positiv rate)</span>
 <span class="sd">    n_sigma : int or float</span>
 
-<span class="sd">    &quot;&quot;&quot;</span> <span class="c1"># pylint:disable=anomalous-backslash-in-string</span>
+<span class="sd">    &quot;&quot;&quot;</span>  <span class="c1"># pylint:disable=anomalous-backslash-in-string</span>
 <span class="c1">#     not necessary below??</span>
     <span class="n">length</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">n_signal</span><span class="p">,</span> <span class="s2">&quot;__len__&quot;</span><span class="p">)</span> <span class="k">else</span> <span class="nb">len</span><span class="p">(</span><span class="n">n_signal</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
@@ -570,7 +572,7 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.1.0',
+            VERSION:'1.1.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
             HAS_SOURCE:  true
