@@ -430,7 +430,12 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
         max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
         roc_auc = OrderedDict({'all features': round(max_auc, 4)})
         out.save_fig(figure="feature importance " + str(clf_name), importance=2, **save_fig_cfg)
-        report.feature_importance_shuffling().plot()
+        # HACK: temp_plotter1 is used to set the plot.new_plot to False,
+        # which is set to True (unfortunately) in the init of GridPlot
+        temp_plotter1 = report.feature_importance_shuffling()
+        temp_plotter1.new_plot = False
+        temp_plotter1.plot(title="Feature importance shuffling of " + str(clf_name))
+        # HACK END
         out.save_fig(figure="feature correlation " + str(clf_name), importance=2, **save_fig_cfg)
         report.features_correlation_matrix().plot()
         out.save_fig(figure="ROC curve " + str(clf_name), importance=2, **save_fig_cfg)
