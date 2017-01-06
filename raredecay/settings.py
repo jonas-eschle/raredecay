@@ -71,6 +71,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     Return
     ------
     out : instance of :py:class:`~raredecay.tools.output.OutputHandler`
+        Return the output-handler currently in use by the script.
     """
 
     if no_interactive_plots:
@@ -122,6 +123,11 @@ def get_output_handler():
 
     This can be used to add output (text as well as figures) and save them
     easely. For more information see the docs of the OutputHandler
+
+    Return
+    ------
+    out : instance of :py:class:`~raredecay.tools.output.OutputHandler`
+        Return the output-handler currently in use by the script.
     """
     from raredecay.globals_ import out
     return out
