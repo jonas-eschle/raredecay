@@ -766,6 +766,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     out : dict
         The output is a dictionary containing the different scores and/or the
         new weights. The keywords are:
+
         - *weights* : pandas Series containing the new weights
         - *mcreweighted_as_real_score* : The scores of this method in a dict
         - *train_similar* : The scores of this method in a dict

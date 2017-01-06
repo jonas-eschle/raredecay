@@ -67,6 +67,10 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     gpu_in_use : boolean
         If True, the parallelisation for Theanets is switched of in order to be
         able to use it with (a single) gpu.
+
+    Return
+    ------
+    out : instance of :py:class:`~raredecay.tools.output.OutputHandler`
     """
 
     if no_interactive_plots:
