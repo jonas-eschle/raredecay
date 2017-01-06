@@ -28,7 +28,7 @@ def readme():
 #    git_version = str(git_version[0])
 #except:
 #    git_version = '1.0.2'
-git_version = '1.0.8'
+git_version = '1.1.0'
 
 
 setup(name='raredecay',
@@ -36,14 +36,16 @@ setup(name='raredecay',
       description='A package for analysis of rare particle decays with machine-learning algorithms',
       long_description=readme(),
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: Apache Software License'
         'Programming Language :: Python :: 2.7',
       ],
-      keywords='particle physics analysis machine learning reweight',
+      keywords='particle physics, analysis, machine learning, reweight, high energy physics',
       url='https://github.com/mayou36/raredecay',
       author='Jonas Eschle',
       author_email='mayou36@jonas.eschle.com',
-      license='None',
+      license='Apache-2.0 License',
       dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
       install_requires=requirements,
       extras_require={
