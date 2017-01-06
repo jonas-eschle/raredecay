@@ -24,15 +24,18 @@ To get an idea of the package, have a look at the howto notebooks:
 [IPython Notebooks](https://github.com/mayou36/raredecay/tree/master/howto)
 
 ## Minimal example ##
-Want to test whether your reweight did overfit? Use train_similar:
+Want to test whether your reweighting did overfit? Use train_similar:
 
-> from raredecay.tools.data_storage import HEPDataStorage  
-> from raredecay.tools.metrics import train_similar  
->
-> mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
-> real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
->
-> score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
+```python
+from raredecay.tools.data_storage import HEPDataStorage  
+from raredecay.tools.metrics import train_similar  
+
+mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
+real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
+
+score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
+```
+
 
 ## Getting started right now ##
 
@@ -54,7 +57,7 @@ First install the very newest version of REP
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
-Then, install the raredecay package (without ROOT-support) via (assuming, *git* is installed. Otherwise, download the package as zip and install)
+Then, install the raredecay package (without ROOT-support) via
 
 ```
 pip install raredecay
@@ -63,7 +66,7 @@ pip install raredecay
 To make sure you can convert ROOT-NTuples, use
 
 ```
-pip install raredecay[root]
+pip install raredecay[root]  # *use raredecay\[root\] in a zsh-console*
 ```
 As it is a young package still under developement, it may receive regular updates and improvements and it is probably a good idea to regularly download the newest package.
 

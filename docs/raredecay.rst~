@@ -1,0 +1,9 @@
+raredecay package
+=================
+
+.. toctree::
+
+    raredecay.analysis
+    raredecay.tools
+    raredecay.settings
+

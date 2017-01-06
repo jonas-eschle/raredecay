@@ -10,28 +10,19 @@ import math as mt
 import numpy as np
 
 from raredecay.tools import data_storage, dev_tool
-import raredecay.analysis.ml_analysis as ml_ana
-from raredecay.globals_ import out
-
-
-
-def rnd_dist():
-    """Test reweighting by classify several random distributions. Not yet
-    known how to interpret outcome correctly. NOT YET IMPLEMENTED!"""
-    pass
 
 
 def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                 clf='xgb', splits=2, n_folds=10):
+    """An experimental score using a "loss" function for data-similarity"""
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.globals_ import out
 
     # initialize variables
     output = {}
     score_mc_vs_mcr = []
     score_mcr_vs_real = []
 #    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
-
-
-
 
     # loop over number of splits, split the mc data
 
@@ -48,16 +39,18 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                 mc_data_train.make_folds(2)
             mc_normal, mc_reweighted = mc_data_train.get_fold(split % 2)
             mc_normal.set_weights(old_mc_weights)
-            score_mc_vs_mcr.append(ml_ana.classify(original_data=mc_normal, target_data=mc_reweighted,
-                                                   features=features, validation=[mc_data_test, real_data],
-                                                    clf=clf, plot_importance=1,
-                                                    # TODO: no weights ratio? (roc auc)
-                                                    weights_ratio=0
-                                                    )[1])
+            score_mc_vs_mcr.append(ml_ana.classify(original_data=mc_normal,
+                                                   target_data=mc_reweighted,
+                                                   features=features,
+                                                   validation=[mc_data_test, real_data],
+                                                   clf=clf, plot_importance=1,
+                                                   # TODO: no weights ratio? (roc auc)
+                                                   weights_ratio=0
+                                                   )[1])
     out.add_output(["mayou_score mc vs mc reweighted test on mc vs real score: ",
                     score_mc_vs_mcr, "\nMean: ", np.mean(score_mc_vs_mcr),
-                    " +-", np.std(score_mc_vs_mcr)/mt.sqrt(len(score_mc_vs_mcr) - 1)],
-                    subtitle="Mayou score", to_end=True)
+                    " +-", np.std(score_mc_vs_mcr) / mt.sqrt(len(score_mc_vs_mcr) - 1)],
+                   subtitle="Mayou score", to_end=True)
 
     output['mc_distance'] = np.mean(score_mc_vs_mcr)
 
@@ -77,8 +70,8 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
 
     out.add_output(["mayou_score real vs mc reweighted test on mc vs real score: ",
                     score_mcr_vs_real, "\nMean: ", np.mean(score_mcr_vs_real),
-                    " +-", np.std(score_mcr_vs_real)/mt.sqrt(len(score_mcr_vs_real) - 1)],
-                    to_end=True)
+                    " +-", np.std(score_mcr_vs_real) / mt.sqrt(len(score_mcr_vs_real) - 1)],
+                   to_end=True)
 
     output['real_distance'] = np.mean(score_mcr_vs_real)
 
@@ -90,15 +83,13 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
 def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                   clf='xgb', test_max=True, test_shuffle=True, test_mc=False,
                   old_mc_weights=1, test_predictions=False, clf_pred='rdf'):
-    """Score for reweighting. Train clf on mc reweighted/real, test on real.
-    Minimize score.
+    """Score for reweighting. Train clf on mc reweighted/real, test on real; minimize score.
 
     Enter two datasets and evaluate the score described below. Return a
     dictionary containing the different scores. The test_predictions is
     another scoring, which is built upon the train_similar method.
 
-    Scoring method description
-    --------------------------
+    **Scoring method description**
 
     **Idea**:
     A clf is trained on the reweighted mc as well as on the real data of a
@@ -118,8 +109,8 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     only observed for "artificial" distributions (even dough, of course, we
     do not know if it affects real distributions aswell partly)
 
-    Output explanation
-    ------------------
+    **Output explanation**
+
     The return is a dictionary containing several values. Of course, only the
     values, which are set to be evaluated, are contained. The keys are:
 
@@ -172,6 +163,8 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         A dictionary conaining the different scores. Description see above.
 
     """
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.globals_ import out
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
     assert isinstance(mc_data, data_storage.HEPDataStorage), \
@@ -229,8 +222,6 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         if test_shuffle:
             import copy
             shuffled_weights = copy.deepcopy(tmp_weights)
-            import random
-#            random.shuffle(shuffled_weights)  # errorprone!
             shuffled_weights.reindex(np.random.permutation(shuffled_weights.index))
             mc_train.set_weights(shuffled_weights)
             tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
@@ -242,23 +233,13 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
             mc_train.set_weights(tmp_weights)
 
         if test_mc:
-            clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
-                                      plot_title="train on mc reweighted/real, test on mc",
-                                      weights_ratio=1, get_predictions=False,
-                                      features=features,
-                                      plot_importance=1, importance=1)
-
-# HACK begin
-#        import matplotlib.pyplot as plt
-#        reweighted_y_proba = pred_reweighted['y_proba'][:, 1]
-#        tmp_pred = reweighted_y_proba * pred_reweighted['weights']
-##        assert (True * 1 == 1 and False * 1 == 0), "Boolean to int behavour changed unexpected"
-#
-#        scores_weighted.extend(tmp_pred * (pred_reweighted['y_true'] * 2 - 1))  # True=1, False=-1
-
-
-
-# HACK end
+            clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test,
+                                                           clf=clf_trained,
+                                                           plot_title="train on mc reweighted/real, test on mc",
+                                                           weights_ratio=1, get_predictions=False,
+                                                           features=features,
+                                                           plot_importance=1,
+                                                           importance=1)
 
 #        del clf_trained, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
@@ -278,10 +259,12 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
             clf_trained, scores_max[fold], pred_mc = tmp_out
             if test_mc:
                 clf_trained, scores_mc_max[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
-                                              plot_title="train on mc NOT reweighted/real, test on mc",
-                                              weights_ratio=1, get_predictions=False,
-                                              features=features,
-                                              plot_importance=1, importance=1)
+                                                                   plot_title="train on mc NOT reweighted/real, test on mc",
+                                                                   weights_ratio=1,
+                                                                   get_predictions=False,
+                                                                   features=features,
+                                                                   plot_importance=1,
+                                                                   importance=1)
             del clf_trained
 # HACK
             tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
@@ -301,28 +284,9 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         output['score_shuffled'] = np.round(scores_shuffled.mean(), 4)
         output['score_shuffled_std'] = np.round(scores_shuffled.std(), 4)
 
-
-
     if test_mc:
         output['score_mc'] = np.round(scores_mc.mean(), 4)
         output['score_mc_std'] = np.round(scores_mc.std(), 4)
-    # HACK
-#    scores_weighted = np.array(scores_weighted)
-#    out.add_output(["EXPERIMENTAL: score weighted:", scores_weighted.mean(), " +- ",
-#                     np.std(np.abs(scores_weighted))], to_end=True)
-#    scores_max_weighted = np.array(scores_max_weighted)
-#    out.add_output(["EXPERIMENTAL: max score weighted:", round(scores_max_weighted.mean(),4) , " +- ",
-#                     round(np.std(np.abs(scores_max_weighted)), 4)], to_end=True)
-
-#    plt.figure()
-#    plt.hist(scores_weighted, bins=30, normed=True)
-#    plt.title("experimental score weighted")
-#    plt.figure()
-#    plt.hist(scores_max_weighted, bins=30, normed=True)
-#    plt.title("experimental MAX score weighted")
-    #HACK END
-#    output['weighted_score'] =
-#    output['weighted_score_std'] =
 
     out.add_output(["Score train_similar (recall, lower means better): ",
                    str(output['score']) + " +- " + str(output['score_std'])],
@@ -362,13 +326,25 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
 
 
 def similar_dist(predictions, weights=None, true_y=1, threshold=0.5):
-    """Metric to evaluate the predictions on one label only for similarity test
+    """Metric to evaluate the predictions on one label only for similarity test.
 
+    This metric is used inside the mayou_score
 
+    Parameters
+    ----------
+    predictions : :py:class:`~np.array`
+        The predicitons
+    weights : array-like
+        The weights for the predictions
+    true_y : {0 , 1}
+        The "true" label of the data
+    threshold : float
+        The threshold for the predictions to decide whether a point belongs
+        to 0 or 1.
     """
-    #HACK
+    # HACK
     scale = 2  # otherwise, the predictions will be [-0.5, 0.5]
-    #HACK END
+    # HACK END
     data_valid = min(predictions) < threshold < max(predictions)
     if not data_valid:
         raise ValueError("Predictions are all above or below the threshold")
@@ -381,23 +357,20 @@ def similar_dist(predictions, weights=None, true_y=1, threshold=0.5):
     true_pred = predictions[predictions > 0]
     false_pred = predictions[predictions <= 0] * -1
 
-
-
     true_weights = false_weights = 1
 
     if not dev_tool.is_in_primitive(weights, None):
         true_weights = weights[predictions > 0]
         false_weights = weights[predictions <= 0]
-    score = sum(((np.exp(1.3 * np.square(true_pred + 0.6)) - 1.5969)* 0.5) * true_weights)
+    score = sum(((np.exp(1.3 * np.square(true_pred + 0.6)) - 1.5969) * 0.5) * true_weights)
     score -= sum(((np.sqrt(false_pred) - np.power(false_pred, 0.8)) * 2) * false_weights)
     score /= sum(weights)
-
 
     return score
 
 
 def punzi_fom(n_signal, n_background, n_sigma=5):
-    """Return the Punzi Figure of Merit metric: S / (sqrt(B) + n_sigma/2)
+    """Return the Punzi Figure of Merit = :math:`\\frac{S}{\sqrt(B) + n_{\sigma}/2}`.
 
     The Punzi FoM is mostly used for the detection of rare decays to prevent
     the metric of cutting off all the background and leaving us with only a
@@ -411,21 +384,22 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
         Number of background observed as signal (= fpr; false positiv rate)
     n_sigma : int or float
 
-    """
-    # not necessary below??
-#    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
-#    if length > 1:
-#        sqrt = np.sqrt(np.array(n_background))
-#        term1 = np.full(length, n_sigma/2)
-#    else:
-    sqrt = mt.sqrt(n_background)
-    term1 = n_sigma/2
+    """  # pylint:disable=anomalous-backslash-in-string
+#     not necessary below??
+    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
+    if length > 1:
+        sqrt = np.sqrt(np.array(n_background))
+        term1 = np.full(length, n_sigma / 2)
+    else:
+
+        sqrt = mt.sqrt(n_background)
+        term1 = n_sigma / 2
     output = n_signal / (sqrt + term1)
     return output
 
 
 def precision_measure(n_signal, n_background):
-    """Return the precision measure: s / sqrt(s + b)"""
+    """Return the precision measure = :math:`\\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}`."""  # pylint:disable=anomalous-backslash-in-string
     length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
     if length > 1:
         sqrt = np.sqrt(np.array(n_signal + n_background))

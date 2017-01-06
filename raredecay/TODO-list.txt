@@ -6,4 +6,5 @@
 - add combined weights/target return to storage
 - plotting behaviour: importance 0 should result in no plotting at all
 - HEPDataStorage: plot hists with different classes
+- HEPDataStorage: before plotting, check if columns are the same
 - HEPDataStorage: add alias for branch names

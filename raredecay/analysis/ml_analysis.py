@@ -5,8 +5,12 @@ Created on Sat Mar 26 11:29:01 2016
 @author: Jonas Eschle "Mayou36"
 
 The Machine Learning Analysis module consists of machine-learning functions
-which are mostly wrappers around already existing algorithms. The expected
-format of the data is a *HEPDataStorage*.
+which are mostly wrappers around already existing algorithms.
+
+Several "new types" of formats are introduced by using the available formats
+from all the libraries (scikit-learn, pandas, numpy etc) and brings together
+what belongs together. It takes away all the unnecessary work done so many
+times for the simple tasks.
 
 The functions serve as basic tools, which do already a lot of the work.
 """
@@ -14,42 +18,44 @@ from __future__ import division, absolute_import
 
 
 import copy
-
-import numpy as np
-import matplotlib.pyplot as plt
-import pandas as pd
 import timeit
 from collections import OrderedDict
 
-import hep_ml.reweight
-# from rep.metaml import ClassifiersFactory
-from rep.data import LabeledDataStorage
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
 
-# classifier imports
-from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
+# hep_ml imports
+import hep_ml.reweight
+
+# scikit-learn imports
+from sklearn.base import BaseEstimator
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 from sklearn.ensemble import AdaBoostClassifier  # , VotingClassifier
-from rep.estimators.theanets import TheanetsClassifier
 from sklearn.tree import DecisionTreeClassifier
-# from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
-from rep.estimators.interface import Classifier
-from sklearn.base import BaseEstimator
 
-# scoring and validation
-from rep.metaml.folding import FoldingClassifier
-from rep.report import metrics
-from rep.report.classification import ClassificationReport
 from sklearn.metrics import accuracy_score, classification_report  # recall_score,
 
-# Hyperparameter optimization
+# import Reproducible Experimental Platform
+from rep.data import LabeledDataStorage
+
+from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
+from rep.estimators.theanets import TheanetsClassifier
+from rep.estimators.interface import Classifier
+
+from rep.metaml.folding import FoldingClassifier
 from rep.metaml import GridOptimalSearchCV, FoldingScorer, RandomParameterOptimizer
 from rep.metaml import SubgridParameterOptimizer
 from rep.metaml.gridsearch import RegressionParameterOptimizer  # , AnnealingParameterOptimizer
 
+from rep.report import metrics
+from rep.report.classification import ClassificationReport
+
+# raredecay imports
 from raredecay.tools import dev_tool, data_tools, data_storage
-# from raredecay import globals_
 from raredecay.globals_ import out
+# from raredecay import globals_
 
 # import configuration
 import importlib
@@ -90,7 +96,13 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
 
 
 def make_clf(clf, n_cpu=None, dict_only=False):
-    """Return a classifier-dict. Takes a str, config-dict or clf-dict or clf
+    """Return a classifier-dict. Takes a str, config-dict or clf-dict or clf.
+
+    This function is used to bring classifiers into the "same" format. It
+    takes several kind of arguments, extracts the information, sorts it and
+    creates an instance of a classifier if needed.
+
+    Currently implemented classifiers are found below
 
     Parameters
     ----------
@@ -107,20 +119,24 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         - Configuration for a clf: Instead of instantiating the clf outside,
           you can also pass a configuration-dictionary. This has to look like:
 
-          - {'clf_type': config-dict, 'name': 'my_clf_1'} (name is optional)
+          - {'*clf_type*': config-dict, 'name': 'my_clf_1'} (name is optional)
             whereas 'clf_type' has to be any of the implemented clf-types like
             'xgb', 'rdf', 'ada' etc.
-        - Get a standard-clf: providing a string refering to an implemented
+        - Get a standard-clf: providing a *string* only refering to an implemented
           clf-type, you will get a classifier using the configuration in
           :py:mod:`~raredecay.meta_config`
 
-    n_cpu : int > -1 or None
+    n_cpu : int or None
         The number of cpus to use for this classifier. If the classifier is not
         parallelizable, an according *parallel_profile* (also see in REP-docs)
         will be created; 'threads-n' with n the number of cpus specified before.
+
+        .. warning::
+            This overwrites the global n-cpu settings for this specific classifier
     dict_only : boolean
         If True, only a dictionary will be returned containing the name, config,
-        clf_type and parallel_profile, n_cpu.
+        clf_type and parallel_profile, n_cpu, but no classifier instance will
+        be created.
 
 
     Returns
@@ -139,6 +155,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
           be 'threads-n' with n = n_cpus.
         - **n_cpus**: The number of cpus used in the classifier.
     """
+    #: Currently implemented classifiers:
     __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'nn', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
@@ -200,11 +217,13 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             elif isinstance(sub_clf, KNeighborsClassifier):
                 n_cpu_clf = 1
                 clf_type = 'knn'
+        else:
+            n_cpu_clf = 1
 
         if n_cpu_clf > n_cpu and not suppress_cpu_warning:
             logger.warning("n_cpu specified at make_clf() for clf < n_cpu of clf \
                             given! is that what you want?")
-        n_cpu = max(int(n_cpu_clf / n_cpu), 1)
+        n_cpu = max(int(n_cpu / n_cpu_clf), 1)
         if n_cpu > 1:
             output['n_cpu'] = n_cpu_clf
             output['parallel_profile'] = 'threads-' + str(n_cpu)
@@ -251,7 +270,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             serial_clf = True
             clf['config'].update(dict(random_state=meta_config.randint()))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                                    random_state=meta_config.randint()), **clf.get('config')))
+                random_state=meta_config.randint()), **clf.get('config')))
         elif clf['clf_type'] == 'knn':
             clf['config'].update(dict(random_state=meta_config.randint(), n_jobs=n_cpu))
             clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
@@ -284,23 +303,24 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
 def backward_feature_elimination(original_data, target_data=None, features=None,
                                  clf='xgb', n_folds=10, max_feature_elimination=None,
-                                 max_difference_to_best=0.08, direction='backward',
+                                 max_difference_to_best=0.08, keep_features=None,
                                  take_target_from_data=False):
     """Train and score on each feature subset, eliminating features backwards.
 
     To know, which features make a big impact on the training of the clf and
     which don't, there are several techniques to find out. The most reliable,
-    but also cost-intensive one, seems to be the backward feature elimination.
+    but also cost-intensive one, is the recursive backward feature elimination.
     A classifier gets trained first on all the features and is validated with
     the KFold-technique and the ROC AUC. Then, a feature is removed and the
     classifier is trained and tested again. This is done for all features once.
-    The one where the auc drops the least is then removed and the next round
+    The feature where the auc drops the least is then removed and the next round
     starts from the beginning but with one feature less.
 
     The function ends either if:
 
     - no features are left
     - max_feature_elimination features have been eliminated
+    - the time limit max_feature_elimination is reached
     - the difference between the most useless features auc and the best
       (the run done with all features in the beginning) is higher then
       max_difference_to_best
@@ -319,11 +339,22 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     n_folds : int > 1
         How many folds you want to split your data in when doing KFold-splits
         to measure the performance of the classifier.
-    max_feature_elimination : int >= 1
-        How many features should be eliminated before it surely stopps
+    max_feature_elimination : int >= 1 or str "hhhh:mm"
+        How many features should be maximal eliminated before it stopps or
+        how much time it can take (approximately) to do the elimination.
+        If the time runs out before other criterias are true (no features left,
+        max_difference to high...), it just returns the results so far.
     max_difference_to_best : float
-        The maximum difference between the "worst" features auc and the best
-        (with all features) auc before it stopps.
+        The maximum difference between the "least worst" features auc and the best
+        (usually the one with all features) auc before it stopps.
+
+        In other words, it only eliminates features until the elimination would
+        lead to a roc auc lower by max_difference_to_best then the roc auc
+        with all features (= highest roc auc).
+    keep_features:
+        A list of features that won't be eliminated. The algorithm does not
+        test the metric if that feature were removed. This saves
+        quite some time.
     take_target_from_data : boolean
         Old, will be removed. Use if target-data == None.
 
@@ -337,6 +368,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
           Basically a pandas DataFrame containing all results.
     """
     # initialize variables and setting defaults
+    direction = 'backward'
+    keep_features = [] if keep_features is None else data_tools.to_list(keep_features)
     output = {}
     start_time = -1  # means: no time measurement on the way
     available_time = 1
@@ -358,9 +391,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
                        "Features for feature-optimization will be taken from data.")
     # We do not need to create more data than we well test on
     features = data_tools.to_list(features)
+    features = list(set(features + keep_features))
     assert features != [], "No features for optimization found"
-
-    # TODO: insert time estimation for feature optimization
 
     # initialize data
     data, label, weights = _make_data(original_data, target_data, features=features,
@@ -376,11 +408,14 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 # start backward feature elimination
 # ==============================================================================
     selected_features = copy.deepcopy(features)  # explicit is better than implicit
+    selected_features = [feature for feature in selected_features if feature not in keep_features]
+
     assert len(selected_features) > 1, "Need more then one feature to perform feature selection"
 
     # starting feature selection
-    out.add_output(["Performing feature selection with the classifier", clf_name,
-                    "of the features", features], title="Feature selection: Backward elimination")
+    out.add_output(["Performing feature selection with the classifier",
+                    clf_name, "of the features", features],
+                   title="Feature selection: Recursive backward elimination")
     original_clf = FoldingClassifier(clf, n_folds=n_folds,
                                      stratified=meta_config.use_stratified_folding,
                                      parallel_profile=parallel_profile)
@@ -390,12 +425,17 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = {feature: [] for feature in selected_features}
     if direction == 'backward':
         clf = copy.deepcopy(original_clf)  # required, feature attribute can not be changed somehow
-        clf.fit(data[selected_features], label, weights)
-        report = clf.test_on(data[selected_features], label, weights)
+        clf.fit(data[features], label, weights)
+        report = clf.test_on(data[features], label, weights)
         max_auc = report.compute_metric(metrics.RocAuc()).values()[0]
         roc_auc = OrderedDict({'all features': round(max_auc, 4)})
         out.save_fig(figure="feature importance " + str(clf_name), importance=2, **save_fig_cfg)
-        report.feature_importance_shuffling().plot()
+        # HACK: temp_plotter1 is used to set the plot.new_plot to False,
+        # which is set to True (unfortunately) in the init of GridPlot
+        temp_plotter1 = report.feature_importance_shuffling()
+        temp_plotter1.new_plot = False
+        temp_plotter1.plot(title="Feature importance shuffling of " + str(clf_name))
+        # HACK END
         out.save_fig(figure="feature correlation " + str(clf_name), importance=2, **save_fig_cfg)
         report.features_correlation_matrix().plot()
         out.save_fig(figure="ROC curve " + str(clf_name), importance=2, **save_fig_cfg)
@@ -426,8 +466,8 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
             clf = copy.deepcopy(original_clf)  # otherwise feature attribute trouble
             temp_features = copy.deepcopy(selected_features)
             del temp_features[i]  # remove ith feature for testing
-            clf.fit(data[temp_features], label, weights)
-            report = clf.test_on(data[temp_features], label, weights)
+            clf.fit(data[temp_features + keep_features], label, weights)
+            report = clf.test_on(data[temp_features + keep_features], label, weights)
             temp_auc = report.compute_metric(metrics.RocAuc()).values()[0]
             collected_scores[feature].append(round(temp_auc, 4))
             # set time condition, extrapolate assuming same time for each iteration
@@ -486,10 +526,24 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     return output
 
 
-def optimize_hyper_parameters(original_data, clf=None, target_data=None, features=None,
+def optimize_hyper_parameters(original_data, target_data=None, clf=None, features=None,
                               n_eval=1, n_checks=10, n_folds=10, generator_type='subgrid',
                               take_target_from_data=False, **kwargs):
-    """Optimize the hyperparameters of a classifier
+    """Optimize the hyperparameters of a classifiers.
+
+    Hyper-parameter optimization of a classifier is an important task.
+    Two datasets are required as well as a clf (not an instance, a dict).
+    For more information about which classifiers are valid, see also
+    :py:func:`~raredecay.analysis.ml_analysis.make_clf()`.
+
+    The optimization does not happen automatic but checks the hyper-parameter
+    space provided. Every clf-parameter that is a list or numpy array is
+    considered a point. The search-technique can be specified under
+    *generator_type*.
+
+    It is possible to set a time limit instead of a n_eval limit. It estimates
+    the time needed for a run and extrapolates. This extrapolation is not too
+    precise, it can be at *worst* plus approximately 20% of allowed run-time,
 
 
     Parameters
@@ -499,9 +553,13 @@ def optimize_hyper_parameters(original_data, clf=None, target_data=None, feature
     target_data : HEPDataStorage
         The target data
     clf : config-dict
-        For possible options, see also :py:func:`~raredecay.ml_analysis.make_clf()`.
+        For possible options, see also
+        :py:func:`~raredecay.analysis.ml_analysis.make_clf()`.
         The difference is, for the feature you want to have optimised, use an
         iterable instead of a single value, e.g. 'n_estimators': [1, 2, 3, 4] etc.
+    features : list(str, str, str,...)
+        List of strings containing the features/columns to be used for the
+        hyper-optimization.
     n_eval : int > 1 or str "hh...hh:mm"
         How many evaluations should be done; how many points in the
         hyperparameter-space should be tested. This can either be an integer,
@@ -509,10 +567,7 @@ def optimize_hyper_parameters(original_data, clf=None, target_data=None, feature
         format of "hours:minutes" (e.g. "3:25", "1569:01" (quite long...),
         "0:12"), which represents the approximat time it should take for the
         hyperparameter-search (**not** the exact upper limit)
-    features : list(str, str, str,...)
-        List of strings containing the features/columns to be used for the
-        hyper-optimization.
-    n_checks : int >= 1
+    n_checks : 1 <= int <= n_folds
         Number of checks on *each* KFolded dataset will be done. For example,
         you split your data into 10 folds, but may only want to train/test on
         3 different ones.
@@ -530,10 +585,7 @@ def optimize_hyper_parameters(original_data, clf=None, target_data=None, feature
           the next one.
         - **random** : Randomly choose points in the hyper-parameter space.
     take_target_from_data : Boolean
-        OUTDATED; not encouraged to use
-        If True, the target-labeling (the y) will be taken from the data
-        directly and not created. Otherwise, 0 will be assumed for the
-        original_data and 1 for the target_data.
+        |take_target_from_data_docstring|
     """
     # initialize variables and setting defaults
 #    output = {}
@@ -658,7 +710,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
              plot_title=None, curve_name=None, weights_ratio=0,
              importance=3, plot_importance=3,
              target_from_data=False, **kwargs):
-    """Training and testing a classifier or distinguish a dataset
+    """Training and/or testing a classifier or kfolded predictions.
 
     Classify is a multi-purpose function which does most of the things around
     machine-learning. It can be used for:
@@ -672,7 +724,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         string and give in some data to the validation and no to the
         original_data or target_data. Set get_predictions to True and you're
         done.
-    - Get a ROC curve of two datasets.
+    - Get a ROC curve of two datasets with K-Folding.
         Specify the two input data (original_data and target_data) and use
         cross-validation by setting validation to the number of folds
 
@@ -695,31 +747,30 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             The target-label will be taken from it, so ensure that they are
             not None! To use two datasets, you can also use a list of
             **maximum** two datastorages.
-    clf : str {'xgb', 'rdf'} or REP-classifier
-        The classifier to be used for the training and predicting. If you don't
-        pass a classifier (with *fit*, *predict* and *predict_proba* at least),
-        an XGBoost classifier will be used.
-    plot_importance : int {0, 1, 2, 3, 4, 5}
-        The higher the importance, the more likely the plots will be showed.
-        All plots should be saved anyway.
+    clf : classifier, see :py:func:`~raredecay.analysis.ml_analysis.make_clf()`
+        The classifier to be used for the training and predicting. It can also
+        be a pretrained classifier as argument.
     extended_report : boolean
         If True, make extended reports on the classifier as well as on the data,
         including feature correlation, feature importance etc.
+    get_predictions : boolean
+        If True, return a dictionary containing the prediction probabilities, the
+        true y-values, weights and more. Have a look at the return values.
     plot_title : str
         A part of the title of the plots and general name of the call. Will
         also be printed in the output to identify with the intention this
         function was called.
     curve_name : str
         A labeling for the plotted data.
+    weights_ratio : int >= 0
+        The ratio of the weights, actually the class-weights.
+    importance : |importance_type|
+        |importance_docstring|
+    plot_importance : |plot_importance_type|
+        |plot_importance_docstring|
     target_from_data : boolean
-        | If true, the target-values (labels; 0 or 1) for the original and the
-          target data will be taken from the
-          data instead of assigned accordingly (original:1, target:0).
-        | If no target_data is provided, the targets/labels will be taken
-          from the original_data anyway.
-    get_predictions : boolean
-        If True, return a dictionary containing the prediction probabilities, the
-        true y-values and maybe, in the futur, even more.
+        |take_target_from_data_docstring|
+
     additional kwargs arguments :
         original_test_weights : pandas Series
             Weights for the test sample if you don't want to use the same
@@ -749,21 +800,22 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         - 'weights' : the weights of the corresponding predicitons
     """
     logger.info("Starting classify with " + str(clf))
+    VALID_KWARGS = ['original_test_weights', 'target_test_weights']
+
     # initialize variables and data
     save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     predictions = {}
     make_plot = True  # used if no validation
+    valid_input = set(kwargs).issubset(VALID_KWARGS)
+    if not valid_input:
+        raise ValueError("Invalid kwargs:" + str([k for k in kwargs if k not in VALID_KWARGS]))
 
     plot_title = "classify" if plot_title is None else plot_title
 
-# TODO: do we need this??
-#    if (original_data is None) and (target_data is not None):
-#        original_data, target_data = target_data, original_data  # switch places
     if original_data is not None:
         data, label, weights = _make_data(original_data, target_data, features=features,
                                           weights_ratio=weights_ratio,
-                                          target_from_data=target_from_data,
-                                          )
+                                          target_from_data=target_from_data)
         data_name = original_data.name
         if target_data is not None:
             data_name += " and " + target_data.name
@@ -775,8 +827,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
     if isinstance(validation, (float, int, long)) and validation > 1:
         if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
-
-
 
             if 'original_test_weights' in kwargs:
                 temp_original_weights = original_data.get_weights()
@@ -791,13 +841,6 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             if 'target_test_weights' in kwargs:
                 target_data.set_weights(temp_target_weights)
 
-#            # TODO: write code nicer!
-#            # HACK normalization
-#            print "HACK IN USE, ml_analysis, classifiy: normalization always 1 for test weights"
-#            target_weights *= np.sum(original_weights) / np.sum(target_weights)
-#            # HACK end
-#            test_weights = pd.concat((original_weights, target_weights))
-#            test_weights /= np.sum(test_weights)  # normalization, optional
         else:
             test_weights = weights
 
@@ -825,21 +868,25 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     # test the classifier
     if validation not in (None, False):
         report = ClassificationReport({clf_name: clf}, lds_test)
-        n_classes = len(set(lds_test.get_targets()))
+        test_classes = list(set(lds_test.get_targets()))
+        n_classes = len(test_classes)
         if n_classes == 2:
             clf_score = round(report.compute_metric(metrics.RocAuc()).values()[0], 4)
-            out.add_output(["ROC AUC of ", clf_name, ", " , curve_name, ": ", clf_score],
+            out.add_output(["ROC AUC of ", clf_name, ", ", curve_name, ": ", clf_score],
                            obj_separator="", subtitle="Report of " + plot_title,
                            importance=importance)
             plot_name = clf_name + ", AUC = " + str(clf_score)
             binary_test = True
             if get_predictions:
+                # TODO: DRY, now WET
                 y_true = lds_test.get_targets()
                 y_pred = clf.predict(lds_test.get_data())
                 y_pred_proba = clf.predict_proba(lds_test.get_data())
                 predictions['y_proba'] = y_pred_proba
                 predictions['y_pred'] = y_pred
                 predictions['y_true'] = y_true
+                predictions['weights'] = lds_test.get_weights(allow_nones=True)
+                predictions['report'] = report
 
         elif n_classes == 1:
             # score returns accuracy; if only one label present, it is the same as recall
@@ -847,14 +894,12 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             y_pred = clf.predict(lds_test.get_data())
 
             if get_predictions:
-                #remove below TODO
-#                y_true = lds_test.get_targets()
-#                y_pred = clf.predict(lds_test.get_data())
                 y_pred_proba = clf.predict_proba(lds_test.get_data())
                 predictions['y_proba'] = y_pred_proba
                 predictions['y_pred'] = y_pred
                 predictions['y_true'] = y_true
                 predictions['weights'] = lds_test.get_weights(allow_nones=True)
+                predictions['report'] = report
             w_test = lds_test.get_weights()
             clf_score = clf.score(lds_test.get_data(), y_true, w_test)
             clf_score2 = accuracy_score(y_true=y_true, y_pred=y_pred)  # , sample_weight=w_test)
@@ -880,14 +925,14 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         report.estimators[plot_name] = report.estimators.pop(clf_name)
 
         if binary_test:
-            out.save_fig(plt.figure(plot_title + " " + plot_name),
+            out.save_fig(plot_title + " " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.roc(physics_notion=True).plot(title=plot_title + "\nROC curve of " +
                                                  clf_name + " on data:" +
                                                  data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
-            out.save_fig(plt.figure("Learning curve " + plot_name),
+            out.save_fig("Learning curve " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " +
                                                                         plot_name)
@@ -898,17 +943,23 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 #                         importance=plot_importance, **save_fig_cfg)
 #            report.learning_curve(metrics., steps=1).plot(title="Learning curve of " + plot_name)
         if extended_report:
-            if len(data.columns) > 1:
+            if len(clf.features) > 1:
                 out.save_fig(figure="Feature importance shuffling of " + plot_name,
                              importance=plot_importance)
-                report.feature_importance_shuffling().plot(
-                            title="Feature importance shuffling of " + plot_name)
+                # HACK: temp_plotter1 is used to set the plot.new_plot to False,
+                # which is set to True (unfortunately) in the init of GridPlot
+                temp_plotter1 = report.feature_importance_shuffling()
+                temp_plotter1.new_plot = False
+                temp_plotter1.plot(title="Feature importance shuffling of " + plot_name)
+                # HACK END
                 out.save_fig(figure="Feature correlation matrix of " + plot_name,
                              importance=plot_importance)
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +
                                                                 plot_name)
+            label_dict = None if binary_test else {test_classes[0]: "validation data"}
             out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
-            report.prediction_pdf(plot_type='bar').plot(title="Predictiond pdf of " + plot_name)
+            report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
+                title="Predictiond pdf of " + plot_name)
 
     if clf_score is None:
         return clf
@@ -918,14 +969,14 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         return clf, clf_score
 
 
-def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
+def reweight_train(mc_data, real_data, columns=None,
                    reweighter='gb', reweight_saveas=None, meta_cfg=None,
                    weights_mc=None, weights_real=None):
     """Return a trained reweighter from a (mc/real) distribution comparison.
 
-    | Reweighting a distribution is a "making them the same" by changing the \
-    weights of the bins (instead of 1) for each event. Mostly, and therefore \
-    the naming, you want to change the mc-distribution towards the real one.
+    | Reweighting a distribution is a "making them the same" by changing the
+      weights of the bins (instead of 1) for each event. Mostly, and therefore
+      the naming, you want to change the mc-distribution towards the real one.
     | There are two possibilities
 
     * normal bins reweighting:
@@ -939,19 +990,22 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
 
     Parameters
     ----------
-    reweight_data_mc : :class:`HEPDataStorage`
-        The Monte-Carlo data, which has to be "fitted" to the real data.
-    reweight_data_real : :class:`HEPDataStorage`
-        Same as *reweight_data_mc* but for the real data.
+    mc_data : |hepds_type|
+        The Monte-Carlo data to compare with the real data.
+    real_data : |hepds_type|
+        Same as *mc_data* but for the real data.
     columns : list of strings
         The columns/features/branches you want to use for the reweighting.
     reweighter : {'gb', 'bins'}
-        Specify which reweighter to be used
+        Specify which reweighter to be used.
+
+        - **gb**: The GradientBoosted Reweighter from REP,
+          :func:`~hep_ml.reweight.GBReweighter`
+        - **bins**: The simple bins reweighter from REP,
+          :func:`~hep_ml.reweight.BinsReweighter`
     reweight_saveas : string
         To save a trained reweighter in addition to return it. The value
-        is the file(path +)name. The full name will be
-         PICKLE_PATH + reweight_saveas + .pickle
-        (.pickle is only added if not yet contained in "reweight_saveas")
+        is the filepath + name.
     meta_cfg : dict
         Contains the parameters for the bins/gb-reweighter. See also
         :func:`~hep_ml.reweight.BinsReweighter` and
@@ -984,26 +1038,26 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
     # logging and writing output
     msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
     logger.info(msg)
-    # TODO: columns = reweight_data_mc.columns if columns is None else columns
-    out.add_output(msg + ["\nData used:\n", reweight_data_mc.name, " and ",
-                   reweight_data_real.name, "\ncolumns used for the reweighter training:\n",
+
+    out.add_output(msg + ["\nData used:\n", mc_data.name, " and ",
+                   real_data.name, "\ncolumns used for the reweighter training:\n",
                    columns], section="Training the reweighter", obj_separator=" ")
 
     if columns is None:
         # use the intesection of both colomns
-        common_cols = set(reweight_data_mc.columns)
-        common_cols.intersection_update(reweight_data_real.columns)
+        common_cols = set(mc_data.columns)
+        common_cols.intersection_update(real_data.columns)
         columns = list(common_cols)
-        if columns != reweight_data_mc.columns or columns != reweight_data_real.columns:
+        if columns != mc_data.columns or columns != real_data.columns:
             logger.warning("No columns specified for reweighting, took intersection" +
                            " of both dataset, as it's columns are not equal." +
                            "\nTherefore some columns were not used!")
             meta_config.warning_occured()
 
     # create data
-    mc_data, _t, mc_weights = _make_data(reweight_data_mc, features=columns,
+    mc_data, _t, mc_weights = _make_data(mc_data, features=columns,
                                          weights_original=weights_mc)
-    real_data, _t, real_weights = _make_data(reweight_data_real, features=columns,
+    real_data, _t, real_weights = _make_data(real_data, features=columns,
                                              weights_original=weights_real)
     del _t
 
@@ -1022,8 +1076,7 @@ def reweight_train(reweight_data_mc, reweight_data_real, columns=None,
 
 def reweight_weights(reweight_data, reweighter_trained, columns=None,
                      normalize=True, add_weights_to_data=True):
-    """Add (or only return) new weights to the data by applying a given
-    reweighter on the reweight_data.
+    """Apply reweighter to the data and (add +) return the weights.
 
     Can be seen as a wrapper for the
     :py:func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
@@ -1033,22 +1086,27 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
 
     Parameters
     ----------
-    reweight_data : :class:`HEPDataStorage`
+    reweight_data : |hepds_type|
         The data for which the reweights are to be predicted.
     reweighter_trained : (pickled) reweighter (*from hep_ml*)
         The trained reweighter, which predicts the new weights.
-    normalize : boolean
-        If True, the weights will be normalized to one.
+    columns : list(str, str, str,...)
+        The columns to use for the reweighting.
+    normalize : boolean or int
+        If True, the weights will be normalized (scaled) to the value of
+        normalize.
     add_weights_to_data : boolean
         If set to False, the weights will only be returned and not updated in
-        the data (*HEPDataStorage*).
+        the data (*HEPDataStorage*). If you want to use the data later on
+        in the script with the new weights, set this value to True.
 
     Returns
     ------
-    out : pandas.Series
+    out : :py:class:`~pd.Series`
         Return an instance of pandas Series of shape [n_samples] containing the
         new weights.
     """
+    normalize = 1 if normalize is True else normalize
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
@@ -1058,20 +1116,19 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
     out.add_output(["Using the reweighter:\n", reweighter_trained, "\n to reweight ",
                     reweight_data.name], obj_separator="")
 
-    if normalize:
-        new_weights *= new_weights.size/new_weights.sum()
+    if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
+        new_weights *= new_weights.size / new_weights.sum() * normalize
     new_weights = pd.Series(new_weights, index=reweight_data.index)
     if add_weights_to_data:
         reweight_data.set_weights(new_weights)
     return new_weights
 
 
-def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=10,
+def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
                    reweighter='gb', meta_cfg=None, n_reweights=1,
                    score_columns=None, score_clf='xgb',
                    add_weights_to_data=True, mcreweighted_as_real_score=False):
-    """Reweight data by "itself" for *scoring* and hyper-parameters via
-    Kfolding to avoid bias.
+    """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
 
     .. warning::
        Do NOT use for the real reweighting process! (except if you really want
@@ -1104,27 +1161,22 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
 
     Parameters
     ----------
-    reweight_data_mc : :class:`HEPDataStorage`
+    mc_data : |hepds_type|
         The Monte-Carlo data, which has to be "fitted" to the real data.
-    reweight_data_real : :class:`HEPDataStorage`
-        Same as *reweight_data_mc* but for the real data.
+    real_data : |hepds_type|
+        Same as *mc_data* but for the real data.
+    columns : list of strings
+        The columns/features/branches you want to use for the reweighting.
     n_folds : int >= 1
         The number of folds to split the data. Usually, the more folds the
-        "better" reweighting.
-
+        "better" the reweighting (especially for small datasets).
         If n_folds = 1, the data will be reweighted directly and the benefit
         of Kfolds and the unbiasing *disappears*
 
-
-    columns : list of strings
-        The columns/features/branches you want to use for the reweighting.
     reweighter : {'gb', 'bins'}
-        Specify which reweighter to be used
-    reweight_saveas : string
-        To save a trained reweighter in addition to return it. The value
-        is the file(path +)name. The full name will be
-         PICKLE_PATH + reweight_saveas + .pickle
-        (.pickle is only added if not yet contained in "reweight_saveas")
+        Specify which reweighter to use.
+        - **gb**: GradientBoosted Reweighter from REP
+        - **bins**: Binned Reweighter from REP
     meta_cfg : dict
         Contains the parameters for the bins/gb-reweighter. See also
         :func:`~hep_ml.reweight.BinsReweighter` and
@@ -1134,6 +1186,11 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
         parameters like the splitting of the data, the new weights can be
         produced by taking the average of the weights over many reweighting
         runs. n_reweights is the number of reweight runs to average over.
+    score_columns : list(str, str, str,...)
+        The columns to use for the scoring. It is often a good idea to use
+        different (and more) columns for the scoring then for the reweighting
+        itself. A good idea is to use the same columns as for the selection
+        later on.
     score_clf : clf or clf-dict or str
         The classifier to be used for the scoring.
         Has to be a valid argument to
@@ -1144,12 +1201,12 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     mcreweighted_as_real_score : boolean or str
         If a string, it has to be an implemented classifier in *classify*.
         If true, the default ('xgb' most probably) will be used.
-
+        |
         If not False, calculate and print the score. This scoring is based on a
         clf, which was trained on the not reweighted mc and real data and
         tested on the reweighted mc, and then predicts how many it "thinks"
         are real datapoints.
-
+        |
         Intuitively, a classifiers learns to distinguish between mc and real
         and then classifies mc reweighted data labeled as real; he says, how
         "real" the reweighted data looks like. So a higher score is better.
@@ -1157,15 +1214,18 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
         of the reweighter. To get a relation, the classifier also predicts
         the mc (which should be an under limit) as well as the real data
         (which should be an upper limit).
-
+        |
         Even dough this scoring sais not a lot about how well the reweighting
         worked, we can say, that if the score is higher than the real one,
         it has somehow over-fitted (if a classifier cannot classify, say,
         more than 70% of the real data as real, it should not be able to
         classify more than 70% of the reweighted mc as real. Reweighted mc
         should not "look more real" than real data)
-    out : numpy array
-        Return the new weights
+
+    Return
+    ------
+    out : :py:class:`~pd.Series`
+        Return the new weights.
 
     """
     output = {}
@@ -1174,26 +1234,26 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     # create variables
     assert n_folds >= 1 and isinstance(n_folds, int), \
         "n_folds has to be >= 1, its currently" + str(n_folds)
-    assert isinstance(reweight_data_mc, data_storage.HEPDataStorage), \
-        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_mc))
-    assert isinstance(reweight_data_real, data_storage.HEPDataStorage), \
-        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(reweight_data_real))
+    assert isinstance(mc_data, data_storage.HEPDataStorage), \
+        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(mc_data))
+    assert isinstance(real_data, data_storage.HEPDataStorage), \
+        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(real_data))
 
-    new_weights_tot = pd.Series(np.zeros(len(reweight_data_mc)), index=reweight_data_mc.index)
+    new_weights_tot = pd.Series(np.zeros(len(mc_data)), index=mc_data.index)
     if mcreweighted_as_real_score:
         scores = np.zeros(n_folds)
         score_min = np.zeros(n_folds)
         score_max = np.zeros(n_folds)
     if not add_weights_to_data:
-        old_mc_tot_weights = reweight_data_mc.get_weights()
+        old_mc_tot_weights = mc_data.get_weights()
 
     for run in range(n_reweights):
         new_weights_all = []
         new_weights_index = []
 
         # split data to folds and loop over them
-        reweight_data_mc.make_folds(n_folds=n_folds)
-        reweight_data_real.make_folds(n_folds=n_folds)
+        mc_data.make_folds(n_folds=n_folds)
+        real_data.make_folds(n_folds=n_folds)
         logger.info("Data created, starting folding of run " + str(run) +
                     " of total " + str(n_reweights))
 
@@ -1201,11 +1261,11 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
 
             # create train/test data
             if n_folds > 1:
-                train_real, test_real = reweight_data_real.get_fold(fold)
-                train_mc, test_mc = reweight_data_mc.get_fold(fold)
+                train_real, test_real = real_data.get_fold(fold)
+                train_mc, test_mc = mc_data.get_fold(fold)
             else:
-                train_real = test_real = reweight_data_real.get_fold(fold)
-                train_mc = test_mc = reweight_data_mc
+                train_real = test_real = real_data.get_fold(fold)
+                train_mc = test_mc = mc_data
 
             if mcreweighted_as_real_score:
                 old_mc_weights = test_mc.get_weights()
@@ -1219,8 +1279,8 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                               importance=plot_importance1)
 
             # train reweighter on training data
-            reweighter_trained = reweight_train(reweight_data_mc=train_mc,
-                                                reweight_data_real=train_real,
+            reweighter_trained = reweight_train(mc_data=train_mc,
+                                                real_data=train_real,
                                                 columns=columns, reweighter=reweighter,
                                                 meta_cfg=meta_cfg)
             logger.info("reweighting fold " + str(fold) + "finished of run" + str(run))
@@ -1244,25 +1304,25 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
                 clf, tmp_score = classify(train_mc, train_real, validation=test_mc,
                                           curve_name="mc reweighted as real",
                                           features=score_columns,
-                                          plot_title="fold " + str(fold) + " reweighted validation",
+                                          plot_title="fold {} reweighted validation".format(fold),
                                           weights_ratio=1, clf=score_clf,
                                           importance=1, plot_importance=1)
                 scores[fold] += tmp_score
 
     # Get the max and min for "calibration" of the possible score for the reweighted data by
     # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
-                test_mc.set_weights(old_mc_weights)  # TODO: check, was new implemented. Before was 1
+                test_mc.set_weights(old_mc_weights)
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
                                              features=score_columns,
                                              curve_name="mc as real",
-#                                             weights_ratio=1,
+                                             # weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_min[fold] += tmp_score_min
                 test_real.set_targets(1)
                 _t, tmp_score_max = classify(clf=clf, validation=test_real,
                                              features=score_columns,
                                              curve_name="real as real",
-#                                             weights_ratio=1,
+                                             # weights_ratio=1,
                                              importance=1, plot_importance=1)
                 score_max[fold] += tmp_score_max
                 del _t
@@ -1273,7 +1333,6 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
 
             logger.info("fold " + str(fold) + "finished")
             # end of for-loop
-
 
         # concatenate weights and index
         if n_folds == 1:
@@ -1294,9 +1353,9 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     new_weights_tot /= n_reweights
 
     if add_weights_to_data:
-        reweight_data_mc.set_weights(new_weights_tot)
+        mc_data.set_weights(new_weights_tot)
     else:
-        reweight_data_mc.set_weights(old_mc_tot_weights)
+        mc_data.set_weights(old_mc_tot_weights)
 
     out.save_fig(figure="New weights of total mc", importance=4)
     plt.hist(new_weights_tot, bins=30, log=True)
@@ -1322,6 +1381,66 @@ def reweight_Kfold(reweight_data_mc, reweight_data_real, columns=None, n_folds=1
     output['weights'] = new_weights_tot
     return output
 
+
+def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
+                    plot_importance=3):
+    """Find the best threshold cut for a given metric.
+
+    Test the metric for every possible threshold cut and returns the highest
+    value. Plots the metric versus cuts as well.
+
+    Parameters
+    ----------
+    mc_data : |hepds_type|
+        The MC data
+    real_data : |hepds_type|
+        The real data
+    prediction_branch : str
+        The branch name containing the predictions to test.
+    metric : str |implemented_primitive_metrics| or simple metric
+        Can be a valid string pointing to a metric or a simple metric taking
+        only tpr and fpr: metric(tpr, fpr, weights=None)
+    plot_importance : |plot_importance_type|
+        |plot_importance_docstring|
+
+    Return
+    ------
+    out : dict
+        Return a dict containing the best threshold cut as well as the metric
+        value. The keywords are:
+
+            - **best_threshold_cut**: the best cut on the predictions
+            - **best_metric**: the value of the metric when applying the best
+              cut.
+    """
+    from rep.report.metrics import OptimalMetric
+
+    from raredecay.tools.metrics import punzi_fom, precision_measure
+
+    metric_name = metric
+    if metric == 'punzi':
+        metric = punzi_fom
+    elif metric == 'precision':
+        metric = precision_measure
+
+    data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
+    data = data.T.as_matrix()[0, :]
+    data = np.transpose(np.array((1 - data, data)))
+    metric_optimal = OptimalMetric(metric)
+
+    best_cut, best_metric = metric_optimal.compute(y_true=target,
+                                                   proba=data,
+                                                   sample_weight=weights)
+    out.figure(str(metric_name) + " vs cut", importance=plot_importance)
+    title = "{0} vs cut of {1} and {2}".format(str(metric_name), real_data.name, mc_data.name)
+    metric_optimal.plot_vs_cut(y_true=target, proba=data, sample_weight=weights).plot(title=title)
+
+    best_metric = np.nan_to_num(best_metric)
+    best_index = np.argmax(best_metric)
+    output = {'best_threshold_cut': best_cut[best_index],
+              'best_metric': best_metric[best_index]}
+
+    return output
 
 if __name__ == "main":
     print 'test'

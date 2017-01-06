@@ -31,12 +31,12 @@ def syspath_append(verboise=False):
     # sys.path = sys.path[:len(sys.path)-n_to_remove]
     # used to remove unnecessary bindings
     for path in config.pathes_to_add:
-        """get the sys.path and add pathes if they are not already contained"""
+        # get the sys.path and add pathes if they are not already contained
         if path not in sys.path:
             try:
                 sys.path.append(path)
             except:
-                print "error when adding path \""+path+"\" to sys.path"
+                print "error when adding path \"" + path + "\" to sys.path"
     if verboise:
         print sys.path
 
@@ -80,7 +80,6 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     >>> my_logger = make_logger(__name__)
     >>> my_logger.info("hello world")
     """
-
     import logging
     from time import strftime
 
@@ -126,6 +125,15 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
 
 
 def progress(n, n_tot):
+    """A simple progress-bar.
+
+    Parameters
+    ----------
+    n : int or float
+        Shows how far it is already
+    n_tot : int or float
+        The maximum. The bar is the percentage of n / n_tot
+    """
     import sys
 
     i = float(n)/n_tot
@@ -139,7 +147,7 @@ def progress(n, n_tot):
 
 def add_file_handler(logger, module_name, log_file_dir, log_level='info',
                      overwrite_file=False):
-    """Add a filehandler to a logger to also direct the output to a file"""
+    """Add a filehandler to a logger to also direct the output to a file."""
     from time import strftime
     import logging
 
@@ -161,8 +169,7 @@ def add_file_handler(logger, module_name, log_file_dir, log_level='info',
 
 
 def check_var(variable, allowed_range, default=None, logger=None):
-    """Check if a given variable (string, number etc.) is "allowed"
-    """
+    """Check if a given variable (string, number etc.) is "allowed."""
 
     # Dictionary
     if variable not in allowed_range:
@@ -175,8 +182,8 @@ def check_var(variable, allowed_range, default=None, logger=None):
 
 
 def fill_list_var(to_check, length=0, var=1):
-    """Returns a list filled with the specified variable and the desired length
-    """
+    """Return a list filled with the specified variable and the desired length."""
+
     difference = length - len(to_check)
     if difference > 0:
         if isinstance(to_check, list):
@@ -185,8 +192,7 @@ def fill_list_var(to_check, length=0, var=1):
 
 
 def make_list_fill_var(to_check, length=0, var=None):
-    """Returns a list with the objects or a list filled with None.
-    """
+    """Returns a list with the objects or a list filled with None."""
     if not isinstance(to_check, list):
         to_check = [to_check]
     difference = length - len(to_check)
@@ -217,10 +223,11 @@ def is_in_primitive(test_object, allowed_primitives=None):
         Has to be testable as 'is obj'. If test_object is any of the
         allowed_primitives, True will be returned.
 
+    Return
+    ------
     out : boolean
         Returns True if test_object is any of the allowed_primitives,
         otherwise False.
-    ---
     """
     flag = False
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
@@ -234,9 +241,8 @@ def is_in_primitive(test_object, allowed_primitives=None):
     return flag
 
 
-def play_sound(duration=0.3, frequency=440, change=False):
-    """ Play a single frequency (Hertz) for a given time (seconds).
-    """
+def play_sound(duration=0.3, frequency=440):
+    """ Play a single frequency (Hertz) for a given time (seconds)."""
     freq = frequency
     import os
     os.system('play --no-show-progress --null --channels 1 synth %s sine %f' % (duration, freq))

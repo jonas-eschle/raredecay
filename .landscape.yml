@@ -6,8 +6,17 @@ pylint:
     - too-many-locals
     - too-many-branches
 
+ignore-paths:
+  - raredecay/tools/estimator.py
+  - docs/conf.py
 python-targets:
  - 2
+ 
+pep8:
+  full: true
+  
+doc-warnings: true
+max-line-length: 110
 
 
 
