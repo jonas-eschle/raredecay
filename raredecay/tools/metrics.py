@@ -10,13 +10,13 @@ import math as mt
 import numpy as np
 
 from raredecay.tools import data_storage, dev_tool
-import raredecay.analysis.ml_analysis as ml_ana
-from raredecay.globals_ import out
 
 
 def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                 clf='xgb', splits=2, n_folds=10):
     """An experimental score using a "loss" function for data-similarity"""
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.globals_ import out
 
     # initialize variables
     output = {}
@@ -163,6 +163,8 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         A dictionary conaining the different scores. Description see above.
 
     """
+    import raredecay.analysis.ml_analysis as ml_ana
+    from raredecay.globals_ import out
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
     assert isinstance(mc_data, data_storage.HEPDataStorage), \
@@ -382,7 +384,7 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
         Number of background observed as signal (= fpr; false positiv rate)
     n_sigma : int or float
 
-    """ # pylint:disable=anomalous-backslash-in-string
+    """  # pylint:disable=anomalous-backslash-in-string
 #     not necessary below??
     length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
     if length > 1:
