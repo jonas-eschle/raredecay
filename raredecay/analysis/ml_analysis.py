@@ -362,6 +362,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     -------
     out : dict
         Return a dictionary containing the evaluation:
+
         - **'roc_auc'** : an ordered-dict with the feature that was removed and
           the roc auc evaluated without that feature.
         - **'scores'** : All the roc auc with every feature removed once.

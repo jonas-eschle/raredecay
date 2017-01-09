@@ -620,7 +620,7 @@ class HEPDataStorage(object):
         out_targets = self._get_targets(index=index)
 
         # create targets if targets are "simpel" for output
-        if isinstance(out_targets, (int, float, None)):
+        if isinstance(out_targets, (int, float)) or out_targets is None:
             if self._target is None:
                 self.logger.warning("Target list consists of None!")
             out_targets = dev_tool.make_list_fill_var([], length, self._target)

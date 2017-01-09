@@ -788,6 +788,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # real score.
 #    if not apply_weights:
     old_weights = mc_data.get_weights()
+    # make sure the targets are set the right way TODO
     Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
                                          meta_cfg=reweight_cfg, columns=columns,
                                          reweighter=reweighter, n_reweights=n_reweights,
