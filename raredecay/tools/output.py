@@ -241,8 +241,8 @@ class OutputHandler(object):
 
         Parameters
         ----------
-        figure : instance of :class:`matplotlib.figure.Figure` (e.g. returned
-            by :func:`matplotlib.figure`)
+        figure : instance of :py:class:`matplotlib.figure.Figure` (e.g. returned \
+                                                                   by :func:`matplotlib.figure`)
             The figure to be saved.
         importance : {0, 1, 2, 3, 4, 5}
             Specify the importance level, ranging from 1 to 5, of the plot.
