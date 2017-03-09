@@ -1045,18 +1045,19 @@ class HEPDataStorage(object):
                 assert safety < meta_config.MAX_FIGURES, "stuck in an endless while loop"
                 if figure not in self.__figure_dic.keys():
                     x_limits_col = {}
-                    self.__figure_dic.update({figure: x_limits_col, 'title': ""})
+                    # TODO: improve figure dict with title....
+                    self.__figure_dic.update({figure: x_limits_col, figure + '_title': ""})
                     break
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
-            self.__figure_dic.update({figure: x_limits_col, 'title': ""})
+            self.__figure_dic.update({figure: x_limits_col, figure + '_title': ""})
         out_figure = out.save_fig(figure, importance=importance, **cfg.save_fig_cfg)
 
         # create a label
         label_name = data_tools.obj_to_string([self._name[0], self._name[1],
                                                data_name], separator=" - ")
-        self.__figure_dic['title'] += "" if title is None else title
-        plt.suptitle(self.__figure_dic.get('title'), fontsize=self.supertitle_fontsize)
+        self.__figure_dic[figure + '_title'] += "" if title is None else title
+        plt.suptitle(self.__figure_dic.get(figure + '_title'), fontsize=self.supertitle_fontsize)
 
 # ==============================================================================
 #       Start plotting

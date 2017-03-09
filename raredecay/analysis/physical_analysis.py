@@ -649,6 +649,9 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
             new_weights += tmp_weights
 
     new_weights /= n_reweights
+    # TODO: remove below?
+    new_weights.sort_index()
+
     if apply_weights:
         apply_data.set_weights(new_weights)
     output['weights'] = new_weights
