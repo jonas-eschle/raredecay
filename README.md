@@ -20,7 +20,7 @@ It contains:
 ## HowTo examples ##
 
 To get an idea of the package, have a look at the howto notebooks:
-[HTML version](http://mayou36.bitbucket.org/raredecay/howto/) or the
+[HTML version](https://mayou36.bitbucket.io/raredecay/howto/) or the
 [IPython Notebooks](https://github.com/mayou36/raredecay/tree/master/howto)
 
 ## Minimal example ##
@@ -46,7 +46,7 @@ All you need to do is to have a look at every "TODO" task and probably change th
 ## Documentation and API ##
 
 The API as well as the documentation:
-[Documentation](http://mayou36.bitbucket.org/raredecay/docs/)
+[Documentation](https://mayou36.bitbucket.io/raredecay/docs/)
 
 ## Setup and installation ##
 
