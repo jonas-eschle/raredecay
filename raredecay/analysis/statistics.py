@@ -22,12 +22,49 @@ from raredecay.globals_ import out
 # from raredecay import meta_config
 
 
-def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
-             second_storage=None, nll_profile=False, plot_verbosity=3):
-    """Fit a pdf to a distribution"""
+def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None,
+             blind=False, nll_profile=False, second_storage=None,
+             importance=3, plot_importance=3):
+    """Fit a given pdf to a variable distribution
+
+
+    Parameter
+    ---------
+    data : |hepds_type|
+        The data containing the variable to fit to
+    column : str
+        The name of the column to fit the pdf to
+    sig_pdf : RooFit pdf
+        The signal Probability Density Function. The variable to fit to has
+        to be named 'x'.
+    bkg_pdf : RooFit pdf
+        The background Probability Density Function. The variable to fit to has
+        to be named 'x'.
+    n_sig : None or numeric
+        The number of signals in the data. If it should be fitted, use None.
+    n_bkg : None or numeric
+        The number of background events in the data.
+        If it should be fitted, use None.
+    blind : boolean or tuple(numberic, numberic)
+        If False, the data is fitted. If a tuple is provided, the values are
+        used as the lower (the first value) and the upper (the second value)
+        limit of a blinding region, which will be omitted in plots.
+        Additionally, no true number of signal will be returned but only fake.
+    nll_profile : boolean
+        If True, a Negative Log-Likelihood Profile will be generated. Does not
+        work with blind fits.
+    second_storage : |hepds_type|
+        A second data-storage that will be concatenated with the first one.
+    importance : |importance_type|
+        |importance_docstring|
+    plot_importance : |plot_importance_type|
+        |plot_importance_docstring|
+    """
 
     if not (isinstance(column, str) or len(column) == 1):
         raise ValueError("Fitting to several columns " + str(column) + " not supported.")
+    if type(sig_pdf) == type(bkg_pdf) == None:
+        raise ValueError("sig_pdf and bkg_pdf are both None-> no fit possible")
     if blind is not False:
         lower_blind, upper_blind = blind
         blind = True
@@ -39,7 +76,7 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
     # double crystalball variables
     min_x, max_x = min(data_array[column]), max(data_array[column])
 
-    x = RooRealVar("x", "x variable", min_x, max_x)
+#    x = RooRealVar("x", "x variable", min_x, max_x)
 
     # create data
     data_array = np.array([i[0] for i in data_array.as_matrix()])
@@ -47,23 +84,23 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
     tree1 = array2tree(data_array, "x")
     data = RooDataSet("data", "Data", RooArgSet(x), RooFit.Import(tree1))
 
-    # TODO: export somewhere? does not need to be defined inside...
-    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5100, 5600)#, 5300, 5500)
-    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0.001, 200)
-    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 5.715)#, 0, 150)
-    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -4.019)#, -200, 0.)
-    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 3.42)#, 0, 150)
-    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 3.7914)#, 0, 500)
-
-    # TODO: export somewhere? pdf construction
-    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479)
-
-    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
-                              mean, sigma, alpha_0, lambda_0)
-    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
-                              mean, sigma, alpha_1, lambda_1)
-    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
-                         crystalball1, crystalball2, frac)
+#    # TODO: export somewhere? does not need to be defined inside...
+#    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5100, 5600)#, 5300, 5500)
+#    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0.001, 200)
+#    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 5.715)#, 0, 150)
+#    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -4.019)#, -200, 0.)
+#    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 3.42)#, 0, 150)
+#    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 3.7914)#, 0, 500)
+#
+#    # TODO: export somewhere? pdf construction
+#    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
+#
+#    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
+#                              mean, sigma, alpha_0, lambda_0)
+#    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
+#                              mean, sigma, alpha_1, lambda_1)
+#    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
+#                         crystalball1, crystalball2, frac)
 
 #    n_sig = RooRealVar("n_sig", "Number of signals events", 10000, 0, 1000000)
 
@@ -109,16 +146,16 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
 #    if not blind:
 #        blind_n_sig = n_sig
 
-    # create bkg-pdf
-    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.1, -1000., 1000.)
-    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
+#    # create bkg-pdf
+#    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.00025, -1., 1.)
+#    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
 
     if blind:
         comb_pdf = RooAddPdf("comb_pdf", "Combined DoubleCB and bkg PDF",
-                             RooArgList(doubleCB, bkg_pdf), RooArgList(blind_n_sig, n_bkg))
+                             RooArgList(sig_pdf, bkg_pdf), RooArgList(blind_n_sig, n_bkg))
     else:
         comb_pdf = RooAddPdf("comb_pdf", "Combined DoubleCB and bkg PDF",
-                             RooArgList(doubleCB, bkg_pdf), RooArgList(n_sig, n_bkg))
+                             RooArgList(sig_pdf, bkg_pdf), RooArgList(n_sig, n_bkg))
 
     # create test dataset
 #    mean_gauss = RooRealVar("mean_gauss", "Mean of Gaussian", 5553, -10000, 10000)
@@ -141,8 +178,8 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
     result_fit = comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(12))
     # HACK end
 
-    if plot_verbosity >= 3:
-        c2 = TCanvas("c2", "first canvas")
+    if plot_importance >= 3:
+        c2 = TCanvas("c2", "RooFit pdf fit vs data")
         c2.cd()
         x_frame = x.frame()
     if blind:
@@ -155,18 +192,18 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
 
         n_entries = data.reduce(sideband_cut_str).numEntries() / data.numEntries()
 #        raw_input("n_entries: " + str(n_entries))
-        if plot_verbosity >= 3:
+        if plot_importance >= 3:
             data.plotOn(x_frame, RooFit.CutRange(range_str), RooFit.NormRange(range_str))
             comb_pdf.plotOn(x_frame, RooFit.Range(range_str),
                             RooFit.Normalization(n_entries, RooAbsReal.Relative),
                             RooFit.NormRange(range_str))
     else:
-        if plot_verbosity >= 3:
+        if plot_importance >= 3:
             data.plotOn(x_frame)
             comb_pdf.plotOn(x_frame)
 
 
-    if plot_verbosity >= 3:
+    if plot_importance >= 3:
         x_frame.Draw()
 
     print "n_sig value and type: ", n_sig.getVal(), type(n_sig)
@@ -189,7 +226,7 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
         sframe.Draw()
 
     if blind:
-        return -9999
+        return blind_n_sig.getVal()
     else:
         return n_sig.getVal()
 
@@ -214,27 +251,61 @@ def fit_mass(data, column='B_M', n_bkg=None, n_sig=None, blind=False,
 
 
 if __name__ == '__main__':
-    data = "empty"
+
 #    data = RooDataSet("data", )
     from raredecay.tools.data_storage import HEPDataStorage
     import pandas as pd
     import matplotlib.pyplot as plt
 #    np.random.seed(40)
 
+# create signal pdf BEGIN
+    x = RooRealVar("x", "x variable", 5000, 6000)
+
+    # TODO: export somewhere? does not need to be defined inside...
+    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5100, 5600)#, 5300, 5500)
+    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0.001, 200)
+    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 5.715)#, 0, 150)
+    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -4.019)#, -200, 0.)
+    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 3.42)#, 0, 150)
+    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 3.7914)#, 0, 500)
+
+    # TODO: export somewhere? pdf construction
+    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
+
+    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
+                              mean, sigma, alpha_0, lambda_0)
+    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
+                              mean, sigma, alpha_1, lambda_1)
+    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
+                         crystalball1, crystalball2, frac)
+# create signal pdf END
+
+    # create bkg-pdf BEGIN
+    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.00025, -1., 1.)
+    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
+    # create bkg-pdf END
+
+
     n_sig_fit = []
-    n_sig_gen = range(0, 500, 5)
+    n_sig_gen = range(490, 500, 25)
     for n_sig in n_sig_gen:
 #        n_sig = 1000
-        data = pd.DataFrame(np.random.normal(loc=5280, scale=40, size=(n_sig, 2)), columns=['x', 'y'])
-        bkg_data = np.array([i for i in (np.random.exponential(scale=4800,
-                                         size=(30000, 2)) + 5000) if i[0] < 6000])
-        data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y'])], ignore_index=True)
-        data = HEPDataStorage(data)
-        n_sig_averaged = np.mean([fit_mass(data=data, column='x', blind=False, plot_verbosity=1) for i in range(10)])
-        n_sig_fit.append(n_sig_averaged)#[5300, 5500]))
+        print "starting with ", n_sig, "number of signals"
+        n_sig_averaged = []
+        for i in range(1):
+            data = pd.DataFrame(np.random.normal(loc=5280, scale=40, size=(n_sig, 2)), columns=['x', 'y'])
+            bkg_data = np.array([i for i in (np.random.exponential(scale=4800,
+                                             size=(30000, 2)) + 5000) if i[0] < 6000])
+            data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y'])], ignore_index=True)
+            data = HEPDataStorage(data)
+            n_sig_averaged.append(fit_mass(data=data, column='x', sig_pdf=doubleCB,
+                                           bkg_pdf=bkg_pdf, blind=False,
+                                           plot_importance=4))
+        n_sig_fit.append(np.mean(n_sig_averaged))#[5300, 5500]))
         print n_sig_fit
-#        raw_input("")
+        raw_input("hiii")
     plt.plot(np.array(n_sig_gen), np.array(n_sig_fit), linestyle='--', marker='o')
+    plt.plot(n_sig_gen, n_sig_gen, linestyle='-')
     plt.show()
 
     print "finished"
