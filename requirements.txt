@@ -3,6 +3,6 @@ rep >= 0.6.6
 scikit-learn >= 0.18
 nose-parameterized==0.6.0
 seaborn==0.7.1
-pytest
+pytest==3.0.7
 pandas
 
