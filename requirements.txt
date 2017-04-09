@@ -1,8 +1,8 @@
-hep_ml
+hep-ml==0.4.0
 rep >= 0.6.6
 scikit-learn >= 0.18
-nose_parameterized
-seaborn
-pytest
-pandas
+nose-parameterized==0.6.0
+seaborn==0.7.1
+pytest==3.0.7
+pandas==0.19.2
 
