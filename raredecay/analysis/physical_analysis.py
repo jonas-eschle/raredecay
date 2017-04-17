@@ -323,8 +323,9 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         target_data = target_data.copy_storage(columns=features)
 
     figure = "Plotting" + str(original_data.name) + " and " + str(target_data.name)
-    original_data.plot(figure=figure, title=figure)
-    target_data.plot(figure=figure)
+    if extended_report:
+        original_data.plot(figure=figure, title=figure)
+        target_data.plot(figure=figure)
 
     if roc_auc_all:
         ml_ana.classify(original_data, target_data, validation=n_folds,

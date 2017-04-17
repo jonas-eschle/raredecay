@@ -542,7 +542,7 @@ class HEPDataStorage(object):
             for key, val in temp_root_dict.items():
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
-            data = data_tools.to_pandas(temp_root_dict)
+            data = data_tools.to_pandas(temp_root_dict, columns=columns)
 
         elif self._data_type == 'array':
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
@@ -1046,18 +1046,18 @@ class HEPDataStorage(object):
                 if figure not in self.__figure_dic.keys():
                     x_limits_col = {}
                     # TODO: improve figure dict with title....
-                    self.__figure_dic.update({figure: x_limits_col, figure + '_title': ""})
+                    self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
                     break
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
-            self.__figure_dic.update({figure: x_limits_col, figure + '_title': ""})
+            self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
         out_figure = out.save_fig(figure, importance=importance, **cfg.save_fig_cfg)
 
         # create a label
         label_name = data_tools.obj_to_string([self._name[0], self._name[1],
                                                data_name], separator=" - ")
-        self.__figure_dic[figure + '_title'] += "" if title is None else title
-        plt.suptitle(self.__figure_dic.get(figure + '_title'), fontsize=self.supertitle_fontsize)
+        self.__figure_dic[str(figure) + '_title'] += "" if title is None else title
+        plt.suptitle(self.__figure_dic.get(str(figure) + '_title'), fontsize=self.supertitle_fontsize)
 
 # ==============================================================================
 #       Start plotting
@@ -1075,6 +1075,7 @@ class HEPDataStorage(object):
             if 'range' in hist_settings:
                 x_limits = hist_settings.pop('range')
             self.__figure_dic[figure].update({column: x_limits})
+
             plt.subplot(subplot_row, subplot_col, col_id)
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
                      range=x_limits, label=label_name, **hist_settings)
@@ -1097,7 +1098,6 @@ class HEPDataStorage(object):
         pd.tools.plotting.parallel_coordinates(data, 'targets')
 
         return out_figure
-
 
     def plot2Dhist(self, x_columns, y_columns=None):
         """Plot a 2D hist of x_columns vs itself or y_columns.

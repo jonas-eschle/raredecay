@@ -936,7 +936,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             out.save_fig("Learning curve " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " +
-                                                                        plot_name)
+                                                                  plot_name)
         else:
             pass
             # TODO: implement learning curve with tpr metric
@@ -956,7 +956,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                 out.save_fig(figure="Feature correlation matrix of " + plot_name,
                              importance=plot_importance)
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +
-                                                                plot_name)
+                                                          plot_name)
             label_dict = None if binary_test else {test_classes[0]: "validation data"}
             out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
             report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
@@ -1041,8 +1041,8 @@ def reweight_train(mc_data, real_data, columns=None,
     logger.info(msg)
 
     out.add_output(msg + ["\nData used:\n", mc_data.name, " and ",
-                   real_data.name, "\ncolumns used for the reweighter training:\n",
-                   columns], section="Training the reweighter", obj_separator=" ")
+                          real_data.name, "\ncolumns used for the reweighter training:\n",
+                          columns], section="Training the reweighter", obj_separator=" ")
 
     if columns is None:
         # use the intesection of both colomns
