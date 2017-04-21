@@ -8,6 +8,9 @@
 
 # raredecay #
 
+
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/7c4106a347364b5fbff1efe69c7f8ca0)](https://www.codacy.com/app/mayou36/raredecay?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=mayou36/raredecay&amp;utm_campaign=badger)
+
 This package consists of several tools for the event selection of particle decays, mostly built on machine learning techniques.
 It contains:
 
