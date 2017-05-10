@@ -1425,8 +1425,8 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
         metric = precision_measure
 
     data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
-    data = data.T.as_matrix()[0, :]
-    data = np.transpose(np.array((1 - data, data)))
+    predictions = data.T.as_matrix()[0, :]
+    predictions = np.transpose(np.array((1 - predictions, predictions)))
     metric_optimal = OptimalMetric(metric)
 
     best_cut, best_metric = metric_optimal.compute(y_true=target,
