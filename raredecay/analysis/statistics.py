@@ -192,10 +192,16 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 #    data.plotOn(x_frame1)
 #    comb_pdf.pdfList()[1].plotOn(x_frame1)
 
-
+    if __name__ == "__main__":
+        n_cpu = 8
+    else:
+        n_cpu = meta_config.get_n_cpu()
+        print "n_cpu = ", n_cpu
+        # HACK
+        n_cpu = 8
     result_fit = comb_pdf.fitTo(data, RooFit.Minos(ROOT.kTRUE),
                                 RooFit.Extended(ROOT.kTRUE),
-                                RooFit.NumCPU(8))
+                                RooFit.NumCPU(n_cpu))
     # HACK end
     if bkg_in_region:
         x.setRange("signal", bkg_in_region[0], bkg_in_region[1])
@@ -380,11 +386,11 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
         import time
         print "scores:", scores
         print "debug1:", debug1
-        time.sleep(8)
+#        time.sleep(8)
 
     print debug1
 
-    return scores
+    return cuts, scores
 
 
 
@@ -449,8 +455,10 @@ if __name__ == '__main__':
     elif mode == 'fit_metric':
         result = metric_vs_cut_fitted(data=data, predict_col='pred', fit_col='x',
                                       sig_pdf=doubleCB, bkg_pdf=bkg_pdf, x=x,
-                                      region=(5100, 5380), stepsize=0.2)
+                                      region=(5100, 5380), stepsize=0.01)
         print result
+
+        plt.plot(*result)
 #    n_sig_fit.append(np.mean(n_sig_averaged))#[5300, 5500]))
 #    print n_sig_fit
 #    raw_input("hiii")

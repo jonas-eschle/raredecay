@@ -269,7 +269,7 @@ def to_list(data_in):
     out : list
         Return a list containing the object or the object converted to a list.
     """
-    if isinstance(data_in, str):
+    if isinstance(data_in, (str, int, float)):
         data_in = [data_in]
     data_in = list(data_in)
     return data_in
