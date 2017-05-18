@@ -1,4 +1,4 @@
-hep_ml
+hep-ml==0.4.0
 rep >= 0.6.6
 scikit-learn >= 0.18
 nose_parameterized
