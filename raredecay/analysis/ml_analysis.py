@@ -958,9 +958,9 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +
                                                           plot_name)
             label_dict = None if binary_test else {test_classes[0]: "validation data"}
-            out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
+            out.save_fig(figure="Predictions of " + plot_name, importance=plot_importance)
             report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
-                title="Predictiond pdf of " + plot_name)
+                title="Predictions of " + plot_name)
 
     if clf_score is None:
         return clf

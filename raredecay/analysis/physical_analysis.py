@@ -779,6 +779,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         - *train_similar* : The scores of this method in a dict
         - *roc_auc_score* : The scores of this method in a dict
     """
+    import numpy as np
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
@@ -846,14 +847,16 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
                                               get_predictions=True)
         del tmp_
         # HACK
-        predictions = output['y_proba'][:, 1]
-        weights_pred = output['weights']
+        predictions = output['y_proba'][:, 1][output['y_true'] == 0]
+        weights_pred = np.log(output['weights'][output['y_true'] == 0])
+        weights_pred = output['weights'][output['y_true'] == 0]
         out.figure("Correlation of weights and predictions")
         plt.scatter(predictions, weights_pred)
         plt.xlabel("predictions")
         plt.ylabel("weights")
         out.figure("Correlation of weights and predictions hexbin")
-        sns.jointplot(x=predictions, y=weights_pred, kind="hex")
+        plt.hexbin(x=predictions, y=weights_pred, gridsize=150)
+#        sns.jointplot(x=predictions, y=weights_pred, kind="hex")
 
 
 

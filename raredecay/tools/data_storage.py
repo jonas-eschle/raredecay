@@ -960,9 +960,9 @@ class HEPDataStorage(object):
 
         return correlation
 
-    def plot(self, figure=None, columns=None, index=None, title=None, data_name=None,
-             bins=None, log_y_axes=False, plot_range=None, sample_weights=None,
-             importance=3, see_all=False, hist_settings=None):
+    def plot(self, figure=None, columns=None, index=None, title=None, sub_title=None,
+             data_name=None, bins=None, log_y_axes=False, plot_range=None, x_label=None,
+             sample_weights=None, importance=3, see_all=False, hist_settings=None):
         """Draw histograms of the data.
 
         .. warning:: Only 99.98% of the newest plotted data will be shown to focus
@@ -1064,6 +1064,10 @@ class HEPDataStorage(object):
 # ==============================================================================
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
+            # create sub title
+            sub_title = column if sub_title is None else sub_title
+            x_label = "" if x_label is None else x_label
+
             # only plot in range x_limits, otherwise the plot is too big
             x_limits = self.__figure_dic.get(figure).get(column)
             lower, upper = np.percentile(np.hstack(data_plot[column]),
@@ -1079,7 +1083,9 @@ class HEPDataStorage(object):
             plt.subplot(subplot_row, subplot_col, col_id)
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
                      range=x_limits, label=label_name, **hist_settings)
-            plt.title(column)
+            plt.title(sub_title)
+            plt.xlabel(x_label, ha='right', position=(1, 0))
+
         plt.legend()
         return out_figure
 

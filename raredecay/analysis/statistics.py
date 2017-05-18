@@ -255,10 +255,21 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             comb_pdf.plotOn(x_frame,
                             RooFit.Components(bkg_pdf.namePtr().GetName()),
                             RooFit.LineStyle(ROOT.kDotted))
+#            comb_pdf.plotPull(n_sig)
+
 
 
     if plot_importance >= 3:
         x_frame.Draw()
+
+        c11 = TCanvas("c11", "RooFit pulls" + data_name)
+        c11.cd()
+        frame_tmp = x.frame()
+        frame_tmp.SetTitle("Roofit pulls" + data_name)
+        frame_tmp.addObject(x_frame.pullHist())
+        frame_tmp.SetMinimum(-5)
+        frame_tmp.SetMaximum(5)
+        frame_tmp.Draw()
 
 
 #    raw_input("")
@@ -403,7 +414,7 @@ if __name__ == '__main__':
 #    np.random.seed(40)
 
     mode = "fit"
-    mode = 'fit_metric'
+#    mode = 'fit_metric'
 
 # create signal pdf BEGIN
     x = RooRealVar("x", "x variable", 5000, 6000)
@@ -448,7 +459,8 @@ if __name__ == '__main__':
     if mode == 'fit':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
                                        bkg_pdf=bkg_pdf, blind=False,
-                                       plot_importance=4, bkg_in_region=(5100, 5380))
+                                       plot_importance=4, #bkg_in_region=(5100, 5380)
+                                       )
         print fit_result
         print "True values: nsig =", n_sig, " n_bkg =", len(bkg_data)
 
