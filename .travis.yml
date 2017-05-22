@@ -20,6 +20,8 @@ before_install:
 
 - conda info -a
 
+- conda config --add channels https://conda.anaconda.org/NLeSC
+
 #- conda create -q --name=raredecay-env python=$TRAVIS_PYTHON_VERSION root=6
 - conda create -q --name=raredecay-env python=2 root=6
 - source activate raredecay-env
