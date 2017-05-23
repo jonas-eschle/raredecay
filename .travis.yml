@@ -27,6 +27,7 @@ before_install:
 - source activate raredecay-env
 
 install:
+- conda install matplotlib -y
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip || pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip  # sometimes failes for the first time
 - pip install -U -r requirements.txt
 #- pip install rootpy root_numpy
