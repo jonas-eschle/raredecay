@@ -17,6 +17,7 @@ before_install:
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
+- conda update anaconda -y
 
 - conda info -a
 
@@ -28,6 +29,8 @@ before_install:
 
 install:
 - conda install matplotlib -y
+- pip install rep
+- pip install -U -r requirements.txt
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip || pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip  # sometimes failes for the first time
 - pip install -U -r requirements.txt
 #- pip install rootpy root_numpy
