@@ -47,6 +47,23 @@ class HEPDataStorage(object):
 
     __figure_number = 0
     __figure_dic = {}
+    latex_replacements = {
+#        "CHI2": r"\chi^2",
+        r"_PT": r" p_T",
+        r"JPsi": r"J/\psi",
+        r"K1": r"K_1 ",
+        r"_1270": "",
+        r"_ENDVERTEX_CHI2": r"\ \chi^2_{VTX}",
+        r"_IPCHI2": r"\ \chi^2_{IP}",
+        r"_FDCHI2": r"\ \chi^2_{FD}",
+        r"_TRACK_CHI2": r"\ \chi^2_{track}",
+        r"_OWNPV": r"\ ownPV",
+        r"_CosTheta": r"\ cos(\theta)",
+        r"NDOF": r"/N_{degree of freedom}",
+        r"AMAXDOCA": r"\ AMAXDOCA",
+
+#        "_": "\ "
+        }
 
     def __init__(self, data, index=None, target=None, sample_weights=None,
                  data_name=None, data_name_addition=None, column_alias=None):
@@ -962,6 +979,7 @@ class HEPDataStorage(object):
 
     def plot(self, figure=None, columns=None, index=None, title=None, sub_title=None,
              data_name=None, bins=None, log_y_axes=False, plot_range=None, x_label=None,
+             y_label="probability density",
              sample_weights=None, importance=3, see_all=False, hist_settings=None):
         """Draw histograms of the data.
 
@@ -1065,7 +1083,7 @@ class HEPDataStorage(object):
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
             # create sub title
-            sub_title = column if sub_title is None else sub_title
+            sub_title_tmp = column if sub_title is None else sub_title
             x_label = "" if x_label is None else x_label
 
             # only plot in range x_limits, otherwise the plot is too big
@@ -1083,8 +1101,13 @@ class HEPDataStorage(object):
             plt.subplot(subplot_row, subplot_col, col_id)
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
                      range=x_limits, label=label_name, **hist_settings)
-            plt.title(sub_title)
-            plt.xlabel(x_label, ha='right', position=(1, 0))
+
+            # set labels, titles...
+            plt.title(sub_title_tmp)
+            ha = 'right'
+            plt.xlabel(x_label, ha=ha, position=(0.5, 0))
+            if y_label is not None:
+                plt.ylabel(y_label, ha=ha, position=(0, 0.5))
 
         plt.legend()
         return out_figure
