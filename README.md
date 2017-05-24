@@ -57,6 +57,11 @@ First install the very newest version of REP
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
+To install the newest version of hep_ml containing the loss-regularization:
+```
+pip install -U https://github.com/arogozhnikov/hep_ml.git
+```
+
 Then, install the raredecay package (without ROOT-support) via
 
 ```
