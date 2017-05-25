@@ -29,6 +29,7 @@ before_install:
 
 install:
 - conda install matplotlib -y
+- conda install py-xgboost -y
 - pip install -U xgboost
 - pip install rep
 - pip install -U -r requirements.txt

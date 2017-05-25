@@ -1104,7 +1104,7 @@ class HEPDataStorage(object):
 
             # set labels, titles...
             plt.title(sub_title_tmp)
-            ha = 'right'
+            ha = 'center'
             plt.xlabel(x_label, ha=ha, position=(0.5, 0))
             if y_label is not None:
                 plt.ylabel(y_label, ha=ha, position=(0, 0.5))
