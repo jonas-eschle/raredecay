@@ -30,11 +30,11 @@ before_install:
 install:
 - conda install matplotlib -y
 - conda install py-xgboost -y
-- pip install -U xgboost
+#- pip install -U xgboost
 - pip install rep
-- pip install -U -r requirements.txt
+#- pip install -U -r requirements.txt
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip || pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip  # sometimes failes for the first time
-- pip install -U -r requirements.txt
+#- pip install -U -r requirements.txt
 #- pip install rootpy root_numpy
 - pip install .[root] --no-dependencies
 script:
