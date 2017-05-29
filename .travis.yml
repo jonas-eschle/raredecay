@@ -35,7 +35,7 @@ install:
 - conda install py-xgboost -y
 #- pip install -U xgboost
 
-- pip install -r git+https://github.com/yandex/rep/raw/master/requirements.txt
+- pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
 - pip install rep --no-dependencies
 - pip install -U -r requirements.txt
 - pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
