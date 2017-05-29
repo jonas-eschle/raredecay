@@ -347,6 +347,7 @@ class HEPDataStorage(object):
 
         self.index = index
         self.columns = columns
+        self._set_length()
 
         # convert the data (and save it)
 
@@ -355,6 +356,7 @@ class HEPDataStorage(object):
             pass
         # pandas DataFrame
         elif self._data_type == 'df':
+
             self._data = self._make_df(index=self._index)  # No cols, it's set above
         # numpy array
         elif self._data_type == 'array':
