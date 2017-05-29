@@ -7,7 +7,8 @@ python:
 #  system_site_packages: true
 before_install:
 - sudo apt-get -qq update
-- sudo apt upgrade -y
+- sudo apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes  # && apt-get -o Dpkg::Options::="--force-confold" dist-upgrade -q -y --force-yes
+
 - sudo apt-get install python-dev libblas-dev libatlas-dev liblapack-dev gfortran g++ python-setuptools
 - sudo apt-get install libpng-dev libjpeg8-dev libfreetype6-dev libxft-dev
 
