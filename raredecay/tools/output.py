@@ -225,7 +225,7 @@ class OutputHandler(object):
         return self.save_fig(*args, **kwargs)
 
     def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
-                 **save_cfg):
+                 figure_kwargs=None, **save_cfg):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
         certain figure at the end of the run.
 
@@ -237,7 +237,7 @@ class OutputHandler(object):
 
         .. note:: The figure will be saved at the end of the run
             (by calling :py:meth:`~raredecay.tools.output.OutputHandler.finalize`)
-            so any change you made until the end will be applied to the plot.
+            so any change you make until the end will be applied to the plot.
 
         Parameters
         ----------
@@ -265,11 +265,12 @@ class OutputHandler(object):
             Return the figure.
         """
         plot = 5 - round(importance) < meta_config.plot_verbosity  # to plot or not to plot
+        figure_kwargs = {} if figure_kwargs is None else figure_kwargs
 
         if self._save_output:
             self._pickle_folder = self._pickle_folder or to_pickle
             if isinstance(figure, (int, str)):
-                figure = plt.figure(figure, frameon=True)  # TODO: changeable?
+                figure = plt.figure(figure, **figure_kwargs)  # TODO: changeable?
 
             file_format = meta_config.DEFAULT_SAVE_FIG['file_format'] if file_format is None else file_format
             if isinstance(file_format, str):
@@ -290,7 +291,7 @@ class OutputHandler(object):
         else:
             self._check_initialization()
             if plot and isinstance(figure, (int, str)):
-                figure = plt.figure(figure)
+                figure = plt.figure(figure, **figure_kwargs)
 
         return figure
 

@@ -981,8 +981,8 @@ class HEPDataStorage(object):
 
     def plot(self, figure=None, columns=None, index=None, title=None, sub_title=None,
              data_name=None, bins=None, log_y_axes=False, plot_range=None, x_label=None,
-             y_label="probability density",
-             sample_weights=None, importance=3, see_all=False, hist_settings=None):
+             y_label="probability density", sample_weights=None, importance=3,
+             see_all=False, hist_settings=None, figure_kwargs=None):
         """Draw histograms of the data.
 
         .. warning:: Only 99.98% of the newest plotted data will be shown to focus
@@ -1036,6 +1036,7 @@ class HEPDataStorage(object):
             sample_weights = self._get_weights(index=index)
             if dev_tool.is_in_primitive(sample_weights, 1):
                 sample_weights = None
+        figure_kwargs = {} if figure_kwargs is None else figure_kwargs
 
         # update hist_settings
         if dev_tool.is_in_primitive(hist_settings, None):
@@ -1071,7 +1072,8 @@ class HEPDataStorage(object):
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
             self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
-        out_figure = out.save_fig(figure, importance=importance, **cfg.save_fig_cfg)
+        out_figure = out.save_fig(figure, importance=importance,
+                                  figure_kwargs=figure_kwargs, **cfg.save_fig_cfg)
 
         # create a label
         label_name = data_tools.obj_to_string([self._name[0], self._name[1],

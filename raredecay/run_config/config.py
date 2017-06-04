@@ -27,7 +27,8 @@ OUTPUT_CFG = dict(
 save_fig_cfg = dict(
     file_format=['png', 'pdf'],
     to_pickle=True,
-    dpi=150
+    dpi=150,
+    figsize=(2,10)
 )
 
 
