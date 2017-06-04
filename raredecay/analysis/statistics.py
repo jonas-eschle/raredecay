@@ -198,7 +198,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         n_cpu = meta_config.get_n_cpu()
         print "n_cpu = ", n_cpu
         # HACK
-        n_cpu = 8
+#        n_cpu = 8
     result_fit = comb_pdf.fitTo(data, RooFit.Minos(ROOT.kTRUE),
                                 RooFit.Extended(ROOT.kTRUE),
                                 RooFit.NumCPU(n_cpu))
@@ -226,7 +226,8 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         x_frame = x.frame()
         if log_plot:
             c2.SetLogy()
-        x_frame.SetTitle("RooFit pdf vs " + data_name)
+#        x_frame.SetTitle("RooFit pdf vs " + data_name)
+        x_frame.SetTitle(data_name)
     if blind:
         # HACK
         column = 'x'
