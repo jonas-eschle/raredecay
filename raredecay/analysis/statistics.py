@@ -24,6 +24,7 @@ from raredecay import meta_config
 
 def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None,
              blind=False, nll_profile=False, second_storage=None, log_plot=False,
+             pulls=True,
              bkg_in_region=False, importance=3, plot_importance=3):
     """Fit a given pdf to a variable distribution
 
@@ -224,10 +225,26 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         c2 = TCanvas("c2", "RooFit pdf fit vs " + data_name)
         c2.cd()
         x_frame = x.frame()
-        if log_plot:
-            c2.SetLogy()
+#        if log_plot:
+#            c2.SetLogy()
 #        x_frame.SetTitle("RooFit pdf vs " + data_name)
         x_frame.SetTitle(data_name)
+        if pulls:
+            pad_data = ROOT.TPad("pad_data", "Pad with data and fit", 0, 0.33, 1, 1)
+            pad_pulls = ROOT.TPad("pad_pulls", "Pad with data and fit", 0, 0, 1, 0.33)
+            pad_data.SetBottomMargin(0.00001)
+            pad_data.SetBorderMode(0)
+            if log_plot:
+                pad_data.SetLogy()
+            pad_pulls.SetTopMargin(0.00001)
+            pad_pulls.SetBottomMargin(0.2)
+            pad_pulls.SetBorderMode(0)
+            pad_data.Draw()
+            pad_pulls.Draw()
+            pad_data.cd()
+        else:
+            if log_plot:
+                c2.SetLogy()
     if blind:
         # HACK
         column = 'x'
@@ -246,10 +263,18 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             comb_pdf.plotOn(x_frame, RooFit.Range(range_str),
                             RooFit.Normalization(n_entries, RooAbsReal.Relative),
                             RooFit.NormRange(range_str))
+            if pulls:
+#                pull_hist(pull_frame=x_frame, pad_data=pad_data, pad_pulls=pad_pulls)
+                x_frame_pullhist = x_frame.pullHist()
     else:
         if plot_importance >= 3:
             data.plotOn(x_frame)
             comb_pdf.plotOn(x_frame)
+            if pulls:
+                pad_pulls.cd()
+                x_frame_pullhist = x_frame.pullHist()
+                pad_data.cd()
+
             comb_pdf.plotOn(x_frame,
                             RooFit.Components(sig_pdf.namePtr().GetName()),
                             RooFit.LineStyle(ROOT.kDashed))
@@ -263,14 +288,35 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     if plot_importance >= 3:
         x_frame.Draw()
 
-        c11 = TCanvas("c11", "RooFit pulls" + data_name)
-        c11.cd()
-        frame_tmp = x.frame()
-        frame_tmp.SetTitle("Roofit pulls" + data_name)
-        frame_tmp.addObject(x_frame.pullHist())
-        frame_tmp.SetMinimum(-5)
-        frame_tmp.SetMaximum(5)
-        frame_tmp.Draw()
+        if pulls:
+            pad_pulls.cd()
+            x_frame.SetTitleSize(0.05, 'Y')
+            x_frame.SetTitleOffset(0.7, 'Y')
+            x_frame.SetLabelSize(0.04, 'Y')
+
+#            c11 = TCanvas("c11", "RooFit\ pulls" + data_name)
+#            c11.cd()
+#            frame_tmp = x_frame
+            frame_tmp = x.frame()
+
+#            frame_tmp.SetTitle("significance")
+
+            frame_tmp.SetTitle("Roofit\ pulls" + data_name)
+            frame_tmp.addObject(x_frame_pullhist)
+
+            frame_tmp.SetMinimum(-5)
+            frame_tmp.SetMaximum(5)
+
+#            frame_tmp.GetYaxis().SetTitle("significance")
+            frame_tmp.GetYaxis().SetNdivisions(5)
+            frame_tmp.SetTitleSize(0.1, 'X')
+            frame_tmp.SetTitleOffset(1, 'X')
+            frame_tmp.SetLabelSize(0.1, 'X')
+            frame_tmp.SetTitleSize(0.1, 'Y')
+            frame_tmp.SetTitleOffset(0.5, 'Y')
+            frame_tmp.SetLabelSize(0.1, 'Y')
+
+            frame_tmp.Draw()
 
 
 #    raw_input("")
@@ -318,7 +364,23 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
 #    return xframe
 
+def pull_hist(pull_frame, pad_data, pad_pulls):
+    """Add pulls into the current pad."""
+    pad_data.cd()
+    dataHist = pull_frame.getHist("datahistogram")
+    curve1 = pull_frame.getObject(1)  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
+    curve2 = pull_frame.getObject(2)
+    hresid1 = dataHist.makePullHist(curve1, True)
+    hresid2 = dataHist.makePullHist(curve2, True)
 
+    # RooHist* hresid = massplot->pullHist("datahistogram","blindtot")
+    pad_pulls.cd()
+#    resid = M_OS.frame()
+    pull_frame.addPlotable(hresid1,"P")
+    pull_frame.addPlotable(hresid2,"P")
+    pull_frame.SetTitle("")
+#    pull_frame.GetXaxis().SetTitle("#it{m}(#it{#pi}^{ #plus}#it{#pi}^{ #minus}) [MeV/#it{c}^{2}]")
+#    gStyle->SetPadLeftMargin(0.1)
 
 
 
@@ -459,7 +521,9 @@ if __name__ == '__main__':
 
     if mode == 'fit':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-                                       bkg_pdf=bkg_pdf, blind=False,
+                                       bkg_pdf=bkg_pdf,
+                                       blind=False,
+#                                       blind=(5100, 5380),
                                        plot_importance=4, #bkg_in_region=(5100, 5380)
                                        )
         print fit_result
