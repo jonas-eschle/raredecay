@@ -11,6 +11,8 @@ values.
 """
 from __future__ import division, absolute_import
 
+import copy
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -541,6 +543,12 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         plt.hist(pred_real, bins=30)
         plt.hist(pred_mc, bins=30)
 
+        out.figure("predictions total normalized")
+        plt.legend()
+        plt.title("Predictions of MC vs all real data normalized")
+        plt.hist(pred_real, bins=30, normed=True, alpha=0.5, range=(0, 1))
+        plt.hist(pred_mc, bins=30, normed=True, alpha=0.5, range=(0, 1))
+
     return output
 
 
@@ -631,17 +639,36 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     from raredecay.tools import data_tools
 
     output = {}
+    reweighter_list = False
+    new_reweighter_list = []
 
     reweighter = data_tools.try_unpickle(reweighter)
+
+    if isinstance(reweighter, list):
+        n_reweights = len(reweighter)
+        reweighter_list = copy.deepcopy(reweighter)
+
     for run in range(n_reweights):
+        if reweighter_list:
+            reweighter = reweighter_list[run]
+        reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
             new_reweighter = ml_ana.reweight_train(mc_data=mc_data,
                                                    real_data=real_data,
                                                    columns=columns,
                                                    meta_cfg=reweight_cfg,
                                                    reweighter=reweighter)
+            # TODO: hack which adds columns, good idea?
+            assert not hasattr(new_reweighter, 'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
+            new_reweighter.columns = data_tools.to_list(columns)
+
         else:
             new_reweighter = reweighter
+
+        if n_reweights > 1:
+            new_reweighter_list.append(new_reweighter)
+        else:
+            new_reweighter_list = new_reweighter
 
         tmp_weights = ml_ana.reweight_weights(reweight_data=apply_data,
                                               columns=columns,
@@ -659,7 +686,7 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     if apply_weights:
         apply_data.set_weights(new_weights)
     output['weights'] = new_weights
-    output['reweighter'] = new_reweighter
+    output['reweighter'] = new_reweighter_list
 
     return output
 

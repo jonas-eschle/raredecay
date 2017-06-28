@@ -1110,6 +1110,9 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
     normalize = 1 if normalize is True else normalize
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
+    if columns is None:
+        columns = reweighter_trained.columns
+#    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
                                                      original_weight=reweight_data.get_weights())
 

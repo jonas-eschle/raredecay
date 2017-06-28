@@ -7,7 +7,9 @@ Created on Thu Oct 20 20:00:33 2016
 This modul contains several tools like fits.
 """
 from __future__ import division, absolute_import
+
 import numpy as np
+
 
 import ROOT
 from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
@@ -21,10 +23,16 @@ from raredecay.globals_ import out
 
 from raredecay import meta_config
 
+import matplotlib.pyplot as plt
+# Bug fixing below
+#plt.figure("TMPONLYTOFIGHTASTRANGEBUG")
+#plt.plot([1, 2, 3])
+#plt.close("TMPONLYTOFIGHTASTRANGEBUG")
+# Bug fix end
 
 def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None,
              blind=False, nll_profile=False, second_storage=None, log_plot=False,
-             pulls=True,
+             pulls=True, sPlot=False,
              bkg_in_region=False, importance=3, plot_importance=3):
     """Fit a given pdf to a variable distribution
 
@@ -345,11 +353,21 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
 #    print bkg_cdf.getVal()
 
+    if sPlot:
+        sPlotData = ROOT.RooStats.SPlot("sPlotData","sPlotData",
+                        data,  # variable fitted to, RooDataSet
+                        comb_pdf,  # fitted pdf
+                        ROOT.RooArgList(n_sig,
+                                        n_bkg,
+#                                                NSigB0s
+                                        ))
+        sweights = np.array([sPlotData.GetSWeight(i, 'n_sig') for i in range(data.numEntries())])
+        return n_sig.getVal(), n_bkg_below_sig, sweights
 
     if blind:
-        return blind_n_sig.getVal(), n_bkg_below_sig
+        return blind_n_sig.getVal(), n_bkg_below_sig, comb_pdf
     else:
-        return n_sig.getVal(), n_bkg_below_sig
+        return n_sig.getVal(), n_bkg_below_sig, comb_pdf
 
 
 #    nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
@@ -474,13 +492,19 @@ if __name__ == '__main__':
     from raredecay.tools.data_storage import HEPDataStorage
     import pandas as pd
     import matplotlib.pyplot as plt
+
 #    np.random.seed(40)
 
-    mode = "fit"
+#    mode = "fit"
 #    mode = 'fit_metric'
+    mode = "sPlot"
 
 # create signal pdf BEGIN
-    x = RooRealVar("x", "x variable", 5000, 6000)
+    lower_bound = 4800
+#    lower_bound = 5000
+    x = RooRealVar("x", "x variable", lower_bound, 6000)
+
+#    x = RooRealVar("x", "x variable", 4800, 6000)
 
     # TODO: export somewhere? does not need to be defined inside...
     mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5270, 5290)#, 5300, 5500)
@@ -506,18 +530,19 @@ if __name__ == '__main__':
     bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
     # create bkg-pdf END
 
-    n_sig = 500
+    n_sig = 2500
 
-    data = pd.DataFrame(np.random.normal(loc=5280, scale=40, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
-    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
-    bkg_data = np.array([i for i in (np.random.exponential(scale=4500,
-                                     size=(30000, 3)) + 5000) if i[0] < 6000])
+    data = pd.DataFrame(np.random.normal(loc=5280, scale=37, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
+#    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
+    bkg_data = np.array([i for i in (np.random.exponential(scale=300,
+                                     size=(7500, 3)) + 4800) if i[0] < 6000])
     bkg_data[:, 2] = np.array([min((abs(y), 0.96)) for y in np.random.normal(loc=0.4,
                              scale=0.4, size=len(bkg_data))])
     data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y', 'pred'])], ignore_index=True)
 
     data = HEPDataStorage(data, target=np.concatenate((np.ones(n_sig),
                                                        np.zeros(len(bkg_data)))))
+    data_copy = data.copy_storage()
 
     if mode == 'fit':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
@@ -536,6 +561,27 @@ if __name__ == '__main__':
         print result
 
         plt.plot(*result)
+
+
+    elif mode == 'sPlot':
+        fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
+                                       bkg_pdf=bkg_pdf,
+                                       blind=False,
+                                       plot_importance=1, #bkg_in_region=(5100, 5380)
+                                       sPlot=True
+                                       )
+        n_sig, n_bkg, sweights = fit_result
+        import copy
+        sweights = copy.deepcopy(sweights)
+        plt.figure("new figure")
+#        plt.hist(range(100))
+#        plt.figure("new figure")
+        plt.hist(sweights, bins=30)
+
+        data_copy.set_weights(sweights)
+        data_copy.plot()
+
+
 #    n_sig_fit.append(np.mean(n_sig_averaged))#[5300, 5500]))
 #    print n_sig_fit
 #    raw_input("hiii")

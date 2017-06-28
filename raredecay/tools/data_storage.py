@@ -574,7 +574,7 @@ class HEPDataStorage(object):
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
         data = data if index is None else data.ix[index]
 
-        if isinstance(self.column_alias, dict):
+        if isinstance(self.column_alias, dict) and len(self.column_alias) > 0:
             data.rename(columns=self.column_alias, inplace=True, copy=False)
 
         return data
@@ -1188,8 +1188,8 @@ class HEPDataStorage(object):
         plt.scatter(self.pandasDF(columns=x_branch),
                     self.pandasDF(columns=y_branch), s=size, c=color,
                     alpha=0.5, label=temp_label)
-        plt.xlabel(self.get_labels(columns=x_branch, as_list=True))
-        plt.ylabel(self.get_labels(columns=y_branch, as_list=True))
+        plt.xlabel(x_branch)
+        plt.ylabel(y_branch)
         plt.legend()
 
         return out_figure

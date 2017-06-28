@@ -192,7 +192,7 @@ def fill_list_var(to_check, length=0, var=1):
 
 
 def make_list_fill_var(to_check, length=0, var=None):
-    """Returns a list with the objects or a list filled with None."""
+    """Returns a list with the objects or a list filled with var."""
     if not isinstance(to_check, list):
         to_check = [to_check]
     difference = length - len(to_check)
@@ -208,7 +208,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     There is a problem (designproblem?!) with certain container types when
     comparing them to a certain value, e.g. None and you create an expression
     with 'container is None' and the container (as it is a container) is not
-    None, then the expression is not defined. The code tries to make
+    None, then the expression is not defined. Because the code tries to make
     elementwise comparison.
     This method allows to fix this error by doing a REAL comparison. E.g.
     if the test_object is ANY container and the allowed_primitives is None,

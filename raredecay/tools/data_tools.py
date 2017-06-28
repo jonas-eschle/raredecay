@@ -400,10 +400,11 @@ def adv_return(return_value, save_name=None):
     return return_value
 
 
-def try_unpickle(file_to_unpickle):
+def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
     """Try to unpickle a file and return, otherwise just return input."""
     if is_pickle(file_to_unpickle):
-        with open(meta_config.PICKLE_PATH + file_to_unpickle, 'rb') as f:
+        extra_path = meta_config.PICKLE_PATH if use_metapath_bkwcomp else ''
+        with open(extra_path + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
 
