@@ -309,7 +309,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
 #            frame_tmp.SetTitle("significance")
 
-            frame_tmp.SetTitle("Roofit\ pulls" + data_name)
+            frame_tmp.SetTitle("Roofit\ pulls\ " + data_name)
             frame_tmp.addObject(x_frame_pullhist)
 
             frame_tmp.SetMinimum(-5)

@@ -41,7 +41,7 @@ from sklearn.metrics import accuracy_score, classification_report  # recall_scor
 from rep.data import LabeledDataStorage
 
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-from rep.estimators.theanets import TheanetsClassifier
+#from rep.estimators.theanets import TheanetsClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier

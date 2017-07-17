@@ -549,6 +549,7 @@ class OutputHandler(object):
 
             # if a folder to overwrite exists, delete it and move the temp folder
             if self._path_to_be_overriden is not None:
+                stop_del = ''
                 if not meta_config.NO_PROMPT_ASSUME_YES:
                     stop_del = raw_input("ATTENTION! The folder " + self._path_to_be_overriden +
                                          " will be deleted and replaced with the output " +
