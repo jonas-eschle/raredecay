@@ -2,15 +2,15 @@ sudo: required
 dist: xenial
 language: python
 python:
-- '2.7'
-- '3.4'
-- '3.5'
-- ''3.6'
+ - '2.7'
+ - '3.4'
+# - '3.5'
+# - '3.6'
 #virtualenv:
 #  system_site_packages: true
 before_install:
 - sudo apt-get -qq update
-- sudo apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes  # && apt-get -o Dpkg::Options::="--force-confold" dist-upgrade -q -y --force-yes
+#- sudo apt-get -o Dpkg::Options::="--force-confold" upgrade -q -y --force-yes  # && apt-get -o Dpkg::Options::="--force-confold" dist-upgrade -q -y --force-yes
 
 - sudo apt-get install python-dev libblas-dev libatlas-dev liblapack-dev gfortran g++ python-setuptools
 - sudo apt-get install libpng-dev libjpeg8-dev libfreetype6-dev libxft-dev
@@ -47,7 +47,8 @@ install:
 - pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
 - pip install rep --no-dependencies
 - pip install -U -r requirements.txt
-- pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
+- pip install -U git+https://github.com/arogozhnikov/hep_ml.git
+- pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies # || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 #- pip install -U -r requirements.txt
 #- pip install rootpy root_numpy
 - pip install .[root] --no-dependencies
