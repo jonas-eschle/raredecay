@@ -47,6 +47,23 @@ class HEPDataStorage(object):
 
     __figure_number = 0
     __figure_dic = {}
+    latex_replacements = {
+#        "CHI2": r"\chi^2",
+        r"_PT": r" p_T",
+        r"JPsi": r"J/\psi",
+        r"K1": r"K_1 ",
+        r"_1270": "",
+        r"_ENDVERTEX_CHI2": r"\ \chi^2_{VTX}",
+        r"_IPCHI2": r"\ \chi^2_{IP}",
+        r"_FDCHI2": r"\ \chi^2_{FD}",
+        r"_TRACK_CHI2": r"\ \chi^2_{track}",
+        r"_OWNPV": r"\ ownPV",
+        r"_CosTheta": r"\ cos(\theta)",
+        r"NDOF": r"/N_{degree of freedom}",
+        r"AMAXDOCA": r"\ AMAXDOCA",
+
+#        "_": "\ "
+        }
 
     def __init__(self, data, index=None, target=None, sample_weights=None,
                  data_name=None, data_name_addition=None, column_alias=None):
@@ -330,6 +347,7 @@ class HEPDataStorage(object):
 
         self.index = index
         self.columns = columns
+        self._set_length()
 
         # convert the data (and save it)
 
@@ -338,6 +356,7 @@ class HEPDataStorage(object):
             pass
         # pandas DataFrame
         elif self._data_type == 'df':
+
             self._data = self._make_df(index=self._index)  # No cols, it's set above
         # numpy array
         elif self._data_type == 'array':
@@ -542,7 +561,7 @@ class HEPDataStorage(object):
             for key, val in temp_root_dict.items():
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
-            data = data_tools.to_pandas(temp_root_dict)
+            data = data_tools.to_pandas(temp_root_dict, columns=columns)
 
         elif self._data_type == 'array':
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
@@ -555,7 +574,7 @@ class HEPDataStorage(object):
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
         data = data if index is None else data.ix[index]
 
-        if isinstance(self.column_alias, dict):
+        if isinstance(self.column_alias, dict) and len(self.column_alias) > 0:
             data.rename(columns=self.column_alias, inplace=True, copy=False)
 
         return data
@@ -960,9 +979,10 @@ class HEPDataStorage(object):
 
         return correlation
 
-    def plot(self, figure=None, columns=None, index=None, title=None, data_name=None,
-             bins=None, log_y_axes=False, plot_range=None, sample_weights=None,
-             importance=3, see_all=False, hist_settings=None):
+    def plot(self, figure=None, columns=None, index=None, title=None, sub_title=None,
+             data_name=None, bins=None, log_y_axes=False, plot_range=None, x_label=None,
+             y_label="probability density", sample_weights=None, importance=3,
+             see_all=False, hist_settings=None, figure_kwargs=None):
         """Draw histograms of the data.
 
         .. warning:: Only 99.98% of the newest plotted data will be shown to focus
@@ -1016,6 +1036,7 @@ class HEPDataStorage(object):
             sample_weights = self._get_weights(index=index)
             if dev_tool.is_in_primitive(sample_weights, 1):
                 sample_weights = None
+        figure_kwargs = {} if figure_kwargs is None else figure_kwargs
 
         # update hist_settings
         if dev_tool.is_in_primitive(hist_settings, None):
@@ -1045,24 +1066,30 @@ class HEPDataStorage(object):
                 assert safety < meta_config.MAX_FIGURES, "stuck in an endless while loop"
                 if figure not in self.__figure_dic.keys():
                     x_limits_col = {}
-                    self.__figure_dic.update({figure: x_limits_col, 'title': ""})
+                    # TODO: improve figure dict with title....
+                    self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
                     break
         elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
-            self.__figure_dic.update({figure: x_limits_col, 'title': ""})
-        out_figure = out.save_fig(figure, importance=importance, **cfg.save_fig_cfg)
+            self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
+        out_figure = out.save_fig(figure, importance=importance,
+                                  figure_kwargs=figure_kwargs, **cfg.save_fig_cfg)
 
         # create a label
         label_name = data_tools.obj_to_string([self._name[0], self._name[1],
                                                data_name], separator=" - ")
-        self.__figure_dic['title'] += "" if title is None else title
-        plt.suptitle(self.__figure_dic.get('title'), fontsize=self.supertitle_fontsize)
+        self.__figure_dic[str(figure) + '_title'] += "" if title is None else title
+        plt.suptitle(self.__figure_dic.get(str(figure) + '_title'), fontsize=self.supertitle_fontsize)
 
 # ==============================================================================
 #       Start plotting
 # ==============================================================================
         # plot the distribution column by column
         for col_id, column in enumerate(columns, 1):
+            # create sub title
+            sub_title_tmp = column if sub_title is None else sub_title
+            x_label = "" if x_label is None else x_label
+
             # only plot in range x_limits, otherwise the plot is too big
             x_limits = self.__figure_dic.get(figure).get(column)
             lower, upper = np.percentile(np.hstack(data_plot[column]),
@@ -1074,10 +1101,18 @@ class HEPDataStorage(object):
             if 'range' in hist_settings:
                 x_limits = hist_settings.pop('range')
             self.__figure_dic[figure].update({column: x_limits})
+
             plt.subplot(subplot_row, subplot_col, col_id)
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
                      range=x_limits, label=label_name, **hist_settings)
-            plt.title(column)
+
+            # set labels, titles...
+            plt.title(sub_title_tmp)
+            ha = 'center'
+            plt.xlabel(x_label, ha=ha, position=(0.5, 0))
+            if y_label is not None:
+                plt.ylabel(y_label, ha=ha, position=(0, 0.5))
+
         plt.legend()
         return out_figure
 
@@ -1096,7 +1131,6 @@ class HEPDataStorage(object):
         pd.tools.plotting.parallel_coordinates(data, 'targets')
 
         return out_figure
-
 
     def plot2Dhist(self, x_columns, y_columns=None):
         """Plot a 2D hist of x_columns vs itself or y_columns.
@@ -1154,8 +1188,8 @@ class HEPDataStorage(object):
         plt.scatter(self.pandasDF(columns=x_branch),
                     self.pandasDF(columns=y_branch), s=size, c=color,
                     alpha=0.5, label=temp_label)
-        plt.xlabel(self.get_labels(columns=x_branch, as_list=True))
-        plt.ylabel(self.get_labels(columns=y_branch, as_list=True))
+        plt.xlabel(x_branch)
+        plt.ylabel(y_branch)
         plt.legend()
 
         return out_figure

@@ -62,7 +62,7 @@ use_stratified_folding = True  # StratifiedKFolding is better, from a statistica
 def get_n_cpu(n_cpu=None):
     """Return the number of cpus to use. None means all. Can be -1, -2..."""
     if n_cpu is None:
-        n_cpu = 1
+        n_cpu = -1
     if isinstance(n_cpu, int):
         if n_cpu < 0:
             n_cpu = max([n_cpu_max + n_cpu + 1, 1])  #

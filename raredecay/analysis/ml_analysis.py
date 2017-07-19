@@ -41,7 +41,7 @@ from sklearn.metrics import accuracy_score, classification_report  # recall_scor
 from rep.data import LabeledDataStorage
 
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-from rep.estimators.theanets import TheanetsClassifier
+#from rep.estimators.theanets import TheanetsClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier
@@ -936,7 +936,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             out.save_fig("Learning curve " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " +
-                                                                        plot_name)
+                                                                  plot_name)
         else:
             pass
             # TODO: implement learning curve with tpr metric
@@ -956,11 +956,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                 out.save_fig(figure="Feature correlation matrix of " + plot_name,
                              importance=plot_importance)
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +
-                                                                plot_name)
+                                                          plot_name)
             label_dict = None if binary_test else {test_classes[0]: "validation data"}
-            out.save_fig(figure="Predictiond pdf of " + plot_name, importance=plot_importance)
+            out.save_fig(figure="Predictions of " + plot_name, importance=plot_importance)
             report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
-                title="Predictiond pdf of " + plot_name)
+                title="Predictions of " + plot_name)
 
     if clf_score is None:
         return clf
@@ -1041,8 +1041,8 @@ def reweight_train(mc_data, real_data, columns=None,
     logger.info(msg)
 
     out.add_output(msg + ["\nData used:\n", mc_data.name, " and ",
-                   real_data.name, "\ncolumns used for the reweighter training:\n",
-                   columns], section="Training the reweighter", obj_separator=" ")
+                          real_data.name, "\ncolumns used for the reweighter training:\n",
+                          columns], section="Training the reweighter", obj_separator=" ")
 
     if columns is None:
         # use the intesection of both colomns
@@ -1110,6 +1110,9 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
     normalize = 1 if normalize is True else normalize
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
+    if columns is None:
+        columns = reweighter_trained.columns
+#    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
                                                      original_weight=reweight_data.get_weights())
 
@@ -1425,8 +1428,8 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
         metric = precision_measure
 
     data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
-    data = data.T.as_matrix()[0, :]
-    data = np.transpose(np.array((1 - data, data)))
+    predictions = data.T.as_matrix()[0, :]
+    predictions = np.transpose(np.array((1 - predictions, predictions)))
     metric_optimal = OptimalMetric(metric)
 
     best_cut, best_metric = metric_optimal.compute(y_true=target,

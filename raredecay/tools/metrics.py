@@ -165,6 +165,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     """
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.globals_ import out
+
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
     assert isinstance(mc_data, data_storage.HEPDataStorage), \

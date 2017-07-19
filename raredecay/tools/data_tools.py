@@ -10,6 +10,7 @@ from __future__ import division, absolute_import
 
 import warnings
 import os
+import copy
 
 import pandas as pd
 import numpy as np
@@ -268,7 +269,7 @@ def to_list(data_in):
     out : list
         Return a list containing the object or the object converted to a list.
     """
-    if isinstance(data_in, str):
+    if isinstance(data_in, (str, int, float)):
         data_in = [data_in]
     data_in = list(data_in)
     return data_in
@@ -295,6 +296,23 @@ def to_ndarray(data_in, float_array=True):
         data_in = data_in.tolist()
     if is_list(data_in) or isinstance(data_in, pd.Series):
         data_in = np.array(data_in)
+    if not isinstance(data_in[0], (int, float, str, bool)):
+        if float_array:
+            iter_data = copy.deepcopy(data_in)
+            # HACK
+            data_in = np.ndarray(shape=len(data_in), dtype=data_in.dtype)
+            # HACK END
+            for i, element in enumerate(iter_data):
+                if not isinstance(element, (int, float, str, bool)):
+                    # does that work or should we iterate over copy?
+                    if len(element) > 1:
+                        data_in[i] = to_ndarray(element)
+                        float_array = False
+                    elif len(element) == 1:
+                        data_in[i] = float(element)
+
+            warnings.warn("Could not force float array")
+
     if float_array:
         data_in = np.asfarray(data_in)
     assert is_ndarray(data_in), "Error, could not convert data to numpy array"
@@ -315,6 +333,10 @@ def to_pandas(data_in, index=None, columns=None):
     if is_list(data_in):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
+        if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
+            isinstance(columns, str)):
+
+            data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, index=index, columns=columns)
     elif isinstance(data_in, pd.DataFrame):
         pass
@@ -378,10 +400,11 @@ def adv_return(return_value, save_name=None):
     return return_value
 
 
-def try_unpickle(file_to_unpickle):
+def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
     """Try to unpickle a file and return, otherwise just return input."""
     if is_pickle(file_to_unpickle):
-        with open(meta_config.PICKLE_PATH + file_to_unpickle, 'rb') as f:
+        extra_path = meta_config.PICKLE_PATH if use_metapath_bkwcomp else ''
+        with open(extra_path + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
 

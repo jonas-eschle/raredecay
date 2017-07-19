@@ -11,6 +11,11 @@ values.
 """
 from __future__ import division, absolute_import
 
+import copy
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 
 def test():
     """just a test-function."""
@@ -323,8 +328,9 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         target_data = target_data.copy_storage(columns=features)
 
     figure = "Plotting" + str(original_data.name) + " and " + str(target_data.name)
-    original_data.plot(figure=figure, title=figure)
-    target_data.plot(figure=figure)
+    if extended_report:
+        original_data.plot(figure=figure, title=figure)
+        target_data.plot(figure=figure)
 
     if roc_auc_all:
         ml_ana.classify(original_data, target_data, validation=n_folds,
@@ -339,7 +345,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         for feature in features:
             title = "Feature exploration, ROC AUC only using " + str(feature)
             tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
-                                          curve_name="only using " + feature, clf=clf,
+                                          curve_name="only using " + str(feature), clf=clf,
                                           validation=n_folds, extended_report=extended_report,
                                           plot_title=title, weights_ratio=1, plot_importance=2)
             del tmp_
@@ -537,6 +543,12 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         plt.hist(pred_real, bins=30)
         plt.hist(pred_mc, bins=30)
 
+        out.figure("predictions total normalized")
+        plt.legend()
+        plt.title("Predictions of MC vs all real data normalized")
+        plt.hist(pred_real, bins=30, normed=True, alpha=0.5, range=(0, 1))
+        plt.hist(pred_mc, bins=30, normed=True, alpha=0.5, range=(0, 1))
+
     return output
 
 
@@ -627,17 +639,36 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
     from raredecay.tools import data_tools
 
     output = {}
+    reweighter_list = False
+    new_reweighter_list = []
 
     reweighter = data_tools.try_unpickle(reweighter)
+
+    if isinstance(reweighter, list):
+        n_reweights = len(reweighter)
+        reweighter_list = copy.deepcopy(reweighter)
+
     for run in range(n_reweights):
+        if reweighter_list:
+            reweighter = reweighter_list[run]
+        reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
             new_reweighter = ml_ana.reweight_train(mc_data=mc_data,
                                                    real_data=real_data,
                                                    columns=columns,
                                                    meta_cfg=reweight_cfg,
                                                    reweighter=reweighter)
+            # TODO: hack which adds columns, good idea?
+            assert not hasattr(new_reweighter, 'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
+            new_reweighter.columns = data_tools.to_list(columns)
+
         else:
             new_reweighter = reweighter
+
+        if n_reweights > 1:
+            new_reweighter_list.append(new_reweighter)
+        else:
+            new_reweighter_list = new_reweighter
 
         tmp_weights = ml_ana.reweight_weights(reweight_data=apply_data,
                                               columns=columns,
@@ -649,10 +680,13 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
             new_weights += tmp_weights
 
     new_weights /= n_reweights
+    # TODO: remove below?
+    new_weights.sort_index()
+
     if apply_weights:
         apply_data.set_weights(new_weights)
     output['weights'] = new_weights
-    output['reweighter'] = new_reweighter
+    output['reweighter'] = new_reweighter_list
 
     return output
 
@@ -772,6 +806,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         - *train_similar* : The scores of this method in a dict
         - *roc_auc_score* : The scores of this method in a dict
     """
+    import numpy as np
 
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
@@ -830,13 +865,28 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         mc_data.set_targets(0)
         temp_real_targets = real_data.get_targets()
         real_data.set_targets(1)
-        tmp_, roc_auc_score = ml_ana.classify(original_data=mc_data, target_data=real_data,
+        tmp_, roc_auc_score, output = ml_ana.classify(original_data=mc_data, target_data=real_data,
                                               validation=n_folds_scoring, plot_importance=4,
                                               plot_title="ROC AUC to distinguish data",
                                               clf=score_clf, weights_ratio=1,
                                               features=score_columns,
-                                              extended_report=scoring)
+                                              extended_report=scoring,
+                                              get_predictions=True)
         del tmp_
+        # HACK
+        predictions = output['y_proba'][:, 1][output['y_true'] == 0]
+        weights_pred = np.log(output['weights'][output['y_true'] == 0])
+        weights_pred = output['weights'][output['y_true'] == 0]
+        out.figure("Correlation of weights and predictions")
+        plt.scatter(predictions, weights_pred)
+        plt.xlabel("predictions")
+        plt.ylabel("weights")
+        out.figure("Correlation of weights and predictions hexbin")
+        plt.hexbin(x=predictions, y=weights_pred, gridsize=150)
+#        sns.jointplot(x=predictions, y=weights_pred, kind="hex")
+
+
+
         if mayou_score:
             metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
                                 clf=score_clf, old_mc_weights=old_weights)
@@ -889,11 +939,15 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     from raredecay.tools.data_storage import HEPDataStorage
-    a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, 7)))
-    a = HEPDataStorage(a)
-    b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.1, size=(1000, 7)))
-    b = HEPDataStorage(b)
+    n_cols = 7
+    cols = [str(i) for i in range(n_cols)]
+    a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
+    a = HEPDataStorage(a, target=1,)
+    b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
+    b = HEPDataStorage(b, target=0)
 
-    feature_exploration(a, b, n_folds=3)
+#    feature_exploration(a, b, n_folds=3, roc_auc='all')
+
+
 
     plt.show()
