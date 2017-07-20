@@ -32,11 +32,8 @@ before_install:
 - conda config --add channels https://conda.anaconda.org/NLeSC
 
 #- conda create -q --name=raredecay-env python=$TRAVIS_PYTHON_VERSION root=6
-- if [[ "$TRAVIS_PYTHON_VERSION" == "2.7" ]]; then
-      conda create -q --name=raredecay-env python=2 root=6;
-    else
-      conda create -q --name=raredecay-env python=3 root=6;
-  fi
+- conda create -q --name=raredecay-env python=$TRAVIS_PYTHON_VERSION root=6;
+
 - source activate raredecay-env
 
 install:
