@@ -156,6 +156,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         - **n_cpus**: The number of cpus used in the classifier.
     """
     #: Currently implemented classifiers:
+    global n_cpu_clf
     __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'nn', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
@@ -277,10 +278,10 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         elif clf['clf_type'] == 'rdf':
             clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_config.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
-        elif clf['clf_type'] == 'nn':
-            serial_clf = meta_config.use_gpu
-            clf['config'].update(dict(random_state=meta_config.randint()))
-            clf_tmp = TheanetsClassifier(**clf.get('config'))
+        # elif clf['clf_type'] == 'nn':
+        #     serial_clf = meta_config.use_gpu
+        #     clf['config'].update(dict(random_state=meta_config.randint()))
+        #     clf_tmp = TheanetsClassifier(**clf.get('config'))
 
         # assign classifier to output dict
         output['clf'] = clf_tmp
