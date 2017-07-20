@@ -14,7 +14,10 @@ import copy
 
 import pandas as pd
 import numpy as np
-import cPickle as pickle
+try:
+    import cPickle as pickle
+except ImportError:
+    import pickle
 
 try:
     from root_numpy import root2array, array2root

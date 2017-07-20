@@ -458,6 +458,21 @@ class HEPDataStorage(object):
 
         return weights_out
 
+    @property
+    def weights(self):
+        return self.get_weights(index=None, normalize=False)
+
+    @weights.setter
+    def weights(self, sample_weights):
+        """Set the weights of the sample.
+
+        Parameters
+        ----------
+        sample_weights : |sample_weights_type|
+            |sample_weights_docstring|
+        """
+        self.set_weights(sample_weights=sample_weights)
+
     def set_weights(self, sample_weights, index=None):
         """Set the weights of the sample.
 
@@ -774,9 +789,9 @@ class HEPDataStorage(object):
             targets_2 = second_storage.get_targets()
             targets = np.concatenate((targets_1, targets_2))
 
-            if max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2) and weights_ratio > 0:
+            if (max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2)) and weights_ratio > 0:
                 raise ValueError("Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio"+
-                                 "not yet implemented. Please make an issue!")
+                                 " > 0, this case is not yet implemented. Please make an issue!")
 
 #            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
 
