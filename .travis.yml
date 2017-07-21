@@ -38,7 +38,7 @@ before_install:
 
 # install test environment
 - conda install -y coverage
-- pip install coveralls
+- pip install coveralls root_pandas
 
 install:
 - conda install matplotlib scipy numpy -y
