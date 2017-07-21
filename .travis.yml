@@ -37,7 +37,7 @@ before_install:
 - source activate raredecay-env
 
 # install test environment
-- conda install -y coverage unittest
+- conda install -y coverage
 - pip install coveralls
 
 install:
