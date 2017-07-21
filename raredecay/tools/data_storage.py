@@ -577,6 +577,7 @@ class HEPDataStorage(object):
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
             data = data_tools.to_pandas(temp_root_dict, columns=columns)
+            data.set_index(self.index, inplace=True)
 
         elif self._data_type == 'array':
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
@@ -587,7 +588,7 @@ class HEPDataStorage(object):
             raise NotImplementedError("Unknown/not yet implemented data type")
 
         assert isinstance(data, pd.DataFrame), "data did not convert correctly"
-        data = data if index is None else data.ix[index]
+        data = data if index is None else data.loc[index]
 
         if isinstance(self.column_alias, dict) and len(self.column_alias) > 0:
             data.rename(columns=self.column_alias, inplace=True, copy=False)

@@ -340,7 +340,7 @@ def to_pandas(data_in, index=None, columns=None):
             isinstance(columns, str)):
 
             data_in = to_ndarray(data_in)
-        data_in = pd.DataFrame(data_in, index=index, columns=columns)
+        data_in = pd.DataFrame(data_in, columns=columns)
     elif isinstance(data_in, pd.DataFrame):
         pass
     else:

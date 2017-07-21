@@ -93,7 +93,7 @@ class TestHEPDataStorageMixin(TestCase):
         return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
 
     def test_initialization(self):
-        pdtest.assert_frame_equal(self.ds.pandasDF(), self.truth_df)
+        pdtest.assert_frame_equal(self.truth_df, self.ds.pandasDF())
         nptest.assert_almost_equal(self.truth_targets, self.ds.get_targets())
         nptest.assert_almost_equal(self.truth_weights, self.ds.weights)
         nptest.assert_almost_equal(self.truth_weights_normalized,
