@@ -6,8 +6,7 @@ import copy
 import unittest
 from unittest import TestCase
 
-import root_numpy
-import rootpy
+
 
 import numpy as np
 import numpy.testing as nptest
@@ -245,6 +244,8 @@ class TestHEPDataStoragePandasDF(TestHEPDataStorageMixin, TestCase):
 
 
 class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
+    import root_numpy
+    import rootpy
 
     def _generate_data(self, data, targets, weights):
 
