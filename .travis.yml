@@ -36,6 +36,10 @@ before_install:
 
 - source activate raredecay-env
 
+# install test environment
+- conda install -y coverage unittest
+- pip install coveralls
+
 install:
 - conda install matplotlib scipy numpy -y
 - conda install py-xgboost -y
@@ -50,7 +54,11 @@ install:
 - pip install rootpy root_numpy
 - pip install .[root] --no-dependencies
 script:
-- pytest
+- coverage run -m unittest discover
+
+after_success:
+  coveralls
+
 deploy:
   provider: pypi
   user: mayou36

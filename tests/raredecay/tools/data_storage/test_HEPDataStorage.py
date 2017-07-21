@@ -13,6 +13,9 @@ import numpy.testing as nptest
 import pandas as pd
 import pandas.util.testing as pdtest
 
+import raredecay
+import raredecay.tools
+import raredecay.tools.data_storage
 from raredecay.tools.data_storage import HEPDataStorage
 
 
@@ -256,7 +259,7 @@ class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
         data['root_w'] = weights
         tmp_file = tempfile.NamedTemporaryFile(suffix='.root', delete=False)
         self.temp_file_path_root = tmp_file.name
-        to_root(data, tmp_file.name, key='DecayTree')
+        to_root(data.loc[data.index], tmp_file.name, key='DecayTree')
         self.truth_data_type = "root"
 
         root_dict = {'filenames': tmp_file.name,
