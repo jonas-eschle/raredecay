@@ -24,7 +24,7 @@ try:
     from root_numpy import root2array, array2root
 except ImportError as err:
     warnings.warn("could not import from root_numpy!")
-from root_numpy import root2array, array2root  # HACK
+#from root_numpy import root2array, array2root  # HACK
 
 # both produce error (27.07.2016) when importing them if run from main.py.
 # No problem when run as main...
