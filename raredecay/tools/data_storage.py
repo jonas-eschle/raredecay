@@ -577,7 +577,7 @@ class HEPDataStorage(object):
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
             data = data_tools.to_pandas(temp_root_dict, columns=columns)
-            data.set_index(self.index, inplace=True)
+            data.set_index([self.index], inplace=True, verify_integrity=True)
 
         elif self._data_type == 'array':
             data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
@@ -820,7 +820,7 @@ class HEPDataStorage(object):
         new_data = copy.deepcopy(self.data)
 
         new_targets = copy.deepcopy(self._get_targets(index=index))
-        new_weights = copy.deepcopy(self._get_weights(index=index))
+        new_weights = copy.deepcopy(self._get_weights(index=index, normalize=False))
         new_index = copy.deepcopy(index)
         new_column_alias = copy.deepcopy(self.column_alias)
 

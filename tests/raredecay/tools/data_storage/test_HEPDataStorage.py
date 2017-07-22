@@ -2,11 +2,8 @@ from __future__ import absolute_import, print_function, division
 
 import copy
 
-
 import unittest
 from unittest import TestCase
-
-
 
 import numpy as np
 import numpy.testing as nptest
@@ -57,6 +54,7 @@ class TestHEPDataStorageMixin(TestCase):
                 copy.deepcopy(self.truth_df),
                 copy.deepcopy(self.truth_targets),
                 copy.deepcopy(self.truth_weights))
+        self.truth_columns = list(self.truth_df.columns)
         self.truth_weights_normalized = self.truth_weights / np.average(self.truth_weights)
         self.truth_name = "ds1"
         self.truth_name_addition = "ds1add"
@@ -142,7 +140,13 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_columns(self):
-        pass
+        self.assertListEqual(self.truth_columns, self.ds.columns)
+        sub_cols = ['a', 'b']
+        self.ds.columns = sub_cols
+        self.assertListEqual(sub_cols, self.ds.columns)
+        self.assertListEqual(sub_cols, list(self.ds.pandasDF().columns))
+        self.ds.columns = copy.deepcopy(self.truth_columns)
+        self.assertListEqual(self.truth_columns, self.ds.columns)
 
     def test__set_columns(self):
         pass
@@ -163,7 +167,7 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_get_weights(self):
-        pass
+        nptest.assert_almost_equal(self.truth_weights, self.ds.get_weights(normalize=False))
 
     def test__get_weights(self):
         pass
@@ -215,22 +219,51 @@ class TestHEPDataStorageMixin(TestCase):
         nptest.assert_almost_equal(truth_weights, weights)
 
     def test_copy_storage(self):
-        pass
+        ds_copy = self.ds.copy_storage(['a', 'b', 'c', 'd'])
+        ds_original = self.ds
+        self.ds = ds_copy
+
+        self._test_ds()
+
+        self.ds = ds_original
+
 
     def test_get_LabeledDataStorage(self):
         pass
 
     def test_make_folds(self):
-        pass
+        ds_original = self.ds.copy_storage()
+        self.ds.make_folds(3, shuffle=False)
+        self.assertRaises(ValueError, self.ds.make_folds, 0.2)
 
-    def test_get_fold(self):
-        pass
+        self.ds = ds_original
+
+
+
+    def _test_get_fold(self):
+
+        train, test = self.ds.get_folds(2)
+
 
     def test_get_n_folds(self):
         pass
 
     def test_plot(self):
         pass
+
+    def _test_ds(self):
+
+        self.test_set_weights()
+        self.test_get_weights()
+        self.test_data()
+        self.test_columns()
+        self.test_data_type()
+        self.test_set_targets()
+        self.test_get_index()
+        self.test_pandasDF()
+        self.test_get_targets()
+        self.test_make_dataset()
+        self.test_get_LabeledDataStorage()
 
     def tearDown(self):
 
@@ -246,12 +279,37 @@ class TestHEPDataStoragePandasDF(TestHEPDataStorageMixin, TestCase):
         return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
 
 
+class TestHEPDataStorageFolding(TestHEPDataStorageMixin, TestCase):
+    def _generate_data(self, data, targets, weights):
+        self.truth_data_type = "df"
+        return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
+
+    def _create_ds(self):
+
+        tmp_data_for_hepds = self.data_for_hepds*2
+        tmp_data_for_hepds.set_index([list(range(100, 100+len(tmp_data_for_hepds)))], inplace=True)
+        tmp_data_for_hepds3 = copy.deepcopy(tmp_data_for_hepds)
+        tmp_data_for_hepds3.set_index([list(range(200, 200 + len(tmp_data_for_hepds3)))], inplace=True)
+
+        data_tmp = pd.concat([tmp_data_for_hepds, self.data_for_hepds, tmp_data_for_hepds3], axis=0)
+
+
+        ds_tmp = HEPDataStorage(data_tmp, target=3 * list(self.target_for_hepds),
+                              sample_weights=np.concatenate([self.weights_for_hepds for _ in range(3)]),
+                             # index=self.truth_index,  # NO index, because it is saved sorted
+                              data_name=self.truth_name, data_name_addition=self.truth_name_addition)
+
+        ds_tmp.make_folds(3, shuffle=False)
+        ds_tmp = ds_tmp.get_fold(1)
+
+        return ds_tmp[1]
+
+
 class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
     import root_numpy
     import rootpy
 
     def _generate_data(self, data, targets, weights):
-
         from root_pandas import to_root
 
         import tempfile
@@ -266,19 +324,15 @@ class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
                      'treename': 'DecayTree',
                      'branches': ['a', 'b', 'c', 'd']}
 
-
         return root_dict, copy.deepcopy(targets), 'root_w'
 
-        def _create_ds(self):
-            return HEPDataStorage(self.data_for_hepds, target=self.target_for_hepds,
-                                  sample_weights=self.weights_for_hepds,
-                                  index=self.truth_index,  # NO index, because it is saved sorted
-                                  data_name=self.truth_name, data_name_addition=self.truth_name_addition)
+    def _create_ds(self):
+        return HEPDataStorage(self.data_for_hepds, target=self.target_for_hepds,
+                              sample_weights=self.weights_for_hepds,
+                              index=self.truth_index,  # NO index, because it is saved sorted
+                              data_name=self.truth_name, data_name_addition=self.truth_name_addition)
 
 
-
-
-        return
     def _tearDown(self):
         import os
         os.remove(self.temp_file_path_root)

@@ -14,6 +14,7 @@ import copy
 
 import pandas as pd
 import numpy as np
+
 try:
     import cPickle as pickle
 except ImportError:
@@ -23,7 +24,6 @@ try:
     from root_numpy import root2array, array2root
 except ImportError:
     warnings.warn("could not import from root_numpy!")
-
 
 # both produce error (27.07.2016) when importing them if run from main.py.
 # No problem when run as main...
@@ -45,8 +45,8 @@ def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):
     percent_sig_to_keep : 0 < float <= 100
         What percentage of the data to keep in order to apply the cuts.
     """
-#    if percent_sig_to_keep < 100:
-#        raise NotImplementedError("percentage of < 100 not yet imlemented")
+    #    if percent_sig_to_keep < 100:
+    #        raise NotImplementedError("percentage of < 100 not yet imlemented")
     percentile = [0, percent_sig_to_keep]  # TODO: modify for percent_sig_to_keep
     bkg_length_before = len(bkg_data)
     bkg_length = len(bkg_data) if bkg_length in (None, 0) else bkg_length
@@ -105,7 +105,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
         filename = rootfile.get('filenames')
     treename = rootfile.get('treename')
     new_branch = to_ndarray(new_branch)
-#    new_branch.dtype = [(branch_name, 'f8')]
+    #    new_branch.dtype = [(branch_name, 'f8')]
 
     # write to ROOT-file
     write_to_root = False
@@ -115,7 +115,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
             tree = getattr(root_file, treename)  # test
             if not tree.has_branch(branch_name):
                 write_to_root = True
-    #            array2tree(new_branch, tree=tree)
+    # array2tree(new_branch, tree=tree)
     #            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
     else:
         write_mode = 'recreate'
@@ -126,6 +126,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
         return 0
     else:
         return 1
+
 
 # TODO: remove? outdated
 def format_data_weights(data_to_shape, weights):
@@ -337,7 +338,7 @@ def to_pandas(data_in, index=None, columns=None):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
         if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
-            isinstance(columns, str)):
+                isinstance(columns, str)):
 
             data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, columns=columns)
@@ -395,11 +396,11 @@ def adv_return(return_value, save_name=None):
                 print str(return_value) + " pickled to " + save_name
         else:
             pass
-# HACK how to solve logger problem?
-#            logger.error("Could not pickle data, name for file (" +
-#                         str(save_name) + ") is not a string!" +
-#                         "\n Therefore, the following data was only returned" +
-#                         " but not saved! \n Data:" + str(return_value))
+            # HACK how to solve logger problem?
+            #            logger.error("Could not pickle data, name for file (" +
+            #                         str(save_name) + ") is not a string!" +
+            #                         "\n Therefore, the following data was only returned" +
+            #                         " but not saved! \n Data:" + str(return_value))
     return return_value
 
 
@@ -411,8 +412,7 @@ def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
 
-
-#if __name__ == '__main__':
+# if __name__ == '__main__':
 #    print "running selftest"
 #    root_dict = dict(
 #        filenames='/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root',
