@@ -38,11 +38,12 @@ before_install:
 
 # install test environment
 - conda install -y coverage
-- pip install coveralls root_pandas
+- pip install coveralls
 
 install:
 - conda install matplotlib scipy numpy -y
 - conda install py-xgboost -y
+- conda install root_numpy rootpy -y
 #- pip install -U xgboost
 
 - pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
@@ -51,7 +52,7 @@ install:
 - pip install -U git+https://github.com/arogozhnikov/hep_ml.git
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies # || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 #- pip install -U -r requirements.txt
-- pip install -U rootpy root_numpy
+#- pip install -U rootpy root_numpy
 - pip install .[root] --no-dependencies
 script:
 - coverage run -m unittest discover

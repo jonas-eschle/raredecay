@@ -186,7 +186,12 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_set_weights(self):
-        pass
+        weights_original = self.ds.get_weights(normalize=False)
+        weights_truth_original = self.truth_weights
+        self.ds.weights = 3
+        self.truth_weights = np.ones(len(self.truth_weights))*3
+        self.test_get_weights()
+        self.ds.weights = weights_truth_original * 1.7
 
     def test__set_weights(self):
         pass
