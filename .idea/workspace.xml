@@ -8,11 +8,7 @@
     </enabled-run-configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42366561-8aeb-4953-a6e6-d7427df59a9a" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.travis.yml" afterPath="$PROJECT_DIR$/.travis.yml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/raredecay/tools/data_tools.py" afterPath="$PROJECT_DIR$/raredecay/tools/data_tools.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/raredecay/tools/data_storage/test_HEPDataStorage.py" afterPath="$PROJECT_DIR$/tests/raredecay/tools/data_storage/test_HEPDataStorage.py" />
-    </list>
+    <list default="true" id="42366561-8aeb-4953-a6e6-d7427df59a9a" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -28,7 +24,7 @@
     <SUITE FILE_PATH="coverage/raredecay$Unittests_for_test_HEPDataStorage_TestHEPDataStorageMixin_test_initialization.coverage" NAME="Unittests for test_HEPDataStorage.TestHEPDataStorageMixin.test_initialization Coverage Results" MODIFIED="1500575472013" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/raredecay/tools" />
     <SUITE FILE_PATH="coverage/raredecay$ml_analysis.coverage" NAME="ml_analysis Coverage Results" MODIFIED="1500545534495" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/raredecay/analysis" />
     <SUITE FILE_PATH="coverage/raredecay$__init__.coverage" NAME="__init__ Coverage Results" MODIFIED="1500572024510" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$USER_HOME$/software/anaconda3/envs/k1ee/lib/python2.7/site-packages/root_pandas" />
-    <SUITE FILE_PATH="coverage/raredecay$Unittests_in_test_HEPDataStorage_py.coverage" NAME="Unittests in test_HEPDataStorage.py Coverage Results" MODIFIED="1500754144530" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/raredecay/tools/data_storage" />
+    <SUITE FILE_PATH="coverage/raredecay$Unittests_in_test_HEPDataStorage_py.coverage" NAME="Unittests in test_HEPDataStorage.py Coverage Results" MODIFIED="1500754337821" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/raredecay/tools/data_storage" />
     <SUITE FILE_PATH="coverage/raredecay$root_test.coverage" NAME="root_test Coverage Results" MODIFIED="1500574818299" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/raredecay/tools" />
     <SUITE FILE_PATH="coverage/raredecay$Unittests_for_test_HEPDataStorage_TestHEPDataStoragePandasDF.coverage" NAME="Unittests for test_HEPDataStorage.TestHEPDataStoragePandasDF Coverage Results" MODIFIED="1500638147558" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="true" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/tests/raredecay/tools" />
   </component>
@@ -84,11 +80,9 @@
       <file leaf-file-name="data_tools.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/raredecay/tools/data_tools.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="468">
-              <caret line="26" column="1" lean-forward="false" selection-start-line="26" selection-start-column="1" selection-end-line="26" selection-end-column="1" />
-              <folding>
-                <element signature="e#162#210#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="252">
+              <caret line="14" column="19" lean-forward="true" selection-start-line="14" selection-start-column="19" selection-end-line="14" selection-end-column="19" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -681,9 +675,6 @@
     <servers />
   </component>
   <component name="TestHistory">
-    <history-entry file="Unittests_in_test_HEPDataStorage_py - 2017.07.22 at 20h 43m 08s.xml">
-      <configuration name="Unittests in test_HEPDataStorage.py" configurationId="tests" />
-    </history-entry>
     <history-entry file="Unittests_in_test_HEPDataStorage_py - 2017.07.22 at 20h 44m 53s.xml">
       <configuration name="Unittests in test_HEPDataStorage.py" configurationId="tests" />
     </history-entry>
@@ -711,17 +702,19 @@
     <history-entry file="Unittests_in_test_HEPDataStorage_py - 2017.07.22 at 22h 09m 07s.xml">
       <configuration name="Unittests in test_HEPDataStorage.py" configurationId="tests" />
     </history-entry>
+    <history-entry file="Unittests_in_test_HEPDataStorage_py - 2017.07.22 at 22h 12m 20s.xml">
+      <configuration name="Unittests in test_HEPDataStorage.py" configurationId="tests" />
+    </history-entry>
   </component>
   <component name="ToolWindowManager">
     <frame x="1985" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Documentation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="FLOATING" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="-1" side_tool="false" content_ui="tabs" x="2085" y="180" width="1655" height="856" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32925585" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.21406728" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.21406728" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.15363881" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.2991914" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -764,9 +757,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="18" column="19" lean-forward="false" selection-start-line="18" selection-start-column="19" selection-end-line="18" selection-end-column="19" />
-          <folding>
-            <element signature="e#162#210#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -809,9 +800,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="18" column="19" lean-forward="false" selection-start-line="18" selection-start-column="19" selection-end-line="18" selection-end-column="19" />
-          <folding>
-            <element signature="e#162#210#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -861,9 +850,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="18" column="19" lean-forward="false" selection-start-line="18" selection-start-column="19" selection-end-line="18" selection-end-column="19" />
-          <folding>
-            <element signature="e#162#210#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -913,9 +900,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="18" column="19" lean-forward="false" selection-start-line="18" selection-start-column="19" selection-end-line="18" selection-end-column="19" />
-          <folding>
-            <element signature="e#162#210#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -954,9 +939,7 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="0">
           <caret line="0" column="0" lean-forward="false" selection-start-line="0" selection-start-column="0" selection-end-line="0" selection-end-column="0" />
-          <folding>
-            <element signature="e#162#210#0" expanded="true" />
-          </folding>
+          <folding />
         </state>
       </provider>
     </entry>
@@ -1155,11 +1138,9 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/raredecay/tools/data_tools.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="468">
-          <caret line="26" column="1" lean-forward="false" selection-start-line="26" selection-start-column="1" selection-end-line="26" selection-end-column="1" />
-          <folding>
-            <element signature="e#162#210#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="252">
+          <caret line="14" column="19" lean-forward="true" selection-start-line="14" selection-start-column="19" selection-end-line="14" selection-end-column="19" />
+          <folding />
         </state>
       </provider>
     </entry>
