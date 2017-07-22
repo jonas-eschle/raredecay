@@ -133,10 +133,11 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_data_type(self):
-        self.assertEqual(self.truth_data_type, self.ds.data_type,)
+        self.assertEqual(self.truth_data_type, self.ds.data_type, )
 
     def test_get_index(self):
-        pass
+        nptest.assert_almost_equal(self.truth_index, self.ds.index)
+        nptest.assert_almost_equal(self.truth_index, self.ds.get_index())
 
     def test_index(self):
         nptest.assert_almost_equal(self.truth_index, self.ds.index)
@@ -175,7 +176,6 @@ class TestHEPDataStorageMixin(TestCase):
         self._test_ds()
         self.ds = ds_original
 
-
     def test__set_data(self):
         pass
 
@@ -189,9 +189,15 @@ class TestHEPDataStorageMixin(TestCase):
         weights_original = self.ds.get_weights(normalize=False)
         weights_truth_original = self.truth_weights
         self.ds.weights = 3
-        self.truth_weights = np.ones(len(self.truth_weights))*3
+        self.truth_weights = np.ones(len(self.truth_weights)) * 3
         self.test_get_weights()
-        self.ds.weights = weights_truth_original * 1.7
+        self.ds.set_weights(weights_truth_original * 1.7)
+        self.truth_weights = weights_truth_original * 1.7
+        self.test_get_weights()
+
+        # clean up
+        self.ds.set_weights(weights_original)
+        self.truth_weights = weights_truth_original
 
     def test__set_weights(self):
         pass
@@ -214,14 +220,28 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_get_targets(self):
-        index = [1, 2, 5]
-        nptest.assert_almost_equal([1, 0, 0], self.ds.get_targets(index=index))
+        indices = [1, 2, 5]
+        indices_truth = [2, 1, 5]
+        nptest.assert_almost_equal([self.truth_targets[index] for index in indices_truth], self.ds.get_targets(index=indices))
+        nptest.assert_almost_equal(self.truth_targets, self.ds.get_targets())
+        nptest.assert_almost_equal(self.truth_targets, self.ds.targets)
 
     def test__get_targets(self):
         pass
 
     def test_set_targets(self):
-        pass
+        targets_original = self.ds.get_targets()
+        targets_truth_original = self.truth_targets
+        self.ds.targets = 1
+        self.truth_targets = np.ones(len(self.truth_targets))
+        self.test_get_targets()
+        self.ds.set_targets(targets_truth_original)
+        self.truth_targets = targets_truth_original
+        self.test_get_targets()
+
+        # clean up
+        self.ds.set_targets(targets_original)
+        self.truth_targets = targets_truth_original
 
     def test__set_target(self):
         pass
@@ -245,9 +265,13 @@ class TestHEPDataStorageMixin(TestCase):
 
         self.ds = ds_original
 
-
     def test_get_LabeledDataStorage(self):
-        pass
+        from rep.data.storage import LabeledDataStorage
+
+        truth_lds = LabeledDataStorage(self.truth_df,
+                                       target=self.truth_targets,
+                                       sample_weight=self.truth_weights)
+        self.assertListEqual(truth_lds.__dict__.keys(), self.ds.get_LabeledDataStorage().__dict__.keys())
 
     def test_make_folds(self):
         ds_original = self.ds.copy_storage()
@@ -258,17 +282,14 @@ class TestHEPDataStorageMixin(TestCase):
 
         self.ds = ds_original
 
-
-
     def _test_get_fold(self):
         train, test = self.ds.get_fold(2)
-
 
     def _test_get_n_folds(self, n_folds=3):
         self.assertEqual(n_folds, self.ds.get_n_folds())
 
     def test_plot(self):
-        pass
+        self.ds.plot()
 
     def _test_ds(self):
 
@@ -304,19 +325,17 @@ class TestHEPDataStorageFolding(TestHEPDataStorageMixin, TestCase):
         return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
 
     def _create_ds(self):
-
-        tmp_data_for_hepds = self.data_for_hepds*2
-        tmp_data_for_hepds.set_index([list(range(100, 100+len(tmp_data_for_hepds)))], inplace=True)
+        tmp_data_for_hepds = self.data_for_hepds * 2
+        tmp_data_for_hepds.set_index([list(range(100, 100 + len(tmp_data_for_hepds)))], inplace=True)
         tmp_data_for_hepds3 = copy.deepcopy(tmp_data_for_hepds)
         tmp_data_for_hepds3.set_index([list(range(200, 200 + len(tmp_data_for_hepds3)))], inplace=True)
 
         data_tmp = pd.concat([tmp_data_for_hepds, self.data_for_hepds, tmp_data_for_hepds3], axis=0)
 
-
         ds_tmp = HEPDataStorage(data_tmp, target=3 * list(self.target_for_hepds),
-                              sample_weights=np.concatenate([self.weights_for_hepds for _ in range(3)]),
-                             # index=self.truth_index,  # NO index, because it is saved sorted
-                              data_name=self.truth_name, data_name_addition=self.truth_name_addition)
+                                sample_weights=np.concatenate([self.weights_for_hepds for _ in range(3)]),
+                                # index=self.truth_index,  # NO index, because it is saved sorted
+                                data_name=self.truth_name, data_name_addition=self.truth_name_addition)
 
         ds_tmp.make_folds(3, shuffle=False)
         ds_tmp = ds_tmp.get_fold(1)
@@ -325,15 +344,12 @@ class TestHEPDataStorageFolding(TestHEPDataStorageMixin, TestCase):
 
 
 class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
-
-
     def _generate_data(self, data, targets, weights):
         import inspect
         import os
 
         root_data_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
         self.temp_file_path_root = root_data_folder + "/ds1.root"
-
 
         # data['root_w'] = weights
         # tmp_file = tempfile.NamedTemporaryFile(suffix='.root', delete=False)
@@ -353,9 +369,9 @@ class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
                               data_name=self.truth_name, data_name_addition=self.truth_name_addition)
 
 
-    # def _tearDown(self):
-    #     import os
-    #     os.remove(self.temp_file_path_root)
+        # def _tearDown(self):
+        #     import os
+        #     os.remove(self.temp_file_path_root)
 
 
 if __name__ == '__main__':
