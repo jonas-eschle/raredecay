@@ -10,9 +10,6 @@ import numpy.testing as nptest
 import pandas as pd
 import pandas.util.testing as pdtest
 
-import raredecay
-import raredecay.tools
-import raredecay.tools.data_storage
 from raredecay.tools.data_storage import HEPDataStorage
 
 
@@ -39,7 +36,7 @@ class TestHEPDataStorageMixin(TestCase):
 
     def _set_truth2(self):
         self.truth_df2, self.truth_targets2, self.truth_weights2 = self._make_dataset2()
-        self.data_for_hepds2, self.target_for_hepds2, self.weights_for_hepds2 = self._generate_data(
+        self.data_for_hepds2, self.target_for_hepds2, self.weights_for_hepds2 = self._generate_data2(
                 copy.deepcopy(self.truth_df2),
                 copy.deepcopy(self.truth_targets2),
                 copy.deepcopy(self.truth_weights2))
@@ -60,7 +57,8 @@ class TestHEPDataStorageMixin(TestCase):
         self.truth_name_addition = "ds1add"
         return
 
-    def _make_dataset(self):
+    @staticmethod
+    def _make_dataset():
         index = [0, 2, 1, 3, 4, 5, 6, 7, 8]
         data = pd.DataFrame({'a': list(range(9)),
                              'b': list(range(10, 19)),
@@ -68,10 +66,10 @@ class TestHEPDataStorageMixin(TestCase):
                              'd': list(range(30, 39))}, index=index)
         targets = [1, 0, 1, 0, 1, 0, 1, 0, 1]
         weights = np.array([1, 1, 1, 1, 1, 2, 3, 4, 0.25])
-        index = [0, 2, 1, 3, 4, 5, 6, 7, 8]
         return (copy.deepcopy(obj) for obj in (data, targets, weights, index))
 
-    def _make_dataset2(self):
+    @staticmethod
+    def _make_dataset2():
         data = pd.DataFrame({'a': list(range(200, 203)),
                              'b': list(range(210, 213)),
                              'c': list(range(220, 223)),
@@ -90,6 +88,16 @@ class TestHEPDataStorageMixin(TestCase):
         self.truth_data_type = "df"
         return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
 
+    def _generate_data2(self, data, targets, weights):
+        """Return data file ready to be passed into HEPDataStorage and creating file if necessary
+        OVERRIDE THIS METHOD (do not depend on the default base implementation)
+        Returns
+        -------
+        data
+        """
+        self.truth_data_type2 = "df"
+        return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
+
     def test_initialization(self):
         pdtest.assert_frame_equal(self.truth_df, self.ds.pandasDF())
         nptest.assert_almost_equal(self.truth_targets, self.ds.get_targets())
@@ -97,7 +105,7 @@ class TestHEPDataStorageMixin(TestCase):
         nptest.assert_almost_equal(self.truth_weights_normalized,
                                    self.ds.get_weights())
 
-        pdtest.assert_frame_equal(self.ds2.pandasDF(), self.truth_df2)
+        pdtest.assert_frame_equal(self.truth_df2, self.ds2.pandasDF())
         nptest.assert_almost_equal(self.truth_targets2, self.ds2.get_targets())
         nptest.assert_almost_equal(self.truth_weights2, self.ds2.weights)
         nptest.assert_almost_equal(self.truth_weights_normalized2,
@@ -125,7 +133,7 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_data_type(self):
-        self.assertEqual(self.ds.data_type, self.truth_data_type)
+        self.assertEqual(self.truth_data_type, self.ds.data_type,)
 
     def test_get_index(self):
         pass
@@ -161,7 +169,12 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def test_set_data(self):
-        pass
+        ds_tmp = self.ds.copy_storage()
+        ds_original = self.ds
+        ds_tmp.set_data(copy.deepcopy(self.truth_df))
+        self._test_ds()
+        self.ds = ds_original
+
 
     def test__set_data(self):
         pass
@@ -234,6 +247,8 @@ class TestHEPDataStorageMixin(TestCase):
     def test_make_folds(self):
         ds_original = self.ds.copy_storage()
         self.ds.make_folds(3, shuffle=False)
+        self._test_get_fold()
+        self._test_get_n_folds(3)
         self.assertRaises(ValueError, self.ds.make_folds, 0.2)
 
         self.ds = ds_original
@@ -241,12 +256,11 @@ class TestHEPDataStorageMixin(TestCase):
 
 
     def _test_get_fold(self):
+        train, test = self.ds.get_fold(2)
 
-        train, test = self.ds.get_folds(2)
 
-
-    def test_get_n_folds(self):
-        pass
+    def _test_get_n_folds(self, n_folds=3):
+        self.assertEqual(n_folds, self.ds.get_n_folds())
 
     def test_plot(self):
         pass
@@ -306,21 +320,22 @@ class TestHEPDataStorageFolding(TestHEPDataStorageMixin, TestCase):
 
 
 class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
-    import root_numpy
-    import rootpy
+
 
     def _generate_data(self, data, targets, weights):
-        from root_pandas import to_root
+        import inspect
+        import os
 
-        import tempfile
+        root_data_folder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+        self.temp_file_path_root = root_data_folder + "/ds1.root"
 
-        data['root_w'] = weights
-        tmp_file = tempfile.NamedTemporaryFile(suffix='.root', delete=False)
-        self.temp_file_path_root = tmp_file.name
-        to_root(data.loc[data.index], tmp_file.name, key='DecayTree')
+
+        # data['root_w'] = weights
+        # tmp_file = tempfile.NamedTemporaryFile(suffix='.root', delete=False)
+        # to_root(data.loc[data.index], tmp_file.name, key='DecayTree')
         self.truth_data_type = "root"
 
-        root_dict = {'filenames': tmp_file.name,
+        root_dict = {'filenames': self.temp_file_path_root,
                      'treename': 'DecayTree',
                      'branches': ['a', 'b', 'c', 'd']}
 
@@ -333,9 +348,9 @@ class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
                               data_name=self.truth_name, data_name_addition=self.truth_name_addition)
 
 
-    def _tearDown(self):
-        import os
-        os.remove(self.temp_file_path_root)
+    # def _tearDown(self):
+    #     import os
+    #     os.remove(self.temp_file_path_root)
 
 
 if __name__ == '__main__':

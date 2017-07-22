@@ -264,8 +264,9 @@ class HEPDataStorage(object):
                 self._columns = data_tools.to_list(self._data['branches'])
             elif self._data_type == 'df':
                 self._columns = data_tools.to_list(self._data.columns.values)
-            elif self._data_type == 'array':
-                self._columns = ['feature_' + str(i) for i in range(len(self._data))]
+            # TODO: remove below?
+            # elif self._data_type == 'array':
+            #     self._columns = ['feature_' + str(i) for i in range(len(self._data))]
         else:
 
             self._columns = columns
@@ -282,8 +283,9 @@ class HEPDataStorage(object):
                                                               **temp_root_dict)))
             elif self._data_type == 'df':
                 self._length = len(self._data)
-            elif self._data_type == 'array':
-                self._length = self._data.shape[1]
+            # TODO: remove below?
+            # elif self._data_type == 'array':
+            #     self._length = self._data.shape[1]
 
         else:
             self._length = len(index)
@@ -302,8 +304,9 @@ class HEPDataStorage(object):
                 data_type = 'root'
         elif isinstance(data, pd.DataFrame):
             data_type = 'df'
-        elif isinstance(data, (np.ndarray, np.array)):
-            data_type = 'array'
+        # TODO: remove below
+        # elif isinstance(data, (np.ndarray, np.array)):
+        #     data_type = 'array'
 
         return data_type
 
@@ -358,18 +361,13 @@ class HEPDataStorage(object):
         elif self._data_type == 'df':
 
             self._data = self._make_df(index=self._index)  # No cols, it's set above
-        # numpy array
-        elif self._data_type == 'array':
-            self._data = self._make_df(index=self._index)
-            warnings.warn(DeprecationWarning, "Not safe, it's better to use pandas DataFrame")
+        # TODO: remove below?
+        # elif self._data_type == 'array':
+        #     self._data = self._make_df(index=self._index)
+        #     warnings.warn(DeprecationWarning, "Not safe, it's better to use pandas DataFrame")
         else:
             raise NotImplementedError("Other dataformats are not yet implemented")
 
-# TODO: implement pickleable data?
-#
-#    @property
-#    def labels(self):
-#        return self._label_dic.get(self.columns)
 
     def get_weights(self, index=None, normalize=True, **kwargs):
         """Return the weights of the specified indeces or, if None, return all.
@@ -579,8 +577,9 @@ class HEPDataStorage(object):
             data = data_tools.to_pandas(temp_root_dict, columns=columns)
             data.set_index([self.index], inplace=True, verify_integrity=True)
 
-        elif self._data_type == 'array':
-            data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
+        # TODO: remove below?
+        # elif self._data_type == 'array':
+        #     data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
         elif self._data_type == 'df':
             if columns is not None:
                 data = data[columns]
