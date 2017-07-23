@@ -298,7 +298,7 @@ class HEPDataStorage(object):
                 #     self._columns = ['feature_' + str(i) for i in range(len(self._data))]
         else:
 
-            self._columns = columns
+            self._columns = data_tools.to_list(columns)
 
     def _set_length(self):
         # determine whether to set length individually from the data or not
@@ -308,7 +308,7 @@ class HEPDataStorage(object):
                 temp_root_dict = copy.deepcopy(self._data)
                 temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
                 temp_branch = data_tools.to_list(temp_branch)
-                self._length = len(data_tools.to_ndarray(dict(branches=temp_branch[0],
+                self._length = len(data_tools.to_pandas(dict(branches=temp_branch[0],
                                                               **temp_root_dict)))
             elif self._data_type == 'df':
                 self._length = len(self._data)

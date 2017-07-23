@@ -443,6 +443,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     from raredecay.tools.metrics import punzi_fom, precision_measure
 
     # check if predictions can be saved: need to be root-file and no selection applied
+
     output = {}
     if save_real_pred:
         if real_data.data_type != 'root':
@@ -459,7 +460,12 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             raise ValueError("MC pred set to be saved, but has selection " +
                              mc_data.data['selection'] + " applied")
 
+    # backwards compatibility
+
+
     bkg_sel = [bkg_sel] if not isinstance(bkg_sel, list) else bkg_sel
+    if bkg_sel[0].startswith('noexpand:'):
+        bkg_sel = bkg_sel[9:]
 
     pred_real = []
     pred_mc = []
