@@ -53,8 +53,10 @@ before_install:
 - pip install future
 
 install:
-- conda install root-numpy rootpy -y
+
 - conda install matplotlib scipy numpy -y
+#- conda install root-numpy rootpy -y
+- pip install root_numpy rootpy
 - conda install py-xgboost -y
 - pip install root_pandas
 #- pip install -U xgboost

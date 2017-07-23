@@ -388,7 +388,7 @@ def to_pandas(data_in, index=None, columns=None):
         The data to be converted
     """
     # HACK START
-    #return to_pandas_old(data_in=data_in, index=index, columns=columns)
+    return to_pandas_old(data_in=data_in, index=index, columns=columns)
     # HACK END
     from root_pandas import read_root
 
