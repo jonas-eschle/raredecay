@@ -369,7 +369,7 @@ def to_pandas(data_in, index=None, columns=None):
             data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, columns=columns)
         if index is not None:
-            data_in = data_in.loc[[index]]
+            data_in = data_in.loc[index]
     elif isinstance(data_in, pd.DataFrame):
         pass
     else:

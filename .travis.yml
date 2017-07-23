@@ -41,10 +41,10 @@ before_install:
 - conda info -a
 
 - conda config --add channels https://conda.anaconda.org/NLeSC
+- conda config --add channelshttps://conda.anaconda.org/nlesc/label/dev
 
-- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION
-- conda install -c https://conda.anaconda.org/nlesc/label/dev root=6.06 -y
-- conda install -c https://conda.anaconda.org/nlesc/label/dev root-numpy -y
+- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6.06
+- conda install -c  root-numpy -y
 
 - source activate raredecay-env
 
