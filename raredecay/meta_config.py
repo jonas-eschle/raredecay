@@ -44,7 +44,8 @@ try:
     install_aliases()
     from past.builtins import basestring
 except ImportError as err:
-        pass
+    basestring = str
+
 # Python 2 backwards compatibility overhead END
 
 import pickle as pickle

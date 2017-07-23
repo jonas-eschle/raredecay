@@ -30,7 +30,8 @@ except ImportError as err:
         else:
             raise err
     else:
-        pass
+        basestring = str
+
 # Python 2 backwards compatibility overhead END
 
 RUN_NAME = 'Classifier optimization'

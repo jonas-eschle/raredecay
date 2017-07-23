@@ -33,7 +33,8 @@ except ImportError as err:
         else:
             raise err
     else:
-        pass
+        basestring = str
+
 # Python 2 backwards compatibility overhead END
 
 import copy
@@ -465,7 +466,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
     bkg_sel = [bkg_sel] if not isinstance(bkg_sel, list) else bkg_sel
     if bkg_sel[0].startswith('noexpand:'):
-        bkg_sel = bkg_sel[9:]
+        bkg_sel = bkg_sel[0][9:]
 
     pred_real = []
     pred_mc = []

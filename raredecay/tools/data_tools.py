@@ -30,7 +30,8 @@ except ImportError as err:
         else:
             raise err
     else:
-        pass
+        basestring = str
+
 # Python 2 backwards compatibility overhead END
 
 import warnings
@@ -393,7 +394,6 @@ def to_pandas(data_in, index=None, columns=None):
 
     root_pandas_numpy_map = dict(filenames='paths', treename='key', branches='columns',
                                  selection='where')
-    columns = to_list(columns)
 
     if is_root(data_in):
         is_root2array = False
@@ -402,6 +402,7 @@ def to_pandas(data_in, index=None, columns=None):
                 is_root2array = True
                 del data_in[key]
                 data_in[root_pandas_numpy_map[key]] = val
+        data_in['columns'] = to_list(data_in['columns'])
         if is_root2array:
             data_in['columns'] = ['noexpand:'+col for col in data_in['columns'] if not col.startswith('noexpand:')]  # remove the noexpand:
         data_in = read_root(**data_in)  # why **? it's a root dict
