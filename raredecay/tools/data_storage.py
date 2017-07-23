@@ -599,6 +599,7 @@ class HEPDataStorage(object):
 
         if self._data_type == 'root':
             # update root dictionary
+            # TODO: change keyword branches or something, due to incompatibility with root_pandas
             temp_root_dict = dict(data, **{'branches': columns})
             for key, val in list(temp_root_dict.items()):
                 if dev_tool.is_in_primitive(val, None):
