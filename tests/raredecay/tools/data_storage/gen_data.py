@@ -15,7 +15,6 @@ try:
 except ImportError as err:
     if sys.version_info[0] < 3:
             raise err
-
 # Python 2 backwards compatibility overhead END
 
 

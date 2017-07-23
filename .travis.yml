@@ -24,7 +24,7 @@ before_install:
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O anaconda.sh;
         MAYOU_PYTHON_VERSION=$TRAVIS_PYTHON_VERSION;
     elif [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
-        MAYOU_PYTHON_VERSION="3.4";
+        MAYOU_PYTHON_VERSION="3.5";
         wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O anaconda.sh;
   fi
   
@@ -37,10 +37,10 @@ before_install:
 
 - conda info -a
 
-- conda config --add channels https://conda.anaconda.org/NLeSC
+#- conda config --add channels https://conda.anaconda.org/NLeSC
 
 - conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION
-- conda install -c https://conda.anaconda.org/nlesc/label/dev root root_numpy rootpy -y
+- conda install -c https://conda.anaconda.org/nlesc/label/dev root rootpy root_numpy -y
 
 - source activate raredecay-env
 

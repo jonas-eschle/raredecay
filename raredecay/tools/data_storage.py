@@ -602,7 +602,8 @@ class HEPDataStorage(object):
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
             data = data_tools.to_pandas(temp_root_dict, columns=columns)
-            data.set_index([self.index], inplace=True, verify_integrity=True)
+            if index is not None:
+                data.set_index([index], inplace=True, verify_integrity=True)
 
         # TODO: remove below?
         # elif self._data_type == 'array':
