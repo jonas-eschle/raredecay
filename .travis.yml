@@ -3,8 +3,8 @@ os: linux
 language: python
 python:
  - '2.7'
-# - '3.4'
- - '3.5'
+ - '3.4'
+# - '3.5'
 # - '3.6'
 #matrix:
 # include:
@@ -42,9 +42,9 @@ before_install:
 - conda info -a
 
 - conda config --add channels https://conda.anaconda.org/NLeSC
-- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
+#- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
 
-- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6.06
+- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION
 - source activate raredecay-env
 
 # install test environment
@@ -56,8 +56,9 @@ install:
 
 - conda install matplotlib scipy numpy -y
 #- conda install root-numpy rootpy -y
-- pip install root_numpy rootpy
-- conda install py-xgboost -y
+- pip install rootpy root_numpy 
+#- conda install py-xgboost -y
+pip install xgboost
 - pip install root_pandas
 #- pip install -U xgboost
 
