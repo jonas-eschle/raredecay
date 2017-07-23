@@ -40,7 +40,7 @@ before_install:
 - conda config --add channels https://conda.anaconda.org/NLeSC
 
 - conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION
-- conda install -c https://conda.anaconda.org/nlesc/label/dev root root_numpy rootpy-y
+- conda install -c https://conda.anaconda.org/nlesc/label/dev root root_numpy rootpy -y
 
 - source activate raredecay-env
 
