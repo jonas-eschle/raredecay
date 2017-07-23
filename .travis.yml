@@ -58,7 +58,7 @@ install:
 #- conda install root-numpy rootpy -y
 - pip install rootpy root_numpy 
 #- conda install py-xgboost -y
-pip install xgboost
+- pip install xgboost
 - pip install root_pandas
 #- pip install -U xgboost
 
