@@ -601,9 +601,9 @@ class HEPDataStorage(object):
             for key, val in list(temp_root_dict.items()):
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
-            data = data_tools.to_pandas(temp_root_dict, columns=columns)
-            if index is not None:
-                data.set_index([index], inplace=True, verify_integrity=True)
+            data = data_tools.to_pandas(temp_root_dict, columns=columns, index=index)
+            # if index is not None:
+            #     data.set_index([index], inplace=True, verify_integrity=True)
 
         # TODO: remove below?
         # elif self._data_type == 'array':
