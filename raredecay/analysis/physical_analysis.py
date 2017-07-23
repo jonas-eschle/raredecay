@@ -467,6 +467,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     bkg_sel = [bkg_sel] if not isinstance(bkg_sel, list) else bkg_sel
     if bkg_sel[0].startswith('noexpand:'):
         bkg_sel = bkg_sel[0][9:]
+    else:
+        bkg_sel = bkg_sel[0]
 
     pred_real = []
     pred_mc = []

@@ -55,6 +55,7 @@ install:
 - conda install root-numpy rootpy -y
 - conda install matplotlib scipy numpy -y
 - conda install py-xgboost -y
+- pip install root_pandas
 #- pip install -U xgboost
 
 - pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
