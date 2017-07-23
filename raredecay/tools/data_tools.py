@@ -240,8 +240,8 @@ def is_root(data_to_check):
     flag = False
     if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
-        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
-                                            str(data_to_check) + "is not a string")
+#        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
+#                                            str(data_to_check) + "is not a string")
         if path_name.endswith(meta_config.ROOT_DATATYPE):
             flag = True
     return flag
@@ -346,6 +346,34 @@ def to_ndarray(data_in, float_array=True):
     if float_array:
         data_in = np.asfarray(data_in)
     assert is_ndarray(data_in), "Error, could not convert data to numpy array"
+    return data_in
+
+
+def to_pandas_old(data_in, index=None, columns=None):
+    """Convert data from numpy or root to pandas dataframe.
+
+    Convert data safely to pandas, whatever the format is.
+    Parameters
+    ----------
+    data_in : any reasonable data
+        The data to be converted
+    """
+    if is_root(data_in):
+        data_in = root2array(**data_in)  # why **? it's a root dict
+    if is_list(data_in):
+        data_in = np.array(data_in)
+    if is_ndarray(data_in):
+        if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
+                isinstance(columns, str)):
+
+            data_in = to_ndarray(data_in)
+        data_in = pd.DataFrame(data_in, columns=columns)
+        if index is not None:
+            data_in = data_in.loc[index]
+    elif isinstance(data_in, pd.DataFrame):
+        pass
+    else:
+        raise TypeError("Could not convert data to pandas. Data: " + data_in)
     return data_in
 
 

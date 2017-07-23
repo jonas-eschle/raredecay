@@ -230,6 +230,9 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
                          run_message="This is a test-run to test the package",
                          prompt_for_input=False):
     """Saves output to file,"""
+    run_name = str(run_name)
+    run_message = str(run_message)
+    file_path = str(file_path)
     assert isinstance(run_name, (str, int)), "run_name has to be a string or int"
     config.RUN_NAME = str(run_name)
     config.OUTPUT_CFG['run_name'] = str(run_name)
