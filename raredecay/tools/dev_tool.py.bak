@@ -6,34 +6,10 @@ Created on Mon Mar 21 21:25:26 2016
 
 Contains several useful tools for all kind of programs
 """
-# Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
-import sys
-import warnings
-import raredecay.meta_config
+from __future__ import division, absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-
-    install_aliases()
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        pass
-# Python 2 backwards compatibility overhead END
-
-from past.builtins import basestring
 import pandas as pd
 import numpy as np
 import collections
@@ -200,7 +176,7 @@ def check_var(variable, allowed_range, default=None, logger=None):
     # Dictionary
     if variable not in allowed_range:
         logger.warning(str(variable) + " is not a valid choice of " +
-                       str(list(allowed_range.keys())) +
+                       str(allowed_range.keys()) +
                        ". Instead, the default value was used: " +
                        default)
         variable = default

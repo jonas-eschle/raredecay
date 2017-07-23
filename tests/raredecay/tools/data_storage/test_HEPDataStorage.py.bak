@@ -1,7 +1,6 @@
 from __future__ import absolute_import, print_function, division
 from __future__ import unicode_literals
 
-from builtins import range
 import copy
 
 import unittest
@@ -273,7 +272,7 @@ class TestHEPDataStorageMixin(TestCase):
         truth_lds = LabeledDataStorage(self.truth_df,
                                        target=self.truth_targets,
                                        sample_weight=self.truth_weights)
-        self.assertListEqual(list(truth_lds.__dict__.keys()), list(self.ds.get_LabeledDataStorage().__dict__.keys()))
+        self.assertListEqual(truth_lds.__dict__.keys(), self.ds.get_LabeledDataStorage().__dict__.keys())
 
     def test_make_folds(self):
         ds_original = self.ds.copy_storage()

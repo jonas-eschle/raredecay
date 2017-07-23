@@ -9,10 +9,6 @@ with KFolds and test several scores.
 
 The raredecay package is available at https://github.com/mayou36/raredecay
 """
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import unicode_literals
 from raredecay import settings
 # first of all, it is advised to set some run-configurations like logger-level,
 # verbosity, n_cpu and output-path. It is not mandatory to do this, but if you

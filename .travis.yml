@@ -40,7 +40,7 @@ before_install:
 - conda config --add channels https://conda.anaconda.org/NLeSC
 
 - conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION
-- conda install -c https://conda.anaconda.org/nlesc/label/dev root -y
+- conda install -c https://conda.anaconda.org/nlesc/label/dev root root_numpy rootpy-y
 
 - source activate raredecay-env
 
@@ -51,7 +51,6 @@ before_install:
 install:
 - conda install matplotlib scipy numpy -y
 - conda install py-xgboost -y
-- conda install root_numpy rootpy -y
 #- pip install -U xgboost
 
 - pip install -r https://github.com/yandex/rep/raw/master/requirements.txt

@@ -4,14 +4,6 @@ Created on Thu Apr 28 16:26:12 2016
 
 @author: Jonas Eschle "Mayou36"
 """
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import unicode_literals
-
-from builtins import (ascii, bytes, chr, dict, filter, hex, input,
-                      int, map, next, oct, open, pow, range, round,
-                      str, super, zip)
 
 from setuptools import setup
 import subprocess

@@ -32,22 +32,11 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
 # ==============================================================================
 # DO NOT IMPORT ANY PACKAGE (run configuration) DEPENDENCY!
 # ==============================================================================
-# Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+from __future__ import division, absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-
-    install_aliases()
-except ImportError as err:
-        pass
-# Python 2 backwards compatibility overhead END
-
-import pickle as pickle
+import cPickle as pickle
 import multiprocessing
 import random
 
@@ -131,7 +120,6 @@ GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/" + \
 # IF the right environment is used. Don't touch until you have good reasons to do.
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
 SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
-SUPPRESS_FUTURE_IMPORT_ERROR = False
 
 # ==============================================================================
 # Parameters which may affect stability
@@ -352,7 +340,7 @@ def set_plot_verbosity(new_plot_verbosity):
 
 
 def _check_verbosity(verbosity):
-    if verbosity not in list(range(-1, 7)):
+    if verbosity not in range(-1, 7):
         raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
 
 # ==============================================================================

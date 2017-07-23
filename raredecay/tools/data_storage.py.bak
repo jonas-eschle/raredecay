@@ -7,31 +7,9 @@ Created on Thu Apr  7 22:10:29 2016
 This module contains the data handling. The main part is the class which
 takes data, weights, targets, names and converts automatically, plots and more.
 """
-# Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
-import sys
-import warnings
-import raredecay.meta_config
-
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-    install_aliases()
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        pass
-# Python 2 backwards compatibility overhead END
+from __future__ import division, absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import copy
 import warnings
@@ -270,7 +248,7 @@ class HEPDataStorage(object):
             elif self._data_type == 'df':
                 index_list = self._data.index.tolist()
                 # TODO: remove HACK with length, replace with len(self)
-                if not index_list == list(range(len(self))):  # if special indexing
+                if not index_list == range(len(self)):  # if special indexing
                     self._index = index_list
         else:
             self._index = index
@@ -598,7 +576,7 @@ class HEPDataStorage(object):
         if self._data_type == 'root':
             # update root dictionary
             temp_root_dict = dict(data, **{'branches': columns})
-            for key, val in list(temp_root_dict.items()):
+            for key, val in temp_root_dict.items():
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
             data = data_tools.to_pandas(temp_root_dict, columns=columns)
@@ -1115,12 +1093,12 @@ class HEPDataStorage(object):
                 figure = self.__figure_number + 1
                 self.__figure_number += 1
                 assert safety < meta_config.MAX_FIGURES, "stuck in an endless while loop"
-                if figure not in list(self.__figure_dic.keys()):
+                if figure not in self.__figure_dic.keys():
                     x_limits_col = {}
                     # TODO: improve figure dict with title....
                     self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
                     break
-        elif figure not in list(self.__figure_dic.keys()):
+        elif figure not in self.__figure_dic.keys():
             x_limits_col = {}
             self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
         out_figure = out.save_fig(figure, importance=importance,

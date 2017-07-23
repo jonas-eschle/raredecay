@@ -31,10 +31,6 @@
 # ones.
 
 # to show content of both __init__ and class.__doc__ in documentation
-from __future__ import print_function
-from __future__ import division
-from __future__ import absolute_import
-from __future__ import unicode_literals
 autoclass_content = 'both'
 
 

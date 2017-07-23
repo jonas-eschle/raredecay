@@ -4,32 +4,9 @@ Created on Wed Jul 13 14:21:16 2016
 
 @author: Jonas Eschle "Mayou36"
 """
-# Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
-import sys
-import warnings
-import raredecay.meta_config
-
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-
-    install_aliases()
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        pass
-# Python 2 backwards compatibility overhead END
+from __future__ import division, absolute_import
+from __future__ import print_function
+from __future__ import unicode_literals
 
 import math as mt
 import numpy as np
@@ -55,11 +32,11 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
     real_data.make_folds(n_folds)
 
     # mc reweighted vs mc
-    for fold in range(n_folds):
+    for fold in xrange(n_folds):
         mc_data_train, mc_data_test = mc_data.get_fold(fold)
         # TODO: no real folds? It is better to test on full data always?
 #        mc_data_train, mc_data_test = real_data.get_fold(fold)
-        for split in range(splits * 2):  # because two possibilities per split
+        for split in xrange(splits * 2):  # because two possibilities per split
             if split % 2 == 0:
                 mc_data_train.make_folds(2)
             mc_normal, mc_reweighted = mc_data_train.get_fold(split % 2)
@@ -80,7 +57,7 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
     output['mc_distance'] = np.mean(score_mc_vs_mcr)
 
     # mc_reweighted vs real
-    for fold in range(n_folds):
+    for fold in xrange(n_folds):
         real_train, real_test = real_data.get_fold(fold)
         mc_train, mc_test = mc_data.get_fold(fold)
         mc_test.set_weights(old_mc_weights)
