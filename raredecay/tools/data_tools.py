@@ -400,7 +400,6 @@ def to_pandas(data_in, index=None, columns=None):
             if key in root_pandas_numpy_map:
                 del data_in[key]
                 data_in[root_pandas_numpy_map[key]] = val
-                print(data_in)
         data_in = read_root(**data_in)  # why **? it's a root dict
     if is_list(data_in):
         data_in = np.array(data_in)

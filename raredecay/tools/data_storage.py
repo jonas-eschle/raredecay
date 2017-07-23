@@ -1155,9 +1155,6 @@ class HEPDataStorage(object):
             self.__figure_dic[figure].update({column: x_limits})
 
             plt.subplot(subplot_row, subplot_col, col_id)
-            print("debug: column", column)
-            if column == 'B_DTF_PV_chi2[0]':
-                print('start debuggin?')
             plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
                      range=x_limits, label=label_name, **hist_settings)
 
