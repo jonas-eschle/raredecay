@@ -386,8 +386,22 @@ def to_pandas(data_in, index=None, columns=None):
     data_in : any reasonable data
         The data to be converted
     """
+    # HACK START
+    #return to_pandas_old(data_in=data_in, index=index, columns=columns)
+    # HACK END
+    from root_pandas import read_root
+
+    root_pandas_numpy_map = dict(filenames='paths', treename='key', branches='columns',
+                                 selection='where')
+
+
     if is_root(data_in):
-        data_in = root2array(**data_in)  # why **? it's a root dict
+        for key, val in copy.deepcopy(list(data_in.items())):
+            if key in root_pandas_numpy_map:
+                del data_in[key]
+                data_in[root_pandas_numpy_map[key]] = val
+                print(data_in)
+        data_in = read_root(**data_in)  # why **? it's a root dict
     if is_list(data_in):
         data_in = np.array(data_in)
     if is_ndarray(data_in):

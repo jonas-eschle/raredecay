@@ -51,6 +51,7 @@ before_install:
 # install test environment
 - conda install -y coverage
 - pip install coveralls
+- pip install future
 
 install:
 - conda install matplotlib scipy numpy -y

@@ -577,7 +577,7 @@ class OutputHandler(object):
             if self._path_to_be_overriden is not None:
                 stop_del = ''
                 if not meta_config.NO_PROMPT_ASSUME_YES:
-                    stop_del = eval(input("ATTENTION! The folder " + self._path_to_be_overriden +
+                    stop_del = str(input("ATTENTION! The folder " + self._path_to_be_overriden +
                                          " will be deleted and replaced with the output " +
                                          "of the current run.\nTo DELETE that folder and " +
                                          "overwrite, press ENTER.\n\nIf you want to keep the " +
@@ -608,7 +608,7 @@ class OutputHandler(object):
 
         if show_plots:
             if not meta_config.NO_PROMPT_ASSUME_YES:
-                eval(input(["Run finished, press Enter to show the plots"]))
+                str(input(["Run finished, press Enter to show the plots"]))
             plt.show()
 
         return output
