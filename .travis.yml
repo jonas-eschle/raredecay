@@ -13,12 +13,12 @@ matrix:
 
 before_install:
 
-- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
-  sudo apt-get -qq update;
-
-  sudo apt-get install python-dev libblas-dev libatlas-dev liblapack-dev gfortran g++ python-setuptools;
-  sudo apt-get install libpng-dev libjpeg8-dev libfreetype6-dev libxft-dev;
-  fi
+#- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+#  sudo apt-get -qq update;
+#
+#  sudo apt-get install python-dev libblas-dev libatlas-dev liblapack-dev gfortran g++ python-setuptools;
+#  sudo apt-get install libpng-dev libjpeg8-dev libfreetype6-dev libxft-dev;
+#  fi
 
 - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
         wget https://repo.continuum.io/archive/Anaconda3-4.4.0-Linux-x86_64.sh -O anaconda.sh;
