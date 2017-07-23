@@ -446,7 +446,7 @@ class HEPDataStorage(object):
         elif weights_ratio > 0 and second_storage is None:
             normalize_1 = weights_ratio
         else:
-            normalize_1 = normalize_2 = None
+            normalize_1 = normalize_2 = False
 
         weights_out = self._get_weights(index=index, normalize=normalize_1)
 

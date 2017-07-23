@@ -41,7 +41,7 @@ before_install:
 - conda info -a
 
 - conda config --add channels https://conda.anaconda.org/NLeSC
-- conda config --add channelshttps://conda.anaconda.org/nlesc/label/dev
+- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
 
 - conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6.06
 - conda install -c  root-numpy -y
