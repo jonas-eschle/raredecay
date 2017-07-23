@@ -18,8 +18,8 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
-
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -233,12 +233,12 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
     run_name = str(run_name)
     run_message = str(run_message)
     file_path = str(file_path)
-    assert isinstance(run_name, (str, int)), "run_name has to be a string or int"
+    assert isinstance(run_name, (basestring, int)), "run_name has to be a string or int"
     config.RUN_NAME = str(run_name)
     config.OUTPUT_CFG['run_name'] = str(run_name)
 
     if file_path is not None:
-        assert isinstance(file_path, str), "file_path has to be a string"
+        assert isinstance(file_path, basestring), "file_path has to be a string"
 
         file_path = str(file_path) if isinstance(file_path, int) else file_path
         file_path += "" if file_path.endswith("/") else "/"

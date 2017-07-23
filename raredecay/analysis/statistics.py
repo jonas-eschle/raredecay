@@ -19,6 +19,7 @@ try:
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -102,7 +103,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         returned.
     """
 
-    if not (isinstance(column, str) or len(column) == 1):
+    if not (isinstance(column, basestring) or len(column) == 1):
         raise ValueError("Fitting to several columns " + str(column) + " not supported.")
     if type(sig_pdf) == type(bkg_pdf) == None:
         raise ValueError("sig_pdf and bkg_pdf are both None-> no fit possible")
@@ -461,7 +462,7 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
     plots = int(10 / n_steps)
     current_plot = 0
 
-    if not type(predict_col) == type(fit_col) == str:
+    if not isinstance(predict_col, basestring) or not isinstance(fit_col, basestring):
         raise TypeError("predict_col and/or fit_col is not a string but has to be.")
 
     scores = []

@@ -26,8 +26,8 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
-
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -192,7 +192,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         clf = {'clf': clf}
 
     # if clf is a string only, create dict with only the type specified
-    if isinstance(clf, str):
+    if isinstance(clf, basestring):
         assert clf in __IMPLEMENTED_CLFS, "clf not implemented (yet. Make an issue;) )"
         clf = {'clf_type': clf, 'config': {}}
 
@@ -402,7 +402,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     available_time = 1
 
     # start timer if time-limit is given
-    if isinstance(max_feature_elimination, str):
+    if isinstance(max_feature_elimination, basestring):
         max_feature_elimination = max_feature_elimination.split(":")
         assert len(max_feature_elimination) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
         available_time = (3600 * int(max_feature_elimination[0]) +
@@ -641,7 +641,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     logger.info("Maximum possible evaluations: " + str(max_eval))
 
     # get a time estimation and extrapolate to get n_eval
-    if isinstance(n_eval, str) and (meta_config.n_cpu_max * 2 < max_eval):
+    if isinstance(n_eval, basestring) and (meta_config.n_cpu_max * 2 < max_eval):
         n_eval = n_eval.split(":")
         assert len(n_eval) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
         available_time = 3600 * int(n_eval[0]) + 60 * int(n_eval[1])
@@ -681,7 +681,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
         out.add_output(["Time for one round:", round(elapsed_time, 1), "sec.",
                         " Number of evaluations:", n_eval])
 
-    elif isinstance(n_eval, str):
+    elif isinstance(n_eval, basestring):
         n_eval = max_eval
 
     n_eval = min(n_eval, max_eval)

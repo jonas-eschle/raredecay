@@ -16,8 +16,8 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
-
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -155,7 +155,7 @@ class Mayou(Classifier):
             OrderedDict(self.__DEFAULT_CLF_CFG)
         else:
             self._base_estimators = base_estimators
-        if isinstance(stacking, str):
+        if isinstance(stacking, basestring):
             self._clf_1 = {stacking: None}
         elif isinstance(stacking, dict):
             self._clf_1 = stacking

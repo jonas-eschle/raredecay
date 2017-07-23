@@ -17,6 +17,7 @@ try:
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -126,13 +127,13 @@ class OutputHandler(object):
         logger_cfg = {} if logger_cfg is None else logger_cfg
         self._logger_cfg = dict(meta_config.DEFAULT_LOGGER_CFG, **logger_cfg)
 
-        assert isinstance(output_path, str), "output_path not a string"
+        assert isinstance(output_path, basestring), "output_path not a string"
         output_folders = {} if output_folders is None else output_folders
         self._output_folders = dict(meta_config.DEFAULT_OUTPUT_FOLDERS, **output_folders)
 
         # make sure no blank spaces are left in the folder names
         for key, value in list(self._output_folders.items()):
-            assert isinstance(value, str), "path is not a string: " + str(value)
+            assert isinstance(value, basestring), "path is not a string: " + str(value)
             self._output_folders[key] = value.replace(" ", "_")
 
         # ask if you want to add something to the run_name (and folder name)
@@ -187,7 +188,7 @@ class OutputHandler(object):
         # ask if you want to add something to the run_name (and folder name)
         if prompt_for_comment:
             prompt_message = "Enter an (optional) extension to the run-name and press 'enter':\n"
-            temp_add = str(eval(input(prompt_message)))
+            temp_add = str(input(prompt_message))
             run_name += " " + temp_add if temp_add != "" else ""
         self._run_name = str(run_name)
 
@@ -295,11 +296,11 @@ class OutputHandler(object):
 
         if self._save_output:
             self._pickle_folder = self._pickle_folder or to_pickle
-            if isinstance(figure, (int, str)):
+            if isinstance(figure, (int, basestring)):
                 figure = plt.figure(figure, **figure_kwargs)  # TODO: changeable?
 
             file_format = meta_config.DEFAULT_SAVE_FIG['file_format'] if file_format is None else file_format
-            if isinstance(file_format, str):
+            if isinstance(file_format, basestring):
                 file_format = [file_format]
             file_format = set(file_format)
             file_format.intersection_update(self._IMPLEMENTED_FORMATS)
@@ -316,7 +317,7 @@ class OutputHandler(object):
             self._figures[figure.get_label()] = figure_dict
         else:
             self._check_initialization()
-            if plot and isinstance(figure, (int, str)):
+            if plot and isinstance(figure, (int, basestring)):
                 figure = plt.figure(figure, **figure_kwargs)
 
         return figure
@@ -332,7 +333,7 @@ class OutputHandler(object):
         # create folders if they don't exist already
         path = self.get_plots_path()
         for format_ in self._formats_used:
-            assert isinstance(format_, str), "Format is not a string: " + str(format_)
+            assert isinstance(format_, basestring), "Format is not a string: " + str(format_)
             subprocess.call(['mkdir', '-p', path + format_])
         if self._pickle_folder:
             subprocess.call(['mkdir', '-p', path + meta_config.PICKLE_DATATYPE])
@@ -451,9 +452,9 @@ class OutputHandler(object):
             concatenated to the data written before
         """
         # initialize defaults
-        assert isinstance(obj_separator, str), \
+        assert isinstance(obj_separator, basestring), \
             (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
-        assert isinstance(data_separator, str), \
+        assert isinstance(data_separator, basestring), \
             (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
         self._check_initialization()
         do_print = 5 - round(importance) < meta_config.verbosity

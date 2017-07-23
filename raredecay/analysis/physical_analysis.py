@@ -21,8 +21,8 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
-
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -542,7 +542,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         pred_mc.sort_index(inplace=True)
 
         # save predictions
-        if isinstance(save_real_pred, (str, int)) and not isinstance(save_real_pred, bool) and predict:
+        if isinstance(save_real_pred, (basestring, int)) and not isinstance(save_real_pred, bool) and predict:
             import copy
             root_dict = copy.deepcopy(real_data.data)
 
@@ -553,7 +553,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                    treename=root_dict.get('treename'),
                                    new_branch=pred_real, branch_name=save_real_pred)
 
-        if isinstance(save_mc_pred, (str, int)) and not isinstance(save_mc_pred, bool) and predict:
+        if isinstance(save_mc_pred, (basestring, int)) and not isinstance(save_mc_pred, bool) and predict:
             root_dict = copy.deepcopy(mc_data.data)
 
             if root_dict['selection'] is not None:

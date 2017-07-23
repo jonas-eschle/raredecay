@@ -18,8 +18,8 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
-
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -30,10 +30,9 @@ except ImportError as err:
         else:
             raise err
     else:
-        pass
+        basestring = str
 # Python 2 backwards compatibility overhead END
 
-from past.builtins import basestring
 import pandas as pd
 import numpy as np
 import collections
@@ -112,7 +111,7 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     if log_file_dir is None:
         import raredecay.globals_
         log_file_dir = raredecay.globals_.out.get_logger_path()
-        if not isinstance(log_file_dir, str):
+        if not isinstance(log_file_dir, basestring):
             # set logging only to console; if 'file' was selected, no console,
             # set logging to console with level 'critical'
             if logging_mode == 'file':
@@ -259,7 +258,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif (isinstance(allowed_primitives, collections.Iterable) and
-            (not isinstance(allowed_primitives, str))):
+            (not isinstance(allowed_primitives, basestring))):
         if test_object in allowed_primitives:
             flag = True
     elif test_object is allowed_primitives:

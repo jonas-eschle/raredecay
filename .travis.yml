@@ -65,7 +65,8 @@ install:
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies # || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
-- pip install .[root] --no-dependencies
+# - pip install .[root] --no-dependencies
+- pip install .[root]
 script:
 - coverage run -m unittest discover
 

@@ -20,6 +20,7 @@ try:
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
     install_aliases()
+    from past.builtins import basestring
 except ImportError as err:
     if sys.version_info[0] < 3:
         if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
@@ -511,12 +512,12 @@ class HEPDataStorage(object):
         """
         index = self._index if index is None else index
 
-        if isinstance(sample_weights, (str, dict)) and self._data_type == 'root':
+        if isinstance(sample_weights, (basestring, dict)) and self._data_type == 'root':
             assert ((isinstance(sample_weights, list) and (len(sample_weights) == 1)) or
-                    isinstance(sample_weights, str)), "Can only be one branche"
+                    isinstance(sample_weights, basestring)), "Can only be one branche"
             assert isinstance(self._data, dict), "data should be root-dict but is no more..."
             tmp_root = copy.deepcopy(self._data)
-            if isinstance(sample_weights, str):
+            if isinstance(sample_weights, basestring):
                 sample_weights = {'branches': sample_weights}
             tmp_root.update(sample_weights)
 
