@@ -336,6 +336,20 @@ class TestHEPDataStoragePandasDF(TestHEPDataStorageMixin, TestCase):
         return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
 
 
+class TestHEPDataStorageOnTheFly(TestHEPDataStorageMixin, TestCase):
+    def _generate_data(self, data, targets, weights):
+        self.truth_data_type = "df"
+        return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
+
+    def _create_ds(self):
+        ds_tmp = HEPDataStorage(self.data_for_hepds, target=self.target_for_hepds,
+                                sample_weights=self.weights_for_hepds,
+                                # index=self.truth_index,  # NO index, because it is saved sorted
+                                data_name=self.truth_name, data_name_addition=self.truth_name_addition)
+        ds_tmp.set_data(self.data_for_hepds)
+        return ds_tmp
+
+
 class TestHEPDataStorageFolding(TestHEPDataStorageMixin, TestCase):
     def _generate_data(self, data, targets, weights):
         self.truth_data_type = "df"
