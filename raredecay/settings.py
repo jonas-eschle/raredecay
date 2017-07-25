@@ -38,6 +38,7 @@ import copy
 
 from raredecay.run_config import config
 from raredecay import meta_config
+from raredecay.tools import dev_tool
 
 # TODO: docs??
 def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
@@ -97,6 +98,12 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     out : instance of :py:class:`~raredecay.tools.output.OutputHandler`
         Return the output-handler currently in use by the script.
     """
+    # Python 2/3 compatibility
+    output_path = dev_tool.entries_to_str(output_path)
+    run_name = dev_tool.entries_to_str(run_name)
+    run_message = dev_tool.entries_to_str(run_message)
+    logger_console_level = dev_tool.entries_to_str(logger_console_level)
+    logger_file_level = dev_tool.entries_to_str(logger_file_level)
 
     if no_interactive_plots:
         import matplotlib as mpl
@@ -146,7 +153,7 @@ def get_output_handler():
     """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`.
 
     This can be used to add output (text as well as figures) and save them
-    easely. For more information see the docs of the OutputHandler
+    easily. For more information see the docs of the OutputHandler
 
     Return
     ------
@@ -208,6 +215,8 @@ def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
     dpi : int
         The resolution of the images.
     """
+    file_formats = dev_tool.entries_to_str(file_formats)
+
     # hack for using mutable defaults
     file_formats = copy.deepcopy(file_formats)
     config.save_fig_cfg['file_formats'] = file_formats

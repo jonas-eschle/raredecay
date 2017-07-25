@@ -40,32 +40,6 @@ import collections
 from raredecay import meta_config
 
 
-def syspath_append(verboise=False):
-    """Adds the relevant path to the sys.path variable.
-    options:
-    v for verboise, print sys.paht before and after
-    """
-    import sys
-    import config
-
-    if verboise == 'v':
-        verboise = True
-    if verboise:
-        print(sys.path)
-    # n_to_remove = 0 #number of elements to remove from sys.path from behind
-    # sys.path = sys.path[:len(sys.path)-n_to_remove]
-    # used to remove unnecessary bindings
-    for path in config.pathes_to_add:
-        # get the sys.path and add pathes if they are not already contained
-        if path not in sys.path:
-            try:
-                sys.path.append(path)
-            except:
-                print("error when adding path \"" + path + "\" to sys.path")
-    if verboise:
-        print(sys.path)
-
-
 def make_logger(module_name, logging_mode='both', log_level_file='debug',
                 log_level_console='debug', overwrite_file=True,
                 log_file_name='AAlast_run', log_file_dir=None):
@@ -107,6 +81,13 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     """
     import logging
     from time import strftime
+
+    module_name = entries_to_str(module_name)
+    logging_mode = entries_to_str(logging_mode)
+    log_level_file = entries_to_str(log_level_file)
+    log_level_console = entries_to_str(log_level_console)
+    log_file_name = entries_to_str(log_file_name)
+    log_file_dir = entries_to_str(log_file_dir)
 
     if log_file_dir is None:
         import raredecay.globals_
@@ -175,6 +156,11 @@ def add_file_handler(logger, module_name, log_file_dir, log_level='info',
     """Add a filehandler to a logger to also direct the output to a file."""
     from time import strftime
     import logging
+
+    logger = entries_to_str(logger)
+    module_name = entries_to_str(module_name)
+    log_file_dir = entries_to_str(log_file_dir)
+    log_level = entries_to_str(log_level)
 
     file_mode = 'w' if overwrite_file else None
     formatter = logging.Formatter("%(asctime)s - " + module_name +
@@ -254,6 +240,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
         Returns True if test_object is any of the allowed_primitives,
         otherwise False.
     """
+    test_object = entries_to_str(test_object)
     flag = False
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
@@ -264,6 +251,37 @@ def is_in_primitive(test_object, allowed_primitives=None):
     elif test_object is allowed_primitives:
         flag = True
     return flag
+
+
+def entries_to_str(data):
+    """Convert each basestring entry of a basestring/dict/list into a str.
+
+    Parameters
+    ----------
+    data : dict, list
+
+    Returns
+    -------
+    dict, list, str
+        Return the dict with the new entries.
+    """
+    if isinstance(data, basestring):
+        output = str(data)
+    elif isinstance(data, dict):
+        output = {}
+        for key, val in data.items():
+            if isinstance(key, basestring):
+                key = str(key)
+            if isinstance(val, basestring):
+                val = str(val)
+            output[key] = val
+
+    elif isinstance(data, list):
+        output = [str(e) for e in data if isinstance(e, basestring)]
+    else:
+        output = data
+
+    return output
 
 
 def play_sound(duration=0.3, frequency=440):

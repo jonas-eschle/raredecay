@@ -96,6 +96,7 @@ class OutputHandler(object):
 
     def initialize_save(self, output_path, run_name="", run_message="", output_folders=None,
                         del_existing_folders=False, logger_cfg=None):
+        output_path = dev_tool.entries_to_str(output_path)
         """Initialize the run. Create the neccesary folders.
 
         Parameters
@@ -123,6 +124,11 @@ class OutputHandler(object):
             not specified (or only a few arguments), the meta_config will be
             taken.
         """
+        run_name = dev_tool.entries_to_str(run_name)
+        run_message = dev_tool.entries_to_str(run_message)
+        output_folders = dev_tool.entries_to_str(output_folders)
+        logger_cfg = dev_tool.entries_to_str(logger_cfg)
+
         self._save_output = True
         # initialize defaults
         logger_cfg = {} if logger_cfg is None else logger_cfg
@@ -183,6 +189,8 @@ class OutputHandler(object):
 
         # initialize defaults
         from raredecay.globals_ import logger_cfg
+
+        run_name = dev_tool.entries_to_str(run_name)
         self._logger_cfg = logger_cfg
         self._is_initialized = True
         self.make_me_a_logger()
@@ -245,6 +253,7 @@ class OutputHandler(object):
             Returns the collected string from the redirection.
         """
         sys.stdout = self.__SAVE_STDOUT
+        add_output_kwarg = dev_tool.entries_to_str(add_output_kwarg)
         self.add_output(self._IO_string.getvalue(), importance=importance, **add_output_kwarg)
         return self._IO_string.getvalue()
 
@@ -292,6 +301,10 @@ class OutputHandler(object):
         out : :py:class:`~matplotlib.pyplot.figure`
             Return the figure.
         """
+        figure = dev_tool.entries_to_str(figure)
+        file_format = dev_tool.entries_to_str(file_format)
+        save_cfg = dev_tool.entries_to_str(save_cfg)
+
         plot = 5 - round(importance) < meta_config.plot_verbosity  # to plot or not to plot
         figure_kwargs = {} if figure_kwargs is None else figure_kwargs
 
@@ -452,6 +465,12 @@ class OutputHandler(object):
             If true, the data_out will be written on a new line and not just
             concatenated to the data written before
         """
+        title = dev_tool.entries_to_str(title)
+        subtitle = dev_tool.entries_to_str(subtitle)
+        section = dev_tool.entries_to_str(section)
+        obj_separator = dev_tool.entries_to_str(obj_separator)
+        data_separator = dev_tool.entries_to_str(data_separator)
+        data_out = dev_tool.entries_to_str(data_out)
         # initialize defaults
         assert isinstance(obj_separator, basestring), \
             (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")

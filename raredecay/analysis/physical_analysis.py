@@ -39,9 +39,13 @@ except ImportError as err:
 
 import copy
 
+
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
+from raredecay.tools import dev_tool
 
 def test():
     """just a test-function."""
@@ -346,6 +350,10 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     """
     import raredecay.analysis.ml_analysis as ml_ana
 
+    features = dev_tool.entries_to_str(features)
+    clf = dev_tool.entries_to_str(clf)
+    roc_auc = dev_tool.entries_to_str(roc_auc)
+
     roc_auc_all = True if roc_auc in ('all', 'both') else False
     roc_auc_single = True if roc_auc in ('single', 'both') else False
 
@@ -435,13 +443,17 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     out : float, float
         If a metric_vs_cut is specified, the best cut and metric is returned
     """
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-
     from raredecay.globals_ import out
     from raredecay.analysis.ml_analysis import classify
     from raredecay.tools.metrics import punzi_fom, precision_measure
+
+    # Python 2/3 compatibility
+    bkg_sel = dev_tool.entries_to_str(bkg_sel)
+    clf = dev_tool.entries_to_str(clf)
+    columns = dev_tool.entries_to_str(columns)
+    metric_vs_cut = dev_tool.entries_to_str(metric_vs_cut)
+    save_mc_pred = dev_tool.entries_to_str(save_mc_pred)
+    save_real_pred = dev_tool.entries_to_str(save_real_pred)
 
     # check if predictions can be saved: need to be root-file and no selection applied
 
@@ -476,7 +488,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     predict = not performance_only
     if performance_only:
         bkg_df = real_data.pandasDF()
-        bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
+        bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T) == 1]
         bkg_data = real_data.copy_storage()
         bkg_data.set_data(bkg_df)
         del bkg_df
@@ -522,7 +534,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             real_test.data_name_addition = "test"
             bkg_df = real_train.pandasDF()
 
-            bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
+            bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T) == 1]
             real_train.set_data(bkg_df)
             real_train.data_name_addition = "train bkg"
 

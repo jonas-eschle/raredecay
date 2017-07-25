@@ -16,6 +16,7 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
+
     install_aliases()
     from past.builtins import basestring
 except ImportError as err:
@@ -44,11 +45,14 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.globals_ import out
 
+    features = dev_tool.entries_to_str(features)
+    clf = dev_tool.entries_to_str(clf)
+
     # initialize variables
     output = {}
     score_mc_vs_mcr = []
     score_mcr_vs_real = []
-#    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
+    #    splits *= 2  # because every split is done with fold 0 and 1 (<- 2 *)
 
     # loop over number of splits, split the mc data
 
@@ -59,7 +63,7 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
     for fold in range(n_folds):
         mc_data_train, mc_data_test = mc_data.get_fold(fold)
         # TODO: no real folds? It is better to test on full data always?
-#        mc_data_train, mc_data_test = real_data.get_fold(fold)
+        #        mc_data_train, mc_data_test = real_data.get_fold(fold)
         for split in range(splits * 2):  # because two possibilities per split
             if split % 2 == 0:
                 mc_data_train.make_folds(2)
@@ -100,10 +104,6 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                    to_end=True)
 
     output['real_distance'] = np.mean(score_mcr_vs_real)
-
-
-
-
 
 
 def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
@@ -192,14 +192,18 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.globals_ import out
 
+    features = dev_tool.entries_to_str(features)
+    clf = dev_tool.entries_to_str(clf)
+    clf_pred = dev_tool.entries_to_str(clf_pred)
+
     # initialize variables
     assert 1 <= n_checks <= n_folds and n_folds > 1, "wrong n_checks/n_folds. Check the docs"
     assert isinstance(mc_data, data_storage.HEPDataStorage), \
         "mc_data wrong type:" + str(type(mc_data)) + ", has to be HEPDataStorage"
     assert isinstance(real_data, data_storage.HEPDataStorage), \
         "real_data wrong type:" + str(type(real_data)) + ", has to be HEPDataStorage"
-#    assert isinstance(clf, str),\
-#        "clf has to be a string, the name of a valid classifier. Check the docs!"
+    #    assert isinstance(clf, str),\
+    #        "clf has to be a string, the name of a valid classifier. Check the docs!"
 
     output = {}
 
@@ -208,7 +212,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     scores_mc = np.ones(n_checks)
     scores_max = np.ones(n_checks)  # required due to output of loop
     scores_mc_max = np.ones(n_checks)
-#    scores_weighted = []
+    #    scores_weighted = []
     scores_max_weighted = []
     probas_mc = []
     probas_reweighted = []
@@ -268,7 +272,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                                            plot_importance=1,
                                                            importance=1)
 
-#        del clf_trained, tmp_pred
+        #        del clf_trained, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -293,11 +297,11 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                                                    plot_importance=1,
                                                                    importance=1)
             del clf_trained
-# HACK
+            # HACK
             tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
             scores_max_weighted.extend(tmp_pred * (pred_mc['y_true'] * 2 - 1))
 
-# HACK END
+            # HACK END
             mc_data.set_weights(temp_weights)
             probas_mc.append(pred_mc['y_proba'])
             weights_mc.append(pred_mc['weights'])
@@ -316,7 +320,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
         output['score_mc_std'] = np.round(scores_mc.std(), 4)
 
     out.add_output(["Score train_similar (recall, lower means better): ",
-                   str(output['score']) + " +- " + str(output['score_std'])],
+                    str(output['score']) + " +- " + str(output['score_std'])],
                    subtitle="Clf trained on real/mc reweight, tested on real")
     if test_max:
         output['score_max'] = np.round(scores_max.mean(), 4)
@@ -412,7 +416,7 @@ def punzi_fom(n_signal, n_background, n_sigma=5):
     n_sigma : int or float
         The number of sigmas
     """  # pylint:disable=anomalous-backslash-in-string
-#     not necessary below??
+    #     not necessary below??
     length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
     if length > 1:
         sqrt = np.sqrt(np.array(n_background))

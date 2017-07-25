@@ -182,7 +182,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
     """
     #: Currently implemented classifiers:
     global n_cpu_clf
-    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'nn', 'ada', 'tmva', 'knn']
+    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
     clf = copy.deepcopy(clf)  # make sure not to change the argument given
@@ -193,10 +193,13 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
     # if clf is a string only, create dict with only the type specified
     if isinstance(clf, basestring):
+        clf = str(clf)
         assert clf in __IMPLEMENTED_CLFS, "clf not implemented (yet. Make an issue;) )"
         clf = {'clf_type': clf, 'config': {}}
 
     assert isinstance(clf, dict), "Wrong data format of classifier..."
+
+    clf = dev_tool.entries_to_str(clf)
 
     if isinstance(clf.get('n_cpu'), int) and n_cpu is None:
         n_cpu = clf['n_cpu']
@@ -223,9 +226,6 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if isinstance(classifier, XGBoostClassifier):
             n_cpu_clf = classifier.nthreads
             clf_type = 'xgb'
-        elif isinstance(classifier, TheanetsClassifier):
-            n_cpu_clf = 1
-            clf_type = 'nn'
         elif isinstance(classifier, TMVAClassifier):
             n_cpu_clf = 1
             clf_type = 'tmva'
@@ -396,7 +396,12 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     """
     # initialize variables and setting defaults
     direction = 'backward'
+    features = dev_tool.entries_to_str(features)
+    clf = dev_tool.entries_to_str(clf)
+    max_feature_elimination = dev_tool.entries_to_str(max_feature_elimination)
     keep_features = [] if keep_features is None else data_tools.to_list(keep_features)
+    keep_features = dev_tool.entries_to_str(keep_features)
+
     output = {}
     start_time = -1  # means: no time measurement on the way
     available_time = 1
@@ -617,6 +622,11 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     # initialize variables and setting defaults
 #    output = {}
 #    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    clf = dev_tool.entries_to_str(clf)
+    features = dev_tool.entries_to_str(features)
+    generator_type = dev_tool.entries_to_str(generator_type)
+    n_eval = dev_tool.entries_to_str(n_eval)
+
     clf_dict = make_clf(clf, n_cpu=meta_config.n_cpu_max, dict_only=True)
     config_clf = clf_dict['config']
     config_clf_cp = copy.deepcopy(config_clf)
@@ -826,7 +836,13 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         - 'y_true' : the true labels of the data (if available)
         - 'weights' : the weights of the corresponding predicitons
     """
+    features = dev_tool.entries_to_str(features)
+    clf = dev_tool.entries_to_str(clf)
+    plot_title = dev_tool.entries_to_str(plot_title)
+    curve_name = dev_tool.entries_to_str(curve_name)
+
     logger.info("Starting classify with " + str(clf))
+    kwargs = dev_tool.entries_to_str(kwargs)
     VALID_KWARGS = ['original_test_weights', 'target_test_weights']
 
     # initialize variables and data
@@ -1052,6 +1068,12 @@ def reweight_train(mc_data, real_data, columns=None,
     """
     __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
 
+    # Python 2/3 compatibility, str
+    columns = dev_tool.entries_to_str(columns)
+    reweighter = dev_tool.entries_to_str(reweighter)
+    reweight_saveas = dev_tool.entries_to_str(reweight_saveas)
+    meta_cfg = dev_tool.entries_to_str(meta_cfg)
+
     # check for valid user input
     if data_tools.is_pickle(reweighter):
         return data_tools.adv_return(reweighter, save_name=reweight_saveas)
@@ -1133,6 +1155,10 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
         Return an instance of pandas Series of shape [n_samples] containing the
         new weights.
     """
+    # Python 2/3 compatibility, str
+    reweighter_trained = dev_tool.entries_to_str(reweighter_trained)
+    columns = dev_tool.entries_to_str(columns)
+
     normalize = 1 if normalize is True else normalize
 
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
@@ -1258,6 +1284,13 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
         Return the new weights.
 
     """
+    # Python 2/3 compatibility, str
+    columns = dev_tool.entries_to_str(columns)
+    reweighter = dev_tool.entries_to_str(reweighter)
+    meta_cfg = dev_tool.entries_to_str(meta_cfg)
+    score_columns = dev_tool.entries_to_str(score_columns)
+    score_clf = dev_tool.entries_to_str(score_clf)
+
     output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
                    title="Reweighting Kfold", obj_separator="")
@@ -1446,6 +1479,10 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
     from rep.report.metrics import OptimalMetric
 
     from raredecay.tools.metrics import punzi_fom, precision_measure
+
+    # Python 2/3 compatibility, str
+    metric = dev_tool.entries_to_str(metric)
+    prediction_branch = dev_tool.entries_to_str(prediction_branch)
 
     metric_name = metric
     if metric == 'punzi':

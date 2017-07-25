@@ -194,7 +194,7 @@ class HEPDataStorage(object):
         # set the new name in self._name
         for i, name in enumerate([data_name, data_name_addition, fold_name]):
             if name is not None:
-                self._name[i] = name
+                self._name[i] = str(name)
 
             # TODO: change the naming into a dict?
 
@@ -285,6 +285,9 @@ class HEPDataStorage(object):
     @columns.setter
     def columns(self, columns):
         # TODO: maybe check?
+        if columns is not None:
+            columns = data_tools.to_list(columns)
+            columns = [str(col) for col in columns]
         self._set_columns(columns=columns)
 
     def _set_columns(self, columns):
@@ -300,6 +303,8 @@ class HEPDataStorage(object):
         else:
 
             self._columns = data_tools.to_list(columns)
+
+        self._columns = [str(col) for col in self._columns]
 
     def _set_length(self):
         # determine whether to set length individually from the data or not
@@ -362,6 +367,7 @@ class HEPDataStorage(object):
 
         if column_alias is not None:
             self.column_alias.update(column_alias)
+            self.column_alias = [{str(k): str(v)} for k, v in self.column_alias.items()]
         self._set_data(data=data, index=index, columns=columns)
 
     def _set_data(self, data, index=None, columns=None):
@@ -375,6 +381,16 @@ class HEPDataStorage(object):
             - Pandas DataFrame
         """
         # get the data_type
+        if isinstance(data, dict):
+            temp_dict = {}
+            for key, val in data.items():
+                if isinstance(key, basestring):
+                    key = str(key)
+                if isinstance(val, basestring):
+                    val = str(val)
+                temp_dict[key] = val
+            data = temp_dict
+
         self._data = data
         self._data_type = self._get_data_type(data)
 
@@ -579,7 +595,11 @@ class HEPDataStorage(object):
         """
         # initialize variables
         index = None if index is None else list(index)
-        columns = None if columns is None else data_tools.to_list(columns)
+        if columns is None:
+            columns = None
+        else:
+            columns = data_tools.to_list(columns)
+            columns = [str(col) for col in columns]
 
         # create data
         data_out = self._make_df(columns=columns, index=index, copy=True)
@@ -893,7 +913,12 @@ class HEPDataStorage(object):
             from inside this instance.
         """
         index = self.index if index is None else list(index)
-        columns = self.columns if columns is None else columns
+        if columns is None:
+            columns = self.columns
+        else:
+            columns = columns
+            columns = [str(col) for col in columns]
+
         random_state = meta_config.randint()
         new_lds = LabeledDataStorage(self.pandasDF(columns=columns, index=index),
                                      target=self.get_targets(index=index),

@@ -18,6 +18,7 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
+
     install_aliases()
     from past.builtins import basestring
 except ImportError as err:
@@ -36,25 +37,75 @@ except ImportError as err:
 
 import numpy as np
 
-
-import ROOT
-from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
-from ROOT import RooFit, RooCBShape, RooExponential
-from ROOT import RooGaussian, RooMinuit
-from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
-from root_numpy import array2tree
-from ROOT import RooCategory, RooUnblindPrecision
-
 from raredecay.globals_ import out
 
 from raredecay import meta_config
+from raredecay.tools import dev_tool
 
 import matplotlib.pyplot as plt
+
+
 # Bug fixing below
-#plt.figure("TMPONLYTOFIGHTASTRANGEBUG")
-#plt.plot([1, 2, 3])
-#plt.close("TMPONLYTOFIGHTASTRANGEBUG")
+# plt.figure("TMPONLYTOFIGHTASTRANGEBUG")
+# plt.plot([1, 2, 3])
+# plt.close("TMPONLYTOFIGHTASTRANGEBUG")
 # Bug fix end
+
+
+
+
+def ks_2samp(data1, data2, column):
+
+    # Python 2/3 compatibility, str
+    column = str(column)
+    data1, targets1, weights1 = data1.make_dataset(columns=column)
+    data2, targets2, weights2 = data2.make_dataset(columns=column)
+    weights1 = np.array(weights1)
+    weights2 = np.array(weights2)
+    data1 = np.array(data1[column].values)
+    data2 = np.array(data2[column].values)
+    ix1 = np.argsort(data1)
+    ix2 = np.argsort(data2)
+    data1 = data1[ix1]
+    data2 = data2[ix2]
+    weights1 = weights1[ix1]
+    weights2 = weights2[ix2]
+    data = np.concatenate([data1, data2])
+    cwei1 = np.hstack([0, np.cumsum(weights1) / sum(weights1)])
+    cwei2 = np.hstack([0, np.cumsum(weights2) / sum(weights2)])
+    cdf1we = cwei1[[np.searchsorted(data1, data, side='right')]]
+    cdf2we = cwei2[[np.searchsorted(data2, data, side='right')]]
+
+    return np.max(np.abs(cdf1we - cdf2we))
+
+
+def ad_2samp(data1, data2, column):
+    # Python 2/3 compatibility, str
+    column = str(column)
+
+    # prepare data
+    data1, targets1, weights1 = data1.make_dataset(columns=column)
+    data2, targets2, weights2 = data2.make_dataset(columns=column)
+    weights1 = np.array(weights1)
+    weights2 = np.array(weights2)
+    data1 = np.array(data1[column].values)
+    data2 = np.array(data2[column].values)
+
+    #sort data
+    ix1 = np.argsort(data1)
+    ix2 = np.argsort(data2)
+    data1 = data1[ix1]
+    data2 = data2[ix2]
+    weights1 = weights1[ix1]
+    weights2 = weights2[ix2]
+
+    n = np.sum(weights1)
+    m = np.sum(weights2)
+
+
+
+def _anderson_2samp_right(samples, data_sorted, data_unique_sorted, n_events):
+    n_tot = sum(n_events)
 
 def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None,
              blind=False, nll_profile=False, second_storage=None, log_plot=False,
@@ -104,6 +155,17 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         returned.
     """
 
+    import ROOT
+    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    from ROOT import RooFit, RooCBShape, RooExponential
+    from ROOT import RooGaussian, RooMinuit
+    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    from root_numpy import array2tree
+    from ROOT import RooCategory, RooUnblindPrecision
+
+    # Python 2/3 compatibility, str
+    column = dev_tool.entries_to_str(column)
+
     if not (isinstance(column, basestring) or len(column) == 1):
         raise ValueError("Fitting to several columns " + str(column) + " not supported.")
     if type(sig_pdf) == type(bkg_pdf) == None:
@@ -121,7 +183,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     # double crystalball variables
     min_x, max_x = min(data_array[column]), max(data_array[column])
 
-#    x = RooRealVar("x", "x variable", min_x, max_x)
+    #    x = RooRealVar("x", "x variable", min_x, max_x)
 
     # create data
     data_array = np.array([i[0] for i in data_array.as_matrix()])
@@ -129,25 +191,25 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     tree1 = array2tree(data_array, "x")
     data = RooDataSet("data", "Data", RooArgSet(x), RooFit.Import(tree1))
 
-#    # TODO: export somewhere? does not need to be defined inside...
-#    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5100, 5600)#, 5300, 5500)
-#    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0.001, 200)
-#    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 5.715)#, 0, 150)
-#    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -4.019)#, -200, 0.)
-#    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 3.42)#, 0, 150)
-#    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 3.7914)#, 0, 500)
-#
-#    # TODO: export somewhere? pdf construction
-#    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
-#
-#    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
-#                              mean, sigma, alpha_0, lambda_0)
-#    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
-#                              mean, sigma, alpha_1, lambda_1)
-#    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
-#                         crystalball1, crystalball2, frac)
+    #    # TODO: export somewhere? does not need to be defined inside...
+    #    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5100, 5600)#, 5300, 5500)
+    #    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0.001, 200)
+    #    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 5.715)#, 0, 150)
+    #    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -4.019)#, -200, 0.)
+    #    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 3.42)#, 0, 150)
+    #    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 3.7914)#, 0, 500)
+    #
+    #    # TODO: export somewhere? pdf construction
+    #    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
+    #
+    #    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
+    #                              mean, sigma, alpha_0, lambda_0)
+    #    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
+    #                              mean, sigma, alpha_1, lambda_1)
+    #    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
+    #                         crystalball1, crystalball2, frac)
 
-#    n_sig = RooRealVar("n_sig", "Number of signals events", 10000, 0, 1000000)
+    #    n_sig = RooRealVar("n_sig", "Number of signals events", 10000, 0, 1000000)
 
     # test input
     if n_sig == n_bkg == 0:
@@ -172,28 +234,28 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             blind_n_sig = RooUnblindPrecision("blind_n_sig", "blind number of signals",
                                               "wasistdas", n_sig.getVal(), 10000, n_sig, blind_cat)
         else:
-#            blind_cat.setLabel("unblind")
+            #            blind_cat.setLabel("unblind")
             blind_n_sig = n_sig
 
         print("n_sig value " + str(n_sig.getVal()))
-#        raw_input("blind value " + str(blind_n_sig.getVal()))
+    #        raw_input("blind value " + str(blind_n_sig.getVal()))
 
-#        n_sig = blind_n_sig
+    #        n_sig = blind_n_sig
 
 
 
-        # END BLINDING
+    # END BLINDING
     elif n_sig >= 0:
         n_sig = RooRealVar("n_sig", "Number of signal events", int(n_sig))
     else:
         raise ValueError("n_sig is not >= 0")
 
-#    if not blind:
-#        blind_n_sig = n_sig
+    #    if not blind:
+    #        blind_n_sig = n_sig
 
-#    # create bkg-pdf
-#    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.00025, -1., 1.)
-#    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
+    #    # create bkg-pdf
+    #    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.00025, -1., 1.)
+    #    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
 
     if blind:
         comb_pdf = RooAddPdf("comb_pdf", "Combined DoubleCB and bkg PDF",
@@ -202,30 +264,30 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         comb_pdf = RooAddPdf("comb_pdf", "Combined DoubleCB and bkg PDF",
                              RooArgList(sig_pdf, bkg_pdf), RooArgList(n_sig, n_bkg))
 
-    # create test dataset
-#    mean_gauss = RooRealVar("mean_gauss", "Mean of Gaussian", 5553, -10000, 10000)
-#    sigma_gauss = RooRealVar("sigma_gauss", "Width of Gaussian", 20, 0.0001, 300)
-#    gauss1 = RooGaussian("gauss1", "Gaussian test dist", x, mean_gauss, sigma_gauss)
-#    lambda_data = RooRealVar("lambda_data", "lambda exp data", -.002)
-#    exp_data = RooExponential("exp_data", "data example exp", x, lambda_data)
-#    frac_data = RooRealVar("frac_data", "Fraction PDF of data", 0.15)
-#
-#    data_pdf = RooAddPdf("data_pdf", "Data PDF", gauss1, exp_data, frac_data)
-#    data = data_pdf.generate(RooArgSet(x), 30000)
+        # create test dataset
+    #    mean_gauss = RooRealVar("mean_gauss", "Mean of Gaussian", 5553, -10000, 10000)
+    #    sigma_gauss = RooRealVar("sigma_gauss", "Width of Gaussian", 20, 0.0001, 300)
+    #    gauss1 = RooGaussian("gauss1", "Gaussian test dist", x, mean_gauss, sigma_gauss)
+    #    lambda_data = RooRealVar("lambda_data", "lambda exp data", -.002)
+    #    exp_data = RooExponential("exp_data", "data example exp", x, lambda_data)
+    #    frac_data = RooRealVar("frac_data", "Fraction PDF of data", 0.15)
+    #
+    #    data_pdf = RooAddPdf("data_pdf", "Data PDF", gauss1, exp_data, frac_data)
+    #    data = data_pdf.generate(RooArgSet(x), 30000)
 
 
-#    data.printValue()
-#    xframe = x.frame()
-#    data_pdf.plotOn(xframe)
-#    print "n_cpu:", meta_config.get_n_cpu()
-#    input("test")
-#    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
-#     HACK to get 8 cores in testing
+    #    data.printValue()
+    #    xframe = x.frame()
+    #    data_pdf.plotOn(xframe)
+    #    print "n_cpu:", meta_config.get_n_cpu()
+    #    input("test")
+    #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
+    #     HACK to get 8 cores in testing
     c5 = TCanvas("c5", "RooFit pdf not fit vs " + data_name)
     c5.cd()
     x_frame1 = x.frame()
-#    data.plotOn(x_frame1)
-#    comb_pdf.pdfList()[1].plotOn(x_frame1)
+    #    data.plotOn(x_frame1)
+    #    comb_pdf.pdfList()[1].plotOn(x_frame1)
 
     if __name__ == "__main__":
         n_cpu = 8
@@ -233,7 +295,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         n_cpu = meta_config.get_n_cpu()
         print("n_cpu = ", n_cpu)
         # HACK
-#        n_cpu = 8
+    #        n_cpu = 8
     result_fit = comb_pdf.fitTo(data, RooFit.Minos(ROOT.kTRUE),
                                 RooFit.Extended(ROOT.kTRUE),
                                 RooFit.NumCPU(n_cpu))
@@ -242,16 +304,15 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         x.setRange("signal", bkg_in_region[0], bkg_in_region[1])
         bkg_pdf_fitted = comb_pdf.pdfList()[1]
         int_argset = RooArgSet(x)
-#        int_argset = x
-#        int_argset.setRange("signal", bkg_in_region[0], bkg_in_region[1])
+        #        int_argset = x
+        #        int_argset.setRange("signal", bkg_in_region[0], bkg_in_region[1])
         integral = bkg_pdf_fitted.createIntegral(int_argset,
                                                  RooFit.NormSet(int_argset),
                                                  RooFit.Range("signal"))
         bkg_cdf = bkg_pdf_fitted.createCdf(int_argset, RooFit.Range("signal"))
         bkg_cdf.plotOn(x_frame1)
 
-
-#        integral.plotOn(x_frame1)
+        #        integral.plotOn(x_frame1)
         n_bkg_below_sig = integral.getVal(int_argset) * n_bkg.getVal()
         x_frame1.Draw()
 
@@ -259,9 +320,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         c2 = TCanvas("c2", "RooFit pdf fit vs " + data_name)
         c2.cd()
         x_frame = x.frame()
-#        if log_plot:
-#            c2.SetLogy()
-#        x_frame.SetTitle("RooFit pdf vs " + data_name)
+        #        if log_plot:
+        #            c2.SetLogy()
+        #        x_frame.SetTitle("RooFit pdf vs " + data_name)
         x_frame.SetTitle(data_name)
         if pulls:
             pad_data = ROOT.TPad("pad_data", "Pad with data and fit", 0, 0.33, 1, 1)
@@ -288,17 +349,17 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         range_str = "lower,upper"
         lower_cut_str = str(min_x) + "<=" + column + "&&" + column + "<=" + str(lower_blind)
         upper_cut_str = str(upper_blind) + "<=" + column + "&&" + column + "<=" + str(max_x)
-        sideband_cut_str = "("+lower_cut_str+")" + "||" + "("+upper_cut_str+")"
+        sideband_cut_str = "(" + lower_cut_str + ")" + "||" + "(" + upper_cut_str + ")"
 
         n_entries = data.reduce(sideband_cut_str).numEntries() / data.numEntries()
-#        raw_input("n_entries: " + str(n_entries))
+        #        raw_input("n_entries: " + str(n_entries))
         if plot_importance >= 3:
             data.plotOn(x_frame, RooFit.CutRange(range_str), RooFit.NormRange(range_str))
             comb_pdf.plotOn(x_frame, RooFit.Range(range_str),
                             RooFit.Normalization(n_entries, RooAbsReal.Relative),
                             RooFit.NormRange(range_str))
             if pulls:
-#                pull_hist(pull_frame=x_frame, pad_data=pad_data, pad_pulls=pad_pulls)
+                #                pull_hist(pull_frame=x_frame, pad_data=pad_data, pad_pulls=pad_pulls)
                 x_frame_pullhist = x_frame.pullHist()
     else:
         if plot_importance >= 3:
@@ -315,9 +376,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             comb_pdf.plotOn(x_frame,
                             RooFit.Components(bkg_pdf.namePtr().GetName()),
                             RooFit.LineStyle(ROOT.kDotted))
-#            comb_pdf.plotPull(n_sig)
-
-
+        #            comb_pdf.plotPull(n_sig)
 
     if plot_importance >= 3:
         x_frame.Draw()
@@ -328,12 +387,12 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             x_frame.SetTitleOffset(0.7, 'Y')
             x_frame.SetLabelSize(0.04, 'Y')
 
-#            c11 = TCanvas("c11", "RooFit\ pulls" + data_name)
-#            c11.cd()
-#            frame_tmp = x_frame
+            #            c11 = TCanvas("c11", "RooFit\ pulls" + data_name)
+            #            c11.cd()
+            #            frame_tmp = x_frame
             frame_tmp = x.frame()
 
-#            frame_tmp.SetTitle("significance")
+            #            frame_tmp.SetTitle("significance")
 
             frame_tmp.SetTitle("Roofit\ pulls\ " + data_name)
             frame_tmp.addObject(x_frame_pullhist)
@@ -341,7 +400,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             frame_tmp.SetMinimum(-5)
             frame_tmp.SetMaximum(5)
 
-#            frame_tmp.GetYaxis().SetTitle("significance")
+            #            frame_tmp.GetYaxis().SetTitle("significance")
             frame_tmp.GetYaxis().SetNdivisions(5)
             frame_tmp.SetTitleSize(0.1, 'X')
             frame_tmp.SetTitleOffset(1, 'X')
@@ -353,12 +412,12 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             frame_tmp.Draw()
 
 
-#    raw_input("")
+        #    raw_input("")
 
     if not blind and nll_profile:
 
-#        nll_range = RooRealVar("nll_range", "Signal for nLL", n_sig.getVal(),
-#                               -10, 2 * n_sig.getVal())
+        #        nll_range = RooRealVar("nll_range", "Signal for nLL", n_sig.getVal(),
+        #                               -10, 2 * n_sig.getVal())
         sframe = n_sig.frame(RooFit.Bins(20), RooFit.Range(1, 1000))
         # HACK for best n_cpu
         lnL = comb_pdf.createNLL(data, RooFit.NumCPU(8))
@@ -368,7 +427,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         c4 = TCanvas("c4", "NLL Profile")
         c4.cd()
 
-#        input("press ENTER to show plot")
+        #        input("press ENTER to show plot")
         sframe.Draw()
 
     if plot_importance >= 3:
@@ -377,16 +436,16 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     params = comb_pdf.getVariables()
     params.Print("v")
 
-#    print bkg_cdf.getVal()
+    #    print bkg_cdf.getVal()
 
     if sPlot:
-        sPlotData = ROOT.RooStats.SPlot("sPlotData","sPlotData",
-                        data,  # variable fitted to, RooDataSet
-                        comb_pdf,  # fitted pdf
-                        ROOT.RooArgList(n_sig,
-                                        n_bkg,
-#                                                NSigB0s
-                                        ))
+        sPlotData = ROOT.RooStats.SPlot("sPlotData", "sPlotData",
+                                        data,  # variable fitted to, RooDataSet
+                                        comb_pdf,  # fitted pdf
+                                        ROOT.RooArgList(n_sig,
+                                                        n_bkg,
+                                                        #                                                NSigB0s
+                                                        ))
         sweights = np.array([sPlotData.GetSWeight(i, 'n_sig') for i in range(data.numEntries())])
         return n_sig.getVal(), n_bkg_below_sig, sweights
 
@@ -396,7 +455,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         return n_sig.getVal(), n_bkg_below_sig, comb_pdf
 
 
-#    nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
+# nll_plot = RooRealVar("nll_plot", "NLL plotting range", 0.01, 0.99)
 #    nll_frame = nll_plot.frame()
 #    my_nll = comb_pdf.createNLL(data, RooFit.NumCPU(8))
 #    RooMinuit(my_nll).migrad()
@@ -410,19 +469,31 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
 def pull_hist(pull_frame, pad_data, pad_pulls):
     """Add pulls into the current pad."""
+
+    import ROOT
+    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    from ROOT import RooFit, RooCBShape, RooExponential
+    from ROOT import RooGaussian, RooMinuit
+    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    from root_numpy import array2tree
+    from ROOT import RooCategory, RooUnblindPrecision
+
     pad_data.cd()
     dataHist = pull_frame.getHist("datahistogram")
-    curve1 = pull_frame.getObject(1)  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
+    curve1 = pull_frame.getObject(
+        1)  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
     curve2 = pull_frame.getObject(2)
     hresid1 = dataHist.makePullHist(curve1, True)
     hresid2 = dataHist.makePullHist(curve2, True)
 
     # RooHist* hresid = massplot->pullHist("datahistogram","blindtot")
     pad_pulls.cd()
-#    resid = M_OS.frame()
-    pull_frame.addPlotable(hresid1,"P")
-    pull_frame.addPlotable(hresid2,"P")
+    #    resid = M_OS.frame()
+    pull_frame.addPlotable(hresid1, "P")
+    pull_frame.addPlotable(hresid2, "P")
     pull_frame.SetTitle("")
+
+
 #    pull_frame.GetXaxis().SetTitle("#it{m}(#it{#pi}^{ #plus}#it{#pi}^{ #minus}) [MeV/#it{c}^{2}]")
 #    gStyle->SetPadLeftMargin(0.1)
 
@@ -449,6 +520,9 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
 
     """
     from raredecay.tools.metrics import punzi_fom, precision_measure
+
+    predict_col = dev_tool.entries_to_str(predict_col)
+    fit_col = dev_tool.entries_to_str(fit_col)
 
     metric_name = metric
     if metric == 'punzi':
@@ -490,12 +564,11 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
         else:
             temp_second_storage = second_storage
 
-
         n_sig_fit, n_bkg_fit = fit_mass(data=temp_data, column=fit_col, x=x, sig_pdf=sig_pdf,
-                                bkg_pdf=bkg_pdf, n_sig=n_sig, n_bkg=n_bkg, blind=False,
-                                nll_profile=False, second_storage=temp_second_storage,
-                                plot_importance=temp_plot_importance,
-                                bkg_in_region=region)
+                                        bkg_pdf=bkg_pdf, n_sig=n_sig, n_bkg=n_bkg, blind=False,
+                                        nll_profile=False, second_storage=temp_second_storage,
+                                        plot_importance=temp_plot_importance,
+                                        bkg_in_region=region)
 
         scores.append(metric(n_signal=n_sig_weighted, n_background=n_bkg_fit))
         debug1.append({'n_sig': n_sig_fit, 'n_bkg': n_bkg_fit, 'n_sig_weighted': n_sig_weighted})
@@ -504,36 +577,44 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
         import time
         print("scores:", scores)
         print("debug1:", debug1)
-#        time.sleep(8)
+    #        time.sleep(8)
 
     print(debug1)
 
     return cuts, scores
 
 
-
 if __name__ == '__main__':
 
-#    data = RooDataSet("data", )
+    import ROOT
+    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    from ROOT import RooFit, RooCBShape, RooExponential
+    from ROOT import RooGaussian, RooMinuit
+    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    from root_numpy import array2tree
+    from ROOT import RooCategory, RooUnblindPrecision
+
+    #    data = RooDataSet("data", )
     from raredecay.tools.data_storage import HEPDataStorage
     import pandas as pd
     import matplotlib.pyplot as plt
 
-#    np.random.seed(40)
+    #    np.random.seed(40)
 
-#    mode = "fit"
-#    mode = 'fit_metric'
-    mode = "sPlot"
+    #    mode = "fit"
+    #    mode = 'fit_metric'
+    #    mode = "sPlot"
+    mode = 'ks'
 
-# create signal pdf BEGIN
+    # create signal pdf BEGIN
     lower_bound = 4800
-#    lower_bound = 5000
+    #    lower_bound = 5000
     x = RooRealVar("x", "x variable", lower_bound, 6000)
 
-#    x = RooRealVar("x", "x variable", 4800, 6000)
+    #    x = RooRealVar("x", "x variable", 4800, 6000)
 
     # TODO: export somewhere? does not need to be defined inside...
-    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5270, 5290)#, 5300, 5500)
+    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5270, 5290)  # , 5300, 5500)
     sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0, 45)
     alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 40, 30, 50)
     alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -40, -50, -30.)
@@ -549,7 +630,7 @@ if __name__ == '__main__':
                               mean, sigma, alpha_1, lambda_1)
     doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
                          crystalball1, crystalball2, frac)
-# create signal pdf END
+    # create signal pdf END
 
     # create bkg-pdf BEGIN
     lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.002, -10., -0.000001)
@@ -559,11 +640,11 @@ if __name__ == '__main__':
     n_sig = 2500
 
     data = pd.DataFrame(np.random.normal(loc=5280, scale=37, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
-#    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
+    #    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
     bkg_data = np.array([i for i in (np.random.exponential(scale=300,
-                                     size=(7500, 3)) + 4800) if i[0] < 6000])
+                                                           size=(7500, 3)) + 4800) if i[0] < 6000])
     bkg_data[:, 2] = np.array([min((abs(y), 0.96)) for y in np.random.normal(loc=0.4,
-                             scale=0.4, size=len(bkg_data))])
+                                                                             scale=0.4, size=len(bkg_data))])
     data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y', 'pred'])], ignore_index=True)
 
     data = HEPDataStorage(data, target=np.concatenate((np.ones(n_sig),
@@ -572,11 +653,11 @@ if __name__ == '__main__':
 
     if mode == 'fit':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-                                       bkg_pdf=bkg_pdf,
-                                       blind=False,
-#                                       blind=(5100, 5380),
-                                       plot_importance=4, #bkg_in_region=(5100, 5380)
-                                       )
+                              bkg_pdf=bkg_pdf,
+                              blind=False,
+                              #                                       blind=(5100, 5380),
+                              plot_importance=4,  # bkg_in_region=(5100, 5380)
+                              )
         print(fit_result)
         print("True values: nsig =", n_sig, " n_bkg =", len(bkg_data))
 
@@ -591,29 +672,35 @@ if __name__ == '__main__':
 
     elif mode == 'sPlot':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-                                       bkg_pdf=bkg_pdf,
-                                       blind=False,
-                                       plot_importance=1, #bkg_in_region=(5100, 5380)
-                                       sPlot=True
-                                       )
+                              bkg_pdf=bkg_pdf,
+                              blind=False,
+                              plot_importance=1,  # bkg_in_region=(5100, 5380)
+                              sPlot=True
+                              )
         n_sig, n_bkg, sweights = fit_result
         import copy
+
         sweights = copy.deepcopy(sweights)
         plt.figure("new figure")
-#        plt.hist(range(100))
-#        plt.figure("new figure")
+        #        plt.hist(range(100))
+        #        plt.figure("new figure")
         plt.hist(sweights, bins=30)
 
         data_copy.set_weights(sweights)
         data_copy.plot()
 
+    elif mode == 'ks':
+        data.make_folds(2)
+        data1, data2 = data.get_fold(0)
+        ks_score = ks_2samp(data1, data2, column='x')
+        print("ks score: ", ks_score)
 
-#    n_sig_fit.append(np.mean(n_sig_averaged))#[5300, 5500]))
-#    print n_sig_fit
-#    raw_input("hiii")
-#    plt.plot(np.array(n_sig_gen), np.array(n_sig_fit), linestyle='--', marker='o')
-#    plt.plot(n_sig_gen, n_sig_gen, linestyle='-')
+
+    #    n_sig_fit.append(np.mean(n_sig_averaged))#[5300, 5500]))
+    #    print n_sig_fit
+    #    raw_input("hiii")
+    #    plt.plot(np.array(n_sig_gen), np.array(n_sig_fit), linestyle='--', marker='o')
+    #    plt.plot(n_sig_gen, n_sig_gen, linestyle='-')
     plt.show()
-
 
     print("finished")

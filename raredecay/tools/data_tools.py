@@ -52,6 +52,8 @@ except ImportError as err:
     warnings.warn("could not import from root_numpy!")
 # from root_numpy import root2array, array2root  # HACK
 
+from raredecay.tools import dev_tool
+
 # both produce error (27.07.2016) when importing them if run from main.py.
 # No problem when run as main...
 
@@ -101,6 +103,7 @@ def make_root_dict(path_to_rootfile, tree_name, branches):
     output = dict(filenames=path_to_rootfile,
                   treename=tree_name,
                   branches=branches)
+    output = dev_tool.entries_to_str(output)
     return output
 
 
@@ -122,6 +125,11 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     # from root_numpy import root2array, array2tree
 
     from rootpy.io import root_open
+
+    rootfile = dev_tool.entries_to_str(rootfile)
+    new_branch = dev_tool.entries_to_str(new_branch)
+    branch_name = dev_tool.entries_to_str(branch_name)
+
     from ROOT import TObject
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
@@ -222,6 +230,7 @@ def obj_to_string(objects, separator=None):
     separator : str
         The separator between the objects. Default is " - ".
     """
+    objects = dev_tool.entries_to_str(objects)
     if isinstance(objects, basestring):  # no need to change things
         return objects
     separator = " - " if separator is None else separator
@@ -239,6 +248,7 @@ def obj_to_string(objects, separator=None):
 def is_root(data_to_check):
     """Check whether a given data is a root file. Needs dicts to be True."""
     flag = False
+    data_to_check = dev_tool.entries_to_str(data_to_check)
     if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
 #        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
@@ -267,6 +277,7 @@ def is_ndarray(data_to_check):
 def is_pickle(data_to_check):
     """Check if the file is a pickled file (checks the ending)."""
     flag = False
+    data_to_check = dev_tool.entries_to_str(data_to_check)
     if isinstance(data_to_check, basestring):
         if data_to_check.endswith(meta_config.PICKLE_DATATYPE):
             flag = True
@@ -359,6 +370,7 @@ def to_pandas_old(data_in, index=None, columns=None):
     data_in : any reasonable data
         The data to be converted
     """
+    data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
         data_in = root2array(**data_in)  # why **? it's a root dict
     if is_list(data_in):
@@ -387,6 +399,7 @@ def to_pandas(data_in, index=None, columns=None):
     data_in : any reasonable data
         The data to be converted
     """
+    data_in = dev_tool.entries_to_str(data_in)
     # HACK START
     return to_pandas_old(data_in=data_in, index=index, columns=columns)
     # HACK END
@@ -460,6 +473,7 @@ def adv_return(return_value, save_name=None):
       (*the .pickle ending is not required but added automatically if omitted*)
      which returns the value and saves it.
     """
+    save_name = dev_tool.entries_to_str(save_name)
     if save_name not in (None, False):
         if isinstance(save_name, basestring):
             save_name = meta_config.PICKLE_PATH + save_name
@@ -480,20 +494,11 @@ def adv_return(return_value, save_name=None):
 
 def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
     """Try to unpickle a file and return, otherwise just return input."""
+    file_to_unpickle = dev_tool.entries_to_str(file_to_unpickle)
     if is_pickle(file_to_unpickle):
         extra_path = meta_config.PICKLE_PATH if use_metapath_bkwcomp else ''
         with open(extra_path + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
 
-# if __name__ == '__main__':
-#    print "running selftest"
-#    root_dict = dict(
-#        filenames='/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/data/test1.root',
-#        branches=['B_PT', 'nTracks'],
-#        treename='DecayTree',
-#        selection='B_PT > 10000'
-#        )
-#    df1 = to_pandas(root_dict)
-#    print df1
-#    print "selftest completed!"
+
