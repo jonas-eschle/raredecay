@@ -27,5 +27,5 @@ if __name__ == '__main__':
     data, targets, weights, index = TestHEPDataStorageMixin._make_dataset()
 
     data['root_w'] = weights
-    data.reset_index(inplace=True)
+    data.reset_index(inplace=True, drop=True)
     to_root(data.loc[data.index], 'ds1.root', key='DecayTree')
