@@ -44,11 +44,14 @@ except ImportError as err:
 import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
 
+# HACK as reweight also uses meta_cfg for reweight_cfg
+meta_cfg_module = meta_cfg
+
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def reweight_train(mc_data, real_data, columns=None,
-                   reweighter='gb', reweight_saveas=None, meta_cfg=None,
+                   reweighter='gb', reweight_saveas=None, meta_cfg=None, weights_ratio=1,
                    weights_mc=None, weights_real=None):
     """Return a trained reweighter from a (mc/real) distribution comparison.
 
@@ -88,6 +91,11 @@ def reweight_train(mc_data, real_data, columns=None,
         Contains the parameters for the bins/gb-reweighter. See also
         :func:`~hep_ml.reweight.BinsReweighter` and
         :func:`~hep_ml.reweight.GBReweighter`.
+    weights_ratio : numeric or None, False
+        The ratio of the sum of mc weights / sum of real weights. If set to
+        one, the reweighter will learn from nicely normalized distributions.
+        A value greater than 1 means there are in total more mc events
+        than data points.
     weights_mc : numpy.array [n_samples]
         Explicit weights for the Monte-Carlo data. Only specify if you don't
         want to use the weights in the *HEPDataStorage*.
@@ -142,15 +150,17 @@ def reweight_train(mc_data, real_data, columns=None,
             meta_cfg.warning_occured()
 
     # create data
-    mc_data, _t, mc_weights = _make_data(mc_data, features=columns,
-                                         weights_original=weights_mc)
+    normalize_real = 1 if weights_ratio else None
+    mc_data, _t, mc_weights = _make_data(original_data=mc_data, features=columns,
+                                         weights_original=weights_mc, weights_ratio=weights_ratio)
     real_data, _t, real_weights = _make_data(real_data, features=columns,
-                                             weights_original=weights_real)
+                                             weights_original=weights_real, weights_ratio=normalize_real)
     del _t
 
+
+
     # train the reweighter
-    if meta_cfg is None:
-        meta_cfg = {}
+    meta_cfg = {} if meta_cfg is None else meta_cfg
 
     if reweighter == "GBReweighter":
         reweighter = hep_ml.reweight.GBReweighter(**meta_cfg)
@@ -207,7 +217,7 @@ def reweight_weights(reweight_data, reweighter_trained, columns=None,
         columns = reweighter_trained.columns
 #    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
     new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
-                                                     original_weight=reweight_data.get_weights())
+                                                     original_weight=reweight_data.weights)
 
     # write to output
     out.add_output(["Using the reweighter:\n", reweighter_trained, "\n to reweight ",

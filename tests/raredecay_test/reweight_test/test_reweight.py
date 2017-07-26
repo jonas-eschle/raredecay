@@ -31,6 +31,7 @@ import raredecay.settings
 rd.settings.set_random_seed(42)
 from raredecay.tools.data_storage import HEPDataStorage
 from raredecay.analysis.physical_analysis import reweight
+from raredecay.analysis.ml_analysis import reweight_Kfold
 
 all_branches = ['a', 'b', 'c', 'd']
 reweight_branches = all_branches[1:]
@@ -46,6 +47,37 @@ reweight_cfg = dict(
 
                 )
         )
+
+
+class TestReweightCV(unittest.TestCase):
+    def setUp(self):
+        self.true_gb_weights = pd.Series([1.20504514743, -7.773011601, 7.17983704168, 2.62101861844,
+                                          20.4008323011, -0.842483629763, 4.41463800768,
+                                          1.9461656895, 1.02576013286, 2.80971428188, -1.51684460218,
+                                          -5.13561242024, -0.78173874975, -0.0478258698123,
+                                          2.01908866731, 9.95469336889, -13.8354260415,
+                                          4.54181926854, 0.813557842005, -4.37114190811,
+                                          -7.73244652185, 3.52538328775, 5.52824687984,
+                                          11.9259492004, -2.98607645, 4.54062665766, 15.5742672672,
+                                          -2.69626668568, -1.10693945488, -2.56038478336,
+                                          -1.99162402215, -5.10373852419, -6.32761236727,
+                                          -3.638514158, -5.30229826853, 4.5480708681, 4.09711622965,
+                                          -2.3436601653, 2.84308310871, -1.39649594822,
+                                          0.565284875553, 8.97770384501, 6.91092653798,
+                                          -0.92390285854, -1.35830738296, -2.14712949144,
+                                          4.53635191488, 4.59801012528, 5.09031229782,
+                                          -10.2740215584]
+
+                                         )
+
+    def test_reweightCV(self):
+        ds1, ds2 = _create_data(2)
+        scores = reweight_Kfold(real_data=ds1, mc_data=ds2, n_folds=3,
+                                columns=reweight_branches, reweighter='gb',
+                                meta_cfg=reweight_cfg, n_reweights=1,
+                                add_weights_to_data=True)
+        new_weights = scores.pop('weights')
+        pdtest.assert_series_equal(self.true_gb_weights, new_weights)
 
 
 class TestReweight(unittest.TestCase):
@@ -70,7 +102,7 @@ class TestReweight(unittest.TestCase):
 
                                          )
 
-    def test_something(self):
+    def test_reweight(self):
         ds1, ds2, ds3 = _create_data()
         scores = reweight(apply_data=ds1, real_data=ds2, mc_data=ds3,
                           columns=reweight_branches, reweighter='gb',
