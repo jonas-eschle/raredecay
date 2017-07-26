@@ -256,7 +256,7 @@ def is_root(data_to_check):
         path_name = data_to_check.get('filenames')
 #        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
 #                                            str(data_to_check) + "is not a string")
-        if path_name.endswith(meta_config.ROOT_DATATYPE):
+        if path_name.endswith(meta_cfg.ROOT_DATATYPE):
             flag = True
     return flag
 
@@ -282,7 +282,7 @@ def is_pickle(data_to_check):
     flag = False
     data_to_check = dev_tool.entries_to_str(data_to_check)
     if isinstance(data_to_check, basestring):
-        if data_to_check.endswith(meta_config.PICKLE_DATATYPE):
+        if data_to_check.endswith(meta_cfg.PICKLE_DATATYPE):
             flag = True
     return flag
 
@@ -487,11 +487,11 @@ def adv_return(return_value, save_name=None):
     save_name = dev_tool.entries_to_str(save_name)
     if save_name not in (None, False):
         if isinstance(save_name, basestring):
-            save_name = meta_config.PICKLE_PATH + save_name
+            save_name = meta_cfg.PICKLE_PATH + save_name
             if not is_pickle(save_name):
-                save_name += "." + meta_config.PICKLE_DATATYPE
+                save_name += "." + meta_cfg.PICKLE_DATATYPE
             with open(str(save_name), 'wb') as f:
-                pickle.dump(return_value, f, meta_config.PICKLE_PROTOCOL)
+                pickle.dump(return_value, f, meta_cfg.PICKLE_PROTOCOL)
                 print(str(return_value) + " pickled to " + save_name)
         else:
             pass
@@ -507,7 +507,7 @@ def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
     """Try to unpickle a file and return, otherwise just return input."""
     file_to_unpickle = dev_tool.entries_to_str(file_to_unpickle)
     if is_pickle(file_to_unpickle):
-        extra_path = meta_config.PICKLE_PATH if use_metapath_bkwcomp else ''
+        extra_path = meta_cfg.PICKLE_PATH if use_metapath_bkwcomp else ''
         with open(extra_path + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle

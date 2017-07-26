@@ -125,8 +125,8 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
         logger.addHandler(ch)
 
     # add logger to the loggers collection
-    meta_config.loggers[module_name] = logger
-    logger.info('Logger created succesfully, loggers: ' + str(meta_config.loggers))
+    meta_cfg.loggers[module_name] = logger
+    logger.info('Logger created succesfully, loggers: ' + str(meta_cfg.loggers))
     return logger
 
 

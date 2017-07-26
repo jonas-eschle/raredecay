@@ -132,11 +132,11 @@ class OutputHandler(object):
         self._save_output = True
         # initialize defaults
         logger_cfg = {} if logger_cfg is None else logger_cfg
-        self._logger_cfg = dict(meta_config.DEFAULT_LOGGER_CFG, **logger_cfg)
+        self._logger_cfg = dict(meta_cfg.DEFAULT_LOGGER_CFG, **logger_cfg)
 
         assert isinstance(output_path, basestring), "output_path not a string"
         output_folders = {} if output_folders is None else output_folders
-        self._output_folders = dict(meta_config.DEFAULT_OUTPUT_FOLDERS, **output_folders)
+        self._output_folders = dict(meta_cfg.DEFAULT_OUTPUT_FOLDERS, **output_folders)
 
         # make sure no blank spaces are left in the folder names
         for key, value in list(self._output_folders.items()):
@@ -144,7 +144,7 @@ class OutputHandler(object):
             self._output_folders[key] = value.replace(" ", "_")
 
         # ask if you want to add something to the run_name (and folder name)
-        if meta_config.PROMPT_FOR_COMMENT:
+        if meta_cfg.PROMPT_FOR_COMMENT:
             prompt_message = "Enter an (optional) extension to the run-name and press 'enter':\n"
             temp_add = str(input(prompt_message))
             run_name += " " + temp_add if temp_add != "" else ""
@@ -167,7 +167,7 @@ class OutputHandler(object):
                     self._path_to_be_overriden += '/'
             self._output_path = output_path + "_" + str(temp_i)
             temp_i += 1
-            assert temp_i < meta_config.MAX_AUTO_FOLDERS, \
+            assert temp_i < meta_cfg.MAX_AUTO_FOLDERS, \
                 "possible endless loop when trying to create a non-existing folder"
         self._output_path += '' if output_path.endswith('/') else '/'
 
@@ -177,8 +177,8 @@ class OutputHandler(object):
         subprocess.call(['touch', self._output_path + 'run_NOT_finished'])  # show that ongoing run
 
         # set meta-config variables
-        meta_config.set_parallel_profile(n_cpu=meta_config.n_cpu_max,
-                                         gpu_in_use=meta_config.use_gpu)
+        meta_cfg.set_parallel_profile(n_cpu=meta_cfg.n_cpu_max,
+                                         gpu_in_use=meta_cfg.use_gpu)
 
         self._is_initialized = True
         self.add_output(run_message, title="Run: " + self._run_name, importance=0,
@@ -305,7 +305,7 @@ class OutputHandler(object):
         file_format = dev_tool.entries_to_str(file_format)
         save_cfg = dev_tool.entries_to_str(save_cfg)
 
-        plot = 5 - round(importance) < meta_config.plot_verbosity  # to plot or not to plot
+        plot = 5 - round(importance) < meta_cfg.plot_verbosity  # to plot or not to plot
         figure_kwargs = {} if figure_kwargs is None else figure_kwargs
 
         if self._save_output:
@@ -313,7 +313,7 @@ class OutputHandler(object):
             if isinstance(figure, (int, basestring)):
                 figure = plt.figure(figure, **figure_kwargs)  # TODO: changeable?
 
-            file_format = meta_config.DEFAULT_SAVE_FIG['file_format'] if file_format is None else file_format
+            file_format = meta_cfg.DEFAULT_SAVE_FIG['file_format'] if file_format is None else file_format
             if isinstance(file_format, basestring):
                 file_format = [file_format]
             file_format = set(file_format)
@@ -350,7 +350,7 @@ class OutputHandler(object):
             assert isinstance(format_, basestring), "Format is not a string: " + str(format_)
             subprocess.call(['mkdir', '-p', path + format_])
         if self._pickle_folder:
-            subprocess.call(['mkdir', '-p', path + meta_config.PICKLE_DATATYPE])
+            subprocess.call(['mkdir', '-p', path + meta_cfg.PICKLE_DATATYPE])
 
         # save figures to file
         for fig_name, fig_dict in list(self._figures.items()):
@@ -366,18 +366,18 @@ class OutputHandler(object):
                                        **fig_dict.get('save_cfg'))
                 except:
                     self.logger.error("Could not save figure" + str(figure_tmp))
-                    meta_config.error_occured()
+                    meta_cfg.error_occured()
 
             if fig_dict.get('to_pickle'):
-                file_name = (path + meta_config.PICKLE_DATATYPE + '/' +
-                             fig_name + "." + meta_config.PICKLE_DATATYPE)
+                file_name = (path + meta_cfg.PICKLE_DATATYPE + '/' +
+                             fig_name + "." + meta_cfg.PICKLE_DATATYPE)
                 try:
                     with open(str(file_name), 'wb') as f:
-                        pickle.dump(fig_dict.get('figure'), f, meta_config.PICKLE_PROTOCOL)
+                        pickle.dump(fig_dict.get('figure'), f, meta_cfg.PICKLE_PROTOCOL)
                 except:
                     self.logger.error("Could not open file" + str(file_name) +
                                       " OR pickle the figure to it")
-                    meta_config.error_occured()
+                    meta_cfg.error_occured()
 
             # delete if it is not intended to be plotted
             if not fig_dict.get('plot'):
@@ -477,7 +477,7 @@ class OutputHandler(object):
         assert isinstance(data_separator, basestring), \
             (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
         self._check_initialization()
-        do_print = 5 - round(importance) < meta_config.verbosity
+        do_print = 5 - round(importance) < meta_cfg.verbosity
 
         data_out = dev_tool.make_list_fill_var(data_out)
         temp_out = ""
@@ -535,7 +535,7 @@ class OutputHandler(object):
         # ==============================================================================
 
         self.add_output("\n", title="END OF RUN " + self._run_name, importance=4)
-        self.add_output(["Random generator seed", meta_config.rand_seed],
+        self.add_output(["Random generator seed", meta_cfg.rand_seed],
                         title="Different parameters", obj_separator=" : ", importance=2)
 
         # print the output which should be printed at the end of the run
@@ -543,15 +543,15 @@ class OutputHandler(object):
         self.output += self.end_output
 
         # add current version (if available)
-        if self._save_output and os.path.isdir(meta_config.GIT_DIR_PATH):
+        if self._save_output and os.path.isdir(meta_cfg.GIT_DIR_PATH):
             try:
-                git_version = subprocess.check_output(["git", "-C", meta_config.GIT_DIR_PATH,
+                git_version = subprocess.check_output(["git", "-C", meta_cfg.GIT_DIR_PATH,
                                                        "describe"])
                 self.add_output(["Program version from Git", git_version],
                                 section="Git information",
                                 importance=0, obj_separator=" : ")
             except:
-                meta_config.error_occured()
+                meta_cfg.error_occured()
                 self.logger.error("Could not get version number from git")
 
         # time information
@@ -561,9 +561,9 @@ class OutputHandler(object):
                          elapsed_time], section="Time information", obj_separator=" ")
 
         # error information
-        self.add_output(["Errors encountered during run", meta_config._error_count],
+        self.add_output(["Errors encountered during run", meta_cfg._error_count],
                         obj_separator=" : ")
-        self.add_output(["Warnings encountered during run", meta_config._warning_count],
+        self.add_output(["Warnings encountered during run", meta_cfg._warning_count],
                         obj_separator=" : ")
 
         output = copy.deepcopy(self.output)
@@ -591,13 +591,13 @@ class OutputHandler(object):
                     f.write(self.output)
             except:
                 self.logger.error("Could not save output to file")
-                meta_config.error_occured()
+                meta_cfg.error_occured()
                 warnings.warn("Could not save output. Check the logs!", RuntimeWarning)
 
             # if a folder to overwrite exists, delete it and move the temp folder
             if self._path_to_be_overriden is not None:
                 stop_del = ''
-                if not meta_config.NO_PROMPT_ASSUME_YES:
+                if not meta_cfg.NO_PROMPT_ASSUME_YES:
                     stop_del = str(input("ATTENTION! The folder " + self._path_to_be_overriden +
                                          " will be deleted and replaced with the output " +
                                          "of the current run.\nTo DELETE that folder and " +
@@ -628,7 +628,7 @@ class OutputHandler(object):
                 print("BEEEEEP, no sound could be played")
 
         if show_plots:
-            if not meta_config.NO_PROMPT_ASSUME_YES:
+            if not meta_cfg.NO_PROMPT_ASSUME_YES:
                 str(input(["Run finished, press Enter to show the plots"]))
             plt.show()
 

@@ -147,9 +147,9 @@ def finalize(show_plots=True, play_sound_at_end=False):
 def set_verbosity(verbosity=3, plot_verbosity=3):
     """Change the verbosity of the package."""
     if verbosity is not None:
-        meta_config.set_verbosity(verbosity)
+        meta_cfg.set_verbosity(verbosity)
     if plot_verbosity is not None:
-        meta_config.set_plot_verbosity(plot_verbosity)
+        meta_cfg.set_plot_verbosity(plot_verbosity)
 
 
 def get_output_handler():
@@ -192,7 +192,7 @@ def parallel_profile(n_cpu=-1, gpu_in_use=False):
 
 
     """
-    meta_config.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
+    meta_cfg.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
 
 
 def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
@@ -236,7 +236,7 @@ def set_random_seed(seed=None):
         The seed for the random generator. If None, it won't change anything
     """
     if seed is not None:
-        meta_config.set_seed(seed)
+        meta_cfg.set_seed(seed)
 
 
 def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
@@ -309,5 +309,5 @@ def _init_configure_logger(console_level='critical', file_level='debug'):
 
 def _init_user_input(prompt_for_input=True):
     """If called, you will be asked for input to name the specific run."""
-    meta_config.NO_PROMPT_ASSUME_YES = not prompt_for_input
-    meta_config.PROMPT_FOR_COMMENT = prompt_for_input
+    meta_cfg.NO_PROMPT_ASSUME_YES = not prompt_for_input
+    meta_cfg.PROMPT_FOR_COMMENT = prompt_for_input

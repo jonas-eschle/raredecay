@@ -6,7 +6,7 @@ from __future__ import division, absolute_import
 # import raredecay.meta_config as meta_cfg
 
 
-# if not meta_config.SUPPRESS_WRONG_SKLEARN_VERSION:
+# if not meta_cfg.SUPPRESS_WRONG_SKLEARN_VERSION:
 #    try:
 #        temp_sklearn_info = imp.find_module('sklearn')
 #        temp_sklearn = imp.load_module('sklearn', *temp_sklearn_info)

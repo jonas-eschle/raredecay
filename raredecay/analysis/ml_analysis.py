@@ -16,10 +16,13 @@ The functions serve as basic tools, which do already a lot of the work.
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+
 import sys
 import warnings
+
+from builtins import (dict, int, round, str)
+from matplotlib import pyplot as plt
+
 import raredecay.meta_config
 
 try:
@@ -51,7 +54,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 
 # hep_ml imports
-import hep_ml.reweight
 
 # scikit-learn imports
 from sklearn.base import BaseEstimator
@@ -83,42 +85,13 @@ from raredecay.globals_ import out
 # from raredecay import globals_
 
 # import configuration
-import importlib
 import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
-
-def _make_data(original_data, target_data=None, features=None, target_from_data=False,
-               weights_ratio=0, weights_original=None, weights_target=None):
-    """Return the concatenated data, weights and labels for classifier training.
-
-     Differs to only *make_dataset* from the HEPDataStorage by providing the
-     possibility of using other weights.
-    """
-    # make temporary weights if specific weights are given as parameters
-    temp_ori_weights = None
-    temp_tar_weights = None
-    if not dev_tool.is_in_primitive(weights_original, None):
-        temp_ori_weights = original_data.get_weights()
-        original_data.set_weights(weights_original)
-    if not dev_tool.is_in_primitive(weights_target, None):
-        temp_tar_weights = target_data.get_weights()
-        target_data.set_weights(weights_target)
-
-    # create the data, target and weights
-    data_out = original_data.make_dataset(target_data, columns=features,
-                                          targets_from_data=target_from_data,
-                                          weights_ratio=weights_ratio)
-
-    # reassign weights if specific weights have been used
-    if not dev_tool.is_in_primitive(temp_ori_weights, None):
-        original_data.set_weights(temp_ori_weights)
-    if not dev_tool.is_in_primitive(temp_tar_weights, None):
-        original_data.set_weights(temp_tar_weights)
-
-    return data_out
+# raredecay backwards compatibility:
+from raredecay.analysis.reweight import reweight_train, reweight_weights
 
 
 def make_clf(clf, n_cpu=None, dict_only=False):
@@ -209,7 +182,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
     suppress_cpu_warning = False
     if n_cpu is None:
         suppress_cpu_warning = True
-    n_cpu = meta_config.get_n_cpu(n_cpu)
+    n_cpu = meta_cfg.get_n_cpu(n_cpu)
 
     # if input is dict containing a clf, make sure it's a Sklearn one
     if len(clf) == 1 and isinstance(list(clf.values())[0], (BaseEstimator, Classifier)):
@@ -257,7 +230,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         else:
             output['n_cpu'] = n_cpu_clf
             output['parallel_profile'] = None
-        clf_name = meta_config.DEFAULT_CLF_NAME.get(clf_type, "classifier")
+        clf_name = meta_cfg.DEFAULT_CLF_NAME.get(clf_type, "classifier")
         output['name'] = clf.get('name', clf_name)
 
     # If we do not have a classifier, we have a config dict and need to create a clf
@@ -274,15 +247,15 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             clf['name'] = clf['clf_type']
         default_clf = dict(
             clf_type=clf['clf_type'],
-            name=meta_config.DEFAULT_CLF_NAME[clf['clf_type']],
-            config=meta_config.DEFAULT_CLF_CONFIG[clf['clf_type']],
+            name=meta_cfg.DEFAULT_CLF_NAME[clf['clf_type']],
+            config=meta_cfg.DEFAULT_CLF_CONFIG[clf['clf_type']],
         )
 
         clf = dict(default_clf, **clf)
 
         if clf['clf_type'] == 'xgb':
             # update config dict with parallel-variables and random state
-            clf['config'].update(dict(nthreads=n_cpu, random_state=meta_config.randint()))
+            clf['config'].update(dict(nthreads=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = XGBoostClassifier(**clf.get('config'))
         elif clf['clf_type'] == 'tmva':
             serial_clf = True
@@ -291,22 +264,22 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             serial_clf = True
             clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.get('config')))
         elif clf['clf_type'] == 'rdf':
-            clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_config.randint()))
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         elif clf['clf_type'] == 'ada':
             serial_clf = True
-            clf['config'].update(dict(random_state=meta_config.randint()))
+            clf['config'].update(dict(random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                random_state=meta_config.randint()), **clf.get('config')))
+                random_state=meta_cfg.randint()), **clf.get('config')))
         elif clf['clf_type'] == 'knn':
-            clf['config'].update(dict(random_state=meta_config.randint(), n_jobs=n_cpu))
+            clf['config'].update(dict(random_state=meta_cfg.randint(), n_jobs=n_cpu))
             clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
         elif clf['clf_type'] == 'rdf':
-            clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_config.randint()))
+            clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         # elif clf['clf_type'] == 'nn':
-        #     serial_clf = meta_config.use_gpu
-        #     clf['config'].update(dict(random_state=meta_config.randint()))
+        #     serial_clf = meta_cfg.use_gpu
+        #     clf['config'].update(dict(random_state=meta_cfg.randint()))
         #     clf_tmp = TheanetsClassifier(**clf.get('config'))
 
         # assign classifier to output dict
@@ -416,10 +389,10 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
         start_time = timeit.default_timer()
         assert start_time > 0, "Error, start_time is <= 0, will cause error later"
 
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     if features is None:
         features = original_data.columns
-        meta_config.warning_occured()
+        meta_cfg.warning_occured()
         logger.warning("Feature not specified as argument to optimize_hyper_parameters." +
                        "Features for feature-optimization will be taken from data.")
     # We do not need to create more data than we well test on
@@ -432,7 +405,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
                                       target_from_data=take_target_from_data)
 
     # initialize clf and parallel_profile
-    clf_dict = make_clf(clf=clf, n_cpu=meta_config.n_cpu_max)
+    clf_dict = make_clf(clf=clf, n_cpu=meta_cfg.n_cpu_max)
     clf = clf_dict['clf']
     clf_name = clf_dict['name']
     parallel_profile = clf_dict['parallel_profile']
@@ -450,7 +423,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
                     clf_name, "of the features", features],
                    title="Feature selection: Recursive backward elimination")
     original_clf = FoldingClassifier(clf, n_folds=n_folds,
-                                     stratified=meta_config.use_stratified_folding,
+                                     stratified=meta_cfg.use_stratified_folding,
                                      parallel_profile=parallel_profile)
 
     # "loop-initialization", get score for all features
@@ -622,13 +595,13 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     """
     # initialize variables and setting defaults
 #    output = {}
-#    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+#    save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     clf = dev_tool.entries_to_str(clf)
     features = dev_tool.entries_to_str(features)
     generator_type = dev_tool.entries_to_str(generator_type)
     n_eval = dev_tool.entries_to_str(n_eval)
 
-    clf_dict = make_clf(clf, n_cpu=meta_config.n_cpu_max, dict_only=True)
+    clf_dict = make_clf(clf, n_cpu=meta_cfg.n_cpu_max, dict_only=True)
     config_clf = clf_dict['config']
     config_clf_cp = copy.deepcopy(config_clf)
 
@@ -652,7 +625,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     logger.info("Maximum possible evaluations: " + str(max_eval))
 
     # get a time estimation and extrapolate to get n_eval
-    if isinstance(n_eval, basestring) and (meta_config.n_cpu_max * 2 < max_eval):
+    if isinstance(n_eval, basestring) and (meta_cfg.n_cpu_max * 2 < max_eval):
         n_eval = n_eval.split(":")
         assert len(n_eval) == 2, "Wrong time-format. Has to be 'hhh...hhh:mm' "
         available_time = 3600 * int(n_eval[0]) + 60 * int(n_eval[1])
@@ -660,7 +633,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
         start_timer_test = timeit.default_timer()
         elapsed_time = 1
         min_elapsed_time = 15 + 0.005 * available_time  # to get an approximate extrapolation
-        n_eval_tmp = meta_config.n_cpu_max
+        n_eval_tmp = meta_cfg.n_cpu_max
         n_checks_tmp = 1  # time will be multiplied by actual n_checks
 
         # call hyper_optimization with parameters for "one" run and measure time
@@ -688,7 +661,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
         n_eval = ((int((available_time * 0.98 - test_time) / elapsed_time)) *
                   int(round(n_eval_tmp)))  # we did just one
         if n_eval < 1:
-            n_eval = meta_config.n_cpu_max
+            n_eval = meta_cfg.n_cpu_max
         out.add_output(["Time for one round:", round(elapsed_time, 1), "sec.",
                         " Number of evaluations:", n_eval])
 
@@ -708,7 +681,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
 
     # initialize classifier
     clf_dict['config'] = config_clf
-    clf_dict = make_clf(clf=clf_dict, n_cpu=meta_config.n_cpu_max)
+    clf_dict = make_clf(clf=clf_dict, n_cpu=meta_cfg.n_cpu_max)
     clf = clf_dict['clf']
     clf_name = clf_dict['name']
     parallel_profile = clf_dict['parallel_profile']
@@ -847,7 +820,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     VALID_KWARGS = ['original_test_weights', 'target_test_weights']
 
     # initialize variables and data
-    save_fig_cfg = dict(meta_config.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     predictions = {}
     make_plot = True  # used if no validation
     valid_input = set(kwargs).issubset(VALID_KWARGS)
@@ -889,7 +862,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             test_weights = weights
 
         clf = FoldingClassifier(clf, n_folds=int(validation), parallel_profile=parallel_profile,
-                                stratified=meta_config.use_stratified_folding)
+                                stratified=meta_cfg.use_stratified_folding)
         # folding-> same data for train and test
         lds_test = LabeledDataStorage(data=data, target=label, sample_weight=test_weights)
 
@@ -1013,172 +986,103 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
         return clf, clf_score
 
 
-def reweight_train(mc_data, real_data, columns=None,
-                   reweighter='gb', reweight_saveas=None, meta_cfg=None,
-                   weights_mc=None, weights_real=None):
-    """Return a trained reweighter from a (mc/real) distribution comparison.
+def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
+                    plot_importance=3):
+    """Find the best threshold cut for a given metric.
 
-    | Reweighting a distribution is a "making them the same" by changing the
-      weights of the bins (instead of 1) for each event. Mostly, and therefore
-      the naming, you want to change the mc-distribution towards the real one.
-    | There are two possibilities
-
-    * normal bins reweighting:
-       divides the bins from one distribution by the bins of the other
-       distribution. Easy and fast, but unstable and inaccurat for higher
-       dimensions.
-    * Gradient Boosted reweighting:
-       uses several decision trees to reweight the bins. Slower, but more
-       accurat. Very useful in higher dimensions.
-       But be aware, that you can easily screw up things by overfitting.
+    Test the metric for every possible threshold cut and returns the highest
+    value. Plots the metric versus cuts as well.
 
     Parameters
     ----------
     mc_data : |hepds_type|
-        The Monte-Carlo data to compare with the real data.
+        The MC data
     real_data : |hepds_type|
-        Same as *mc_data* but for the real data.
-    columns : list of strings
-        The columns/features/branches you want to use for the reweighting.
-    reweighter : {'gb', 'bins'}
-        Specify which reweighter to be used.
+        The real data
+    prediction_branch : str
+        The branch name containing the predictions to test.
+    metric : str |implemented_primitive_metrics| or simple metric
+        Can be a valid string pointing to a metric or a simple metric taking
+        only tpr and fpr: metric(tpr, fpr, weights=None)
+    plot_importance : |plot_importance_type|
+        |plot_importance_docstring|
 
-        - **gb**: The GradientBoosted Reweighter from REP,
-          :func:`~hep_ml.reweight.GBReweighter`
-        - **bins**: The simple bins reweighter from REP,
-          :func:`~hep_ml.reweight.BinsReweighter`
-    reweight_saveas : string
-        To save a trained reweighter in addition to return it. The value
-        is the filepath + name.
-    meta_cfg : dict
-        Contains the parameters for the bins/gb-reweighter. See also
-        :func:`~hep_ml.reweight.BinsReweighter` and
-        :func:`~hep_ml.reweight.GBReweighter`.
-    weights_mc : numpy.array [n_samples]
-        Explicit weights for the Monte-Carlo data. Only specify if you don't
-        want to use the weights in the *HEPDataStorage*.
-    weights_real : numpy.array [n_samples]
-        Explicit weights for the real data. Only specify if you don't
-        want to use the weights in the *HEPDataStorage*.
-
-    Returns
-    -------
-    out : object of type reweighter
-        Reweighter is trained to the data. Can, for example,
-        be used with :func:`~hep_ml.reweight.GBReweighter.predict_weights`
-    """
-    __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
-
-    # Python 2/3 compatibility, str
-    columns = dev_tool.entries_to_str(columns)
-    reweighter = dev_tool.entries_to_str(reweighter)
-    reweight_saveas = dev_tool.entries_to_str(reweight_saveas)
-    meta_cfg = dev_tool.entries_to_str(meta_cfg)
-
-    # check for valid user input
-    if data_tools.is_pickle(reweighter):
-        return data_tools.adv_return(reweighter, save_name=reweight_saveas)
-
-    if reweighter not in __REWEIGHT_MODE:
-        raise ValueError("Reweighter invalid: " + reweighter)
-
-    reweighter = __REWEIGHT_MODE.get(reweighter.lower())
-    reweighter += 'Reweighter'
-
-    # logging and writing output
-    msg = ["Reweighter:", reweighter, "with config:", meta_cfg]
-    logger.info(msg)
-
-    out.add_output(msg + ["\nData used:\n", mc_data.name, " and ",
-                          real_data.name, "\ncolumns used for the reweighter training:\n",
-                          columns], section="Training the reweighter", obj_separator=" ")
-
-    if columns is None:
-        # use the intesection of both colomns
-        common_cols = set(mc_data.columns)
-        common_cols.intersection_update(real_data.columns)
-        columns = list(common_cols)
-        if columns != mc_data.columns or columns != real_data.columns:
-            logger.warning("No columns specified for reweighting, took intersection" +
-                           " of both dataset, as it's columns are not equal." +
-                           "\nTherefore some columns were not used!")
-            meta_config.warning_occured()
-
-    # create data
-    mc_data, _t, mc_weights = _make_data(mc_data, features=columns,
-                                         weights_original=weights_mc)
-    real_data, _t, real_weights = _make_data(real_data, features=columns,
-                                             weights_original=weights_real)
-    del _t
-
-    # train the reweighter
-    if meta_cfg is None:
-        meta_cfg = {}
-
-    if reweighter == "GBReweighter":
-        reweighter = hep_ml.reweight.GBReweighter(**meta_cfg)
-    elif reweighter == "BinsReweighter":
-        reweighter = hep_ml.reweight.BinsReweighter(**meta_cfg)
-    reweighter.fit(original=mc_data, target=real_data,
-                   original_weight=mc_weights, target_weight=real_weights)
-    return data_tools.adv_return(reweighter, save_name=reweight_saveas)
-
-
-def reweight_weights(reweight_data, reweighter_trained, columns=None,
-                     normalize=True, add_weights_to_data=True):
-    """Apply reweighter to the data and (add +) return the weights.
-
-    Can be seen as a wrapper for the
-    :py:func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
-    Additional functionality:
-     * Takes a trained reweighter as argument, but can also unpickle one
-       from a file.
-
-    Parameters
-    ----------
-    reweight_data : |hepds_type|
-        The data for which the reweights are to be predicted.
-    reweighter_trained : (pickled) reweighter (*from hep_ml*)
-        The trained reweighter, which predicts the new weights.
-    columns : list(str, str, str,...)
-        The columns to use for the reweighting.
-    normalize : boolean or int
-        If True, the weights will be normalized (scaled) to the value of
-        normalize.
-    add_weights_to_data : boolean
-        If set to False, the weights will only be returned and not updated in
-        the data (*HEPDataStorage*). If you want to use the data later on
-        in the script with the new weights, set this value to True.
-
-    Returns
+    Return
     ------
-    out : :py:class:`~pd.Series`
-        Return an instance of pandas Series of shape [n_samples] containing the
-        new weights.
+    out : dict
+        Return a dict containing the best threshold cut as well as the metric
+        value. The keywords are:
+
+            - **best_threshold_cut**: the best cut on the predictions
+            - **best_metric**: the value of the metric when applying the best
+              cut.
     """
+    from rep.report.metrics import OptimalMetric
+
+    from raredecay.tools.metrics import punzi_fom, precision_measure
+
     # Python 2/3 compatibility, str
-    reweighter_trained = dev_tool.entries_to_str(reweighter_trained)
-    columns = dev_tool.entries_to_str(columns)
+    metric = dev_tool.entries_to_str(metric)
+    prediction_branch = dev_tool.entries_to_str(prediction_branch)
 
-    normalize = 1 if normalize is True else normalize
+    metric_name = metric
+    if metric == 'punzi':
+        metric = punzi_fom
+    elif metric == 'precision':
+        metric = precision_measure
 
-    reweighter_trained = data_tools.try_unpickle(reweighter_trained)
-    if columns is None:
-        columns = reweighter_trained.columns
-#    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
-    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(columns=columns),
-                                                     original_weight=reweight_data.get_weights())
+    data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
+    predictions = data.T.as_matrix()[0, :]
+    predictions = np.transpose(np.array((1 - predictions, predictions)))
+    metric_optimal = OptimalMetric(metric)
 
-    # write to output
-    out.add_output(["Using the reweighter:\n", reweighter_trained, "\n to reweight ",
-                    reweight_data.name], obj_separator="")
+    best_cut, best_metric = metric_optimal.compute(y_true=target,
+                                                   proba=data,
+                                                   sample_weight=weights)
+    out.figure(str(metric_name) + " vs cut", importance=plot_importance)
+    title = "{0} vs cut of {1} and {2}".format(str(metric_name), real_data.name, mc_data.name)
+    metric_optimal.plot_vs_cut(y_true=target, proba=data, sample_weight=weights).plot(title=title)
 
-    if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
-        new_weights *= new_weights.size / new_weights.sum() * normalize
-    new_weights = pd.Series(new_weights, index=reweight_data.index)
-    if add_weights_to_data:
-        reweight_data.set_weights(new_weights)
-    return new_weights
+    best_metric = np.nan_to_num(best_metric)
+    best_index = np.argmax(best_metric)
+    output = {'best_threshold_cut': best_cut[best_index],
+              'best_metric': best_metric[best_index]}
+
+    return output
+
+if __name__ == "main":
+    print('test')
+
+
+def _make_data(original_data, target_data=None, features=None, target_from_data=False,
+               weights_ratio=0, weights_original=None, weights_target=None):
+    """Return the concatenated data, weights and labels for classifier training.
+
+     Differs to only *make_dataset* from the HEPDataStorage by providing the
+     possibility of using other weights.
+    """
+    # make temporary weights if specific weights are given as parameters
+    temp_ori_weights = None
+    temp_tar_weights = None
+    if not dev_tool.is_in_primitive(weights_original, None):
+        temp_ori_weights = original_data.get_weights()
+        original_data.set_weights(weights_original)
+    if not dev_tool.is_in_primitive(weights_target, None):
+        temp_tar_weights = target_data.get_weights()
+        target_data.set_weights(weights_target)
+
+    # create the data, target and weights
+    data_out = original_data.make_dataset(target_data, columns=features,
+                                          targets_from_data=target_from_data,
+                                          weights_ratio=weights_ratio)
+
+    # reassign weights if specific weights have been used
+    if not dev_tool.is_in_primitive(temp_ori_weights, None):
+        original_data.set_weights(temp_ori_weights)
+    if not dev_tool.is_in_primitive(temp_tar_weights, None):
+        original_data.set_weights(temp_tar_weights)
+
+    return data_out
 
 
 def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
@@ -1444,71 +1348,3 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
 
     output['weights'] = new_weights_tot
     return output
-
-
-def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
-                    plot_importance=3):
-    """Find the best threshold cut for a given metric.
-
-    Test the metric for every possible threshold cut and returns the highest
-    value. Plots the metric versus cuts as well.
-
-    Parameters
-    ----------
-    mc_data : |hepds_type|
-        The MC data
-    real_data : |hepds_type|
-        The real data
-    prediction_branch : str
-        The branch name containing the predictions to test.
-    metric : str |implemented_primitive_metrics| or simple metric
-        Can be a valid string pointing to a metric or a simple metric taking
-        only tpr and fpr: metric(tpr, fpr, weights=None)
-    plot_importance : |plot_importance_type|
-        |plot_importance_docstring|
-
-    Return
-    ------
-    out : dict
-        Return a dict containing the best threshold cut as well as the metric
-        value. The keywords are:
-
-            - **best_threshold_cut**: the best cut on the predictions
-            - **best_metric**: the value of the metric when applying the best
-              cut.
-    """
-    from rep.report.metrics import OptimalMetric
-
-    from raredecay.tools.metrics import punzi_fom, precision_measure
-
-    # Python 2/3 compatibility, str
-    metric = dev_tool.entries_to_str(metric)
-    prediction_branch = dev_tool.entries_to_str(prediction_branch)
-
-    metric_name = metric
-    if metric == 'punzi':
-        metric = punzi_fom
-    elif metric == 'precision':
-        metric = precision_measure
-
-    data, target, weights = mc_data.make_dataset(real_data, columns=prediction_branch)
-    predictions = data.T.as_matrix()[0, :]
-    predictions = np.transpose(np.array((1 - predictions, predictions)))
-    metric_optimal = OptimalMetric(metric)
-
-    best_cut, best_metric = metric_optimal.compute(y_true=target,
-                                                   proba=data,
-                                                   sample_weight=weights)
-    out.figure(str(metric_name) + " vs cut", importance=plot_importance)
-    title = "{0} vs cut of {1} and {2}".format(str(metric_name), real_data.name, mc_data.name)
-    metric_optimal.plot_vs_cut(y_true=target, proba=data, sample_weight=weights).plot(title=title)
-
-    best_metric = np.nan_to_num(best_metric)
-    best_index = np.argmax(best_metric)
-    output = {'best_threshold_cut': best_cut[best_index],
-              'best_metric': best_metric[best_index]}
-
-    return output
-
-if __name__ == "main":
-    print('test')

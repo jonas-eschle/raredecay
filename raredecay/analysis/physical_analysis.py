@@ -15,6 +15,9 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
                       open, pow, range, round, str, super, zip)
 import sys
 import warnings
+
+import raredecay.analysis.ml_analysis
+import raredecay.analysis.reweight
 import raredecay.meta_config
 
 try:
@@ -250,7 +253,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
     while True:
 
-        #        pool = multiprocessing.Pool(meta_config.n_cpu_max)
+        #        pool = multiprocessing.Pool(meta_cfg.n_cpu_max)
         sig = np.array([signal_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
         sig = copy.deepcopy(sig)
         bkg = np.array([bkg_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
@@ -699,11 +702,11 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
             reweighter = reweighter_list[run]
         reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
-            new_reweighter = ml_ana.reweight_train(mc_data=mc_data,
-                                                   real_data=real_data,
-                                                   columns=columns,
-                                                   meta_cfg=reweight_cfg,
-                                                   reweighter=reweighter)
+            new_reweighter = raredecay.analysis.reweight.reweight_train(mc_data=mc_data,
+                                                                        real_data=real_data,
+                                                                        columns=columns,
+                                                                        meta_cfg=reweight_cfg,
+                                                                        reweighter=reweighter)
             # TODO: hack which adds columns, good idea?
             assert not hasattr(new_reweighter, 'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
             new_reweighter.columns = data_tools.to_list(columns)
@@ -716,10 +719,10 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
         else:
             new_reweighter_list = new_reweighter
 
-        tmp_weights = ml_ana.reweight_weights(reweight_data=apply_data,
-                                              columns=columns,
-                                              reweighter_trained=new_reweighter,
-                                              add_weights_to_data=False)
+        tmp_weights = raredecay.analysis.reweight.reweight_weights(reweight_data=apply_data,
+                                                                   columns=columns,
+                                                                   reweighter_trained=new_reweighter,
+                                                                   add_weights_to_data=False)
         if run == 0:
             new_weights = tmp_weights
         else:
@@ -870,13 +873,13 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 #    if not apply_weights:
     old_weights = mc_data.get_weights()
     # make sure the targets are set the right way TODO
-    Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
-                                         meta_cfg=reweight_cfg, columns=columns,
-                                         reweighter=reweighter, n_reweights=n_reweights,
-                                         mcreweighted_as_real_score=scoring,
-                                         score_columns=score_columns,
-                                         n_folds=n_folds, score_clf=score_clf,
-                                         add_weights_to_data=True)
+    Kfold_output = raredecay.analysis.ml_analysis.reweight_Kfold(mc_data=mc_data, real_data=real_data,
+                                                                 meta_cfg=reweight_cfg, columns=columns,
+                                                                 reweighter=reweighter, n_reweights=n_reweights,
+                                                                 mcreweighted_as_real_score=scoring,
+                                                                 score_columns=score_columns,
+                                                                 n_folds=n_folds, score_clf=score_clf,
+                                                                 add_weights_to_data=True)
     new_weights = Kfold_output.pop('weights')
     # TODO: needed below?
     new_weights.sort_index()

@@ -55,16 +55,58 @@ import matplotlib.pyplot as plt
 
 
 
-def ks_2samp(data1, data2, column):
+def ks_2samp_ds(data1, data2, column):
 
     # Python 2/3 compatibility, str
     column = str(column)
+
+    # create data from HEPDS
     data1, targets1, weights1 = data1.make_dataset(columns=column)
     data2, targets2, weights2 = data2.make_dataset(columns=column)
     weights1 = np.array(weights1)
     weights2 = np.array(weights2)
     data1 = np.array(data1[column].values)
     data2 = np.array(data2[column].values)
+
+    # call ks_test
+    ks_score = ks_2samp(data1=data1, data2=data2,
+                        weights1 =weights1, weights2=weights2)
+
+
+def ks_2samp(data1, data2, weights1=None, weights2=None):
+    """Weighted two sample Komlogorov-Smirnov hypothesis test.
+
+    The weighted version of the Kolmogorov-Smirnov test if two samples
+    *data1* and *data2* with weights *weights1* and *weights2* respectively
+    are drawn from the same continuos distribution.
+
+    Parameters
+    ----------
+    data1 : array-like
+        The first distribution.
+    data2 : array-like
+        The second distribution.
+    weights1 : array-like
+        The weights of the first distribution. The length has to be equal
+        to the length of *data1*.
+    weights2 : array-like
+        The weights of the second distribution. The length has to be equal
+        to the length of *data2*.
+
+    Returns
+    -------
+    numeric
+        Return the K-S two sample test hypothesis score.
+    """
+
+    # check and set input
+    weights1 = np.ones(len(data1)) if dev_tool.is_in_primitive(weights1) else np.array(weights1)
+    weights2 = np.ones(len(data2)) if dev_tool.is_in_primitive(weights2) else np.array(weights2)
+    data1 = np.array(data1)
+    data2 = np.array(data2)
+
+
+    # start calculation
     ix1 = np.argsort(data1)
     ix2 = np.argsort(data2)
     data1 = data1[ix1]
@@ -78,7 +120,6 @@ def ks_2samp(data1, data2, column):
     cdf2we = cwei2[[np.searchsorted(data2, data, side='right')]]
 
     return np.max(np.abs(cdf1we - cdf2we))
-
 
 def ad_2samp(data1, data2, column):
     # Python 2/3 compatibility, str
@@ -280,9 +321,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     #    data.printValue()
     #    xframe = x.frame()
     #    data_pdf.plotOn(xframe)
-    #    print "n_cpu:", meta_config.get_n_cpu()
+    #    print "n_cpu:", meta_cfg.get_n_cpu()
     #    input("test")
-    #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_config.get_n_cpu()))
+    #    comb_pdf.fitTo(data, RooFit.Extended(ROOT.kTRUE), RooFit.NumCPU(meta_cfg.get_n_cpu()))
     #     HACK to get 8 cores in testing
     c5 = TCanvas("c5", "RooFit pdf not fit vs " + data_name)
     c5.cd()
@@ -293,7 +334,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     if __name__ == "__main__":
         n_cpu = 8
     else:
-        n_cpu = meta_config.get_n_cpu()
+        n_cpu = meta_cfg.get_n_cpu()
         print("n_cpu = ", n_cpu)
         # HACK
     #        n_cpu = 8

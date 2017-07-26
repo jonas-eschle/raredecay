@@ -74,7 +74,7 @@ class HEPDataStorage(object):
     """Data-storage for data, weights, targets; conversion; plots and more"""
 
     # define constants for independence
-    __ROOT_DATATYPE = meta_config.ROOT_DATATYPE
+    __ROOT_DATATYPE = meta_cfg.ROOT_DATATYPE
 
     __figure_number = 0
     __figure_dic = {}
@@ -167,7 +167,7 @@ class HEPDataStorage(object):
         self.set_weights(sample_weights)
 
         # plot settings
-        hist_settings = meta_config.DEFAULT_HIST_SETTINGS
+        hist_settings = meta_cfg.DEFAULT_HIST_SETTINGS
         self.hist_settings = hist_settings
         self.supertitle_fontsize = 18
 
@@ -573,7 +573,7 @@ class HEPDataStorage(object):
     def set_root_selection(self, selection, exception_if_failure=True):
         """Set the selection in a root-file. Only possible if a root-file is provided."""
         warnings.warn("Method set_root_selection very unsafe currently!")
-        meta_config.warning_occured()
+        meta_cfg.warning_occured()
         if self._data_type == 'root':
             self.data['selection'] = selection
             self.set_data(self.data, columns=self.columns)
@@ -922,7 +922,7 @@ class HEPDataStorage(object):
             columns = columns
             columns = [str(col) for col in columns]
 
-        random_state = meta_config.randint()
+        random_state = meta_cfg.randint()
         new_lds = LabeledDataStorage(self.pandasDF(columns=columns, index=index),
                                      target=self.get_targets(index=index),
                                      sample_weight=self.get_weights(index=index),
@@ -962,7 +962,7 @@ class HEPDataStorage(object):
         # get a copy of index and shuffle it if True
         temp_index = copy.deepcopy(self._make_index())
         if shuffle is not False:
-            random.shuffle(temp_index, random=meta_config.randfloat)
+            random.shuffle(temp_index, random=meta_cfg.randfloat)
         for i in range(n_folds):
             self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
 
@@ -1125,7 +1125,7 @@ class HEPDataStorage(object):
         if dev_tool.is_in_primitive(hist_settings, None):
             hist_settings = {}
         if isinstance(hist_settings, dict):
-            hist_settings = dict(meta_config.DEFAULT_HIST_SETTINGS, **hist_settings)
+            hist_settings = dict(meta_cfg.DEFAULT_HIST_SETTINGS, **hist_settings)
         if bins is not None:
             hist_settings['bins'] = bins
         if plot_range is not None:
@@ -1146,7 +1146,7 @@ class HEPDataStorage(object):
                 safety = 0
                 figure = self.__figure_number + 1
                 self.__figure_number += 1
-                assert safety < meta_config.MAX_FIGURES, "stuck in an endless while loop"
+                assert safety < meta_cfg.MAX_FIGURES, "stuck in an endless while loop"
                 if figure not in list(self.__figure_dic.keys()):
                     x_limits_col = {}
                     # TODO: improve figure dict with title....

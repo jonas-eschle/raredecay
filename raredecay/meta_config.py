@@ -52,6 +52,8 @@ import pickle as pickle
 import multiprocessing
 import random
 
+import numpy as np
+
 
 # ==============================================================================
 # Parameters which can be changed WITHOUT affecting stability of a single run.
@@ -360,8 +362,9 @@ def _check_verbosity(verbosity):
 # Random integer generator for pseudo random generator (or other things)
 # ==============================================================================
 
-rand_seed = random.randint(123, 1512412)  # 357422 or 566575
-random.seed(rand_seed)
+rand_seed = 42
+# random.randint(123, 1512412)  # 357422 or 566575
+# random.seed(rand_seed)
 
 
 def randint():
@@ -379,6 +382,7 @@ def set_seed(seed):
     global rand_seed
     rand_seed = seed
     random.seed(rand_seed)
+    np.random.seed(rand_seed)
 
 # ------------------------------------------------------------------------------
 # parallel profile
