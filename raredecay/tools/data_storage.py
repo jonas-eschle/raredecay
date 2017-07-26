@@ -289,7 +289,7 @@ class HEPDataStorage(object):
         # TODO: maybe check?
         if columns is not None:
             columns = data_tools.to_list(columns)
-            columns = [str(col) for col in columns]
+            columns = dev_tool.entries_to_str(columns)
         self._set_columns(columns=columns)
 
     def _set_columns(self, columns):
@@ -369,7 +369,7 @@ class HEPDataStorage(object):
 
         if column_alias is not None:
             self.column_alias.update(column_alias)
-            self.column_alias = [{str(k): str(v)} for k, v in self.column_alias.items()]
+            self.column_alias = dev_tool.entries_to_str(column_alias)
         self._set_data(data=data, index=index, columns=columns)
 
     def _set_data(self, data, index=None, columns=None):
@@ -384,15 +384,7 @@ class HEPDataStorage(object):
         """
         # Python2/3 compatibility, str
         if isinstance(data, dict):
-            temp_dict = {}
-            for key, val in data.items():
-                if isinstance(key, basestring):
-                    key = str(key)
-                if isinstance(val, basestring):
-                    val = str(val)
-                temp_dict[key] = val
-            data = temp_dict
-
+            data = dev_tool.entries_to_str(data)
         # get the data_type
         self._data = data
         self._data_type = self._get_data_type(data)
@@ -602,7 +594,7 @@ class HEPDataStorage(object):
             columns = None
         else:
             columns = data_tools.to_list(columns)
-            columns = [str(col) for col in columns]
+            columns = dev_tool.entries_to_str(columns)
 
         # create data
         data_out = self._make_df(columns=columns, index=index, copy=True)
@@ -920,7 +912,7 @@ class HEPDataStorage(object):
             columns = self.columns
         else:
             columns = columns
-            columns = [str(col) for col in columns]
+            columns = dev_tool.entries_to_str(columns)
 
         random_state = meta_cfg.randint()
         new_lds = LabeledDataStorage(self.pandasDF(columns=columns, index=index),

@@ -64,7 +64,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
         If a string is provided, it is taken as the path to a folder, in which
         a folder containing all the output of the run will be created.
 
-        If None, the output won' be saved.
+        If None, the output won't be saved.
     run_name : str
         The name of the run as well as of the folder that gets created.
     overwrite_existing : boolean
@@ -243,9 +243,9 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
                          run_message="This is a test-run to test the package",
                          prompt_for_input=False):
     """Saves output to file,"""
-    run_name = str(run_name)
-    run_message = str(run_message)
-    file_path = str(file_path)
+    run_name = dev_tool.entries_to_str(run_name)
+    run_message = dev_tool.entries_to_str(run_message)
+    file_path = dev_tool.entries_to_str(file_path)
     assert isinstance(run_name, (basestring, int)), "run_name has to be a string or int"
     cfg.RUN_NAME = str(run_name)
     cfg.OUTPUT_CFG['run_name'] = str(run_name)

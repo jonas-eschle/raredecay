@@ -27,6 +27,10 @@ import numpy.testing as nptest
 import pandas as pd
 import pandas.util.testing as pdtest
 
+import raredecay.settings
+out = raredecay.settings.initialize(run_name="test reweighting",
+                                    no_interactive_plots=True, n_cpu=-2)
+
 from raredecay.tools.data_storage import HEPDataStorage
 
 
