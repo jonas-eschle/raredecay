@@ -62,7 +62,8 @@ from raredecay.tools import dev_tool
 from raredecay import meta_config
 
 import importlib
-cfg = importlib.import_module(meta_config.run_config)
+import raredecay.config as cfg
+
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 

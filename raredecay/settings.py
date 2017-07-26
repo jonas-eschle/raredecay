@@ -8,10 +8,12 @@ Contain methods to change settings in the whole package
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+
 import sys
 import warnings
+
+from builtins import (int, str)
+
 import raredecay.meta_config
 
 try:
@@ -36,9 +38,10 @@ except ImportError as err:
 
 import copy
 
-from raredecay.run_config import config
 from raredecay import meta_config
 from raredecay.tools import dev_tool
+import raredecay.config as cfg
+
 
 # TODO: docs??
 def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
@@ -219,9 +222,9 @@ def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
 
     # hack for using mutable defaults
     file_formats = copy.deepcopy(file_formats)
-    config.save_fig_cfg['file_formats'] = file_formats
-    config.save_fig_cfg['to_pickle'] = to_pickle
-    config.save_fig_cfg['dpi'] = dpi
+    cfg.save_fig_cfg['file_formats'] = file_formats
+    cfg.save_fig_cfg['to_pickle'] = to_pickle
+    cfg.save_fig_cfg['dpi'] = dpi
 
 
 def set_random_seed(seed=None):
@@ -244,8 +247,8 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
     run_message = str(run_message)
     file_path = str(file_path)
     assert isinstance(run_name, (basestring, int)), "run_name has to be a string or int"
-    config.RUN_NAME = str(run_name)
-    config.OUTPUT_CFG['run_name'] = str(run_name)
+    cfg.RUN_NAME = str(run_name)
+    cfg.OUTPUT_CFG['run_name'] = str(run_name)
 
     if file_path is not None:
         assert isinstance(file_path, basestring), "file_path has to be a string"
@@ -253,12 +256,12 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
         file_path = str(file_path) if isinstance(file_path, int) else file_path
         file_path += "" if file_path.endswith("/") else "/"
 
-        config.run_message = str(run_message)
-        config.OUTPUT_CFG['output_path'] = file_path
-        config.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
+        cfg.run_message = str(run_message)
+        cfg.OUTPUT_CFG['output_path'] = file_path
+        cfg.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
 
         out = get_output_handler()
-        out.initialize_save(logger_cfg=config.logger_cfg, **config.OUTPUT_CFG)
+        out.initialize_save(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
         out.make_me_a_logger()
 
     else:
@@ -297,11 +300,11 @@ def _init_configure_logger(console_level='critical', file_level='debug'):
         assert level in (None, 'debug', 'info', 'warning', 'error', 'critical'), \
             "invalid logger level"
 
-    config.logger_cfg['logging_mode'] = logging_mode
-    config.logger_cfg['log_level_file'] = file_level
-    config.logger_cfg['log_level_console'] = console_level
-    config.logger_cfg['overwrite_file'] = True
-    config.logger_cfg['log_file_name'] = 'logfile_'
+    cfg.logger_cfg['logging_mode'] = logging_mode
+    cfg.logger_cfg['log_level_file'] = file_level
+    cfg.logger_cfg['log_level_console'] = console_level
+    cfg.logger_cfg['overwrite_file'] = True
+    cfg.logger_cfg['log_file_name'] = 'logfile_'
 
 
 def _init_user_input(prompt_for_input=True):

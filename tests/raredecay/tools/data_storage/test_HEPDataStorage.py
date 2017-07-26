@@ -396,7 +396,7 @@ class TestHEPDataStorageROOT(TestHEPDataStorageMixin, TestCase):
     def _create_ds(self):
         return HEPDataStorage(self.data_for_hepds, target=self.target_for_hepds,
                               sample_weights=self.weights_for_hepds,
-                              index=self.truth_index,  # NO index, because it is saved sorted
+                              index=self.truth_index,
                               data_name=self.truth_name, data_name_addition=self.truth_name_addition)
 
 

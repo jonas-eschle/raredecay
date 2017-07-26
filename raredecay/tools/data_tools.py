@@ -8,6 +8,7 @@ Contains several tools to convert, load, save and plot data
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
+
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
                       open, pow, range, round, str, super, zip)
 import sys
@@ -48,6 +49,8 @@ except ImportError:
 
 try:
     from root_numpy import root2array, array2root
+    import root_numpy
+
 except ImportError as err:
     warnings.warn("could not import from root_numpy!")
 # from root_numpy import root2array, array2root  # HACK
@@ -370,9 +373,17 @@ def to_pandas_old(data_in, index=None, columns=None):
     data_in : any reasonable data
         The data to be converted
     """
+    # TODO: generalize
+    root_index_name = '__index__'
+
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
+        root_index = None
+        if root_index_name in root_numpy.list_branches(filename=data_in['filenames'], treename=data_in.get('treename')):
+            root_index = root2array(filenames=data_in['filenames'], treename=data_in.get('treename'),
+                                    selection=data_in.get('selection'), branches=root_index_name)
         data_in = root2array(**data_in)  # why **? it's a root dict
+
     if is_list(data_in):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
@@ -380,7 +391,7 @@ def to_pandas_old(data_in, index=None, columns=None):
                 isinstance(columns, basestring)):
 
             data_in = to_ndarray(data_in)
-        data_in = pd.DataFrame(data_in, columns=columns)
+        data_in = pd.DataFrame(data_in, columns=columns, index=root_index)
         if index is not None:
             data_in = data_in.loc[index]
     elif isinstance(data_in, pd.DataFrame):

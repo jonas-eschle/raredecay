@@ -13,6 +13,7 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
 import sys
 import warnings
 import raredecay.meta_config
+import raredecay.config as cfg
 
 try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,

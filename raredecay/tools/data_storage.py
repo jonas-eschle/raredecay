@@ -64,7 +64,7 @@ from raredecay import meta_config
 import importlib
 
 # from raredecay import meta_config
-cfg = importlib.import_module(meta_config.run_config)
+import raredecay.config as cfg
 modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
@@ -380,7 +380,7 @@ class HEPDataStorage(object):
             - ROOT-data file (*root-dict*)
             - Pandas DataFrame
         """
-        # get the data_type
+        # Python2/3 compatibility, str
         if isinstance(data, dict):
             temp_dict = {}
             for key, val in data.items():
@@ -391,6 +391,7 @@ class HEPDataStorage(object):
                 temp_dict[key] = val
             data = temp_dict
 
+        # get the data_type
         self._data = data
         self._data_type = self._get_data_type(data)
 

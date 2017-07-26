@@ -50,10 +50,12 @@ free_cpus
 
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+
 import sys
 import warnings
+
+from builtins import (str)
+
 import raredecay.meta_config
 
 try:
@@ -78,7 +80,7 @@ except ImportError as err:
 
 from raredecay.tools import output
 from raredecay import meta_config
-from raredecay.run_config import config
+import raredecay.config as cfg
 
 # ==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
@@ -86,7 +88,6 @@ from raredecay.run_config import config
 
 out = output.OutputHandler()
 
-cfg = config
 logger_cfg = cfg.logger_cfg  # only if not save_output
 
 # def set_output_handler(internal=True):

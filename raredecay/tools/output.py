@@ -513,7 +513,7 @@ class OutputHandler(object):
         if do_print:
             if to_end:
                 self._loud_end_output += temp_out
-            print(temp_out)  # ?? why was there sys.stdout.write?!?
+                sys.stdout.write(temp_out)  # to print even dough the print is redirected
         if to_end:
             self.end_output += temp_out
         self.output += temp_out
@@ -539,7 +539,7 @@ class OutputHandler(object):
                         title="Different parameters", obj_separator=" : ", importance=2)
 
         # print the output which should be printed at the end of the run
-        sys.stdout.write(self._loud_end_output)
+        sys.stdout.write(self._loud_end_output)  # to print even dough the print is redirected
         self.output += self.end_output
 
         # add current version (if available)

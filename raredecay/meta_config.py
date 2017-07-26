@@ -330,7 +330,7 @@ DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace 
 # START INTERNAL CONFIGURATION - DO NOT CHANGE
 # ==============================================================================
 
-run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
+# run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
 
 loggers = {}
 
