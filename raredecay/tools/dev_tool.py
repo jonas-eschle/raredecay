@@ -37,7 +37,7 @@ import pandas as pd
 import numpy as np
 import collections
 
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 
 
 def make_logger(module_name, logging_mode='both', log_level_file='debug',

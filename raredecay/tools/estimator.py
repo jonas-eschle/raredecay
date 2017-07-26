@@ -59,7 +59,7 @@ from rep.report import ClassificationReport
 
 from raredecay import globals_
 from raredecay.tools import dev_tool
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 
 import importlib
 import raredecay.config as cfg

@@ -7,7 +7,7 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
 
 
 
-# from raredecay import meta_config
+# import raredecay.meta_config as meta_cfg
 
 
 # if not meta_config.SUPPRESS_WRONG_SKLEARN_VERSION:

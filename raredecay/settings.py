@@ -38,7 +38,7 @@ except ImportError as err:
 
 import copy
 
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 from raredecay.tools import dev_tool
 import raredecay.config as cfg
 

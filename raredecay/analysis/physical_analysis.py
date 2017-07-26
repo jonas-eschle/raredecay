@@ -221,7 +221,7 @@ def _cut(data):
 def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
     """Cut the bkg while maintaining a certain percent of the signal. WIP."""
 
-    # from raredecay import meta_config
+    # import raredecay.meta_config as meta_cfg
     from raredecay.tools import data_tools
     from raredecay.globals_ import out
     # from raredecay.tools.data_storage import HEPDataStorage

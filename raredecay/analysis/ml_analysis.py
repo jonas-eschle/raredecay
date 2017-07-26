@@ -84,7 +84,7 @@ from raredecay.globals_ import out
 
 # import configuration
 import importlib
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
@@ -726,7 +726,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     elif generator_type == 'random':
         generator = RandomParameterOptimizer(grid_param, n_evaluations=n_eval)
     else:
-        raise ValueError(str(generator) + " not a valid, implemented generator")
+        raise ValueError(str(generator_type) + " not a valid, implemented generator")
     scorer = FoldingScorer(metrics.RocAuc(), folds=n_folds, fold_checks=n_checks)
     grid_finder = GridOptimalSearchCV(clf, generator, scorer, parallel_profile=parallel_profile)
 

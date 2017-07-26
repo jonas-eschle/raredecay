@@ -23,7 +23,7 @@ from ROOT import RooCategory, RooUnblindPrecision
 
 from raredecay.globals_ import out
 
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 
 import matplotlib.pyplot as plt
 # Bug fixing below

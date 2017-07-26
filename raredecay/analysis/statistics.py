@@ -40,7 +40,7 @@ import numpy as np
 
 from raredecay.globals_ import out
 
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 from raredecay.tools import dev_tool
 
 import matplotlib.pyplot as plt

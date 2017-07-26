@@ -61,7 +61,7 @@ from raredecay.tools import dev_tool
 # No problem when run as main...
 
 # from raredecay.tools import dev_tool
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 
 
 def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):

@@ -3,7 +3,7 @@
 from __future__ import division, absolute_import
 
 
-# from raredecay import meta_config
+# import raredecay.meta_config as meta_cfg
 
 
 # if not meta_config.SUPPRESS_WRONG_SKLEARN_VERSION:

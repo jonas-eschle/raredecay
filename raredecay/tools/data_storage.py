@@ -19,6 +19,7 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
+
     install_aliases()
     from past.builtins import basestring
 except ImportError as err:
@@ -57,14 +58,15 @@ except ImportError:
     warnings.warn(ImportWarning, "could not import out. Some functions regarding output" +
                   "(save figure etc.) won't be available")
     out_imported = False
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 
 # TODO: import config not needed?? remove because its from the old structure
 # import configuration
 import importlib
 
-# from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
+
 modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
@@ -196,7 +198,7 @@ class HEPDataStorage(object):
             if name is not None:
                 self._name[i] = str(name)
 
-            # TODO: change the naming into a dict?
+                # TODO: change the naming into a dict?
 
     @property
     def data_name(self):
@@ -315,7 +317,7 @@ class HEPDataStorage(object):
                 temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
                 temp_branch = data_tools.to_list(temp_branch)
                 self._length = len(data_tools.to_pandas(dict(branches=temp_branch[0],
-                                                              **temp_root_dict)))
+                                                             **temp_root_dict)))
             elif self._data_type == 'df':
                 self._length = len(self._data)
                 # TODO: remove below?
@@ -835,7 +837,7 @@ class HEPDataStorage(object):
         data = self.pandasDF(columns=columns, index=index)
         if second_storage is None:
             targets = self.get_targets(index=index)
-        #        weights = self.get_weights(index=index, normalize=normalize_1)
+        # weights = self.get_weights(index=index, normalize=normalize_1)
 
         if second_storage is not None:
             assert isinstance(second_storage, HEPDataStorage), "Wrong type, not an HEPDataStorage"
@@ -851,10 +853,10 @@ class HEPDataStorage(object):
 
             if (max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2)) and weights_ratio > 0:
                 raise ValueError(
-                    "Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio" +
-                    " > 0, this case is not yet implemented. Please make an issue!")
+                        "Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio" +
+                        " > 0, this case is not yet implemented. Please make an issue!")
 
-            #            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
+                #            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
 
         weights = self.get_weights(normalize=weights_ratio, second_storage=second_storage)
 

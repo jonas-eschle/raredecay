@@ -79,7 +79,7 @@ except ImportError as err:
 # Python 2 backwards compatibility overhead END
 
 from raredecay.tools import output
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
 
 # ==============================================================================

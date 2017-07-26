@@ -45,7 +45,7 @@ import matplotlib.pyplot as plt
 import pickle as pickle
 import seaborn as sns
 
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
 from raredecay.tools import dev_tool  # , data_tools
 
 
