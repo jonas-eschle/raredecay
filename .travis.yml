@@ -63,10 +63,11 @@ install:
 #- pip install -U xgboost
 
 - pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
-- pip install rep --no-dependencies
+- pip install rep
 - pip install -U -r requirements.txt
+- pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 - pip install -U git+https://github.com/arogozhnikov/hep_ml.git
-- pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies # || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
+- pip install -U xgboost
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies

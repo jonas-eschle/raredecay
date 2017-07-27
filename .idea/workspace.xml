@@ -10,14 +10,7 @@
     </enabled-run-configurations>
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="42366561-8aeb-4953-a6e6-d7427df59a9a" name="Default" comment="">
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/raredecay/analysis/ml_analysis.py" afterPath="$PROJECT_DIR$/raredecay/analysis/ml_analysis.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/raredecay/analysis/physical_analysis.py" afterPath="$PROJECT_DIR$/raredecay/analysis/physical_analysis.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/raredecay/settings.py" afterPath="$PROJECT_DIR$/raredecay/settings.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/raredecay/tools/data_storage.py" afterPath="$PROJECT_DIR$/raredecay/tools/data_storage.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/raredecay_test/reweight_test/test_reweight.py" afterPath="$PROJECT_DIR$/tests/raredecay_test/reweight_test/test_reweight.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/tests/raredecay_test/tools_test/data_storage_test/test_HEPDataStorage.py" afterPath="$PROJECT_DIR$/tests/raredecay_test/tools_test/data_storage_test/test_HEPDataStorage.py" />
-    </list>
+    <list default="true" id="42366561-8aeb-4953-a6e6-d7427df59a9a" name="Default" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -49,8 +42,8 @@
       <file leaf-file-name="ml_analysis.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/raredecay/analysis/ml_analysis.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="197">
-              <caret line="1284" column="30" lean-forward="false" selection-start-line="1284" selection-start-column="30" selection-end-line="1284" selection-end-column="30" />
+            <state relative-caret-position="323">
+              <caret line="1291" column="34" lean-forward="true" selection-start-line="1291" selection-start-column="34" selection-end-line="1291" selection-end-column="34" />
               <folding />
             </state>
           </provider>
@@ -848,14 +841,13 @@
   </component>
   <component name="ToolWindowManager">
     <frame x="1985" y="24" width="1855" height="1056" extended-state="6" />
-    <editor active="true" />
     <layout>
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Documentation" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="WINDOWED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="3" side_tool="false" content_ui="tabs" x="0" y="24" width="1920" height="1056" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.32925585" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Python Console" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
-      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.3088685" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
+      <window_info id="Run" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.3088685" sideWeight="0.5" order="2" side_tool="false" content_ui="tabs" />
       <window_info id="Coverage" active="false" anchor="right" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15363881" sideWeight="0.5" order="3" side_tool="true" content_ui="tabs" />
       <window_info id="Terminal" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
       <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.15579514" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
@@ -1278,8 +1270,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/raredecay/analysis/ml_analysis.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="197">
-          <caret line="1284" column="30" lean-forward="false" selection-start-line="1284" selection-start-column="30" selection-end-line="1284" selection-end-column="30" />
+        <state relative-caret-position="323">
+          <caret line="1291" column="34" lean-forward="true" selection-start-line="1291" selection-start-column="34" selection-end-line="1291" selection-end-column="34" />
           <folding />
         </state>
       </provider>
