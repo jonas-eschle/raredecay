@@ -497,9 +497,10 @@ class OutputHandler(object):
         for word in data_out:
             # Make nice format for dictionaries
             if isinstance(word, dict):
+                word = dev_tool.entries_to_str(word)
                 for key, val in list(word.items()):
                     if isinstance(val, dict):
-                        temp_out += self._make_title("  " + key, ('', '^'))
+                        temp_out += self._make_title("  " + str(key), ('', '^'))
                         for key2, val2 in list(val.items()):
                             temp_out += "    " + str(key2) + " : " + str(val2) + "\n"
                     else:

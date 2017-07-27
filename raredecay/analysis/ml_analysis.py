@@ -29,6 +29,7 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
+
     install_aliases()
     from past.builtins import basestring
 except ImportError as err:
@@ -68,7 +69,7 @@ from sklearn.metrics import accuracy_score, classification_report  # recall_scor
 from rep.data import LabeledDataStorage
 
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-#from rep.estimators.theanets import TheanetsClassifier
+# from rep.estimators.theanets import TheanetsClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier
@@ -87,6 +88,7 @@ from raredecay.globals_ import out
 # import configuration
 import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
+from raredecay.analysis import statistics
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
@@ -246,10 +248,10 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if 'name' not in clf:
             clf['name'] = clf['clf_type']
         default_clf = dict(
-            clf_type=clf['clf_type'],
-            name=meta_cfg.DEFAULT_CLF_NAME[clf['clf_type']],
-            config=meta_cfg.DEFAULT_CLF_CONFIG[clf['clf_type']],
-        )
+                clf_type=clf['clf_type'],
+                name=meta_cfg.DEFAULT_CLF_NAME[clf['clf_type']],
+                config=meta_cfg.DEFAULT_CLF_CONFIG[clf['clf_type']],
+                )
 
         clf = dict(default_clf, **clf)
 
@@ -270,7 +272,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             serial_clf = True
             clf['config'].update(dict(random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                random_state=meta_cfg.randint()), **clf.get('config')))
+                    random_state=meta_cfg.randint()), **clf.get('config')))
         elif clf['clf_type'] == 'knn':
             clf['config'].update(dict(random_state=meta_cfg.randint(), n_jobs=n_cpu))
             clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
@@ -410,9 +412,9 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     clf_name = clf_dict['name']
     parallel_profile = clf_dict['parallel_profile']
 
-# ==============================================================================
-# start backward feature elimination
-# ==============================================================================
+    # ==============================================================================
+    # start backward feature elimination
+    # ==============================================================================
     selected_features = copy.deepcopy(features)  # explicit is better than implicit
     selected_features = [feature for feature in selected_features if feature not in keep_features]
 
@@ -594,8 +596,8 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
         |take_target_from_data_docstring|
     """
     # initialize variables and setting defaults
-#    output = {}
-#    save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
+    #    output = {}
+    #    save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     clf = dev_tool.entries_to_str(clf)
     features = dev_tool.entries_to_str(features)
     generator_type = dev_tool.entries_to_str(generator_type)
@@ -945,20 +947,20 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             out.save_fig(plot_title + " " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.roc(physics_notion=True).plot(title=plot_title + "\nROC curve of " +
-                                                 clf_name + " on data:" +
-                                                 data_name + "\nROC AUC = " + str(clf_score))
+                                                       clf_name + " on data:" +
+                                                       data_name + "\nROC AUC = " + str(clf_score))
             plt.plot([0, 1], [1, 0], 'k--')  # the fifty-fifty line
 
             out.save_fig("Learning curve " + plot_name,
                          importance=plot_importance, **save_fig_cfg)
             report.learning_curve(metrics.RocAuc(), steps=1).plot(title="Learning curve of " +
-                                                                  plot_name)
+                                                                        plot_name)
         else:
             pass
             # TODO: implement learning curve with tpr metric
-#            out.save_fig(plt.figure("Learning curve" + plot_name),
-#                         importance=plot_importance, **save_fig_cfg)
-#            report.learning_curve(metrics., steps=1).plot(title="Learning curve of " + plot_name)
+        #            out.save_fig(plt.figure("Learning curve" + plot_name),
+        #                         importance=plot_importance, **save_fig_cfg)
+        #            report.learning_curve(metrics., steps=1).plot(title="Learning curve of " + plot_name)
         if extended_report:
             if len(clf.features) > 1:
                 out.save_fig(figure="Feature importance shuffling of " + plot_name,
@@ -972,11 +974,11 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
                 out.save_fig(figure="Feature correlation matrix of " + plot_name,
                              importance=plot_importance)
                 report.features_correlation_matrix().plot(title="Feature correlation matrix of " +
-                                                          plot_name)
+                                                                plot_name)
             label_dict = None if binary_test else {test_classes[0]: "validation data"}
             out.save_fig(figure="Predictions of " + plot_name, importance=plot_importance)
             report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
-                title="Predictions of " + plot_name)
+                    title="Predictions of " + plot_name)
 
     if clf_score is None:
         return clf
@@ -1050,6 +1052,7 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
 
     return output
 
+
 if __name__ == "main":
     print('test')
 
@@ -1086,7 +1089,7 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
 
 
 def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweighter_cfg=None, n_reweights=1,
-                   add_weights=True):
+                   add_weights=True, normalize=True):
     """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
 
     .. warning::
@@ -1161,6 +1164,7 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
     reweighter = dev_tool.entries_to_str(reweighter)
     reweighter_cfg = dev_tool.entries_to_str(reweighter_cfg)
 
+    normalize = 1 if normalize is True else normalize
     output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
                    title="Reweighting Kfold", obj_separator="")
@@ -1189,7 +1193,6 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
         real.make_folds(n_folds=n_folds)
         logger.info("Data created, starting folding of run " + str(run) +
                     " of total " + str(n_reweights))
-
 
         def do_reweighting(fold):
             """
@@ -1223,15 +1226,12 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
                               importance=plot_importance1)
 
             # train reweighter on training data
-            reweighter_trained = reweight_train(mc_data=train_mc,
-                                                real_data=train_real,
-                                                columns=columns, reweighter=reweighter,
-                                                meta_cfg=reweighter_cfg)
+            reweighter_trained = reweight_train(mc=train_mc, real=train_real, columns=columns,
+                                                reweighter=reweighter, reweight_cfg=reweighter_cfg)
             logger.info("reweighting fold " + str(fold) + "finished of run" + str(run))
 
-            new_weights = reweight_weights(reweight_data=test_mc, columns=columns,
-                                           reweighter_trained=reweighter_trained,
-                                           add_weights_to_data=True)  # fold only, not full data
+            new_weights = reweight_weights(apply_data=test_mc, reweighter_trained=reweighter_trained,
+                                           columns=columns, add_weights=True)  # fold only, not full data
             # plot one for example of the new weights
             logger.debug("Maximum of weights " + str(max(new_weights)) +
                          " of fold " + str(fold) + " of run " + str(run))
@@ -1335,10 +1335,123 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
     #                         " +- " + str(std)], to_end=True, importance=4)
     #         output[key] = mean
 
+    if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
+        new_weights_tot *= new_weights_tot.size / new_weights_tot.sum() * normalize
     output['weights'] = new_weights_tot
     return output
 
 
+def mcreweighted_as_real(mc, real, old_mc_weights=1, columns=None, n_folds=10, clf='xgb',
+                         old_score=False):
+    output = {}
+
+    # Python 2/3 compatibility, str
+    columns = dev_tool.entries_to_str(columns)
+    clf = dev_tool.entries_to_str(clf)
+
+    # split data to folds and loop over them
+    mc.make_folds(n_folds=n_folds)
+    real.make_folds(n_folds=n_folds)
+
+    # OLD, for bkwcomp
+    scores = np.zeros(n_folds)
+    score_min = np.zeros(n_folds)
+    score_max = np.zeros(n_folds)
+
+    predictions = []
+    predictions_min = []
+    predictions_max = []
+
+    weights = []
+    weights_min = []
+    weights_max = []
+
+    for fold in range(n_folds):
+        # create train/test data
+        if n_folds > 1:
+            train_real, test_real = real.get_fold(fold)
+            train_mc, test_mc = mc.get_fold(fold)
+        else:
+            train_real = test_real = real
+            train_mc = test_mc = mc
+
+        # treat reweighted mc data as if it were real data target(1)
+        test_mc.set_targets(1)
+        test_real.set_targets(1)
+        train_mc.set_targets(0)
+        train_real.set_targets(1)
+        # train clf on real and mc and see where it classifies the reweighted mc
+        clf, tmp_score, pred = classify(train_mc, train_real, validation=test_mc,
+                                        curve_name="mc reweighted as real",
+                                        features=columns,
+                                        plot_title="fold {} reweighted validation".format(fold),
+                                        weights_ratio=1, clf=clf, get_predictions=True,
+                                        importance=1, plot_importance=1)
+        scores[fold] += tmp_score
+        predictions.append(pred['y_proba'][:, 1])
+        weights.append(pred['weights'])
+
+        # Get the max and min for "calibration" of the possible score for the reweighted data by
+        # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
+        test_mc.set_weights(old_mc_weights)
+        _t, tmp_score_min, pred = classify(clf=clf, validation=test_mc,
+                                           features=columns, get_predictions=True,
+                                           curve_name="mc as real",
+                                           importance=1, plot_importance=1)
+        score_min[fold] += tmp_score_min
+        predictions_min.append(pred['y_proba'][:, 1])
+        weights_min.append(pred['weights'])
+
+        _t, tmp_score_max, pred = classify(clf=clf, validation=test_real,
+                                           features=columns, get_predictions=True,
+                                           curve_name="real as real",
+                                           importance=1, plot_importance=1)
+        score_max[fold] += tmp_score_max
+        predictions_max.append(pred['y_proba'][:, 1])
+        weights_max.append(pred['weights'])
+        del _t
+
+    predictions = np.concatenate(predictions)
+    predictions_max = np.concatenate(predictions_max)
+    predictions_min = np.concatenate(predictions_min)
+
+    weights = np.concatenate(weights)
+    weights_max = np.concatenate(weights_max)
+    weights_min = np.concatenate(weights_min)
+
+    # create score
+    if old_score:
+        # scores /= n_reweights
+        # score_min /= n_reweights
+        # score_max /= n_reweights
+        out.add_output("", subtitle="Kfold reweight report", importance=4,
+                       section="Precision scores of classification on reweighted mc")
+        score_list = [("Reweighted: ", scores, 'score_reweighted'),
+                      ("mc as real (min): ", score_min, 'score_min'),
+                      ("real as real (max): ", score_max, 'score_max')]
+
+        for name, score, key in score_list:
+            mean, std = round(np.mean(score), 4), round(np.std(score), 4)
+            out.add_output(["Classify the target, average score " + name + str(mean) +
+                            " +- " + str(std)], to_end=True, importance=4)
+            output[key] = mean
+
+    score_ks_minimize = statistics.ks_2samp(predictions, predictions_max,
+                                            weights1=weights, weights2=weights_max)
+    score_ks_maximize = statistics.ks_2samp(predictions, predictions_min,
+                                            weights1=weights, weights2=weights_min)
+    score_ks_max = statistics.ks_2samp(predictions_min, predictions_max,
+                                       weights1=weights_min, weights2=weights_max)
+    output['ks_vs_real'] = score_ks_minimize
+    output['ks_vs_mc'] = score_ks_maximize
+    output['ks_mc_vs_real'] = score_ks_max
+
+    # HACK
+    print(output)
+    return output
+
+
+# collect all the new weights to get a really cross-validated reweighted dataset
 
 def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
                    reweighter='gb', meta_cfg=None, n_reweights=1,
@@ -1502,15 +1615,12 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
                               importance=plot_importance1)
 
             # train reweighter on training data
-            reweighter_trained = reweight_train(mc_data=train_mc,
-                                                real_data=train_real,
-                                                columns=columns, reweighter=reweighter,
-                                                meta_cfg=meta_cfg)
+            reweighter_trained = reweight_train(mc=train_mc, real=train_real, columns=columns,
+                                                reweighter=reweighter, reweight_cfg=meta_cfg)
             logger.info("reweighting fold " + str(fold) + "finished of run" + str(run))
 
-            new_weights = reweight_weights(reweight_data=test_mc, columns=columns,
-                                           reweighter_trained=reweighter_trained,
-                                           add_weights_to_data=True)  # fold only, not full data
+            new_weights = reweight_weights(apply_data=test_mc, reweighter_trained=reweighter_trained,
+                                           columns=columns, add_weights=True)  # fold only, not full data
             # plot one for example of the new weights
             logger.debug("Maximum of weights " + str(max(new_weights)) +
                          " of fold " + str(fold) + " of run " + str(run))
@@ -1532,8 +1642,8 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
                                           importance=1, plot_importance=1)
                 scores[fold] += tmp_score
 
-    # Get the max and min for "calibration" of the possible score for the reweighted data by
-    # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
+                # Get the max and min for "calibration" of the possible score for the reweighted data by
+                # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
                 test_mc.set_weights(old_mc_weights)
                 _t, tmp_score_min = classify(clf=clf, validation=test_mc,
                                              features=score_columns,

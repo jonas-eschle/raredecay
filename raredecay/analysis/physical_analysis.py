@@ -475,7 +475,7 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
                         filename, "because it already exists and overwrite is set to false"],
                        obj_separator=" ")
 
-
+# OLD
 def reweight(apply_data, real_data=None, mc_data=None, columns=None,
              reweighter='gb', reweight_cfg=None, n_reweights=1,
              apply_weights=True):
@@ -540,11 +540,10 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
             reweighter = reweighter_list[run]
         reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
-            new_reweighter = raredecay.analysis.reweight.reweight_train(mc_data=mc_data,
-                                                                        real_data=real_data,
+            new_reweighter = raredecay.analysis.reweight.reweight_train(mc=mc_data, real=real_data,
                                                                         columns=columns,
-                                                                        meta_cfg=reweight_cfg,
-                                                                        reweighter=reweighter)
+                                                                        reweighter=reweighter,
+                                                                        reweight_cfg=reweight_cfg)
             # TODO: hack which adds columns, good idea?
             assert not hasattr(new_reweighter,
                                'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
@@ -558,10 +557,9 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
         else:
             new_reweighter_list = new_reweighter
 
-        tmp_weights = raredecay.analysis.reweight.reweight_weights(reweight_data=apply_data,
-                                                                   columns=columns,
+        tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
                                                                    reweighter_trained=new_reweighter,
-                                                                   add_weights_to_data=False)
+                                                                   columns=columns, add_weights=False)
         if run == 0:
             new_weights = tmp_weights
         else:
