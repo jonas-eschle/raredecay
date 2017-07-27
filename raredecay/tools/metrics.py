@@ -35,6 +35,7 @@ except ImportError as err:
 
 import math as mt
 import numpy as np
+import pandas as pd
 
 from raredecay.tools import data_storage, dev_tool
 
@@ -104,6 +105,7 @@ def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
                    to_end=True)
 
     output['real_distance'] = np.mean(score_mcr_vs_real)
+
 
 # OLD
 def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
@@ -272,7 +274,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                                            plot_importance=1,
                                                            importance=1)
 
-        #        del clf_trained, tmp_pred
+        # del clf_trained, tmp_pred
         probas_reweighted.append(pred_reweighted['y_proba'])
         weights_reweighted.append(pred_reweighted['weights'])
 
@@ -354,6 +356,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
                                           weights=np.concatenate(weights_reweighted))
 
     return output
+
 
 # NEW
 def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb', test_max=True,
@@ -441,6 +444,8 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
     """
     import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.globals_ import out
+    from raredecay.tools.data_storage import HEPDataStorage
+    from raredecay.analysis import statistics
 
     # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
@@ -458,37 +463,22 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
 
     output = {}
 
-    scores = np.ones(n_checks)
-    scores_shuffled = np.ones(n_checks)
-    scores_mc = np.ones(n_checks)
-    scores_max = np.ones(n_checks)  # required due to output of loop
-    scores_mc_max = np.ones(n_checks)
-    #    scores_weighted = []
-    scores_max_weighted = []
-    probas_mc = []
-    probas_reweighted = []
-    weights_mc = []
-    weights_reweighted = []
-
-    real_pred = []
-    real_test_index = []
-    real_mc_pred = []
+    predictions = []
+    predictions_weights = []
+    predictions_max = []
+    predictions_max_weights = []
+    predictions_min = []
+    predictions_min_weights = []
 
     # initialize data
     tmp_mc_targets = mc.get_targets()
     mc.set_targets(0)
     real.make_folds(n_folds=n_folds)
-    if test_mc:
-        mc.make_folds(n_folds=n_folds)
+
     for fold in range(n_checks):
         real_train, real_test = real.get_fold(fold)
-        if test_mc:
-            mc_train, mc_test = mc.get_fold(fold)
-            mc_test.set_targets(0)
-        else:
-            mc_train = mc.copy_storage()
+        mc_train = mc.copy_storage()
         mc_train.set_targets(0)
-
         real_test.set_targets(1)
         real_train.set_targets(1)
 
@@ -497,112 +487,65 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
                                   weights_ratio=1, get_predictions=True,
                                   features=columns,
                                   plot_importance=1, importance=1)
-        clf_trained, scores[fold], pred_reweighted = tmp_out
+        clf_trained, _, pred = tmp_out
 
-        tmp_weights = mc_train.get_weights()
+        predictions.append(pred['y_proba'][:, 1])
+        predictions_weights.append(pred['weights'])
 
-        if test_shuffle:
-            import copy
-            shuffled_weights = copy.deepcopy(tmp_weights)
-            shuffled_weights.reindex(np.random.permutation(shuffled_weights.index))
-            mc_train.set_weights(shuffled_weights)
-            tmp_out = ml_ana.classify(mc_train, real_train, validation=real_test, clf=clf,
-                                      plot_title="train on mc reweighted/real, test on real",
-                                      weights_ratio=1, get_predictions=True,
-                                      features=columns,
-                                      plot_importance=1, importance=1)
-            scores_shuffled[fold] = tmp_out[1]
-            mc_train.set_weights(tmp_weights)
+        temp_weights = mc.weights
+        mc.set_weights(old_mc_weights)
+        tmp_out = ml_ana.classify(original_data=mc, target_data=real_train, validation=real_test,
+                                  plot_title="real/mc NOT reweight trained, validate on real",
+                                  weights_ratio=1, get_predictions=True, clf=clf,
+                                  features=columns,
+                                  plot_importance=1, importance=1)
+        clf_trained, _, pred = tmp_out
+        predictions_max.append(pred['y_proba'])
+        predictions_max_weights.append(pred['weights'])
+        mc.set_weights(temp_weights)
 
-        if test_mc:
-            clf_trained, scores_mc[fold] = ml_ana.classify(validation=mc_test,
-                                                           clf=clf_trained,
-                                                           plot_title="train on mc reweighted/real, test on mc",
-                                                           weights_ratio=1, get_predictions=False,
-                                                           features=columns,
-                                                           plot_importance=1,
-                                                           importance=1)
 
-        # del clf_trained, tmp_pred
-        probas_reweighted.append(pred_reweighted['y_proba'])
-        weights_reweighted.append(pred_reweighted['weights'])
+    predictions = pd.concat(predictions)
+    predictions_weights = pd.concat(predictions_weights)
+    predictions_max = pd.concat(predictions_max)
+    predictions_max_weights = pd.concat(predictions_max_weights)
 
-        real_pred.extend(pred_reweighted['y_pred'])
-        real_test_index.extend(real_test.get_index())
 
-        if test_max:
-            temp_weights = mc.get_weights()
-            mc.set_weights(old_mc_weights)
-            tmp_out = ml_ana.classify(mc, real_train, validation=real_test,
-                                      plot_title="real/mc NOT reweight trained, validate on real",
-                                      weights_ratio=1, get_predictions=True, clf=clf,
-                                      features=columns,
-                                      plot_importance=1, importance=1)
-            clf_trained, scores_max[fold], pred_mc = tmp_out
-            if test_mc:
-                clf_trained, scores_mc_max[fold] = ml_ana.classify(validation=mc_test, clf=clf_trained,
-                                                                   plot_title="train on mc NOT reweighted/real, test on mc",
-                                                                   weights_ratio=1,
-                                                                   get_predictions=False,
-                                                                   features=columns,
-                                                                   plot_importance=1,
-                                                                   importance=1)
-            del clf_trained
-            # HACK
-            tmp_pred = pred_mc['y_proba'][:, 1] * pred_mc['weights']
-            scores_max_weighted.extend(tmp_pred * (pred_mc['y_true'] * 2 - 1))
 
-            # HACK END
-            mc.set_weights(temp_weights)
-            probas_mc.append(pred_mc['y_proba'])
-            weights_mc.append(pred_mc['weights'])
+    # mix mc and real to get a nice shape of two similar dists
+    mc.set_weights(old_mc_weights)
+    mc.make_folds(2)
+    real.make_folds(2)
+    mc1, mc2 = mc.get_fold(0)
+    real1, real2 = real.get_fold(0)
 
-            real_mc_pred.extend(pred_mc['y_pred'])
+    data1, target1, weights1 = mc1.make_dataset(real1)
+    data2, target2, weights2 = mc2.make_dataset(real2)
 
-    output['score'] = np.round(scores.mean(), 4)
-    output['score_std'] = np.round(scores.std(), 4)
+    data1 = HEPDataStorage(data=data1, sample_weights=weights1, target=0)
+    data2 = HEPDataStorage(data=data2, sample_weights=weights2, target=1)
 
-    if test_shuffle:
-        output['score_shuffled'] = np.round(scores_shuffled.mean(), 4)
-        output['score_shuffled_std'] = np.round(scores_shuffled.std(), 4)
+    tmp_out = ml_ana.classify(original_data=data1, target_data=data2, validation=n_folds,
+                              plot_title="real/mc mixed",
+                              weights_ratio=1, get_predictions=True, clf=clf,
+                              features=columns,
+                              plot_importance=1, importance=1)
+    clf_trained, _, pred = tmp_out
+    predictions_min = pred['y_proba'][:, 1]
+    predictions_min_weights = pred['weights']
 
-    if test_mc:
-        output['score_mc'] = np.round(scores_mc.mean(), 4)
-        output['score_mc_std'] = np.round(scores_mc.std(), 4)
-
-    out.add_output(["Score train_similar (recall, lower means better): ",
-                    str(output['score']) + " +- " + str(output['score_std'])],
-                   subtitle="Clf trained on real/mc reweight, tested on real")
-    if test_max:
-        output['score_max'] = np.round(scores_max.mean(), 4)
-        output['score_max_std'] = np.round(scores_max.std(), 4)
-        if test_mc:
-            output['score_mc_max'] = np.round(scores_mc_max.mean(), 4)
-            output['score_mc_max_std'] = np.round(scores_mc_max.std(), 4)
-        out.add_output(["No reweighting score: ", round(output['score_max'], 4)])
-
-    if test_predictions:
-        # test on the reweighted/real predictions
-        real.set_targets(targets=real_pred, index=real_test_index)
-        tmp_, score_pred = ml_ana.classify(real, target_from_data=True, clf=clf_pred,
-                                           features=columns,
-                                           plot_title="train on predictions reweighted/real, real as target",
-                                           weights_ratio=1, validation=n_checks, plot_importance=3)
-        output['score_pred'] = round(score_pred, 4)
-
-    if test_predictions and test_max:
-        # test on the mc/real predictions
-        real.set_targets(targets=real_mc_pred, index=real_test_index)
-        tmp_, score_mc_pred = ml_ana.classify(real, target_from_data=True, clf=clf_pred,
-                                              validation=n_checks,
-                                              plot_title="mc not rew/real pred, real as target",
-                                              weights_ratio=1, plot_importance=3)
-        output['score_mc_pred'] = np.round(score_mc_pred, 4)
-
+    mc.set_weights(temp_weights)
     mc.set_targets(tmp_mc_targets)
 
-    output['similar_dist'] = similar_dist(predictions=np.concatenate(probas_reweighted)[:, 1],
-                                          weights=np.concatenate(weights_reweighted))
+    output['similar_ks_vs_baseline'] = statistics.ks_2samp(predictions, predictions_min,
+                                                           weights1=predictions_weights,
+                                                           weights2=predictions_min_weights)
+    output['similar_ks_baseline_vs_unweighted'] = statistics.ks_2samp(predictions_max, predictions_min,
+                                                           weights1=predictions_max_weights,
+                                                           weights2=predictions_min_weights)
+    output['similar_ks_vs_unweighted'] = statistics.ks_2samp(predictions, predictions_max,
+                                                           weights1=predictions_weights,
+                                                           weights2=predictions_max_weights)
 
     return output
 
