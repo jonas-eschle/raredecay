@@ -5,6 +5,7 @@ pylint:
     - too-many-statements
     - too-many-locals
     - too-many-branches
+    - redefined-builtin
 
 ignore-paths:
   - raredecay/tools/estimator.py

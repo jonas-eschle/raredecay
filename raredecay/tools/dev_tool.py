@@ -109,13 +109,13 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
                                   ": %(levelname)s - %(message)s")
     if logging_mode == 'both' or logging_mode == 'file':
         if overwrite_file:
-            timeStamp = 'logfile'
+            time_stamp = 'logfile'
         else:
-            timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
+            time_stamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
         log_file_dir += '' if log_file_dir.endswith('/') else '/'
         log_file_fullname = log_file_dir + log_file_name + module_name
         fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
-                                                        timeStamp), file_mode)
+                                                        time_stamp), file_mode)
         fh.setLevel(getattr(logging, log_level_file.upper()))
         fh.setFormatter(formatter)
         logger.addHandler(fh)
@@ -141,8 +141,6 @@ def progress(n, n_tot):
     n_tot : int or float
         The maximum. The bar is the percentage of n / n_tot
     """
-    import sys
-
     i = float(n) / n_tot
     percent = int(i * 100)
     n_signs = 90
@@ -168,13 +166,13 @@ def add_file_handler(logger, module_name, log_file_dir, log_level='info',
                                   ": %(levelname)s - %(message)s")
 
     if overwrite_file:
-        timeStamp = 'logfile'
+        time_stamp = 'logfile'
     else:
-        timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
+        time_stamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
     log_file_dir += '' if log_file_dir.endswith('/') else '/'
     log_file_fullname = log_file_dir + module_name
     fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
-                                                    timeStamp), file_mode)
+                                                    time_stamp), file_mode)
     fh.setLevel(getattr(logging, log_level.upper()))
     fh.setFormatter(formatter)
     logger.addHandler(fh)

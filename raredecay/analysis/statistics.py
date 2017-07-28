@@ -46,23 +46,16 @@ from raredecay.tools import dev_tool
 import matplotlib.pyplot as plt
 
 
-# Bug fixing below
-# plt.figure("TMPONLYTOFIGHTASTRANGEBUG")
-# plt.plot([1, 2, 3])
-# plt.close("TMPONLYTOFIGHTASTRANGEBUG")
-# Bug fix end
-
-
-
 
 def ks_2samp_ds(data1, data2, column):
+    ks_2samp_ds.__doc__ = ks_2samp.__doc__
 
     # Python 2/3 compatibility, str
     column = str(column)
 
     # create data from HEPDS
-    data1, targets1, weights1 = data1.make_dataset(columns=column)
-    data2, targets2, weights2 = data2.make_dataset(columns=column)
+    data1, _, weights1 = data1.make_dataset(columns=column)
+    data2, _, weights2 = data2.make_dataset(columns=column)
     weights1 = np.array(weights1)
     weights2 = np.array(weights2)
     data1 = np.array(data1[column].values)
@@ -70,7 +63,7 @@ def ks_2samp_ds(data1, data2, column):
 
     # call ks_test
     ks_score = ks_2samp(data1=data1, data2=data2,
-                        weights1 =weights1, weights2=weights2)
+                        weights1=weights1, weights2=weights2)
 
 
 def ks_2samp(data1, data2, weights1=None, weights2=None):
@@ -105,7 +98,6 @@ def ks_2samp(data1, data2, weights1=None, weights2=None):
     data1 = np.array(data1)
     data2 = np.array(data2)
 
-
     # start calculation
     ix1 = np.argsort(data1)
     ix2 = np.argsort(data2)
@@ -121,6 +113,7 @@ def ks_2samp(data1, data2, weights1=None, weights2=None):
 
     return np.max(np.abs(cdf1we - cdf2we))
 
+
 def ad_2samp(data1, data2, column):
     # Python 2/3 compatibility, str
     column = str(column)
@@ -133,7 +126,7 @@ def ad_2samp(data1, data2, column):
     data1 = np.array(data1[column].values)
     data2 = np.array(data2[column].values)
 
-    #sort data
+    # sort data
     ix1 = np.argsort(data1)
     ix2 = np.argsort(data2)
     data1 = data1[ix1]
@@ -145,9 +138,9 @@ def ad_2samp(data1, data2, column):
     m = np.sum(weights2)
 
 
-
 def _anderson_2samp_right(samples, data_sorted, data_unique_sorted, n_events):
     n_tot = sum(n_events)
+
 
 def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None,
              blind=False, nll_profile=False, second_storage=None, log_plot=False,
@@ -280,7 +273,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             blind_n_sig = n_sig
 
         print("n_sig value " + str(n_sig.getVal()))
-    #        raw_input("blind value " + str(blind_n_sig.getVal()))
+    # raw_input("blind value " + str(blind_n_sig.getVal()))
 
     #        n_sig = blind_n_sig
 
@@ -292,7 +285,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     else:
         raise ValueError("n_sig is not >= 0")
 
-    #    if not blind:
+    # if not blind:
     #        blind_n_sig = n_sig
 
     #    # create bkg-pdf
@@ -418,7 +411,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             comb_pdf.plotOn(x_frame,
                             RooFit.Components(bkg_pdf.namePtr().GetName()),
                             RooFit.LineStyle(ROOT.kDotted))
-        #            comb_pdf.plotPull(n_sig)
+            #            comb_pdf.plotPull(n_sig)
 
     if plot_importance >= 3:
         x_frame.Draw()
@@ -454,7 +447,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             frame_tmp.Draw()
 
 
-        #    raw_input("")
+            #    raw_input("")
 
     if not blind and nll_profile:
 
@@ -523,7 +516,7 @@ def pull_hist(pull_frame, pad_data, pad_pulls):
     pad_data.cd()
     dataHist = pull_frame.getHist("datahistogram")
     curve1 = pull_frame.getObject(
-        1)  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
+            1)  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
     curve2 = pull_frame.getObject(2)
     hresid1 = dataHist.makePullHist(curve1, True)
     hresid2 = dataHist.makePullHist(curve2, True)
@@ -613,15 +606,6 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
                                         bkg_in_region=region)
 
         scores.append(metric(n_signal=n_sig_weighted, n_background=n_bkg_fit))
-        debug1.append({'n_sig': n_sig_fit, 'n_bkg': n_bkg_fit, 'n_sig_weighted': n_sig_weighted})
-
-        # DEBUG
-        import time
-        print("scores:", scores)
-        print("debug1:", debug1)
-    #        time.sleep(8)
-
-    print(debug1)
 
     return cuts, scores
 
@@ -732,17 +716,8 @@ if __name__ == '__main__':
         data_copy.plot()
 
     elif mode == 'ks':
-        data.make_folds(2)
-        data1, data2 = data.get_fold(0)
-        ks_score = ks_2samp(data1, data2, column='x')
-        print("ks score: ", ks_score)
+        pass
 
-
-    #    n_sig_fit.append(np.mean(n_sig_averaged))#[5300, 5500]))
-    #    print n_sig_fit
-    #    raw_input("hiii")
-    #    plt.plot(np.array(n_sig_gen), np.array(n_sig_fit), linestyle='--', marker='o')
-    #    plt.plot(n_sig_gen, n_sig_gen, linestyle='-')
     plt.show()
 
     print("finished")
