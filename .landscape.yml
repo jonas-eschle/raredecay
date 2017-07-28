@@ -1,4 +1,4 @@
-strictness: medium
+strictness: veryhigh
 pylint:
   disable:
     - too-many-arguments
