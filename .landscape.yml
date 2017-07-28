@@ -11,6 +11,7 @@ ignore-paths:
   - docs/conf.py
 python-targets:
  - 2
+ - 3
  
 pep8:
   full: true
