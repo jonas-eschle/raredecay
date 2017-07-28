@@ -414,37 +414,37 @@ def to_pandas(data_in, index=None, columns=None):
     # HACK START
     return to_pandas_old(data_in=data_in, index=index, columns=columns)
     # HACK END
-    from root_pandas import read_root
-
-    root_pandas_numpy_map = dict(filenames='paths', treename='key', branches='columns',
-                                 selection='where')
-
-    if is_root(data_in):
-        is_root2array = False
-        for key, val in copy.deepcopy(list(data_in.items())):
-            if key in root_pandas_numpy_map:
-                is_root2array = True
-                del data_in[key]
-                data_in[root_pandas_numpy_map[key]] = val
-        data_in['columns'] = to_list(data_in['columns'])
-        if is_root2array:
-            data_in['columns'] = ['noexpand:'+col for col in data_in['columns'] if not col.startswith('noexpand:')]  # remove the noexpand:
-        data_in = read_root(**data_in)  # why **? it's a root dict
-    if is_list(data_in):
-        data_in = np.array(data_in)
-    if is_ndarray(data_in):
-        if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
-                isinstance(columns, basestring)):
-
-            data_in = to_ndarray(data_in)
-        data_in = pd.DataFrame(data_in, columns=columns)
-        if index is not None:
-            data_in = data_in.loc[index]
-    elif isinstance(data_in, pd.DataFrame):
-        pass
-    else:
-        raise TypeError("Could not convert data to pandas. Data: " + data_in)
-    return data_in
+    # from root_pandas import read_root
+    #
+    # root_pandas_numpy_map = dict(filenames='paths', treename='key', branches='columns',
+    #                              selection='where')
+    #
+    # if is_root(data_in):
+    #     is_root2array = False
+    #     for key, val in copy.deepcopy(list(data_in.items())):
+    #         if key in root_pandas_numpy_map:
+    #             is_root2array = True
+    #             del data_in[key]
+    #             data_in[root_pandas_numpy_map[key]] = val
+    #     data_in['columns'] = to_list(data_in['columns'])
+    #     if is_root2array:
+    #         data_in['columns'] = ['noexpand:'+col for col in data_in['columns'] if not col.startswith('noexpand:')]  # remove the noexpand:
+    #     data_in = read_root(**data_in)  # why **? it's a root dict
+    # if is_list(data_in):
+    #     data_in = np.array(data_in)
+    # if is_ndarray(data_in):
+    #     if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
+    #             isinstance(columns, basestring)):
+    #
+    #         data_in = to_ndarray(data_in)
+    #     data_in = pd.DataFrame(data_in, columns=columns)
+    #     if index is not None:
+    #         data_in = data_in.loc[index]
+    # elif isinstance(data_in, pd.DataFrame):
+    #     pass
+    # else:
+    #     raise TypeError("Could not convert data to pandas. Data: " + data_in)
+    # return data_in
 
 
 def adv_return(return_value, save_name=None):

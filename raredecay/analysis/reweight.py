@@ -16,8 +16,8 @@ import warnings
 
 import hep_ml.reweight
 import pandas as pd
-from builtins import (int, str)
-
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
+                      open, pow, range, round, str, super, zip)
 import raredecay.meta_config
 from raredecay.globals_ import out
 from raredecay.tools import dev_tool, data_tools

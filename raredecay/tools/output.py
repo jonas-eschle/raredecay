@@ -33,9 +33,7 @@ except ImportError as err:
 # Python 2 backwards compatibility overhead END
 
 import os
-import sys
 import subprocess
-import warnings
 import timeit
 import time
 import io as StringIO

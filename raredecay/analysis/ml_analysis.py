@@ -20,8 +20,8 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 import sys
 import warnings
 
-from builtins import (dict, int, round, str)
-from matplotlib import pyplot as plt
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
+                      open, pow, range, round, str, super, zip)
 
 import raredecay.meta_config
 
@@ -1241,9 +1241,6 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
 
             return (new_weights, test_mc.get_index())
 
-            logger.info("fold " + str(fold) + "finished")
-            # end of for-loop
-
         weights_and_indexes = map(do_reweighting, range(n_folds))
 
         for w, i in weights_and_indexes:
@@ -1284,6 +1281,26 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
 
 def mcreweighted_as_real(mc, real, old_mc_weights=1, columns=None, n_folds=10, clf='xgb',
                          old_score=False):
+    """Train on mc/real, predict mc/mcreweighted/real and compare distributions.
+
+    #TODO docs
+
+    Parameters
+    ----------
+    mc :
+    real :
+    old_mc_weights : int or pd.Series
+        The old weights, assuming that the current data contains the new weights
+    columns :
+    n_folds :
+    clf :
+    old_score :
+
+    Returns
+    -------
+    dict
+        Return a dictionary containing the scores under the following keys
+    """
     output = {}
 
     # Python 2/3 compatibility, str
