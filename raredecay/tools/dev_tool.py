@@ -18,6 +18,7 @@ try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
                                           reduce, reload, unicode, xrange, StandardError)
     from future.standard_library import install_aliases
+
     install_aliases()
     from past.builtins import basestring
 except ImportError as err:
@@ -142,7 +143,7 @@ def progress(n, n_tot):
     """
     import sys
 
-    i = float(n)/n_tot
+    i = float(n) / n_tot
     percent = int(i * 100)
     n_signs = 90
     equals = int(n_signs * i) * '='
@@ -208,7 +209,7 @@ def make_list_fill_var(to_check, length=0, var=None):
         to_check = [to_check]
     difference = length - len(to_check)
     if difference > 0:
-        to_check += [var]*difference
+        to_check += [var] * difference
     return to_check
 
 
@@ -245,7 +246,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif (isinstance(allowed_primitives, collections.Iterable) and
-            (not isinstance(allowed_primitives, basestring))):
+              (not isinstance(allowed_primitives, basestring))):
         if test_object in allowed_primitives:
             flag = True
     elif test_object is allowed_primitives:
@@ -270,14 +271,12 @@ def entries_to_str(data):
     elif isinstance(data, dict):
         output = {}
         for key, val in data.items():
-            if isinstance(key, basestring):
-                key = str(key)
-            if isinstance(val, basestring):
-                val = str(val)
+            key = entries_to_str(key)
+            val = entries_to_str(val)
             output[key] = val
 
     elif isinstance(data, list):
-        output = [str(e) for e in data if isinstance(e, basestring)]
+        output = [entries_to_str(d) for d in data]
     else:
         output = data
 

@@ -1239,59 +1239,17 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
                 out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
                 plt.hist(new_weights, bins=40, log=True)
 
-            # if mcreweighted_as_real_score:
-            #     # treat reweighted mc data as if it were real data target(1)
-            #     test_mc.set_targets(1)
-            #     train_mc.set_targets(0)
-            #     train_real.set_targets(1)
-            #     # train clf on real and mc and see where it classifies the reweighted mc
-            #     clf, tmp_score = classify(train_mc, train_real, validation=test_mc,
-            #                               curve_name="mc reweighted as real",
-            #                               features=score_columns,
-            #                               plot_title="fold {} reweighted validation".format(fold),
-            #                               weights_ratio=1, clf=score_clf,
-            #                               importance=1, plot_importance=1)
-            #     scores[fold] += tmp_score
-            #
-            #     # Get the max and min for "calibration" of the possible score for the reweighted data by
-            #     # passing in mc and label it as real (worst/min score) and real labeled as real (best/max)
-            #     test_mc.set_weights(old_mc_weights)
-            #     _t, tmp_score_min = classify(clf=clf, validation=test_mc,
-            #                                  features=score_columns,
-            #                                  curve_name="mc as real",
-            #                                  # weights_ratio=1,
-            #                                  importance=1, plot_importance=1)
-            #     score_min[fold] += tmp_score_min
-            #     test_real.set_targets(1)
-            #     _t, tmp_score_max = classify(clf=clf, validation=test_real,
-            #                                  features=score_columns,
-            #                                  curve_name="real as real",
-            #                                  # weights_ratio=1,
-            #                                  importance=1, plot_importance=1)
-            #     score_max[fold] += tmp_score_max
-            #     del _t
-
-            # collect all the new weights to get a really cross-validated reweighted dataset
-
             return (new_weights, test_mc.get_index())
-            # new_weights_all.append(new_weights)
-            # new_weights_index.append(test_mc.get_index())
 
             logger.info("fold " + str(fold) + "finished")
             # end of for-loop
 
-        # HACK
-        import multiprocessing
         weights_and_indexes = map(do_reweighting, range(n_folds))
 
         for w, i in weights_and_indexes:
             new_weights_all.append(w)
             new_weights_index.append(i)
 
-        # for fold in range(n_folds)
-        #     do_reweighting(fold)
-
-        # concatenate weights and index
         if n_folds == 1:
             new_weights_all = np.array(new_weights_all)
             new_weights_index = np.array(new_weights_index)
@@ -1317,23 +1275,6 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
     out.save_fig(figure="New weights of total mc", importance=4)
     plt.hist(new_weights_tot, bins=30, log=True)
     plt.title("New weights of reweighting with Kfold")
-
-    # # create score
-    # if mcreweighted_as_real_score:
-    #     scores /= n_reweights
-    #     score_min /= n_reweights
-    #     score_max /= n_reweights
-    #     out.add_output("", subtitle="Kfold reweight report", importance=4,
-    #                    section="Precision scores of classification on reweighted mc")
-    #     score_list = [("Reweighted: ", scores, 'score_reweighted'),
-    #                   ("mc as real (min): ", score_min, 'score_min'),
-    #                   ("real as real (max): ", score_max, 'score_max')]
-    #
-    #     for name, score, key in score_list:
-    #         mean, std = round(np.mean(score), 4), round(np.std(score), 4)
-    #         out.add_output(["Classify the target, average score " + name + str(mean) +
-    #                         " +- " + str(std)], to_end=True, importance=4)
-    #         output[key] = mean
 
     if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
         new_weights_tot *= new_weights_tot.size / new_weights_tot.sum() * normalize
@@ -1442,9 +1383,9 @@ def mcreweighted_as_real(mc, real, old_mc_weights=1, columns=None, n_folds=10, c
                                             weights1=weights, weights2=weights_min)
     score_ks_max = statistics.ks_2samp(predictions_min, predictions_max,
                                        weights1=weights_min, weights2=weights_max)
-    output['ks_vs_real'] = score_ks_minimize
-    output['ks_vs_mc'] = score_ks_maximize
-    output['ks_mc_vs_real'] = score_ks_max
+    output['asreal_ks_minimize'] = score_ks_minimize
+    output['asreal_ks_maximize'] = score_ks_maximize
+    output['asreal_ks_mc_max'] = score_ks_max
 
     # HACK
     print(output)

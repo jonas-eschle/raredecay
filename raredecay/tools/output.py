@@ -514,7 +514,7 @@ class OutputHandler(object):
         if do_print:
             if to_end:
                 self._loud_end_output += temp_out
-                sys.stdout.write(temp_out)  # to print even dough the print is redirected
+            sys.stdout.write(temp_out)  # to print even dough the print is redirected
         if to_end:
             self.end_output += temp_out
         self.output += temp_out
@@ -634,3 +634,11 @@ class OutputHandler(object):
             plt.show()
 
         return output
+
+
+if __name__ == '__main__':
+    out = OutputHandler()
+    out.initialize('test')
+    out.add_output(["test: ", {'a': 1, 'b': 2}], importance=5)
+    print("hello world")
+    out.finalize()

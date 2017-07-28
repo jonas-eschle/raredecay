@@ -358,6 +358,9 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
     return output
 
 
+def estimate_weights_bias(mc, real, columns=None, n_folds=10, clf='xgb'):
+    pass
+
 # NEW
 def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb', test_max=True,
                       test_shuffle=True, test_mc=False, old_mc_weights=1, test_predictions=False,
@@ -500,17 +503,14 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
                                   features=columns,
                                   plot_importance=1, importance=1)
         clf_trained, _, pred = tmp_out
-        predictions_max.append(pred['y_proba'])
+        predictions_max.append(pred['y_proba'][:, 1])
         predictions_max_weights.append(pred['weights'])
         mc.set_weights(temp_weights)
 
-
-    predictions = pd.concat(predictions)
-    predictions_weights = pd.concat(predictions_weights)
-    predictions_max = pd.concat(predictions_max)
-    predictions_max_weights = pd.concat(predictions_max_weights)
-
-
+    predictions = np.concatenate(predictions)
+    predictions_weights = np.concatenate(predictions_weights)
+    predictions_max = np.concatenate(predictions_max)
+    predictions_max_weights = np.concatenate(predictions_max_weights)
 
     # mix mc and real to get a nice shape of two similar dists
     mc.set_weights(old_mc_weights)
@@ -531,21 +531,31 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
                               features=columns,
                               plot_importance=1, importance=1)
     clf_trained, _, pred = tmp_out
-    predictions_min = pred['y_proba'][:, 1]
-    predictions_min_weights = pred['weights']
+    predictions_min = np.array(pred['y_proba'][:, 1])
+    predictions_min_weights = np.array(pred['weights'])
 
     mc.set_weights(temp_weights)
     mc.set_targets(tmp_mc_targets)
 
-    output['similar_ks_vs_baseline'] = statistics.ks_2samp(predictions, predictions_min,
-                                                           weights1=predictions_weights,
-                                                           weights2=predictions_min_weights)
-    output['similar_ks_baseline_vs_unweighted'] = statistics.ks_2samp(predictions_max, predictions_min,
-                                                           weights1=predictions_max_weights,
-                                                           weights2=predictions_min_weights)
-    output['similar_ks_vs_unweighted'] = statistics.ks_2samp(predictions, predictions_max,
-                                                           weights1=predictions_weights,
-                                                           weights2=predictions_max_weights)
+    # HACK
+    import matplotlib.pyplot as plt
+    n_bins = 20
+    plt.figure("comparing the predictions")
+    plt.hist(predictions, alpha=0.3, label="predictions", bins=n_bins)
+    plt.hist(predictions_min, alpha=0.3, label="predictions_min", bins=n_bins)
+    plt.hist(predictions_max, alpha=0.3, label="predictions_max", bins=n_bins)
+    plt.legend()
+    # plt.autoscale()
+
+    output['similar_ks_minimize'] = statistics.ks_2samp(predictions, predictions_min,
+                                                        weights1=predictions_weights,
+                                                        weights2=predictions_min_weights)
+    output['similar_ks_max'] = statistics.ks_2samp(predictions_max, predictions_min,
+                                                   weights1=predictions_max_weights,
+                                                   weights2=predictions_min_weights)
+    output['similar_ks_maximize'] = statistics.ks_2samp(predictions, predictions_max,
+                                                        weights1=predictions_weights,
+                                                        weights2=predictions_max_weights)
 
     return output
 

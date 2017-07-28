@@ -735,13 +735,18 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # test_predictions is an additional score I tried but so far I is not
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
-        scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
-                                       n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                       features=score_columns, old_mc_weights=old_weights,
-                                       test_mc=extended_train_similar,
-                                       test_shuffle=extended_train_similar,
-                                       test_predictions=False, clf=score_clf)
-        out.add_output(['Mayou FoM:', scores['similar_dist']], to_end=True)
+        scores = metrics.train_similar_new(mc=mc_data, real=real_data, test_max=True,
+                                           n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+                                           columns=score_columns, old_mc_weights=old_weights,
+                                           clf=score_clf)
+
+        # scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
+        #                                n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+        #                                features=score_columns, old_mc_weights=old_weights,
+        #                                test_mc=extended_train_similar,
+        #                                test_shuffle=extended_train_similar,
+        #                                test_predictions=False, clf=score_clf)
+        out.add_output(['Mayou FoM:', scores], to_end=True)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
         # but anyway (if not overfitting) a nice measure. You insert two datasets
