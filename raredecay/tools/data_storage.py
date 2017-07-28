@@ -1182,7 +1182,7 @@ class HEPDataStorage(object):
                      range=x_limits, label=label_name, **hist_settings)
 
             # set labels, titles...
-            plt.title(self.latex_replacements.get(sub_title_tmp, sub_title_tmp)
+            plt.title(self.latex_replacements.get(sub_title_tmp, sub_title_tmp))
             ha = 'center'
             plt.xlabel(x_label, ha=ha, position=(0.5, 0))
             if y_label is not None:

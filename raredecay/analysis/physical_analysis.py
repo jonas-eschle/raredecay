@@ -65,9 +65,6 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
     from raredecay.globals_ import out
     # from raredecay.tools.data_storage import HEPDataStorage
 
-    import numpy as np
-    import copy
-
     columns = signal_data.columns
     signal_data.plot(figure="Before cut", title="Data comparison before cut")
     signal_data.plot(figure="Signal comparison", title="Data comparison before cut vs after")
