@@ -361,6 +361,7 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
 def estimate_weights_bias(mc, real, columns=None, n_folds=10, clf='xgb'):
     pass
 
+
 # NEW
 def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb', test_max=True,
                       test_shuffle=True, test_mc=False, old_mc_weights=1, test_predictions=False,
@@ -495,9 +496,9 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
         predictions.append(pred['y_proba'][:, 1])
         predictions_weights.append(pred['weights'])
 
-        temp_weights = mc.weights
-        mc.set_weights(old_mc_weights)
-        tmp_out = ml_ana.classify(original_data=mc, target_data=real_train, validation=real_test,
+        temp_weights = mc_train.weights
+        mc_train.set_weights(old_mc_weights)
+        tmp_out = ml_ana.classify(original_data=mc_train, target_data=real_train, validation=real_test,
                                   plot_title="real/mc NOT reweight trained, validate on real",
                                   weights_ratio=1, get_predictions=True, clf=clf,
                                   features=columns,
@@ -505,7 +506,7 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
         clf_trained, _, pred = tmp_out
         predictions_max.append(pred['y_proba'][:, 1])
         predictions_max_weights.append(pred['weights'])
-        mc.set_weights(temp_weights)
+        mc_train.set_weights(temp_weights)
 
     predictions = np.concatenate(predictions)
     predictions_weights = np.concatenate(predictions_weights)
@@ -513,6 +514,7 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
     predictions_max_weights = np.concatenate(predictions_max_weights)
 
     # mix mc and real to get a nice shape of two similar dists
+    # TODO: commented below out
     mc.set_weights(old_mc_weights)
     mc.make_folds(2)
     real.make_folds(2)
@@ -541,9 +543,9 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
     import matplotlib.pyplot as plt
     n_bins = 20
     plt.figure("comparing the predictions")
-    plt.hist(predictions, alpha=0.3, label="predictions", bins=n_bins)
-    plt.hist(predictions_min, alpha=0.3, label="predictions_min", bins=n_bins)
-    plt.hist(predictions_max, alpha=0.3, label="predictions_max", bins=n_bins)
+    plt.hist(predictions, alpha=0.3, label="predictions", bins=n_bins, normed=1)
+    plt.hist(predictions_min, alpha=0.3, label="predictions_min", bins=n_bins, normed=1)
+    plt.hist(predictions_max, alpha=0.3, label="predictions_max", bins=n_bins, normed=1)
     plt.legend()
     # plt.autoscale()
 

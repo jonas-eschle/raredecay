@@ -787,21 +787,22 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
             # printed to the end
         out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
                        title='ROC AUC of mc reweighted/real KFold', to_end=True)
-
-        out.add_output(['score:', scores['score'], "+-", scores['score_std']],
-                       importance=5,
-                       title='Train similar report', to_end=True)
-        if extended_train_similar:
-            out.add_output(['\nScore_mc:', scores['score_mc'], "+-", scores['score_mc_std']],
-                           importance=5,
-                           to_end=True)
-        if scores.get('score_max', False):
-            out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                           importance=5, to_end=True)
-        if scores.get('score_mc_max', False):
-            out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
-                            scores['score_mc_max_std']],
-                           importance=5, to_end=True)
+        # TODO? NEW SCORES?
+        #
+        # out.add_output(['score:', scores['score'], "+-", scores['score_std']],
+        #                importance=5,
+        #                title='Train similar report', to_end=True)
+        # if extended_train_similar:
+        #     out.add_output(['\nScore_mc:', scores['score_mc'], "+-", scores['score_mc_std']],
+        #                    importance=5,
+        #                    to_end=True)
+        # if scores.get('score_max', False):
+        #     out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+        #                    importance=5, to_end=True)
+        # if scores.get('score_mc_max', False):
+        #     out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
+        #                     scores['score_mc_max_std']],
+        #                    importance=5, to_end=True)
 
         if scores.get('score_shuffled', False):
             out.add_output(['score_shuffled:', scores['score_shuffled'], "+-",

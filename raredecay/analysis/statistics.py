@@ -64,6 +64,7 @@ def ks_2samp_ds(data1, data2, column):
     # call ks_test
     ks_score = ks_2samp(data1=data1, data2=data2,
                         weights1=weights1, weights2=weights2)
+    return ks_score
 
 
 def ks_2samp(data1, data2, weights1=None, weights2=None):
