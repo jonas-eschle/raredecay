@@ -36,7 +36,7 @@ def readme():
 #    git_version = str(git_version[0])
 #except:
 #    git_version = '1.0.2'
-git_version = '1.3.0'
+git_version = '1.4.0'
 
 
 setup(name='raredecay',
