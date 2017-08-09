@@ -10,17 +10,18 @@ two other distributions as well as reweighting a distribution by itself in a k-f
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 
-import copy
 import sys
 import warnings
 
-import hep_ml.reweight
-import pandas as pd
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
                       open, pow, range, round, str, super, zip)
+
+import numpy as np
+from matplotlib import pyplot as plt
+
 import raredecay.meta_config
 from raredecay.globals_ import out
-from raredecay.tools import dev_tool, data_tools
+from raredecay.tools import dev_tool, data_tools, data_storage
 
 try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
@@ -40,7 +41,13 @@ except ImportError as err:
             raise err
     else:
         basestring = str
-        # Python 2 backwards compatibility overhead END
+# Python 2 backwards compatibility overhead END
+
+import copy
+
+import hep_ml.reweight
+import pandas as pd
+
 # import configuration
 import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
@@ -112,7 +119,7 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
     __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
 
     # HACK
-    from raredecay.analysis.ml_analysis import _make_data
+    from raredecay.analysis.compatibility_tools import _make_data
 
     # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
@@ -201,7 +208,7 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
         new weights.
     """
     # HACK
-    from raredecay.analysis.ml_analysis import _make_data
+    from raredecay.analysis.compatibility_tools import _make_data
 
     # Python 2/3 compatibility, str
     reweighter_trained = dev_tool.entries_to_str(reweighter_trained)
@@ -212,7 +219,7 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
     reweighter_trained = data_tools.try_unpickle(reweighter_trained)
     if columns is None:
         columns = reweighter_trained.columns
-    #    new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
+    # new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
     new_weights = reweighter_trained.predict_weights(apply_data.pandasDF(columns=columns),
                                                      original_weight=apply_data.weights)
 
@@ -231,8 +238,7 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
 
 # NEW
 def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb', reweight_cfg=None,
-             n_reweights=1,
-             add_weights=True):
+             n_reweights=1, add_weights=True):
     """(Train a reweighter and) apply the reweighter to get new weights.
 
     Train a reweighter from the real data and the corresponding MC differences.
@@ -332,4 +338,186 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
         output['weights'] = new_weights
     output['reweighter'] = new_reweighter_list
 
+    return output
+
+
+def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweighter_cfg=None, n_reweights=1,
+                   add_weights=True, normalize=True):
+    """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
+
+    .. warning::
+       Do NOT use for the real reweighting process! (except if you really want
+       to reweight the data "by itself")
+
+
+    If you want to figure out the hyper-parameters for a reweighting process
+    or just want to find out how good the reweighter works, you may want to
+    apply this to the data itself. This means:
+
+    - train a reweighter on mc/real
+    - apply it to get new weights for mc
+    - compare the mc/real distribution
+
+    The problem arises with biasing your reweighter. As in classification
+    tasks, where you split your data into train/test sets for Kfolds, you
+    want to do the same here. Therefore:
+
+    - split the mc data into (n_folds-1)/n_folds (training)
+    - train the reweighter on the training mc/complete real (if
+      mcreweighted_as_real_score is True, the real data will be folded too
+      for unbiasing the score)
+    - reweight the leftout mc test-fold
+    - do this n_folds times
+    - getting unbiased weights
+
+    The parameters are more or less the same as for the
+    :py:func:`~raredecay.analysis.ml_analysis.reweight_train` and
+    :py:func:`~raredecay.analysis.ml_analysis.reweight_weights`
+
+    Parameters
+    ----------
+    mc : |hepds_type|
+        The Monte-Carlo data, which has to be "fitted" to the real data.
+    real : |hepds_type|
+        Same as *mc_data* but for the real data.
+    columns : list of strings
+        The columns/features/branches you want to use for the reweighting.
+    n_folds : int >= 1
+        The number of folds to split the data. Usually, the more folds the
+        "better" the reweighting (especially for small datasets).
+        If n_folds = 1, the data will be reweighted directly and the benefit
+        of Kfolds and the unbiasing *disappears*
+
+    reweighter : {'gb', 'bins'}
+        Specify which reweighter to use.
+        - **gb**: GradientBoosted Reweighter from REP
+        - **bins**: Binned Reweighter from REP
+    reweighter_cfg : dict
+        Contains the parameters for the bins/gb-reweighter. See also
+        :func:`~hep_ml.reweight.BinsReweighter` and
+        :func:`~hep_ml.reweight.GBReweighter`.
+    n_reweights : int
+        As the reweighting often yields different weights depending on random
+        parameters like the splitting of the data, the new weights can be
+        produced by taking the average of the weights over many reweighting
+        runs. n_reweights is the number of reweight runs to average over.
+    add_weights : boolean
+        If True, the new weights will be added (in place) to the mc data and
+        returned. Otherwise, the weights will only be returned.
+
+    Return
+    ------
+    out : :py:class:`~pd.Series`
+        Return the new weights.
+
+    """
+
+    # Python 2/3 compatibility, str
+    columns = dev_tool.entries_to_str(columns)
+    reweighter = dev_tool.entries_to_str(reweighter)
+    reweighter_cfg = dev_tool.entries_to_str(reweighter_cfg)
+
+    normalize = 1 if normalize is True else normalize
+    output = {}
+    out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
+                   title="Reweighting Kfold", obj_separator="")
+    # create variables
+    assert n_folds >= 1 and isinstance(n_folds, int), \
+        "n_folds has to be >= 1, its currently" + str(n_folds)
+    assert isinstance(mc, data_storage.HEPDataStorage), \
+        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(mc))
+    assert isinstance(real, data_storage.HEPDataStorage), \
+        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(real))
+
+    new_weights_tot = pd.Series(np.zeros(len(mc)), index=mc.index)
+
+    if not add_weights:
+        old_mc_tot_weights = mc.weights
+
+    for run in range(n_reweights):
+        new_weights_all = []
+        new_weights_index = []
+
+        # split data to folds and loop over them
+        mc.make_folds(n_folds=n_folds)
+        real.make_folds(n_folds=n_folds)
+
+        def do_reweighting(fold):
+            """
+            Inline loop for parallelization
+            Parameters
+            ----------
+            fold : int
+                Which fold
+
+            Returns
+            -------
+
+            """
+            # create train/test data
+            if n_folds > 1:
+                train_real, test_real = real.get_fold(fold)
+                train_mc, test_mc = mc.get_fold(fold)
+            else:
+                train_real = test_real = real
+                train_mc = test_mc = mc
+
+            # if mcreweighted_as_real_score:
+            #     old_mc_weights = test_mc.get_weights()
+
+            # plot the first fold as example (the first one surely exists)
+            plot_importance1 = 2 if fold == 0 else 1
+            if n_folds > 1 and plot_importance1 > 1 and run == 0:
+                train_real.plot(figure="Reweighter trainer, example, fold " + str(fold),
+                                importance=plot_importance1)
+                train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold),
+                              importance=plot_importance1)
+
+            # train reweighter on training data
+            reweighter_trained = reweight_train(mc=train_mc, real=train_real, columns=columns,
+                                                reweighter=reweighter, reweight_cfg=reweighter_cfg)
+
+            new_weights = reweight_weights(apply_data=test_mc, reweighter_trained=reweighter_trained,
+                                           columns=columns, add_weights=True)  # fold only, not full data
+            # plot one for example of the new weights
+            if (n_folds > 1 and plot_importance1 > 1) or max(new_weights) > 50:
+                out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
+                plt.hist(new_weights, bins=40, log=True)
+
+            return (new_weights, test_mc.get_index())
+
+        weights_and_indexes = map(do_reweighting, range(n_folds))
+
+        for w, i in weights_and_indexes:
+            new_weights_all.append(w)
+            new_weights_index.append(i)
+
+        if n_folds == 1:
+            new_weights_all = np.array(new_weights_all)
+            new_weights_index = np.array(new_weights_index)
+        else:
+            new_weights_all = np.concatenate(new_weights_all)
+            new_weights_index = np.concatenate(new_weights_index)
+        new_weights_tot += pd.Series(new_weights_all, index=new_weights_index)
+
+        out.save_fig(figure="New weights of run " + str(run), importance=3)
+        hack_array = np.array(new_weights_all)
+        plt.hist(hack_array, bins=30, log=True)
+        plt.title("New weights of reweighting at end of run " + str(run))
+
+    # after for loop for weights creation
+    new_weights_tot /= n_reweights
+
+    if add_weights:
+        mc.set_weights(new_weights_tot)
+    else:
+        mc.set_weights(old_mc_tot_weights)
+
+    out.save_fig(figure="New weights of total mc", importance=4)
+    plt.hist(new_weights_tot, bins=30, log=True)
+    plt.title("New weights of reweighting with Kfold")
+
+    if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
+        new_weights_tot *= new_weights_tot.size / new_weights_tot.sum() * normalize
+    output['weights'] = new_weights_tot
     return output

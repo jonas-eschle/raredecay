@@ -26,18 +26,22 @@ with io.open(os.path.join(here, 'requirements.txt')) as f:
 
 
 def readme():
-    with open('README.md') as f:
+    with open('README.rst') as f:
         return f.read()
-#try:
-#    git_version = subprocess.check_output(["git", "-C",
-#                        "/home/mayou/Documents/uniphysik/Bachelor_thesis/python_workspace/raredecay",
-#                        "describe"])
-#    git_version = git_version.partition('-')
-#    git_version = str(git_version[0])
-#except:
-#    git_version = '1.0.2'
+
 git_version = '1.4.0'
 
+extras_require = {'all': []}
+extras_require_tmp = {
+                  'root': ['root_numpy',
+                           'rootpy'],
+                  'reweight': ['git+https://github.com/arogozhnikov/hep_ml.git'],
+                  'ml': ['https://github.com/yandex/rep/archive/stratifiedkfold.zip',
+                         'scikit-learn>=0.18.1']
+                      
+      		     }
+for val in extras_require_tmp.values():
+    extras_require['all'] += val
 
 setup(name='raredecay',
       version=git_version,
@@ -65,12 +69,9 @@ setup(name='raredecay',
       author='Jonas Eschle',
       author_email='mayou36@jonas.eschle.com',
       license='Apache-2.0 License',
-      dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
+#      dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
       install_requires=requirements,
-      extras_require={
-                      'root': ['root_numpy',
-                               'rootpy']
-      		     },
+      extras_require=extras_require,
       packages=['raredecay',
                 'raredecay.analysis',
                 'raredecay.tools',

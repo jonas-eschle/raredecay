@@ -823,22 +823,22 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
 
 # temporary:
-if __name__ == '__main__':
-    import pandas as pd
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    from raredecay.tools.data_storage import HEPDataStorage
-
-    n_cols = 7
-    cols = [str(i) for i in range(n_cols)]
-    a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
-    a = HEPDataStorage(a, target=1, )
-    b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
-    b = HEPDataStorage(b, target=0)
-
-    #    feature_exploration(a, b, n_folds=3, roc_auc='all')
-
-
-
-    plt.show()
+# if __name__ == '__main__':
+#     import pandas as pd
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+#
+#     from raredecay.tools.data_storage import HEPDataStorage
+#
+#     n_cols = 7
+#     cols = [str(i) for i in range(n_cols)]
+#     a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
+#     a = HEPDataStorage(a, target=1, )
+#     b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
+#     b = HEPDataStorage(b, target=0)
+#
+#     #    feature_exploration(a, b, n_folds=3, roc_auc='all')
+#
+#
+#
+#     plt.show()
