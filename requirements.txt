@@ -1,7 +1,5 @@
-hep_ml
-rep >= 0.6.6
-scikit-learn >= 0.18
-nose_parameterized
+git+https://github.com/arogozhnikov/hep_ml.git
+
 seaborn
 pandas
 numpy
