@@ -35,7 +35,7 @@ extras_require = {'all': []}
 extras_require_tmp = {
                   'root': ['root_numpy',
                            'rootpy'],
-                  'reweight': ['git+https://github.com/arogozhnikov/hep_ml.git'],
+             #     'reweight': ['git+https://github.com/arogozhnikov/hep_ml.git'],
                   'ml': [
                         # 'https://github.com/yandex/rep/archive/stratifiedkfold.zip',
                          'scikit-learn>=0.18.1']
