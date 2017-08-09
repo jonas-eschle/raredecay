@@ -38,6 +38,7 @@ import numpy as np
 import pandas as pd
 
 from raredecay.tools import data_storage, dev_tool
+import raredecay.analysis.ml_analysis as ml_ana
 
 
 def mayou_score(mc_data, real_data, features=None, old_mc_weights=1,
