@@ -69,7 +69,6 @@ from sklearn.metrics import accuracy_score, classification_report  # recall_scor
 from rep.data import LabeledDataStorage
 
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-# from rep.estimators.theanets import TheanetsClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier
@@ -280,9 +279,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         # elif clf['clf_type'] == 'nn':
-        #     serial_clf = meta_cfg.use_gpu
-        #     clf['config'].update(dict(random_state=meta_cfg.randint()))
-        #     clf_tmp = TheanetsClassifier(**clf.get('config'))
+
 
         # assign classifier to output dict
         output['clf'] = clf_tmp
@@ -611,7 +608,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     if features is None:
         features = original_data.columns
 
-    grid_param = {}
+    grid_param = OrderedDict()
     # parameters which are by their nature a list, e.g. nn-layers
     list_param = ['layers', 'trainers']
     for key, val in list(config_clf.items()):
