@@ -1,5 +1,3 @@
-git+https://github.com/arogozhnikov/hep_ml.git
-
 seaborn
 pandas
 numpy

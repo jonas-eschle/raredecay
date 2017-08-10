@@ -34,17 +34,17 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
 # ==============================================================================
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip)  # noqa
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-    install_aliases()
-    from past.builtins import basestring
-except ImportError as err:
-    basestring = str
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+    from future.standard_library import install_aliases  # noqa
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    basestring = str  # noqa
 
 # Python 2 backwards compatibility overhead END
 
