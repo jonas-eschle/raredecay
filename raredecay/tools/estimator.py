@@ -16,6 +16,7 @@ try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
                                           reduce, reload, unicode, xrange, StandardError)  # noqa
     from future.standard_library import install_aliases  # noqa
+
     install_aliases()  # noqa
     from past.builtins import basestring  # noqa
 except ImportError as err:  # noqa
@@ -33,36 +34,30 @@ except ImportError as err:  # noqa
 # Python 2 backwards compatibility overhead END
 
 import copy
-import numpy as np
-import pandas as pd
 # import seaborn as sns
 from collections import OrderedDict
 
-from rep.estimators.interface import Classifier
-
-from rep.metaml import ClassifiersFactory
-from rep.utils import train_test_split
+import numpy as np
+import pandas as pd
 from rep.data import LabeledDataStorage
-
 # classifier imports
 from rep.estimators import SklearnClassifier, XGBoostClassifier  # , TMVAClassifier
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier  # , VotingClassifier
+from rep.estimators.interface import Classifier
 from rep.estimators.theanets import TheanetsClassifier
+from rep.metaml import ClassifiersFactory
+from rep.report import ClassificationReport
+from rep.utils import train_test_split
+from sklearn.ensemble import AdaBoostClassifier, BaggingClassifier  # , VotingClassifier
+from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
 # from sklearn.tree import DecisionTreeClassifier
 # from sklearn.linear_model import LogisticRegression
 # from sklearn.neighbors import KNeighborsClassifie
 from sklearn.preprocessing import StandardScaler
 
-from rep.report import ClassificationReport
-
+import raredecay.config as cfg
 from raredecay import globals_
 from raredecay.tools import dev_tool
-import raredecay.meta_config as meta_cfg
-
-import importlib
-import raredecay.config as cfg
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
@@ -72,60 +67,62 @@ class Mayou(Classifier):
     """Classifier for raredecay analysis"""
 
     __DEFAULT_CLF_CFG = dict(
-        xgb=dict(
-            n_estimators=450,
-            eta=0.1,
-            subsample=0.9,
-            bagging=None
-        ),
-        rdf=dict(
-            n_estimators=1600,  # 1600
-            max_features='auto',  # only 1 feature seems to be pretty good...
-            max_depth=200,
-            min_samples_split=250,
-            min_samples_leaf=150,
-            min_weight_fraction_leaf=0.,
-            max_leaf_nodes=None,
-            bootstrap=False,
-            oob_score=False,
-            n_jobs=7,
-            class_weight=None,
-            bagging=None
-        ),
+            xgb=dict(
+                    n_estimators=450,
+                    eta=0.1,
+                    subsample=0.9,
+                    bagging=None
+            ),
+            rdf=dict(
+                    n_estimators=1600,  # 1600
+                    max_features='auto',  # only 1 feature seems to be pretty good...
+                    max_depth=200,
+                    min_samples_split=250,
+                    min_samples_leaf=150,
+                    min_weight_fraction_leaf=0.,
+                    max_leaf_nodes=None,
+                    bootstrap=False,
+                    oob_score=False,
+                    n_jobs=7,
+                    class_weight=None,
+                    bagging=None
+            ),
 
-        nn=dict(
-            layers=[100, 100],
-            hidden_activation='logistic',
-            output_activation='linear',
-            input_noise=0,  # [0,1,2,3,4,5,10,20],
-            hidden_noise=0,
-            input_dropout=0,
-            hidden_dropout=0.05,
-            decode_from=1,
-            weight_l1=0.01,
-            weight_l2=0.03,
-            scaler='standard',
-            trainers=[{'optimize': 'adagrad', 'patience': 2, 'momentum': 0.5, 'nesterov': True,
-                       'learning_rate': 0.2, 'min_improvement': 0.01}],
-            bagging=None
-        ),
-        gb=dict(
-            learning_rate=0.05,
-            n_estimators=500,
-            max_depth=4,
-            min_samples_split=600,
-            min_samples_leaf=1,
-            min_weight_fraction_leaf=0.,
-            subsample=0.8,
-            max_features=None,
-            max_leaf_nodes=None,
-            bagging=None
-        ),
+            nn=dict(
+                    layers=[100, 100],
+                    hidden_activation='logistic',
+                    output_activation='linear',
+                    input_noise=0,  # [0,1,2,3,4,5,10,20],
+                    hidden_noise=0,
+                    input_dropout=0,
+                    hidden_dropout=0.05,
+                    decode_from=1,
+                    weight_l1=0.01,
+                    weight_l2=0.03,
+                    scaler='standard',
+                    trainers=[{
+                        'optimize': 'adagrad', 'patience': 2, 'momentum': 0.5, 'nesterov': True,
+                        'learning_rate': 0.2, 'min_improvement': 0.01
+                    }],
+                    bagging=None
+            ),
+            gb=dict(
+                    learning_rate=0.05,
+                    n_estimators=500,
+                    max_depth=4,
+                    min_samples_split=600,
+                    min_samples_leaf=1,
+                    min_weight_fraction_leaf=0.,
+                    subsample=0.8,
+                    max_features=None,
+                    max_leaf_nodes=None,
+                    bagging=None
+            ),
     )
     __DEFAULT_BAG_CFG = dict(
-        n_estimators=20,
-        max_samples=0.9,
-        max_features=1.0,
+            n_estimators=20,
+            max_samples=0.9,
+            max_features=1.0,
     )
 
     def __init__(self, base_estimators=None, bagging_base=None, stacking='xgb',
@@ -178,9 +175,9 @@ class Mayou(Classifier):
 
     def get_params(self, deep=True):
         out = dict(
-            base_estimators=None, bagging_base=None, stacking='xgb',
-            features_stack=None, bagging_stack=None, hunting=False
-            )
+                base_estimators=None, bagging_base=None, stacking='xgb',
+                features_stack=None, bagging_stack=None, hunting=False
+        )
         return out
 
     def _transform(self, X, fit=False):
@@ -417,10 +414,10 @@ if __name__ == '__main__':
     import matplotlib.pyplot as plt
 
     from rep.metaml import FoldingClassifier
-#    from rep.report.metrics import RocAuc, ams, OptimalAccuracy, OptimalAMS  # , significance
-#    from raredecay.tools.metrics import punzi_fom, precision_measure
-#    from sklearn.svm import NuSVC
-#    from sklearn.naive_bayes import GaussianNB
+    #    from rep.report.metrics import RocAuc, ams, OptimalAccuracy, OptimalAMS  # , significance
+    #    from raredecay.tools.metrics import punzi_fom, precision_measure
+    #    from sklearn.svm import NuSVC
+    #    from sklearn.naive_bayes import GaussianNB
 
     from root_numpy import root2array, rec2array
 
@@ -479,11 +476,12 @@ if __name__ == '__main__':
         w = np.ones(len(X))
 
     if primitiv:
-        X = pd.DataFrame({'odin': np.array([2., 2., 2., 2., 3., 3., 2., 3., 8.,
-                                            7., 8., 7., 8., 8., 7., 8.]),
-                          'dwa': np.array([2.2, 2.1, 2.2, 2.3, 3.1, 3.1, 2.1, 3.2, 8.1,
-                                           7.5, 8.2, 7.1, 8.5, 8.2, 7.6, 8.1])
-                          })
+        X = pd.DataFrame({
+            'odin': np.array([2., 2., 2., 2., 3., 3., 2., 3., 8.,
+                              7., 8., 7., 8., 8., 7., 8.]),
+            'dwa': np.array([2.2, 2.1, 2.2, 2.3, 3.1, 3.1, 2.1, 3.2, 8.1,
+                             7.5, 8.2, 7.1, 8.5, 8.2, 7.6, 8.1])
+        })
         y = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
         w = np.ones(16)
         branch_names = ['odin', 'dwa']
@@ -516,7 +514,6 @@ if __name__ == '__main__':
 
     clf.fit(X_train, y_train, w_train)
 
-
-#    report.features_correlation_matrix().plot(new_plot=True)
+    #    report.features_correlation_matrix().plot(new_plot=True)
 
     plt.show()

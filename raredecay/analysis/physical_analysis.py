@@ -18,6 +18,7 @@ from builtins import (int,  # noqa
                       range, str, zip)  # noqa
 
 import raredecay.meta_config  # noqa
+import raredecay.tools.ml_scores
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
@@ -46,6 +47,8 @@ import numpy as np
 import pandas as pd
 
 from raredecay.tools import dev_tool
+
+# legacy
 from raredecay.analysis.compatibility_reweight import reweight
 
 
@@ -628,10 +631,10 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # test_predictions is an additional score I tried but so far I is not
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
-        scores = metrics.train_similar_new(mc=mc_data, real=real_data, test_max=True,
-                                           n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                           columns=score_columns, old_mc_weights=old_weights,
-                                           clf=score_clf)
+        scores = raredecay.tools.ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
+                                                             n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+                                                             columns=score_columns, old_mc_weights=old_weights,
+                                                             clf=score_clf)
 
         # scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
         #                                n_folds=n_folds_scoring, n_checks=n_folds_scoring,
@@ -673,8 +676,8 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
 
         if mayou_score:
-            metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
-                                clf=score_clf, old_mc_weights=old_weights)
+            raredecay.tools.ml_scores.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
+                                                  clf=score_clf, old_mc_weights=old_weights)
             # an example to add output with the most importand parameters. The first
             # one can also be a single object instead of a list. do_print means
             # printing it also to the console instead of only saving it to the output

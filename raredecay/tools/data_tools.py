@@ -133,7 +133,6 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     new_branch = dev_tool.entries_to_str(new_branch)
     branch_name = dev_tool.entries_to_str(branch_name)
 
-    from ROOT import TObject
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
     write_mode = 'update'

@@ -38,12 +38,12 @@ except ImportError as err:  # noqa
 
 import numpy as np
 
-from raredecay.globals_ import out
+# from raredecay.globals_ import out
 
 import raredecay.meta_config as meta_cfg
 from raredecay.tools import dev_tool
 
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 
 def ks_2samp_ds(data1, data2, column):
