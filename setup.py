@@ -35,11 +35,11 @@ extras_require = {'all': []}
 extras_require_tmp = {
                   'root': ['root_numpy',
                            'rootpy'],
-             #     'reweight': ['git+https://github.com/arogozhnikov/hep_ml.git'],
+                 'reweight': ['hep_ml>= 0.4'],
                   'ml': [
-                        # 'https://github.com/yandex/rep/archive/stratifiedkfold.zip',
+                        'rep>=0.6.6',
                          'scikit-learn>=0.18.1']
-                      
+
       		     }
 for val in extras_require_tmp.values():
     extras_require['all'] += val
