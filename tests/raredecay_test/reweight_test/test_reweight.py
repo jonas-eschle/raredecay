@@ -30,7 +30,7 @@ import raredecay.settings
 
 rd.settings.set_random_seed(42)
 from raredecay.tools.data_storage import HEPDataStorage
-from raredecay.analysis.physical_analysis import reweight as reweight_old
+from raredecay.analysis.compatibility_reweight import reweight as reweight_old
 from raredecay.analysis.reweight import reweight as reweight_new, reweight_kfold
 from raredecay.analysis.ml_analysis import reweight_Kfold
 import raredecay.settings

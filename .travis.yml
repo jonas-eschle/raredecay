@@ -76,9 +76,9 @@ install:
 - pip install .[all]
 script:
 - if [[ "$MAYOU_PYTHON_VERSION" < 3 ]]; then
-      coverage run -m unittest discover
+      coverage run -m unittest discover;
     elif [[ "$MAYOU_PYTHON_VERSION >= 3 ]]; then
-      python -m unittest discover
+      python -m unittest discover;
   fi
 
 
