@@ -90,7 +90,7 @@ from raredecay.analysis import statistics
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 # raredecay backwards compatibility:
-from raredecay.analysis.reweight import reweight_train, reweight_weights, reweight, reweight_kfold
+from raredecay.analysis.reweight import reweight_train, reweight_weights, reweight
 
 
 def make_clf(clf, n_cpu=None, dict_only=False):
@@ -1182,6 +1182,8 @@ def mcreweighted_as_real(mc, real, old_mc_weights=1, columns=None, n_folds=10, c
 
 # collect all the new weights to get a really cross-validated reweighted dataset
 
+# COMPATIBILITY LAYER START
+# OLD FUNCTION, DEPRECEATED
 def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
                    reweighter='gb', meta_cfg=None, n_reweights=1,
                    score_columns=None, score_clf='xgb',
@@ -1292,6 +1294,9 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
     meta_cfg = dev_tool.entries_to_str(meta_cfg)
     score_columns = dev_tool.entries_to_str(score_columns)
     score_clf = dev_tool.entries_to_str(score_clf)
+
+    warnings.warn(DeprecationWarning, "Do not use this function anymore."
+                                      "Rather use reweighting_kfold (small 'k') from rd.reweight.")
 
     output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],

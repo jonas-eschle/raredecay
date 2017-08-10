@@ -34,11 +34,11 @@ Want to test whether your reweighting did overfit? Use train\_similar:
 
 .. code:: python
 
-    from raredecay.tools.data_storage import HEPDataStorage  
-    from raredecay.tools.metrics import train_similar  
+    from raredecay.data import HEPDataStorage
+    from raredecay.score import train_similar
 
-    mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
-    real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
+    mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)
+    real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)
 
     score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
 
@@ -60,13 +60,22 @@ The API as well as the documentation:
 Setup and installation
 ----------------------
 
-The package, in its current state, requires root\_numpy as well as
-rootpy (and therefore a ROOT installation with python-bindings) to be
-installed on your system. If that is not the case, some functions won't
-work and you should install it with the --no-dependencies flag and
-install the other requirements by hand.
+Depending on which functionality you want to use, you may consider different installations.
 
-First install the very newest version of REP (the -U can be omitted, but
+
+
+Everything (reweighting incl. scoring, machine learning, ROOT bindings)
+#######################################################################
+Follow the instructions for each dependency separately and then install
+raredecay via
+
+::
+
+    pip install raredecay[all]
+
+Machine learning, advanced scores
+#################################
+First install the following version of REP (the -U can be omitted, but
 is recommended to have the newest dependencies, on the other hand may
 crashes REPs reproducibility):
 
@@ -74,8 +83,17 @@ crashes REPs reproducibility):
 
     pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 
+Then install the package via
+
+::
+
+    pip install -U raredecay[ml]
+
+Reweighting (without scoring)
+#############################
+
 To install the newest version of hep\_ml containing the
-loss-regularization:
+loss-regularization (recommended, but optional).
 
 ::
 

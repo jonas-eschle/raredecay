@@ -37,6 +37,7 @@ extras_require_tmp = {
                            'rootpy'],
                  'reweight': ['hep_ml>= 0.4'],
                   'ml': [
+                         'git+git://github.com/arogozhnikov/hep_ml.git',
                         'rep>=0.6.6',
                          'scikit-learn>=0.18.1']
 

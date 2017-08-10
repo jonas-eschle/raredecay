@@ -1,5 +1,6 @@
-seaborn
+seaborn>=0.7.0
 pandas
 numpy
 matplotlib
+future
 
