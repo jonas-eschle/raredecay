@@ -11,6 +11,8 @@ python:
 #  - os: osx
 #    language: generic
 
+cache: pip
+
 before_install:
 
 #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
