@@ -92,7 +92,8 @@ install:
 - pip install .[all]
 script:
 
-- coverage run -m unittest discover;
+- python -m unittest discover
+
 
 after_success:
  - coveralls
