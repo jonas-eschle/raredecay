@@ -34,9 +34,8 @@ except ImportError as err:  # noqa
 
 # Python 2 backwards compatibility overhead END
 
-RUN_NAME = 'Classifier optimization'
-run_message = str("This could be your advertisement" +
-                  " ")
+RUN_NAME = 'Default run name'
+run_message = str("Default run message")
 
 OUTPUT_CFG = dict(
         run_name=RUN_NAME,
