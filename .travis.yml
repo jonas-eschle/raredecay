@@ -91,12 +91,8 @@ install:
 # - pip install .[root] --no-dependencies
 - pip install .[all]
 script:
-- if [[ "$MAYOU_PYTHON_VERSION" < 3 ]]; then
-      coverage run -m unittest discover;
-    elif [[ "$MAYOU_PYTHON_VERSION" -ge 3 ]]; then
-      coverage python -m unittest discover;
-  fi
 
+- coverage run -m unittest discover;
 
 after_success:
  - coveralls
