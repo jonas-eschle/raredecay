@@ -51,7 +51,6 @@ before_install:
 - export PATH="$HOME/anaconda/bin:$PATH"
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
-- conda update -q conda
 - conda update conda -y
 - conda update anaconda -y
 
