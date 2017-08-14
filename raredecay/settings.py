@@ -107,8 +107,12 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     logger_file_level = dev_tool.entries_to_str(logger_file_level)
 
     if no_interactive_plots:
-        import matplotlib as mpl
-        mpl.use("pdf")
+        # import matplotlib as mpl
+        #
+        # mpl.use("pdf")
+        import matplotlib.pyplot as plt
+
+        plt.switch_backend("pdf")
 
     set_verbosity(verbosity=verbosity, plot_verbosity=plot_verbosity)
     _init_user_input(prompt_for_input=prompt_for_input)

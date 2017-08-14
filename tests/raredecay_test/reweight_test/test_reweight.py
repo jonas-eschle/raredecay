@@ -25,15 +25,15 @@ import numpy.testing as nptest
 import pandas as pd
 import pandas.util.testing as pdtest
 
-import raredecay as rd
-import raredecay.settings
+#import raredecay as rd
 
-rd.settings.set_random_seed(42)
 from raredecay.tools.data_storage import HEPDataStorage
 from raredecay.analysis.compatibility_reweight import reweight as reweight_old
 from raredecay.analysis.reweight import reweight as reweight_new, reweight_kfold
 from raredecay.analysis.ml_analysis import reweight_Kfold
 import raredecay.settings
+
+raredecay.settings.set_random_seed(42)
 
 out = raredecay.settings.initialize(run_name="test reweighting",
                                     no_interactive_plots=True, n_cpu=-2)
