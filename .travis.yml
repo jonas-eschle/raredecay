@@ -64,13 +64,14 @@ before_install:
 
 # install test environment
 - conda install -y coverage
+- conda install -y future
 - pip install coveralls
-- pip install future
+#- pip install future
 
 install:
 
 #- conda install matplotlib scipy numpy -y
-#- conda install root-numpy rootpy -y
+- conda install root_numpy rootpy -y
 #- pip install rootpy root_numpy
 #- conda install py-xgboost -y
 - pip install xgboost
@@ -92,7 +93,7 @@ install:
 script:
 
 - python -m unittest discover
-
+- coverage run -m unittest discover
 
 after_success:
  - coveralls
