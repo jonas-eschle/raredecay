@@ -13,9 +13,9 @@ python:
 
 cache: pip
 
-matrix:
-  allow_failures:
-  - python: '2.7'
+#matrix:
+#  allow_failures:
+#  - python: '2.7'
 
 addons:
   apt:
