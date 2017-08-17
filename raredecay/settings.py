@@ -110,6 +110,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
         # import matplotlib as mpl
         #
         # mpl.use("pdf")
+
         import matplotlib.pyplot as plt
 
         plt.switch_backend("pdf")
