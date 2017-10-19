@@ -48,42 +48,42 @@ before_install:
 #        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O anaconda.sh;
 
 
-- bash anaconda.sh -b -p $HOME/anaconda
+- bash anaconda.sh -b -p $HOME/anaconda > tmp.txt && echo "alive"
 - export PATH="$HOME/anaconda/bin:$PATH"
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
-- conda update conda -y
-- conda update anaconda -y
+#- conda update conda -y
+#- conda update anaconda -y
 
 - conda info -a
 
 - conda config --add channels https://conda.anaconda.org/NLeSC
 #- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
 
-- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6
+- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6 > tmp.txt && echo "alive"
 - source activate raredecay-env
 
 # install test environment
-- conda install -y coverage
-- conda install -y future
-- pip install coveralls
+- conda install -y coverage > tmp.txt && echo "alive"
+- conda install -y future > tmp.txt && echo "alive"
+- pip install coveralls > tmp.txt && echo "alive"
 #- pip install future
 
 install:
 
 #- conda install matplotlib scipy numpy -y
-- conda install root_numpy rootpy -y
+- conda install root_numpy rootpy -y > tmp.txt && echo "alive"
 #- pip install rootpy root_numpy
 #- conda install py-xgboost -y
-- pip install xgboost
+- pip install xgboost > tmp.txt && echo "alive"
 #- pip install root_pandas
 #- pip install -U xgboost
 
 
 
-- pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
-- pip install rep
-- pip install -r requirements.txt
+- pip install -r https://github.com/yandex/rep/raw/master/requirements.txt > tmp.txt && echo "alive"
+- pip install rep > tmp.txt && echo "alive"
+- pip install -r requirements.txt > tmp.txt && echo "alive"
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 - pip install -U git+https://github.com/arogozhnikov/hep_ml.git
 - pip install -U xgboost
