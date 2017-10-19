@@ -3,7 +3,7 @@ import copy
 import raredecay.analysis
 
 
-def reweight(apply_data, real_data=None, mc_data=None, columns=None,
+def reweight(apply_data=None, real_data=None, mc_data=None, columns=None,
              reweighter='gb', reweight_cfg=None, n_reweights=1,
              apply_weights=True):
     """(Train a reweighter and) apply the reweighter to get new weights.
@@ -84,21 +84,24 @@ def reweight(apply_data, real_data=None, mc_data=None, columns=None,
         else:
             new_reweighter_list = new_reweighter
 
-        tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
-                                                                   reweighter_trained=new_reweighter,
-                                                                   columns=columns, add_weights=False)
-        if run == 0:
-            new_weights = tmp_weights
-        else:
-            new_weights += tmp_weights
 
-    new_weights /= n_reweights
-    # TODO: remove below?
-    new_weights.sort_index()
+        if apply_data:
+            tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
+                                                                       reweighter_trained=new_reweighter,
+                                                                       columns=columns, add_weights=False)
+            if run == 0:
+                new_weights = tmp_weights
+            else:
+                new_weights += tmp_weights
 
-    if apply_weights:
-        apply_data.set_weights(new_weights)
-    output['weights'] = new_weights
+    if apply_data:
+        new_weights /= n_reweights
+        # TODO: remove below?
+        new_weights.sort_index()
+
+        if apply_weights:
+            apply_data.set_weights(new_weights)
+        output['weights'] = new_weights
     output['reweighter'] = new_reweighter_list
 
     return output
