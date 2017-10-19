@@ -12,6 +12,7 @@ python:
 #    language: generic
 
 cache: pip
+sudo: required
 
 #matrix:
 #  allow_failures:
@@ -107,3 +108,5 @@ deploy:
   on:
     branch: master
     condition: $TRAVIS_PYTHON_VERSION = "3.4" && $TRAVIS_OS_NAME = "linux"
+
+
