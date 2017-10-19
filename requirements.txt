@@ -3,4 +3,4 @@ pandas
 numpy
 matplotlib
 future
-
+hep_ml>=0.5.0
