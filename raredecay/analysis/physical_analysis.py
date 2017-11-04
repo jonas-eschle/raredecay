@@ -4,51 +4,61 @@ Created on Sat Mar 26 16:49:45 2016
 
 @author: Jonas Eschle "Mayou36"
 
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
+
 This module provides high-level function, which often contain an essential
 part of a complete MVA. The functions are sometimes quite verbous, both
 in plotting as well as in printing, but always also return the important
 values.
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
-import sys
-import warnings
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import raredecay.analysis.ml_analysis
-import raredecay.analysis.reweight
-import raredecay.meta_config
+import sys  # noqa
+import warnings  # noqa
+from builtins import (int,  # noqa
+                      range, str, zip,
+                      )  # noqa
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
+import raredecay.meta_config  # noqa
+import raredecay.tools.ml_scores
 
-    install_aliases()
-    from past.builtins import basestring
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        basestring = str
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
+    from future.standard_library import install_aliases  # noqa
 
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
 # Python 2 backwards compatibility overhead END
 
 import copy
 
-import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
 from raredecay.tools import dev_tool
+
+# legacy
+from raredecay.analysis.compatibility_reweight import reweight
 
 
 def _cut(data):
@@ -97,7 +107,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
             temp = data_tools.apply_cuts(sig, bkg, per, bkg_length=bkg_length)
             limits.append(temp[0])
             rejection.append(temp[1])
-        #        limits, rejection = pool.map(_cut, data)
+        # limits, rejection = pool.map(_cut, data)
         i_max_rej = np.argmax(rejection)
         max_rejection = np.max(rejection)
         column, limits = columns[i_max_rej], limits[i_max_rej]
@@ -124,7 +134,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
         bkg_data = bkg_data[cuts]
         print("We used " + column)
 
-    #    signal_data.hist(bins=30)
+    # signal_data.hist(bins=30)
     #    bkg_data.hist(bins=30)
 
     signal_len_cut = len(np.array(signal_data.as_matrix()[:, 0]))
@@ -184,8 +194,6 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         and more.
 
     """
-    import raredecay.analysis.ml_analysis as ml_ana
-
     features = dev_tool.entries_to_str(features)
     clf = dev_tool.entries_to_str(clf)
     roc_auc = dev_tool.entries_to_str(roc_auc)
@@ -355,7 +363,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                                            sample_weight=pred_tmp['weights'])
             best_index = np.argmax(best_metric)
             output = {'best_threshold_cut': best_cut[best_index],
-                      'best_metric': best_metric[best_index]}
+                      'best_metric': best_metric[best_index]
+                      }
 
     # predict to all data
     if predict:
@@ -405,7 +414,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
             if root_dict['selection'] is not None:
                 raise ValueError(
-                    "Cannot save predictions to root as selections have been applied in the script")
+                        "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
@@ -416,7 +425,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
             if root_dict['selection'] is not None:
                 raise ValueError(
-                    "Cannot save predictions to root as selections have been applied in the script")
+                        "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
@@ -472,106 +481,8 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
                         filename, "because it already exists and overwrite is set to false"],
                        obj_separator=" ")
 
+
 # OLD
-def reweight(apply_data, real_data=None, mc_data=None, columns=None,
-             reweighter='gb', reweight_cfg=None, n_reweights=1,
-             apply_weights=True):
-    """(Train a reweighter and) apply the reweighter to get new weights.
-
-    Train a reweighter from the real data and the corresponding MC differences.
-    Then, try to correct the apply data (MC as well) the same as the first
-    MC would have been corrected to look like its real counterpart.
-
-    Parameters
-    ----------
-    apply_data : |hepds_type|
-        The data which shall be corrected
-    real_data : |hepds_type|
-        The real data to train the reweighter on
-    mc_data : |hepds_type|
-        The MC data to train the reweighter on
-    columns : list(str, str, str,...)
-        The branches to use for the reweighting process.
-    reweighter : {'gb', 'bins'} or trained hep_ml-reweighter (also pickled)
-        Either a string specifying which reweighter to use or an already
-        trained reweighter from the hep_ml-package. The reweighter can also
-        be a file-path (str) to a pickled reweighter.
-    reweight_cfg : dict
-        A dict containing all the keywords and values you want to specify as
-        parameters to the reweighter.
-    n_reweights : int
-        To get more stable weights, the mean of each weight over many
-        reweighting runs (training and predicting) can be used. The
-        n_reweights specifies how many runs to do.
-    apply_weights : boolean
-        If True, the weights will be added to the data directly, therefore
-        the data-storage will be modified.
-
-    Return
-    ------
-    out : dict
-        Return a dict containing the weights as well as the reweighter.
-        The keywords are:
-
-        - *reweighter* : The trained reweighter
-        - *weights* : pandas Series containing the new weights of the data.
-
-    """
-    import raredecay.analysis.ml_analysis as ml_ana
-
-    #    from raredecay.globals_ import out
-    from raredecay.tools import data_tools
-
-    output = {}
-    reweighter_list = False
-    new_reweighter_list = []
-
-    reweighter = data_tools.try_unpickle(reweighter)
-
-    if isinstance(reweighter, list):
-        n_reweights = len(reweighter)
-        reweighter_list = copy.deepcopy(reweighter)
-
-    for run in range(n_reweights):
-        if reweighter_list:
-            reweighter = reweighter_list[run]
-        reweighter = data_tools.try_unpickle(reweighter)
-        if reweighter in ('gb', 'bins'):
-            new_reweighter = raredecay.analysis.reweight.reweight_train(mc=mc_data, real=real_data,
-                                                                        columns=columns,
-                                                                        reweighter=reweighter,
-                                                                        reweight_cfg=reweight_cfg)
-            # TODO: hack which adds columns, good idea?
-            assert not hasattr(new_reweighter,
-                               'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
-            new_reweighter.columns = data_tools.to_list(columns)
-
-        else:
-            new_reweighter = reweighter
-
-        if n_reweights > 1:
-            new_reweighter_list.append(new_reweighter)
-        else:
-            new_reweighter_list = new_reweighter
-
-        tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
-                                                                   reweighter_trained=new_reweighter,
-                                                                   columns=columns, add_weights=False)
-        if run == 0:
-            new_weights = tmp_weights
-        else:
-            new_weights += tmp_weights
-
-    new_weights /= n_reweights
-    # TODO: remove below?
-    new_weights.sort_index()
-
-    if apply_weights:
-        apply_data.set_weights(new_weights)
-    output['weights'] = new_weights
-    output['reweighter'] = new_reweighter_list
-
-    return output
 
 
 def reweightCV(real_data, mc_data, columns=None, n_folds=10,
@@ -691,7 +602,6 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     """
     import numpy as np
 
-    import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
     from raredecay.globals_ import out
 
@@ -707,14 +617,14 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     #    if not apply_weights:
     old_weights = mc_data.get_weights()
     # make sure the targets are set the right way TODO
-    Kfold_output = raredecay.analysis.ml_analysis.reweight_Kfold(mc_data=mc_data, real_data=real_data,
-                                                                 meta_cfg=reweight_cfg, columns=columns,
-                                                                 reweighter=reweighter,
-                                                                 n_reweights=n_reweights,
-                                                                 mcreweighted_as_real_score=scoring,
-                                                                 score_columns=score_columns,
-                                                                 n_folds=n_folds, score_clf=score_clf,
-                                                                 add_weights_to_data=True)
+    Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
+                                         meta_cfg=reweight_cfg, columns=columns,
+                                         reweighter=reweighter,
+                                         n_reweights=n_reweights,
+                                         mcreweighted_as_real_score=scoring,
+                                         score_columns=score_columns,
+                                         n_folds=n_folds, score_clf=score_clf,
+                                         add_weights_to_data=True)
     new_weights = Kfold_output.pop('weights')
     # TODO: needed below?
     new_weights.sort_index()
@@ -732,10 +642,12 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # test_predictions is an additional score I tried but so far I is not
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
-        scores = metrics.train_similar_new(mc=mc_data, real=real_data, test_max=True,
-                                           n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                           columns=score_columns, old_mc_weights=old_weights,
-                                           clf=score_clf)
+        scores = raredecay.tools.ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
+                                                             n_folds=n_folds_scoring,
+                                                             n_checks=n_folds_scoring,
+                                                             columns=score_columns,
+                                                             old_mc_weights=old_weights,
+                                                             clf=score_clf)
 
         # scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
         #                                n_folds=n_folds_scoring, n_checks=n_folds_scoring,
@@ -777,8 +689,9 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
 
         if mayou_score:
-            metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
-                                clf=score_clf, old_mc_weights=old_weights)
+            raredecay.tools.ml_scores.mayou_score(mc_data=mc_data, real_data=real_data,
+                                                  n_folds=n_folds_scoring,
+                                                  clf=score_clf, old_mc_weights=old_weights)
             # an example to add output with the most importand parameters. The first
             # one can also be a single object instead of a list. do_print means
             # printing it also to the console instead of only saving it to the output
@@ -821,24 +734,23 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
     return output
 
-
 # temporary:
-if __name__ == '__main__':
-    import pandas as pd
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    from raredecay.tools.data_storage import HEPDataStorage
-
-    n_cols = 7
-    cols = [str(i) for i in range(n_cols)]
-    a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
-    a = HEPDataStorage(a, target=1, )
-    b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
-    b = HEPDataStorage(b, target=0)
-
-    #    feature_exploration(a, b, n_folds=3, roc_auc='all')
-
-
-
-    plt.show()
+# if __name__ == '__main__':
+#     import pandas as pd
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+#
+#     from raredecay.tools.data_storage import HEPDataStorage
+#
+#     n_cols = 7
+#     cols = [str(i) for i in range(n_cols)]
+#     a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
+#     a = HEPDataStorage(a, target=1, )
+#     b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
+#     b = HEPDataStorage(b, target=0)
+#
+#     #    feature_exploration(a, b, n_folds=3, roc_auc='all')
+#
+#
+#
+#     plt.show()

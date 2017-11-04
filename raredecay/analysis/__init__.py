@@ -1,9 +1,18 @@
+"""
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+"""
+
 # init of package analysis
 
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+                      open, pow, range, round, str, super, zip,
+                      )
 
 
 

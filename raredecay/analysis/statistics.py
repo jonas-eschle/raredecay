@@ -1,55 +1,73 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct 20 20:00:33 2016
-
 @author: Jonas Eschle 'Mayou36'
 
 This modul contains several tools like fits.
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
-import sys
-import warnings
-import raredecay.meta_config
-import raredecay.config as cfg
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
+import sys  # noqa
+import warnings  # noqa
+import raredecay.meta_config  # noqa
+import raredecay.config as cfg  # noqa
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
+    from future.standard_library import install_aliases  # noqa
 
-    install_aliases()
-    from past.builtins import basestring
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        basestring = str
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
 
 # Python 2 backwards compatibility overhead END
 
 import numpy as np
 
-from raredecay.globals_ import out
+# from raredecay.globals_ import out
 
 import raredecay.meta_config as meta_cfg
 from raredecay.tools import dev_tool
 
-import matplotlib.pyplot as plt
 
+# import matplotlib.pyplot as plt
 
 
 def ks_2samp_ds(data1, data2, column):
-    ks_2samp_ds.__doc__ = ks_2samp.__doc__
+    """
+    Parameters
+    ----------
+    data1 : |hepds_type|
+        Data set one for the 2sample test
+    data2 : |hepds_type|
+        Data set two for the 2sample test
+    column : str
+        Which column to use. Has to be the same name in both data sets
 
+    Returns
+    -------
+    numeric
+        Return the K-S two sample test hypothesis score.
+    """
     # Python 2/3 compatibility, str
     column = str(column)
 
@@ -115,6 +133,9 @@ def ks_2samp(data1, data2, weights1=None, weights2=None):
     return np.max(np.abs(cdf1we - cdf2we))
 
 
+ks_2samp_ds.__doc__ = ks_2samp.__doc__.split("Parameter", 1)[0] + ks_2samp_ds.__doc__
+
+
 def ad_2samp(data1, data2, column):
     # Python 2/3 compatibility, str
     column = str(column)
@@ -156,6 +177,8 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         The data containing the variable to fit to
     column : str
         The name of the column to fit the pdf to
+    x : RooRealVar
+        The RooRealVar to fit to.
     sig_pdf : RooFit pdf
         The signal Probability Density Function. The variable to fit to has
         to be named 'x'.
@@ -274,13 +297,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
             blind_n_sig = n_sig
 
         print("n_sig value " + str(n_sig.getVal()))
-    # raw_input("blind value " + str(blind_n_sig.getVal()))
-
-    #        n_sig = blind_n_sig
-
-
 
     # END BLINDING
+
     elif n_sig >= 0:
         n_sig = RooRealVar("n_sig", "Number of signal events", int(n_sig))
     else:
@@ -430,7 +449,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
             #            frame_tmp.SetTitle("significance")
 
-            frame_tmp.SetTitle("Roofit\ pulls\ " + data_name)
+            frame_tmp.SetTitle(r"Roofit\ pulls\ " + data_name)
             frame_tmp.addObject(x_frame_pullhist)
 
             frame_tmp.SetMinimum(-5)
@@ -506,13 +525,13 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 def pull_hist(pull_frame, pad_data, pad_pulls):
     """Add pulls into the current pad."""
 
-    import ROOT
-    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
-    from ROOT import RooFit, RooCBShape, RooExponential
-    from ROOT import RooGaussian, RooMinuit
-    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
-    from root_numpy import array2tree
-    from ROOT import RooCategory, RooUnblindPrecision
+    # import ROOT
+    # from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    # from ROOT import RooFit, RooCBShape, RooExponential
+    # from ROOT import RooGaussian, RooMinuit
+    # from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    # from root_numpy import array2tree
+    # from ROOT import RooCategory, RooUnblindPrecision
 
     pad_data.cd()
     dataHist = pull_frame.getHist("datahistogram")
@@ -577,7 +596,6 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
         raise TypeError("predict_col and/or fit_col is not a string but has to be.")
 
     scores = []
-    debug1 = []
     for cut in cuts:
 
         if plot_importance > 2:
@@ -628,10 +646,10 @@ if __name__ == '__main__':
 
     #    np.random.seed(40)
 
-    #    mode = "fit"
+    mode = "fit"
     #    mode = 'fit_metric'
     #    mode = "sPlot"
-    mode = 'ks'
+    #    mode = 'ks'
 
     # create signal pdf BEGIN
     lower_bound = 4800
@@ -664,7 +682,7 @@ if __name__ == '__main__':
     bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
     # create bkg-pdf END
 
-    n_sig = 2500
+    n_sig = 25000
 
     data = pd.DataFrame(np.random.normal(loc=5280, scale=37, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
     #    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
@@ -681,8 +699,8 @@ if __name__ == '__main__':
     if mode == 'fit':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
                               bkg_pdf=bkg_pdf,
-                              blind=False,
-                              #                                       blind=(5100, 5380),
+                              #                              blind=False,
+                              blind=(5100, 5380),
                               plot_importance=4,  # bkg_in_region=(5100, 5380)
                               )
         print(fit_result)
@@ -721,4 +739,4 @@ if __name__ == '__main__':
 
     plt.show()
 
-    print("finished")
+    input("Finished, press 'Enter' to close plots.")

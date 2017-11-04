@@ -1,4 +1,4 @@
-sudo: required
+#sudo: required
 os: linux
 language: python
 python:
@@ -11,7 +11,24 @@ python:
 #  - os: osx
 #    language: generic
 
+cache: pip
+sudo: required
+
+#matrix:
+#  allow_failures:
+#  - python: '2.7'
+
+addons:
+  apt:
+    packages:
+    - libatlas-dev
+    - libatlas-base-dev
+    - liblapack-dev
+    - gfortran
+
 before_install:
+
+
 
 #- if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
 #  sudo apt-get -qq update;
@@ -30,49 +47,55 @@ before_install:
 #        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O anaconda.sh;
 #        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O anaconda.sh;
 
-  
-- bash anaconda.sh -b -p $HOME/anaconda
+
+- bash anaconda.sh -b -p $HOME/anaconda > tmp.txt && echo "alive"
 - export PATH="$HOME/anaconda/bin:$PATH"
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
-- conda update -q conda
-- conda update conda -y
-- conda update anaconda -y
+#- conda update conda -y
+#- conda update anaconda -y
 
 - conda info -a
 
 - conda config --add channels https://conda.anaconda.org/NLeSC
 #- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
 
-- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6
+- conda create -q --name=raredecay-env python=$MAYOU_PYTHON_VERSION root=6 > tmp.txt && echo "alive"
 - source activate raredecay-env
 
 # install test environment
-- conda install -y coverage
-- pip install coveralls
-- pip install future
+- conda install -y coverage > tmp.txt && echo "alive"
+- conda install -y future > tmp.txt && echo "alive"
+- pip install coveralls > tmp.txt && echo "alive"
+#- pip install future
 
 install:
 
-- conda install matplotlib scipy numpy -y
-#- conda install root-numpy rootpy -y
-- pip install rootpy root_numpy 
+#- conda install matplotlib scipy numpy -y
+- conda install root_numpy rootpy -y > tmp.txt && echo "alive"
+#- pip install rootpy root_numpy
 #- conda install py-xgboost -y
-- pip install xgboost
-- pip install root_pandas
+- pip install xgboost > tmp.txt && echo "alive"
+- pip uninstall theano
+- conda install theano -y
+#- pip install root_pandas
 #- pip install -U xgboost
 
-- pip install -r https://github.com/yandex/rep/raw/master/requirements.txt
-- pip install rep
-- pip install -U -r requirements.txt
+
+
+- pip install -r https://github.com/yandex/rep/raw/master/requirements.txt > tmp.txt && echo "alive"
+- pip install rep > tmp.txt && echo "alive"
+- pip install -r requirements.txt > tmp.txt && echo "alive"
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 - pip install -U git+https://github.com/arogozhnikov/hep_ml.git
 - pip install -U xgboost
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
-- pip install .[root]
+- pip install .[all]
 script:
+
+#- python -m unittest discover
 - coverage run -m unittest discover
 
 after_success:
@@ -87,3 +110,5 @@ deploy:
   on:
     branch: master
     condition: $TRAVIS_PYTHON_VERSION = "3.4" && $TRAVIS_OS_NAME = "linux"
+
+

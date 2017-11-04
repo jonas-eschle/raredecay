@@ -4,6 +4,13 @@ Created on Sat Mar 26 11:29:01 2016
 
 @author: Jonas Eschle "Mayou36"
 
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
+
 The Machine Learning Analysis module consists of machine-learning functions
 which are mostly wrappers around already existing algorithms.
 
@@ -15,34 +22,34 @@ times for the simple tasks.
 The functions serve as basic tools, which do already a lot of the work.
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 
-import sys
-import warnings
+import sys  # noqa
+import warnings  # noqa
+from builtins import (dict, int, range, round, str)  # noqa
 
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
+import raredecay.meta_config  # noqa
+from raredecay.analysis.compatibility_tools import _make_data  # noqa
 
-import raredecay.meta_config
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
+    from future.standard_library import install_aliases  # noqa
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-
-    install_aliases()
-    from past.builtins import basestring
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        basestring = str
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
 # Python 2 backwards compatibility overhead END
 
 
@@ -58,18 +65,16 @@ import matplotlib.pyplot as plt
 
 # scikit-learn imports
 from sklearn.base import BaseEstimator
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-from sklearn.ensemble import AdaBoostClassifier  # , VotingClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.neighbors import KNeighborsClassifier
 
-from sklearn.metrics import accuracy_score, classification_report  # recall_score,
+from sklearn.metrics import accuracy_score, classification_report
 
 # import Reproducible Experimental Platform
 from rep.data import LabeledDataStorage
 
 from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
-# from rep.estimators.theanets import TheanetsClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier
@@ -93,7 +98,7 @@ from raredecay.analysis import statistics
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 # raredecay backwards compatibility:
-from raredecay.analysis.reweight import reweight_train, reweight_weights
+from raredecay.analysis.reweight import reweight_train, reweight_weights, reweight
 
 
 def make_clf(clf, n_cpu=None, dict_only=False):
@@ -157,7 +162,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         - **n_cpus**: The number of cpus used in the classifier.
     """
     #: Currently implemented classifiers:
-    global n_cpu_clf
+    n_cpu_clf = 1
     __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
@@ -280,9 +285,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         # elif clf['clf_type'] == 'nn':
-        #     serial_clf = meta_cfg.use_gpu
-        #     clf['config'].update(dict(random_state=meta_cfg.randint()))
-        #     clf_tmp = TheanetsClassifier(**clf.get('config'))
+
 
         # assign classifier to output dict
         output['clf'] = clf_tmp
@@ -611,7 +614,7 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
     if features is None:
         features = original_data.columns
 
-    grid_param = {}
+    grid_param = OrderedDict()
     # parameters which are by their nature a list, e.g. nn-layers
     list_param = ['layers', 'trainers']
     for key, val in list(config_clf.items()):
@@ -990,7 +993,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
 def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
                     plot_importance=3):
-    """Find the best threshold cut for a given metric.
+    """Find the best threshold cut for a given metric. Does **NOT** integrate.
 
     Test the metric for every possible threshold cut and returns the highest
     value. Plots the metric versus cuts as well.
@@ -1047,235 +1050,11 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
 
     best_metric = np.nan_to_num(best_metric)
     best_index = np.argmax(best_metric)
-    output = {'best_threshold_cut': best_cut[best_index],
-              'best_metric': best_metric[best_index]}
+    output = {
+        'best_threshold_cut': best_cut[best_index],
+        'best_metric': best_metric[best_index]
+        }
 
-    return output
-
-
-if __name__ == "main":
-    print('test')
-
-
-def _make_data(original_data, target_data=None, features=None, target_from_data=False,
-               weights_ratio=0, weights_original=None, weights_target=None):
-    """Return the concatenated data, weights and labels for classifier training.
-
-     Differs to only *make_dataset* from the HEPDataStorage by providing the
-     possibility of using other weights.
-    """
-    # make temporary weights if specific weights are given as parameters
-    temp_ori_weights = None
-    temp_tar_weights = None
-    if not dev_tool.is_in_primitive(weights_original, None):
-        temp_ori_weights = original_data.weights
-        original_data.set_weights(weights_original)
-    if not dev_tool.is_in_primitive(weights_target, None):
-        temp_tar_weights = target_data.weights
-        target_data.set_weights(weights_target)
-
-    # create the data, target and weights
-    data_out = original_data.make_dataset(target_data, columns=features,
-                                          targets_from_data=target_from_data,
-                                          weights_ratio=weights_ratio)
-
-    # reassign weights if specific weights have been used
-    if not dev_tool.is_in_primitive(temp_ori_weights, None):
-        original_data.set_weights(temp_ori_weights)
-    if not dev_tool.is_in_primitive(temp_tar_weights, None):
-        original_data.set_weights(temp_tar_weights)
-
-    return data_out
-
-
-def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweighter_cfg=None, n_reweights=1,
-                   add_weights=True, normalize=True):
-    """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
-
-    .. warning::
-       Do NOT use for the real reweighting process! (except if you really want
-       to reweight the data "by itself")
-
-
-    If you want to figure out the hyper-parameters for a reweighting process
-    or just want to find out how good the reweighter works, you may want to
-    apply this to the data itself. This means:
-
-    - train a reweighter on mc/real
-    - apply it to get new weights for mc
-    - compare the mc/real distribution
-
-    The problem arises with biasing your reweighter. As in classification
-    tasks, where you split your data into train/test sets for Kfolds, you
-    want to do the same here. Therefore:
-
-    - split the mc data into (n_folds-1)/n_folds (training)
-    - train the reweighter on the training mc/complete real (if
-      mcreweighted_as_real_score is True, the real data will be folded too
-      for unbiasing the score)
-    - reweight the leftout mc test-fold
-    - do this n_folds times
-    - getting unbiased weights
-
-    The parameters are more or less the same as for the
-    :py:func:`~raredecay.analysis.ml_analysis.reweight_train` and
-    :py:func:`~raredecay.analysis.ml_analysis.reweight_weights`
-
-    Parameters
-    ----------
-    mc : |hepds_type|
-        The Monte-Carlo data, which has to be "fitted" to the real data.
-    real : |hepds_type|
-        Same as *mc_data* but for the real data.
-    columns : list of strings
-        The columns/features/branches you want to use for the reweighting.
-    n_folds : int >= 1
-        The number of folds to split the data. Usually, the more folds the
-        "better" the reweighting (especially for small datasets).
-        If n_folds = 1, the data will be reweighted directly and the benefit
-        of Kfolds and the unbiasing *disappears*
-
-    reweighter : {'gb', 'bins'}
-        Specify which reweighter to use.
-        - **gb**: GradientBoosted Reweighter from REP
-        - **bins**: Binned Reweighter from REP
-    reweighter_cfg : dict
-        Contains the parameters for the bins/gb-reweighter. See also
-        :func:`~hep_ml.reweight.BinsReweighter` and
-        :func:`~hep_ml.reweight.GBReweighter`.
-    n_reweights : int
-        As the reweighting often yields different weights depending on random
-        parameters like the splitting of the data, the new weights can be
-        produced by taking the average of the weights over many reweighting
-        runs. n_reweights is the number of reweight runs to average over.
-    add_weights : boolean
-        If True, the new weights will be added (in place) to the mc data and
-        returned. Otherwise, the weights will only be returned.
-
-    Return
-    ------
-    out : :py:class:`~pd.Series`
-        Return the new weights.
-
-    """
-
-    # Python 2/3 compatibility, str
-    columns = dev_tool.entries_to_str(columns)
-    reweighter = dev_tool.entries_to_str(reweighter)
-    reweighter_cfg = dev_tool.entries_to_str(reweighter_cfg)
-
-    normalize = 1 if normalize is True else normalize
-    output = {}
-    out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
-                   title="Reweighting Kfold", obj_separator="")
-    # create variables
-    assert n_folds >= 1 and isinstance(n_folds, int), \
-        "n_folds has to be >= 1, its currently" + str(n_folds)
-    assert isinstance(mc, data_storage.HEPDataStorage), \
-        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(mc))
-    assert isinstance(real, data_storage.HEPDataStorage), \
-        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(real))
-
-    new_weights_tot = pd.Series(np.zeros(len(mc)), index=mc.index)
-    # if mcreweighted_as_real_score:
-    #     scores = np.zeros(n_folds)
-    #     score_min = np.zeros(n_folds)
-    #     score_max = np.zeros(n_folds)
-    if not add_weights:
-        old_mc_tot_weights = mc.weights
-
-    for run in range(n_reweights):
-        new_weights_all = []
-        new_weights_index = []
-
-        # split data to folds and loop over them
-        mc.make_folds(n_folds=n_folds)
-        real.make_folds(n_folds=n_folds)
-        logger.info("Data created, starting folding of run " + str(run) +
-                    " of total " + str(n_reweights))
-
-        def do_reweighting(fold):
-            """
-            Inline loop for parallelization
-            Parameters
-            ----------
-            fold : int
-                Which fold
-
-            Returns
-            -------
-
-            """
-            # create train/test data
-            if n_folds > 1:
-                train_real, test_real = real.get_fold(fold)
-                train_mc, test_mc = mc.get_fold(fold)
-            else:
-                train_real = test_real = real
-                train_mc = test_mc = mc
-
-            # if mcreweighted_as_real_score:
-            #     old_mc_weights = test_mc.get_weights()
-
-            # plot the first fold as example (the first one surely exists)
-            plot_importance1 = 2 if fold == 0 else 1
-            if n_folds > 1 and plot_importance1 > 1 and run == 0:
-                train_real.plot(figure="Reweighter trainer, example, fold " + str(fold),
-                                importance=plot_importance1)
-                train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold),
-                              importance=plot_importance1)
-
-            # train reweighter on training data
-            reweighter_trained = reweight_train(mc=train_mc, real=train_real, columns=columns,
-                                                reweighter=reweighter, reweight_cfg=reweighter_cfg)
-            logger.info("reweighting fold " + str(fold) + "finished of run" + str(run))
-
-            new_weights = reweight_weights(apply_data=test_mc, reweighter_trained=reweighter_trained,
-                                           columns=columns, add_weights=True)  # fold only, not full data
-            # plot one for example of the new weights
-            logger.debug("Maximum of weights " + str(max(new_weights)) +
-                         " of fold " + str(fold) + " of run " + str(run))
-            if (n_folds > 1 and plot_importance1 > 1) or max(new_weights) > 50:
-                out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
-                plt.hist(new_weights, bins=40, log=True)
-
-            return (new_weights, test_mc.get_index())
-
-        weights_and_indexes = map(do_reweighting, range(n_folds))
-
-        for w, i in weights_and_indexes:
-            new_weights_all.append(w)
-            new_weights_index.append(i)
-
-        if n_folds == 1:
-            new_weights_all = np.array(new_weights_all)
-            new_weights_index = np.array(new_weights_index)
-        else:
-            new_weights_all = np.concatenate(new_weights_all)
-            new_weights_index = np.concatenate(new_weights_index)
-        new_weights_tot += pd.Series(new_weights_all, index=new_weights_index)
-        logger.debug("Maximum of accumulated weights: " + str(max(new_weights_tot)))
-
-        out.save_fig(figure="New weights of run " + str(run), importance=3)
-        hack_array = np.array(new_weights_all)
-        plt.hist(hack_array, bins=30, log=True)
-        plt.title("New weights of reweighting at end of run " + str(run))
-
-    # after for loop for weights creation
-    new_weights_tot /= n_reweights
-
-    if add_weights:
-        mc.set_weights(new_weights_tot)
-    else:
-        mc.set_weights(old_mc_tot_weights)
-
-    out.save_fig(figure="New weights of total mc", importance=4)
-    plt.hist(new_weights_tot, bins=30, log=True)
-    plt.title("New weights of reweighting with Kfold")
-
-    if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
-        new_weights_tot *= new_weights_tot.size / new_weights_tot.sum() * normalize
-    output['weights'] = new_weights_tot
     return output
 
 
@@ -1411,6 +1190,8 @@ def mcreweighted_as_real(mc, real, old_mc_weights=1, columns=None, n_folds=10, c
 
 # collect all the new weights to get a really cross-validated reweighted dataset
 
+# COMPATIBILITY LAYER START
+# OLD FUNCTION, DEPRECEATED
 def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
                    reweighter='gb', meta_cfg=None, n_reweights=1,
                    score_columns=None, score_clf='xgb',
@@ -1521,6 +1302,9 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
     meta_cfg = dev_tool.entries_to_str(meta_cfg)
     score_columns = dev_tool.entries_to_str(score_columns)
     score_clf = dev_tool.entries_to_str(score_clf)
+
+    warnings.warn(DeprecationWarning, "Do not use this function anymore."
+                                      "Rather use reweighting_kfold (small 'k') from rd.reweight.")
 
     output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],

@@ -1,37 +1,45 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Mar 29 17:53:18 2016
 
 @author: Jonas Eschle "Mayou36"
+
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
 
 Contains several tools to convert, load, save and plot data
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
-                      open, pow, range, round, str, super, zip)
-import sys
-import warnings
-import raredecay.meta_config
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
+import sys  # noqa
+import warnings  # noqa
+import raredecay.meta_config  # noqa
 
-try:
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,
-                                          reduce, reload, unicode, xrange, StandardError)
-    from future.standard_library import install_aliases
-    install_aliases()
-    from past.builtins import basestring
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:
-            raredecay.meta_config.warning_occured()
-            warnings.warn("Module future is not imported, error is suppressed. This means "
-                          "Python 3 code is run under 2.7, which can cause unpredictable"
-                          "errors. Best install the future package.", RuntimeWarning)
-        else:
-            raise err
-    else:
-        basestring = str
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
+    from future.standard_library import install_aliases  # noqa
+
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
 
 # Python 2 backwards compatibility overhead END
 
@@ -133,7 +141,6 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     new_branch = dev_tool.entries_to_str(new_branch)
     branch_name = dev_tool.entries_to_str(branch_name)
 
-    from ROOT import TObject
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
     write_mode = 'update'
@@ -254,8 +261,8 @@ def is_root(data_to_check):
     data_to_check = dev_tool.entries_to_str(data_to_check)
     if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
-#        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
-#                                            str(data_to_check) + "is not a string")
+        #        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
+        #                                            str(data_to_check) + "is not a string")
         if path_name.endswith(meta_cfg.ROOT_DATATYPE):
             flag = True
     return flag
@@ -379,7 +386,8 @@ def to_pandas_old(data_in, index=None, columns=None):
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
         root_index = None
-        if root_index_name in root_numpy.list_branches(filename=data_in['filenames'], treename=data_in.get('treename')):
+        if root_index_name in root_numpy.list_branches(filename=data_in['filenames'],
+                                                       treename=data_in.get('treename')):
             root_index = root2array(filenames=data_in['filenames'], treename=data_in.get('treename'),
                                     selection=data_in.get('selection'), branches=root_index_name)
         data_in = root2array(**data_in)  # why **? it's a root dict
@@ -511,5 +519,3 @@ def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
         with open(extra_path + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
-
-
