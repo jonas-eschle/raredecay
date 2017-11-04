@@ -92,6 +92,7 @@ install:
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
+- ls
 - pip install .[all]
 script:
 
