@@ -21,8 +21,8 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # build docs
 
-subprocess.Popen("chmod u+x " + os.path.join(here, 'docs/make_docs.sh')
-subprocess.Popen("bash " + os.path.join(here, 'docs/make_docs.sh')
+subprocess.Popen("chmod u+x " + os.path.join(here, 'docs/make_docs.sh'))
+subprocess.Popen("bash " + os.path.join(here, 'docs/make_docs.sh'))
 
 with io.open(os.path.join(here, 'requirements.txt')) as f:
     requirements = f.read().split('\n')
