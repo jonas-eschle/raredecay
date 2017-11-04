@@ -76,6 +76,8 @@ install:
 #- pip install rootpy root_numpy
 #- conda install py-xgboost -y
 - pip install xgboost > tmp.txt && echo "alive"
+- pip uninstall theano
+- conda install theano -y
 #- pip install root_pandas
 #- pip install -U xgboost
 
