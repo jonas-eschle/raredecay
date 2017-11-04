@@ -87,7 +87,7 @@ install:
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 - pip install -U git+https://github.com/arogozhnikov/hep_ml.git
 - pip install -U xgboost
-- pip uninstall theano || echo theano not installed
+- pip uninstall theano -y || echo theano not installed
 - conda install theano -y
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
