@@ -160,10 +160,10 @@ def train_similar(mc_data, real_data, features=None, n_checks=10, n_folds=10,
 
     Parameters
     ----------
-    mc_data : HEPDataStorage
+    mc_data : |hepds_type|
         The reweighted Monte-Carlo data, assuming the new weights are applied
         already.
-    real_data : HEPDataStorage
+    real_data : |hepds_type|
         The real data
     n_checks : int >= 1
         Number of checks to perform. Has to be <= n_folds
@@ -414,10 +414,10 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
 
     Parameters
     ----------
-    mc : HEPDataStorage
+    mc : |hepds_type|
         The reweighted Monte-Carlo data, assuming the new weights are applied
         already.
-    real : HEPDataStorage
+    real : |hepds_type|
         The real data
     n_checks : int >= 1
         Number of checks to perform. Has to be <= n_folds

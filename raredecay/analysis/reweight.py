@@ -114,10 +114,10 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
         than data points.
     weights_mc : numpy.array [n_samples]
         Explicit weights for the Monte-Carlo data. Only specify if you don't
-        want to use the weights in the *HEPDataStorage*.
+        want to use the weights in the |hepds_type|.
     weights_real : numpy.array [n_samples]
         Explicit weights for the real data. Only specify if you don't
-        want to use the weights in the *HEPDataStorage*.
+        want to use the weights in the |hepds_type|.
 
     Returns
     -------
@@ -191,7 +191,8 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
     Can be seen as a wrapper for the
     :py:func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
     Additional functionality:
-     * Takes a trained reweighter as argument, but can also unpickle one
+
+    * Takes a trained reweighter as argument, but can also unpickle one
        from a file.
 
     Parameters
@@ -207,7 +208,7 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
         normalize.
     add_weights : boolean
         If set to False, the weights will only be returned and not updated in
-        the data (*HEPDataStorage*). If you want to use the data later on
+        the data (|hepds_type|). If you want to use the data later on
         in the script with the new weights, set this value to True.
 
     Returns

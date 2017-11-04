@@ -35,7 +35,7 @@ out : object of class :class:`~raredecay.tools.output.OutputHandler`
     .. note:: To ensure that you import the instance and to not make a copy,
       always import with an alias
 
-Variables:
+Variables
 ---------
 randint : int
     Many methods need random integers for their pseudo-random generator.

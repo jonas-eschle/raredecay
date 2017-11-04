@@ -100,7 +100,7 @@ class TestHEPDataStorageMixin(TestCase):
         return data, targets, weights
 
     def _generate_data(self, data, targets, weights):
-        """Return data file ready to be passed into HEPDataStorage and creating file if necessary
+        """Return data file ready to be passed into |hepds_type| and creating file if necessary
         OVERRIDE THIS METHOD (do not depend on the default base implementation)
         Returns
         -------
@@ -110,7 +110,7 @@ class TestHEPDataStorageMixin(TestCase):
         return copy.deepcopy(data), copy.deepcopy(targets), copy.deepcopy(weights)
 
     def _generate_data2(self, data, targets, weights):
-        """Return data file ready to be passed into HEPDataStorage and creating file if necessary
+        """Return data file ready to be passed into |hepds_type| and creating file if necessary
         OVERRIDE THIS METHOD (do not depend on the default base implementation)
         Returns
         -------

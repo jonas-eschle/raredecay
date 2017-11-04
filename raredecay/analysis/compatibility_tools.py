@@ -47,7 +47,7 @@ def _make_data(original_data, target_data=None, features=None, target_from_data=
                weights_ratio=0, weights_original=None, weights_target=None):
     """Return the concatenated data, weights and labels for classifier training.
 
-     Differs to only *make_dataset* from the HEPDataStorage by providing the
+     Differs to only *make_dataset* from the |hepds_type| by providing the
      possibility of using other weights.
     """
     # make temporary weights if specific weights are given as parameters

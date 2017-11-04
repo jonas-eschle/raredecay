@@ -18,7 +18,7 @@ Created on Fri Apr  1 15:32:17 2016
 
 The explanation to the variables is available as a comment behind each.
 
-Variables:
+Variables
 ---------
 run_config:
     It provides the right config module depending on what was chosen

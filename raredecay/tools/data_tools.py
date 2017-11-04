@@ -467,7 +467,7 @@ def adv_return(return_value, save_name=None):
     return_value : any python object
         The python object which should be pickled.
     save_name : str, None
-        | The (file-)name for the pickled file. File-extension will be added
+        | The (file-)name for the pickled file. File-extension will be added \
         automatically if specified in *raredecay.meta_config*.
         | If *None* is passed, the object won't be pickled.
 
@@ -489,8 +489,9 @@ def adv_return(return_value, save_name=None):
 
      >>> return adv_return(my_variable/my_object, save_name='my_object.pickle')
 
-      (*the .pickle ending is not required but added automatically if omitted*)
+     (*the .pickle ending is not required but added automatically if omitted*)
      which returns the value and saves it.
+
     """
     save_name = dev_tool.entries_to_str(save_name)
     if save_name not in (None, False):

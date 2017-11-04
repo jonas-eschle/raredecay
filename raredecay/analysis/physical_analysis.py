@@ -497,12 +497,12 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     similar the reweighted to the real one is). In order to get an unbiased
     reweighting, a KFolding procedure is applied:
 
-    - the reweighter is trained on n-1/nth of the data and predicts the
-      weights for the 1/n leftover. This is done n times resulting in unbiased
-      weights for the mc data.
+    - the reweighter is trained on n-1/nth of the data and predicts the weights for the 1/n leftover.
+    - This is done n times resulting in unbiased weights for the mc data.
 
     To know, how well the reweighter worked, different stategies can be used
     and are implemented, for further information also see: |reweightingCV_quality_measure_link|
+
     Parameters
     ----------
     real_data : |hepds_type|
@@ -579,7 +579,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         described above.
     score_clf : str or dict or clf
         The classifier to use for the scoring. For an overview of what can be
-        used, see :py:function:`~raredecay.analysis.ml_analysis.make_clf()`.
+        used, see :py:func:`~raredecay.analysis.ml_analysis.make_clf()`.
     mayou_score : boolean
         If True, the experimental *mayou_score* will be generated.
     extended_train_similar : boolean

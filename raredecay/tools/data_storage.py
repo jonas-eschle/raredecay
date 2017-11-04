@@ -23,8 +23,8 @@ import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                      reduce, reload, unicode, xrange, StandardError,
-                                      )  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -426,7 +426,7 @@ class HEPDataStorage(object):
             If a float is provided, the mean of the weights will be equal
             to *normalize*. So *True* and *1* will yield the same results.
         index : |index_type|
-            |index_docstring
+            |index_docstring|
 
         Return
         ------
@@ -765,8 +765,7 @@ class HEPDataStorage(object):
 
         Parameters
         ----------
-        second_storage : instance of
-        :py:class:`~raredecay.tools.data_storage.HEPDataStorage`
+        second_storage : |hepds_type|
             A second data-storage. If provided, the data/targets/weights
             will be concatenated and returned as one.
         index : |index_type|
@@ -855,8 +854,6 @@ class HEPDataStorage(object):
                         "Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio" +
                         " > 0, this case is not yet implemented. Please make an issue!")
 
-                #            weights_2 = second_storage.get_weights(index=index_2, normalize=normalize_2)
-
         weights = self.get_weights(normalize=weights_ratio, second_storage=second_storage)
 
         return data, targets, weights
@@ -929,15 +926,15 @@ class HEPDataStorage(object):
         return new_lds
 
     def make_folds(self, n_folds=10, shuffle=True):
-        """Create shuffled train-test folds which can be accessed via :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`.
+        """Create shuffled train-test folds which can be accessed via :py:meth:`~raredecay.data.HEPDataStorage.get_fold()`.
 
         Split the data into n folds (for usage in KFold validaten etc.).
         Then every fold consists of a train dataset, which consists of
         n-1/n part of the data and a test dataset, which consists of 1/n part
         of the whole data.
-        The folds will be created as *HEPDataStorage*.
+        The folds will be created as |hepds_type|.
         To get a certain fold (train-test pair), use
-        :py:meth:`~raredecay.tools.data_storage.HEPDataStorage.get_fold()`
+        :py:meth:`~raredecay.data.HEPDataStorage.get_fold()`
 
         Parameters
         ----------
@@ -966,7 +963,7 @@ class HEPDataStorage(object):
             self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
 
     def get_fold(self, fold):
-        """Return the specified fold: train and test data as instance of :py:class:`~raredecay.tools.data_storage.HEPDataStorage`.
+        """Return the specified fold: train and test data as instance of |hepds_type|.
 
         Parameters
         ----------
@@ -975,8 +972,8 @@ class HEPDataStorage(object):
 
         Return
         ------
-        out : tuple(HEPDataStorage, HEPDataStorage)
-            Return the *train* and the *test* data in a HEPDataStorage
+        out : tuple(|hepds_type|, |hepds_type|)
+            Return the *train* and the *test* data in a |hepds_type|
         """
         assert self._fold_index is not None, "Tried to get a fold but data has no folds." + \
                                              " First create them (make_folds())"
@@ -1018,7 +1015,7 @@ class HEPDataStorage(object):
 
         Parameters
         ----------
-        second_storage : HEPDataStorage or None
+        second_storage : |hepds_type| or None
             If a second data-storage is provided, the data will be merged and
             then the correlation will be calculated. Otherwise, only this
             datas correlation will be calculated and plotted.
@@ -1283,6 +1280,7 @@ class HEPDataStorage(object):
 # Docs
 # ==============================================================================
 data_storage_docstring = """
+
 .. |data_type| replace:: root-tree dict (:py:func:`~raredecay.tools.data_tools.make_root_dict`) or :py:class:`~pd.DataFrame`
 .. |sample_weights_type| replace:: :py:class:`~pd.Series` or :py:class:`~np.array`
     or int {1} or str/dict for root-trees (:py:func:`~raredecay.tools.data_tools.make_root_dict`)
@@ -1302,6 +1300,6 @@ data_storage_docstring = """
             The current_branch has to exist in the root-tree or DataFrame,
             the desired_name can be anything.
 """
-import sys
 
-sys.modules[__name__].__doc__ += data_storage_docstring
+HEPDataStorage.__doc__ += data_storage_docstring
+

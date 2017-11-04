@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Sep 27 16:45:51 2016
-
 Contain methods to change settings in the whole package
 
 @author: Jonas Eschle "Mayou36"

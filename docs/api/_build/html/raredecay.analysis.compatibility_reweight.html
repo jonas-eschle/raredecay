@@ -1,0 +1,286 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>compatibility_reweight &mdash; Raredecay 1.3.1 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Raredecay 1.3.1 documentation" href="index.html"/>
+        <link rel="up" title="analysis" href="raredecay.analysis.html"/>
+        <link rel="next" title="compatibility_tools" href="raredecay.analysis.compatibility_tools.html"/>
+        <link rel="prev" title="analysis" href="raredecay.analysis.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.3.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="raredecay.data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.score.html">score</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.stat.html">stat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.settings.html">settings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">DEPREC: Full (legacy) API raredecay</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.analysis.html">analysis</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">compatibility_reweight</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.compatibility_tools.html">compatibility_tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.ml_analysis.html">ml_analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.physical_analysis.html">physical_analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.reweight.html">reweight</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.statistics.html">statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.statistics_tmp.html">statistics_tmp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.data.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.globals_.html">globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.meta_config.html">meta_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.score.html">score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.stat.html">stat</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">DEPREC: Full (legacy) API raredecay</a> &raquo;</li>
+      
+          <li><a href="raredecay.analysis.html">analysis</a> &raquo;</li>
+      
+    <li>compatibility_reweight</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.analysis.compatibility_reweight.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.analysis.compatibility_reweight">
+<span id="compatibility-reweight"></span><h1>compatibility_reweight<a class="headerlink" href="#module-raredecay.analysis.compatibility_reweight" title="Permalink to this headline">¶</a></h1>
+<p>DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat</p>
+<p>DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!</p>
+<dl class="function">
+<dt id="raredecay.analysis.compatibility_reweight.reweight">
+<code class="descclassname">raredecay.analysis.compatibility_reweight.</code><code class="descname">reweight</code><span class="sig-paren">(</span><em>apply_data=None</em>, <em>real_data=None</em>, <em>mc_data=None</em>, <em>columns=None</em>, <em>reweighter='gb'</em>, <em>reweight_cfg=None</em>, <em>n_reweights=1</em>, <em>apply_weights=True</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/compatibility_reweight.html#reweight"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.compatibility_reweight.reweight" title="Permalink to this definition">¶</a></dt>
+<dd><p>(Train a reweighter and) apply the reweighter to get new weights.</p>
+<p>Train a reweighter from the real data and the corresponding MC differences.
+Then, try to correct the apply data (MC as well) the same as the first
+MC would have been corrected to look like its real counterpart.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>apply_data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The data which shall be corrected</li>
+<li><strong>real_data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The real data to train the reweighter on</li>
+<li><strong>mc_data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The MC data to train the reweighter on</li>
+<li><strong>columns</strong> (<em>list</em><em>(</em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>,</em><em>..</em><em>)</em><em></em>) &#8211; The branches to use for the reweighting process.</li>
+<li><strong>reweighter</strong> (<em>{'gb'</em><em>, </em><em>'bins'}</em><em> or </em><em>trained hep_ml-reweighter</em><em> (</em><em>also pickled</em><em>)</em><em></em>) &#8211; Either a string specifying which reweighter to use or an already
+trained reweighter from the hep_ml-package. The reweighter can also
+be a file-path (str) to a pickled reweighter.</li>
+<li><strong>reweight_cfg</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; A dict containing all the keywords and values you want to specify as
+parameters to the reweighter.</li>
+<li><strong>n_reweights</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; To get more stable weights, the mean of each weight over many
+reweighting runs (training and predicting) can be used. The
+n_reweights specifies how many runs to do.</li>
+<li><strong>apply_weights</strong> (<em>boolean</em>) &#8211; If True, the weights will be added to the data directly, therefore
+the data-storage will be modified.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>out</strong> &#8211; Return a dict containing the weights as well as the reweighter.
+The keywords are:</p>
+<ul class="simple">
+<li><em>reweighter</em> : The trained reweighter</li>
+<li><em>weights</em> : pandas Series containing the new weights of the data.</li>
+</ul>
+</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)">dict</a></p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.analysis.compatibility_tools.html" class="btn btn-neutral float-right" title="compatibility_tools" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.analysis.html" class="btn btn-neutral" title="analysis" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.3.1',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

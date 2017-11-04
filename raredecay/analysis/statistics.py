@@ -168,11 +168,12 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
              blind=False, nll_profile=False, second_storage=None, log_plot=False,
              pulls=True, sPlot=False,
              bkg_in_region=False, importance=3, plot_importance=3):
-    """Fit a given pdf to a variable distribution
+    """Fit a given pdf to a variable distribution.
 
+    A quite versatile function doing several things connected to fitting.
 
-    Parameter
-    ---------
+    Parameters
+    ----------
     data : |hepds_type|
         The data containing the variable to fit to
     column : str
@@ -563,7 +564,7 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
 
     Parameters
     ----------
-    data : HEPDataStorage
+    data : |hepds_type|
 
     predict_col : str
 

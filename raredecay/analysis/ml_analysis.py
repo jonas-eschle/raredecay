@@ -332,9 +332,9 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 
     Parameters
     ----------
-    original_data : HEPDataStorage
+    original_data : |hepds_type|
         The original data
-    target_data : HEPDataStorage
+    target_data : |hepds_type|
         The target data
     features : list(str, str, str,...)
         List of strings containing the features/columns to be used for the
@@ -559,9 +559,9 @@ def optimize_hyper_parameters(original_data, target_data=None, clf=None, feature
 
     Parameters
     ----------
-    original_data : HEPDataStorage
+    original_data : |hepds_type|
         The original data
-    target_data : HEPDataStorage
+    target_data : |hepds_type|
         The target data
     clf : config-dict
         For possible options, see also
@@ -746,20 +746,20 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
 
     Parameters
     ----------
-    original_data : HEPDataStorage
+    original_data : |hepds_type|
         The original data for the training
-    target_data : HEPDataStorage or None
+    target_data : |hepds_type| or None
         The target data for the training. If None, only the original_data will
         be used for the training.
     features : list(str, str, str...)
         List with features/columns to use in training.
-    validation : int >= 1 or HEPDataStorage
+    validation : int >= 1 or |hepds_type|
         You can either do cross-validation or give a testsample for the data.
 
         * Cross-validation:
             Enter an integer, which is the number of folds
         * Validation-dataset:
-            Enter a *HEPDataStorage* which contains data to be tested on.
+            Enter a |hepds_type| which contains data to be tested on.
             The target-label will be taken from it, so ensure that they are
             not None! To use two datasets, you can also use a list of
             **maximum** two datastorages.
