@@ -1300,6 +1300,7 @@ data_storage_docstring = """
             The current_branch has to exist in the root-tree or DataFrame,
             the desired_name can be anything.
 """
-
-HEPDataStorage.__doc__ += data_storage_docstring
-
+try:
+    HEPDataStorage.__doc__ += data_storage_docstring
+except AttributeError:  # Python 2
+    pass
