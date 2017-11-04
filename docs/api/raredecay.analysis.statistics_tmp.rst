@@ -1,5 +1,5 @@
-statistics_tmp
-==============
+statistics\_tmp
+===============
 
 .. automodule:: raredecay.analysis.statistics_tmp
     :members:

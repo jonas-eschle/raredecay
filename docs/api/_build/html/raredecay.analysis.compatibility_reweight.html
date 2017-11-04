@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -45,6 +47,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -85,7 +88,10 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="raredecay.data.html">data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
@@ -106,7 +112,7 @@
 <li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">tools</a></li>
 <li class="toctree-l2"><a class="reference internal" href="raredecay.config.html">config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="raredecay.data.html">data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="raredecay.globals_.html">globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.globals_.html">globals_</a></li>
 <li class="toctree-l2"><a class="reference internal" href="raredecay.meta_config.html">meta_config</a></li>
 <li class="toctree-l2"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
 <li class="toctree-l2"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
@@ -127,8 +133,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Raredecay</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Raredecay</a>
+        
       </nav>
 
 
@@ -137,27 +145,44 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
           <li><a href="raredecay.html">DEPREC: Full (legacy) API raredecay</a> &raquo;</li>
-      
+        
           <li><a href="raredecay.analysis.html">analysis</a> &raquo;</li>
-      
-    <li>compatibility_reweight</li>
+        
+      <li>compatibility_reweight</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/raredecay.analysis.compatibility_reweight.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -179,24 +204,24 @@ MC would have been corrected to look like its real counterpart.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>apply_data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The data which shall be corrected</li>
-<li><strong>real_data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The real data to train the reweighter on</li>
-<li><strong>mc_data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The MC data to train the reweighter on</li>
-<li><strong>columns</strong> (<em>list</em><em>(</em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>,</em><em>..</em><em>)</em><em></em>) &#8211; The branches to use for the reweighting process.</li>
-<li><strong>reweighter</strong> (<em>{'gb'</em><em>, </em><em>'bins'}</em><em> or </em><em>trained hep_ml-reweighter</em><em> (</em><em>also pickled</em><em>)</em><em></em>) &#8211; Either a string specifying which reweighter to use or an already
+<li><strong>apply_data</strong> (<code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code>) – The data which shall be corrected</li>
+<li><strong>real_data</strong> (<code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code>) – The real data to train the reweighter on</li>
+<li><strong>mc_data</strong> (<code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code>) – The MC data to train the reweighter on</li>
+<li><strong>columns</strong> (<em>list</em><em>(</em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>,</em><em>..</em><em>)</em>) – The branches to use for the reweighting process.</li>
+<li><strong>reweighter</strong> (<em>{'gb'</em><em>, </em><em>'bins'}</em><em> or </em><em>trained hep_ml-reweighter</em><em> (</em><em>also pickled</em><em>)</em>) – Either a string specifying which reweighter to use or an already
 trained reweighter from the hep_ml-package. The reweighter can also
 be a file-path (str) to a pickled reweighter.</li>
-<li><strong>reweight_cfg</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) &#8211; A dict containing all the keywords and values you want to specify as
+<li><strong>reweight_cfg</strong> (<a class="reference external" href="https://docs.python.org/2/library/stdtypes.html#dict" title="(in Python v2.7)"><em>dict</em></a>) – A dict containing all the keywords and values you want to specify as
 parameters to the reweighter.</li>
-<li><strong>n_reweights</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; To get more stable weights, the mean of each weight over many
+<li><strong>n_reweights</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – To get more stable weights, the mean of each weight over many
 reweighting runs (training and predicting) can be used. The
 n_reweights specifies how many runs to do.</li>
-<li><strong>apply_weights</strong> (<em>boolean</em>) &#8211; If True, the weights will be added to the data directly, therefore
+<li><strong>apply_weights</strong> (<em>boolean</em>) – If True, the weights will be added to the data directly, therefore
 the data-storage will be modified.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>out</strong> &#8211; Return a dict containing the weights as well as the reweighter.
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><p><strong>out</strong> – Return a dict containing the weights as well as the reweighter.
 The keywords are:</p>
 <ul class="simple">
 <li><em>reweighter</em> : The trained reweighter</li>
@@ -216,15 +241,18 @@ The keywords are:</p>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="raredecay.analysis.compatibility_tools.html" class="btn btn-neutral float-right" title="compatibility_tools" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="raredecay.analysis.compatibility_tools.html" class="btn btn-neutral float-right" title="compatibility_tools" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="raredecay.analysis.html" class="btn btn-neutral" title="analysis" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="raredecay.analysis.html" class="btn btn-neutral" title="analysis" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -258,13 +286,14 @@ The keywords are:</p>
             VERSION:'1.3.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

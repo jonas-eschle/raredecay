@@ -1,6 +1,5 @@
-seaborn
-pandas
-numpy
-matplotlib
-future
-hep_ml>=0.5.0
+include LICENSE.md
+include README.md
+include README.rst
+include requirements.txt
+

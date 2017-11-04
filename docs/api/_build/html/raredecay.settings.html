@@ -13,6 +13,8 @@
 
   
   
+  
+  
 
   
 
@@ -44,6 +46,7 @@
 
 <body class="wy-body-for-nav" role="document">
 
+   
   <div class="wy-grid-for-nav">
 
     
@@ -84,14 +87,30 @@
           
             
             
-                <ul class="current">
+              
+            
+            
+              <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="raredecay.data.html">data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
 <li class="toctree-l1"><a class="reference internal" href="raredecay.score.html">score</a></li>
 <li class="toctree-l1"><a class="reference internal" href="raredecay.stat.html">stat</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">settings</a></li>
-<li class="toctree-l1"><a class="reference internal" href="raredecay.html">DEPREC: Full (legacy) API raredecay</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">DEPREC: Full (legacy) API raredecay</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="raredecay.analysis.html">analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.data.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.globals_.html">globals_</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.meta_config.html">meta_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.score.html">score</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.stat.html">stat</a></li>
+</ul>
+</li>
 </ul>
 
             
@@ -104,8 +123,10 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-        <a href="index.html">Raredecay</a>
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">Raredecay</a>
+        
       </nav>
 
 
@@ -114,23 +135,40 @@
         <div class="rst-content">
           
 
- 
+
+
+
+
+
+
+
+
+
+
+
 
 
 
 <div role="navigation" aria-label="breadcrumbs navigation">
+
   <ul class="wy-breadcrumbs">
-    <li><a href="index.html">Docs</a> &raquo;</li>
-      
-    <li>settings</li>
+    
+      <li><a href="index.html">Docs</a> &raquo;</li>
+        
+      <li>settings</li>
+    
+    
       <li class="wy-breadcrumbs-aside">
         
-          
+            
             <a href="_sources/raredecay.settings.rst.txt" rel="nofollow"> View page source</a>
           
         
       </li>
+    
   </ul>
+
+  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -139,7 +177,7 @@
   <div class="section" id="module-raredecay.settings">
 <span id="settings"></span><h1>settings<a class="headerlink" href="#module-raredecay.settings" title="Permalink to this headline">¶</a></h1>
 <p>Contain methods to change settings in the whole package</p>
-<p>&#64;author: Jonas Eschle &#8220;Mayou36&#8221;</p>
+<p>&#64;author: Jonas Eschle “Mayou36”</p>
 <dl class="function">
 <dt id="raredecay.settings.figure_save_config">
 <code class="descclassname">raredecay.settings.</code><code class="descname">figure_save_config</code><span class="sig-paren">(</span><em>file_formats=None</em>, <em>to_pickle=True</em>, <em>dpi=150</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#figure_save_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.figure_save_config" title="Permalink to this definition">¶</a></dt>
@@ -155,13 +193,13 @@ have no effect on the behaviour of your script.</p>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>file_formats</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><em>list</em><em>[</em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>,</em><em>..</em><em>]</em><em></em>) &#8211; <p>The possible formats to save the figures to. Currently implemented are:
-[&#8216;png&#8217;, &#8216;jpg&#8217;, &#8216;pdf&#8217;, &#8216;svg&#8217;]</p>
-<p>The default value (None) is [&#8216;png&#8217;, &#8216;svg&#8217;]</p>
+<li><strong>file_formats</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><em>list</em><em>[</em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em>,</em><em>..</em><em>]</em>) – <p>The possible formats to save the figures to. Currently implemented are:
+[‘png’, ‘jpg’, ‘pdf’, ‘svg’]</p>
+<p>The default value (None) is [‘png’, ‘svg’]</p>
 </li>
-<li><strong>to_pickle</strong> (<em>boolean</em>) &#8211; If True, the matplotlib-figures will be saved as a pickle-file allowing
+<li><strong>to_pickle</strong> (<em>boolean</em>) – If True, the matplotlib-figures will be saved as a pickle-file allowing
 for later plotting. They are saved in the output-folder.</li>
-<li><strong>dpi</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The resolution of the images.</li>
+<li><strong>dpi</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – The resolution of the images.</li>
 </ul>
 </td>
 </tr>
@@ -178,9 +216,9 @@ for later plotting. They are saved in the output-folder.</li>
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>show_plots</strong> (<em>boolean</em>) &#8211; If True, show the plots (<em>plt.show()</em>), if user prompt is activated,
+<li><strong>show_plots</strong> (<em>boolean</em>) – If True, show the plots (<em>plt.show()</em>), if user prompt is activated,
 you first have to press enter to show them.</li>
-<li><strong>play_sound_at_end</strong> (<em>boolean</em>) &#8211; If true, a beep will be played at the end of the run</li>
+<li><strong>play_sound_at_end</strong> (<em>boolean</em>) – If true, a beep will be played at the end of the run</li>
 </ul>
 </td>
 </tr>
@@ -198,7 +236,7 @@ easily. For more information see the docs of the OutputHandler</p>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>out</strong> &#8211; Return the output-handler currently in use by the script.</td>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><strong>out</strong> – Return the output-handler currently in use by the script.</td>
 </tr>
 <tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">instance of <a class="reference internal" href="raredecay.tools.output.html#raredecay.tools.output.OutputHandler" title="raredecay.tools.output.OutputHandler"><code class="xref py py-class docutils literal"><span class="pre">OutputHandler</span></code></a></td>
 </tr>
@@ -208,7 +246,7 @@ easily. For more information see the docs of the OutputHandler</p>
 
 <dl class="function">
 <dt id="raredecay.settings.initialize">
-<code class="descclassname">raredecay.settings.</code><code class="descname">initialize</code><span class="sig-paren">(</span><em>output_path=None</em>, <em>run_name='Test run'</em>, <em>overwrite_existing=False</em>, <em>run_message='This is a test-run to test the package'</em>, <em>verbosity=3</em>, <em>plot_verbosity=3</em>, <em>prompt_for_input=False</em>, <em>no_interactive_plots=False</em>, <em>logger_console_level='warning'</em>, <em>logger_file_level='debug'</em>, <em>n_cpu=1</em>, <em>gpu_in_use=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.initialize" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">raredecay.settings.</code><code class="descname">initialize</code><span class="sig-paren">(</span><em>output_path=None</em>, <em>run_name=u'Test run'</em>, <em>overwrite_existing=False</em>, <em>run_message=u'This is a test-run to test the package'</em>, <em>verbosity=3</em>, <em>plot_verbosity=3</em>, <em>prompt_for_input=False</em>, <em>no_interactive_plots=False</em>, <em>logger_console_level=u'warning'</em>, <em>logger_file_level=u'debug'</em>, <em>n_cpu=1</em>, <em>gpu_in_use=False</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/settings.html#initialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.settings.initialize" title="Permalink to this definition">¶</a></dt>
 <dd><p>Place before Imports! Initialize/change several parameters for the package.</p>
 <p>Initialize a run and return an output handler. Most of the implemented
 function have things to plot or print, which are given to the output
@@ -220,33 +258,33 @@ at the end of the run by calling <a class="reference internal" href="#raredecay.
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
-<li><strong>output_path</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) &#8211; <p>If a string is provided, it is taken as the path to a folder, in which
+<li><strong>output_path</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a>) – <p>If a string is provided, it is taken as the path to a folder, in which
 a folder containing all the output of the run will be created.</p>
-<p>If None, the output won&#8217;t be saved.</p>
+<p>If None, the output won’t be saved.</p>
 </li>
-<li><strong>run_name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the run as well as of the folder that gets created.</li>
-<li><strong>overwrite_existing</strong> (<em>boolean</em>) &#8211; If True and the folder (run-name) exists already, it will be over-written.
+<li><strong>run_name</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – The name of the run as well as of the folder that gets created.</li>
+<li><strong>overwrite_existing</strong> (<em>boolean</em>) – If True and the folder (run-name) exists already, it will be over-written.
 Else a number will be added to the name to create a new folder.</li>
-<li><strong>run_message</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; A message, will be displayed in the output at the beginning.</li>
-<li><strong>verbosity</strong> (<em>int {0</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>3</em><em>, </em><em>4</em><em>, </em><em>5}</em>) &#8211; How much of the output will be printed. There is a tradeoff between
+<li><strong>run_message</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) – A message, will be displayed in the output at the beginning.</li>
+<li><strong>verbosity</strong> (<em>int {0</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>3</em><em>, </em><em>4</em><em>, </em><em>5}</em>) – How much of the output will be printed. There is a tradeoff between
 verbosity and importance.</li>
-<li><strong>plot_verbosity</strong> (<em>int {0</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>3</em><em>, </em><em>4</em><em>, </em><em>5}</em>) &#8211; How much of the plots will be plotted for show. There is a tradeoff between
+<li><strong>plot_verbosity</strong> (<em>int {0</em><em>, </em><em>1</em><em>, </em><em>2</em><em>, </em><em>3</em><em>, </em><em>4</em><em>, </em><em>5}</em>) – How much of the plots will be plotted for show. There is a tradeoff between
 plot_verbosity and plot_importance.</li>
-<li><strong>prompt_for_input</strong> (<em>boolean</em>) &#8211; If True, at the beginning of the run, a string can be entered to extend
+<li><strong>prompt_for_input</strong> (<em>boolean</em>) – If True, at the beginning of the run, a string can be entered to extend
 the run-name.</li>
-<li><strong>no_interactive_plots</strong> (<em>boolean</em>) &#8211; If True, the matplotlib backend is changed to a non-interactive one.
+<li><strong>no_interactive_plots</strong> (<em>boolean</em>) – If True, the matplotlib backend is changed to a non-interactive one.
 This is required if no X-server is run, as for example on grids is
 the case.</li>
-<li><strong>logger_console_level</strong> (<em>str {'debug'</em><em>, </em><em>'info'</em><em>, </em><em>'warning'</em><em>, </em><em>'error'</em><em>, </em><em>'critical'}</em>) &#8211; The logger level on the consol</li>
-<li><strong>logger_file_level</strong> (<em>str {'debug'</em><em>, </em><em>'info'</em><em>, </em><em>'warning'</em><em>, </em><em>'error'</em><em>, </em><em>'critical'}</em>) &#8211; The logger level for files. Ignored if no output-path is specified.</li>
-<li><strong>n_cpu</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The number of cpus to use. Can be a negative number as well, where
+<li><strong>logger_console_level</strong> (<em>str {'debug'</em><em>, </em><em>'info'</em><em>, </em><em>'warning'</em><em>, </em><em>'error'</em><em>, </em><em>'critical'}</em>) – The logger level on the consol</li>
+<li><strong>logger_file_level</strong> (<em>str {'debug'</em><em>, </em><em>'info'</em><em>, </em><em>'warning'</em><em>, </em><em>'error'</em><em>, </em><em>'critical'}</em>) – The logger level for files. Ignored if no output-path is specified.</li>
+<li><strong>n_cpu</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – The number of cpus to use. Can be a negative number as well, where
 -1 means all, -2 all but one, -3 all but 2 etc.</li>
-<li><strong>gpu_in_use</strong> (<em>boolean</em>) &#8211; If True, the parallelisation for Theanets is switched of in order to be
+<li><strong>gpu_in_use</strong> (<em>boolean</em>) – If True, the parallelisation for Theanets is switched of in order to be
 able to use it with (a single) gpu.</li>
 </ul>
 </td>
 </tr>
-<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> &#8211; Return the output-handler currently in use by the script.</p>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first"><strong>out</strong> – Return the output-handler currently in use by the script.</p>
 </td>
 </tr>
 <tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">instance of <a class="reference internal" href="raredecay.tools.output.html#raredecay.tools.output.OutputHandler" title="raredecay.tools.output.OutputHandler"><code class="xref py py-class docutils literal"><span class="pre">OutputHandler</span></code></a></p>
@@ -268,16 +306,16 @@ use</li>
 <li>using a negative integer. Then, -1 means to use all available (virtual)
 cores (resp. the number of threads). But sometimes you want to still work
 on your machine and have not all cpus used up. Therefore you can just use
--2 (which will use all except of one; &#8220;all up to the second last&#8221;), -3
-(which will use all except two; &#8220;all up to the third last&#8221;) etc.</li>
+-2 (which will use all except of one; “all up to the second last”), -3
+(which will use all except two; “all up to the third last”) etc.</li>
 </ul>
 <table class="docutils field-list" frame="void" rules="none">
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
 <tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
-<li><strong>n_cpu</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> (</em><em>not 0</em><em>)</em><em></em>) &#8211; The number of cpus to use, explanation see above.</li>
-<li><strong>gpu_in_use</strong> (<em>boolean</em>) &#8211; If a gpu is in use (say for nn), you can set this boolean to true in
+<li><strong>n_cpu</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a><em> (</em><em>not 0</em><em>)</em>) – The number of cpus to use, explanation see above.</li>
+<li><strong>gpu_in_use</strong> (<em>boolean</em>) – If a gpu is in use (say for nn), you can set this boolean to true in
 order to avoid parallel computation of the nn or to activate any
 other implemented gpu assistance.</li>
 </ul>
@@ -295,7 +333,7 @@ other implemented gpu assistance.</li>
 <col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
-<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) &#8211; The seed for the random generator. If None, it won&#8217;t change anything</td>
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>seed</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#int" title="(in Python v2.7)"><em>int</em></a>) – The seed for the random generator. If None, it won’t change anything</td>
 </tr>
 </tbody>
 </table>
@@ -311,15 +349,18 @@ other implemented gpu assistance.</li>
 
 
            </div>
+           <div class="articleComments">
+            
+           </div>
           </div>
           <footer>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="raredecay.html" class="btn btn-neutral float-right" title="DEPREC: Full (legacy) API raredecay" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="raredecay.html" class="btn btn-neutral float-right" title="DEPREC: Full (legacy) API raredecay" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="raredecay.stat.html" class="btn btn-neutral" title="stat" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="raredecay.stat.html" class="btn btn-neutral" title="stat" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
@@ -353,13 +394,14 @@ other implemented gpu assistance.</li>
             VERSION:'1.3.1',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true
+            HAS_SOURCE:  true,
+            SOURCELINK_SUFFIX: '.txt'
         };
     </script>
       <script type="text/javascript" src="_static/jquery.js"></script>
       <script type="text/javascript" src="_static/underscore.js"></script>
       <script type="text/javascript" src="_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

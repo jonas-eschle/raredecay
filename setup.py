@@ -21,10 +21,11 @@ here = os.path.abspath(os.path.dirname(__file__))
 
 # build docs
 try:
-    subprocess.Popen("chmod u+x " + os.path.join(here, 'docs/make_docs.sh'))
-    subprocess.Popen("bash " + os.path.join(here, 'docs/make_docs.sh'))
-except:
+    subprocess.Popen("chmod u+x " + os.path.join(here, 'docs/make_docs.sh'), shell=True)
+    subprocess.Popen("bash " + os.path.join(here, 'docs/make_docs.sh'), shell=True)
+except Exception as err:
     print("Failed to build docs.")
+    raise err
 
 with io.open(os.path.join(here, 'requirements.txt')) as f:
     requirements = f.read().split('\n')
