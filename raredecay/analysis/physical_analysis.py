@@ -4,6 +4,13 @@ Created on Sat Mar 26 16:49:45 2016
 
 @author: Jonas Eschle "Mayou36"
 
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
+
 This module provides high-level function, which often contain an essential
 part of a complete MVA. The functions are sometimes quite verbous, both
 in plotting as well as in printing, but always also return the important

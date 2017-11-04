@@ -1,4 +1,11 @@
+
 # Python 2 backwards compatibility overhead START
+"""
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+"""
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys  # noqa

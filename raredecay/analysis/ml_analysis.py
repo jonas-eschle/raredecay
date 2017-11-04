@@ -4,6 +4,13 @@ Created on Sat Mar 26 11:29:01 2016
 
 @author: Jonas Eschle "Mayou36"
 
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
+
 The Machine Learning Analysis module consists of machine-learning functions
 which are mostly wrappers around already existing algorithms.
 

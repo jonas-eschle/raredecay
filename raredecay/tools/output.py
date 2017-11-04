@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sun May  1 12:06:06 2016
 
 @author: Jonas Eschle "Mayou36"
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals

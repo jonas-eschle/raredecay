@@ -1,8 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Apr  7 22:10:29 2016
 
 @author: Jonas Eschle "Mayou36"
+
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
 
 This module contains the data handling. The main part is the class which
 takes data, weights, targets, names and converts automatically, plots and more.

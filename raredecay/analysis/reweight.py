@@ -1,8 +1,15 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Mar 26 11:29:01 2016
+
 
 @author: Jonas Eschle "Mayou36"
+
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
 
 The reweighting module consists of function to reweight a distribution by learning from
 two other distributions as well as reweighting a distribution by itself in a k-fold way.

@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-Created on Thu Oct 20 20:00:33 2016
-
 @author: Jonas Eschle 'Mayou36'
 
 This modul contains several tools like fits.
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
 """
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
@@ -47,8 +50,21 @@ from raredecay.tools import dev_tool
 
 
 def ks_2samp_ds(data1, data2, column):
-    ks_2samp_ds.__doc__ = ks_2samp.__doc__
+    """
+    Parameters
+    ----------
+    data1 : |hepds_type|
+        Data set one for the 2sample test
+    data2 : |hepds_type|
+        Data set two for the 2sample test
+    column : str
+        Which column to use. Has to be the same name in both data sets
 
+    Returns
+    -------
+    numeric
+        Return the K-S two sample test hypothesis score.
+    """
     # Python 2/3 compatibility, str
     column = str(column)
 
@@ -64,6 +80,7 @@ def ks_2samp_ds(data1, data2, column):
     ks_score = ks_2samp(data1=data1, data2=data2,
                         weights1=weights1, weights2=weights2)
     return ks_score
+
 
 
 def ks_2samp(data1, data2, weights1=None, weights2=None):
@@ -114,6 +131,9 @@ def ks_2samp(data1, data2, weights1=None, weights2=None):
     return np.max(np.abs(cdf1we - cdf2we))
 
 
+ks_2samp_ds.__doc__ = ks_2samp.__doc__.split("Parameter", 1)[0] + ks_2samp_ds.__doc__
+
+
 def ad_2samp(data1, data2, column):
     # Python 2/3 compatibility, str
     column = str(column)
@@ -155,6 +175,8 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         The data containing the variable to fit to
     column : str
         The name of the column to fit the pdf to
+    x : RooRealVar
+        The RooRealVar to fit to.
     sig_pdf : RooFit pdf
         The signal Probability Density Function. The variable to fit to has
         to be named 'x'.
@@ -604,115 +626,115 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
 
     return cuts, scores
 
-#
-# if __name__ == '__main__':
-#
-#     import ROOT
-#     from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
-#     from ROOT import RooFit, RooCBShape, RooExponential
-#     from ROOT import RooGaussian, RooMinuit
-#     from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
-#     from root_numpy import array2tree
-#     from ROOT import RooCategory, RooUnblindPrecision
-#
-#     #    data = RooDataSet("data", )
-#     from raredecay.tools.data_storage import HEPDataStorage
-#     import pandas as pd
-#     import matplotlib.pyplot as plt
-#
-#     #    np.random.seed(40)
-#
-#     #    mode = "fit"
-#     #    mode = 'fit_metric'
-#     #    mode = "sPlot"
-#     mode = 'ks'
-#
-#     # create signal pdf BEGIN
-#     lower_bound = 4800
-#     #    lower_bound = 5000
-#     x = RooRealVar("x", "x variable", lower_bound, 6000)
-#
-#     #    x = RooRealVar("x", "x variable", 4800, 6000)
-#
-#     # TODO: export somewhere? does not need to be defined inside...
-#     mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5270, 5290)  # , 5300, 5500)
-#     sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0, 45)
-#     alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 40, 30, 50)
-#     alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -40, -50, -30.)
-#     lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 40, 30, 50)
-#     lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 40, 30, 50)
-#
-#     # TODO: export somewhere? pdf construction
-#     frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
-#
-#     crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
-#                               mean, sigma, alpha_0, lambda_0)
-#     crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
-#                               mean, sigma, alpha_1, lambda_1)
-#     doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
-#                          crystalball1, crystalball2, frac)
-#     # create signal pdf END
-#
-#     # create bkg-pdf BEGIN
-#     lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.002, -10., -0.000001)
-#     bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
-#     # create bkg-pdf END
-#
-#     n_sig = 2500
-#
-#     data = pd.DataFrame(np.random.normal(loc=5280, scale=37, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
-#     #    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
-#     bkg_data = np.array([i for i in (np.random.exponential(scale=300,
-#                                                            size=(7500, 3)) + 4800) if i[0] < 6000])
-#     bkg_data[:, 2] = np.array([min((abs(y), 0.96)) for y in np.random.normal(loc=0.4,
-#                                                                              scale=0.4, size=len(bkg_data))])
-#     data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y', 'pred'])], ignore_index=True)
-#
-#     data = HEPDataStorage(data, target=np.concatenate((np.ones(n_sig),
-#                                                        np.zeros(len(bkg_data)))))
-#     data_copy = data.copy_storage()
-#
-#     if mode == 'fit':
-#         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-#                               bkg_pdf=bkg_pdf,
-#                               blind=False,
-#                               #                                       blind=(5100, 5380),
-#                               plot_importance=4,  # bkg_in_region=(5100, 5380)
-#                               )
-#         print(fit_result)
-#         print("True values: nsig =", n_sig, " n_bkg =", len(bkg_data))
-#
-#     elif mode == 'fit_metric':
-#         result = metric_vs_cut_fitted(data=data, predict_col='pred', fit_col='x',
-#                                       sig_pdf=doubleCB, bkg_pdf=bkg_pdf, x=x,
-#                                       region=(5100, 5380), stepsize=0.01)
-#         print(result)
-#
-#         plt.plot(*result)
-#
-#
-#     elif mode == 'sPlot':
-#         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-#                               bkg_pdf=bkg_pdf,
-#                               blind=False,
-#                               plot_importance=1,  # bkg_in_region=(5100, 5380)
-#                               sPlot=True
-#                               )
-#         n_sig, n_bkg, sweights = fit_result
-#         import copy
-#
-#         sweights = copy.deepcopy(sweights)
-#         plt.figure("new figure")
-#         #        plt.hist(range(100))
-#         #        plt.figure("new figure")
-#         plt.hist(sweights, bins=30)
-#
-#         data_copy.set_weights(sweights)
-#         data_copy.plot()
-#
-#     elif mode == 'ks':
-#         pass
-#
-#     plt.show()
-#
-#     print("finished")
+
+if __name__ == '__main__':
+
+    import ROOT
+    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    from ROOT import RooFit, RooCBShape, RooExponential
+    from ROOT import RooGaussian, RooMinuit
+    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    from root_numpy import array2tree
+    from ROOT import RooCategory, RooUnblindPrecision
+
+#    data = RooDataSet("data", )
+    from raredecay.tools.data_storage import HEPDataStorage
+    import pandas as pd
+    import matplotlib.pyplot as plt
+
+#    np.random.seed(40)
+
+    mode = "fit"
+#    mode = 'fit_metric'
+#    mode = "sPlot"
+#    mode = 'ks'
+
+    # create signal pdf BEGIN
+    lower_bound = 4800
+    #    lower_bound = 5000
+    x = RooRealVar("x", "x variable", lower_bound, 6000)
+
+    #    x = RooRealVar("x", "x variable", 4800, 6000)
+
+    # TODO: export somewhere? does not need to be defined inside...
+    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5270, 5290)  # , 5300, 5500)
+    sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0, 45)
+    alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 40, 30, 50)
+    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -40, -50, -30.)
+    lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 40, 30, 50)
+    lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 40, 30, 50)
+
+    # TODO: export somewhere? pdf construction
+    frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
+
+    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
+                              mean, sigma, alpha_0, lambda_0)
+    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
+                              mean, sigma, alpha_1, lambda_1)
+    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
+                         crystalball1, crystalball2, frac)
+    # create signal pdf END
+
+    # create bkg-pdf BEGIN
+    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.002, -10., -0.000001)
+    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
+    # create bkg-pdf END
+
+    n_sig = 25000
+
+    data = pd.DataFrame(np.random.normal(loc=5280, scale=37, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
+    #    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
+    bkg_data = np.array([i for i in (np.random.exponential(scale=300,
+                                                           size=(7500, 3)) + 4800) if i[0] < 6000])
+    bkg_data[:, 2] = np.array([min((abs(y), 0.96)) for y in np.random.normal(loc=0.4,
+                                                                             scale=0.4, size=len(bkg_data))])
+    data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y', 'pred'])], ignore_index=True)
+
+    data = HEPDataStorage(data, target=np.concatenate((np.ones(n_sig),
+                                                       np.zeros(len(bkg_data)))))
+    data_copy = data.copy_storage()
+
+    if mode == 'fit':
+        fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
+                              bkg_pdf=bkg_pdf,
+#                              blind=False,
+                              blind=(5100, 5380),
+                              plot_importance=4,  # bkg_in_region=(5100, 5380)
+                              )
+        print(fit_result)
+        print("True values: nsig =", n_sig, " n_bkg =", len(bkg_data))
+
+    elif mode == 'fit_metric':
+        result = metric_vs_cut_fitted(data=data, predict_col='pred', fit_col='x',
+                                      sig_pdf=doubleCB, bkg_pdf=bkg_pdf, x=x,
+                                      region=(5100, 5380), stepsize=0.01)
+        print(result)
+
+        plt.plot(*result)
+
+
+    elif mode == 'sPlot':
+        fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
+                              bkg_pdf=bkg_pdf,
+                              blind=False,
+                              plot_importance=1,  # bkg_in_region=(5100, 5380)
+                              sPlot=True
+                              )
+        n_sig, n_bkg, sweights = fit_result
+        import copy
+
+        sweights = copy.deepcopy(sweights)
+        plt.figure("new figure")
+        #        plt.hist(range(100))
+        #        plt.figure("new figure")
+        plt.hist(sweights, bins=30)
+
+        data_copy.set_weights(sweights)
+        data_copy.plot()
+
+    elif mode == 'ks':
+        pass
+
+    plt.show()
+
+    input("Finished, press 'Enter' to close plots.")
