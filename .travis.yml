@@ -93,6 +93,7 @@ install:
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
 - ls
+- pwd
 - pip install .[all]
 script:
 
