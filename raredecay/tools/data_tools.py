@@ -15,15 +15,18 @@ Contains several tools to convert, load, save and plot data
 from __future__ import division, absolute_import, print_function, unicode_literals
 
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip)  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
     from future.standard_library import install_aliases  # noqa
+
     install_aliases()  # noqa
     from past.builtins import basestring  # noqa
 except ImportError as err:  # noqa
@@ -258,8 +261,8 @@ def is_root(data_to_check):
     data_to_check = dev_tool.entries_to_str(data_to_check)
     if isinstance(data_to_check, dict):
         path_name = data_to_check.get('filenames')
-#        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
-#                                            str(data_to_check) + "is not a string")
+        #        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
+        #                                            str(data_to_check) + "is not a string")
         if path_name.endswith(meta_cfg.ROOT_DATATYPE):
             flag = True
     return flag
@@ -383,7 +386,8 @@ def to_pandas_old(data_in, index=None, columns=None):
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
         root_index = None
-        if root_index_name in root_numpy.list_branches(filename=data_in['filenames'], treename=data_in.get('treename')):
+        if root_index_name in root_numpy.list_branches(filename=data_in['filenames'],
+                                                       treename=data_in.get('treename')):
             root_index = root2array(filenames=data_in['filenames'], treename=data_in.get('treename'),
                                     selection=data_in.get('selection'), branches=root_index_name)
         data_in = root2array(**data_in)  # why **? it's a root dict
@@ -515,5 +519,3 @@ def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
         with open(extra_path + file_to_unpickle, 'rb') as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle
-
-

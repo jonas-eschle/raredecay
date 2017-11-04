@@ -20,7 +20,8 @@ import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa

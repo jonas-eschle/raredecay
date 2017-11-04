@@ -33,7 +33,8 @@ from raredecay.analysis.compatibility_tools import _make_data  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -255,7 +256,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
                 clf_type=clf['clf_type'],
                 name=meta_cfg.DEFAULT_CLF_NAME[clf['clf_type']],
                 config=meta_cfg.DEFAULT_CLF_CONFIG[clf['clf_type']],
-        )
+                )
 
         clf = dict(default_clf, **clf)
 
@@ -1052,7 +1053,7 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
     output = {
         'best_threshold_cut': best_cut[best_index],
         'best_metric': best_metric[best_index]
-    }
+        }
 
     return output
 

@@ -12,15 +12,18 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip)  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
     from future.standard_library import install_aliases  # noqa
+
     install_aliases()  # noqa
     from past.builtins import basestring  # noqa
 except ImportError as err:  # noqa
@@ -53,7 +56,6 @@ from raredecay.tools import dev_tool  # , data_tools
 
 
 class OutputHandler(object):
-
     """Class for output handling."""
 
     __SAVE_STDOUT = sys.stdout
@@ -181,7 +183,7 @@ class OutputHandler(object):
 
         # set meta-config variables
         meta_cfg.set_parallel_profile(n_cpu=meta_cfg.n_cpu_max,
-                                         gpu_in_use=meta_cfg.use_gpu)
+                                      gpu_in_use=meta_cfg.use_gpu)
 
         self._is_initialized = True
         self.add_output(run_message, title="Run: " + self._run_name, importance=0,
@@ -324,13 +326,14 @@ class OutputHandler(object):
             self._formats_used.update(file_format)
 
             # change layout of figures
-#            figure.tight_layout()
-#            figure.set_figheight(20)
-#            figure.set_figwidth(20)
+            #            figure.tight_layout()
+            #            figure.set_figheight(20)
+            #            figure.set_figwidth(20)
 
             # add figure to dict for later output to file
             figure_dict = {'figure': figure, 'file_format': file_format,
-                           'to_pickle': to_pickle, 'plot': plot, 'save_cfg': save_cfg}
+                           'to_pickle': to_pickle, 'plot': plot, 'save_cfg': save_cfg
+                           }
             self._figures[figure.get_label()] = figure_dict
         else:
             self._check_initialization()
@@ -364,7 +367,7 @@ class OutputHandler(object):
                 file_name = file_path + fig_name + "." + extension
                 try:
                     figure_tmp = fig_dict['figure']
-#                    figure_tmp.tight_layout()
+                    #                    figure_tmp.tight_layout()
                     figure_tmp.savefig(file_name, format=extension,
                                        **fig_dict.get('save_cfg'))
                 except:
@@ -572,9 +575,9 @@ class OutputHandler(object):
 
         output = copy.deepcopy(self.output)
 
-# ==============================================================================
-#       save output to file
-# ==============================================================================
+        # ==============================================================================
+        #       save output to file
+        # ==============================================================================
         if self._save_output:
 
             # save figures to file

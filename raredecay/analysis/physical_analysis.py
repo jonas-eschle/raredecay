@@ -22,14 +22,16 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import sys  # noqa
 import warnings  # noqa
 from builtins import (int,  # noqa
-                      range, str, zip)  # noqa
+                      range, str, zip,
+                      )  # noqa
 
 import raredecay.meta_config  # noqa
 import raredecay.tools.ml_scores
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -105,7 +107,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
             temp = data_tools.apply_cuts(sig, bkg, per, bkg_length=bkg_length)
             limits.append(temp[0])
             rejection.append(temp[1])
-        #        limits, rejection = pool.map(_cut, data)
+        # limits, rejection = pool.map(_cut, data)
         i_max_rej = np.argmax(rejection)
         max_rejection = np.max(rejection)
         column, limits = columns[i_max_rej], limits[i_max_rej]
@@ -132,7 +134,7 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
         bkg_data = bkg_data[cuts]
         print("We used " + column)
 
-    #    signal_data.hist(bins=30)
+    # signal_data.hist(bins=30)
     #    bkg_data.hist(bins=30)
 
     signal_len_cut = len(np.array(signal_data.as_matrix()[:, 0]))
@@ -361,7 +363,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                                            sample_weight=pred_tmp['weights'])
             best_index = np.argmax(best_metric)
             output = {'best_threshold_cut': best_cut[best_index],
-                      'best_metric': best_metric[best_index]}
+                      'best_metric': best_metric[best_index]
+                      }
 
     # predict to all data
     if predict:
@@ -411,7 +414,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
             if root_dict['selection'] is not None:
                 raise ValueError(
-                    "Cannot save predictions to root as selections have been applied in the script")
+                        "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
@@ -422,7 +425,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
             if root_dict['selection'] is not None:
                 raise ValueError(
-                    "Cannot save predictions to root as selections have been applied in the script")
+                        "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
@@ -477,6 +480,7 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
         out.add_output(["Did not add", new_branch, "as", branch_name, "to",
                         filename, "because it already exists and overwrite is set to false"],
                        obj_separator=" ")
+
 
 # OLD
 
@@ -614,13 +618,13 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     old_weights = mc_data.get_weights()
     # make sure the targets are set the right way TODO
     Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
-                                                                 meta_cfg=reweight_cfg, columns=columns,
-                                                                 reweighter=reweighter,
-                                                                 n_reweights=n_reweights,
-                                                                 mcreweighted_as_real_score=scoring,
-                                                                 score_columns=score_columns,
-                                                                 n_folds=n_folds, score_clf=score_clf,
-                                                                 add_weights_to_data=True)
+                                         meta_cfg=reweight_cfg, columns=columns,
+                                         reweighter=reweighter,
+                                         n_reweights=n_reweights,
+                                         mcreweighted_as_real_score=scoring,
+                                         score_columns=score_columns,
+                                         n_folds=n_folds, score_clf=score_clf,
+                                         add_weights_to_data=True)
     new_weights = Kfold_output.pop('weights')
     # TODO: needed below?
     new_weights.sort_index()
@@ -639,8 +643,10 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
         scores = raredecay.tools.ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
-                                                             n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                                             columns=score_columns, old_mc_weights=old_weights,
+                                                             n_folds=n_folds_scoring,
+                                                             n_checks=n_folds_scoring,
+                                                             columns=score_columns,
+                                                             old_mc_weights=old_weights,
                                                              clf=score_clf)
 
         # scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
@@ -683,7 +689,8 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
 
         if mayou_score:
-            raredecay.tools.ml_scores.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
+            raredecay.tools.ml_scores.mayou_score(mc_data=mc_data, real_data=real_data,
+                                                  n_folds=n_folds_scoring,
                                                   clf=score_clf, old_mc_weights=old_weights)
             # an example to add output with the most importand parameters. The first
             # one can also be a single object instead of a list. do_print means
@@ -726,7 +733,6 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         real_data.set_targets(temp_real_targets)
 
     return output
-
 
 # temporary:
 # if __name__ == '__main__':

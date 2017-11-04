@@ -12,14 +12,16 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip)  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -77,7 +79,7 @@ class Mayou(Classifier):
                     eta=0.1,
                     subsample=0.9,
                     bagging=None
-            ),
+                    ),
             rdf=dict(
                     n_estimators=1600,  # 1600
                     max_features='auto',  # only 1 feature seems to be pretty good...
@@ -91,7 +93,7 @@ class Mayou(Classifier):
                     n_jobs=7,
                     class_weight=None,
                     bagging=None
-            ),
+                    ),
 
             nn=dict(
                     layers=[100, 100],
@@ -108,9 +110,9 @@ class Mayou(Classifier):
                     trainers=[{
                         'optimize': 'adagrad', 'patience': 2, 'momentum': 0.5, 'nesterov': True,
                         'learning_rate': 0.2, 'min_improvement': 0.01
-                    }],
+                        }],
                     bagging=None
-            ),
+                    ),
             gb=dict(
                     learning_rate=0.05,
                     n_estimators=500,
@@ -122,13 +124,13 @@ class Mayou(Classifier):
                     max_features=None,
                     max_leaf_nodes=None,
                     bagging=None
-            ),
-    )
+                    ),
+            )
     __DEFAULT_BAG_CFG = dict(
             n_estimators=20,
             max_samples=0.9,
             max_features=1.0,
-    )
+            )
 
     def __init__(self, base_estimators=None, bagging_base=None, stacking='xgb',
                  features_stack=None, bagging_stack=None, hunting=False,
@@ -182,7 +184,7 @@ class Mayou(Classifier):
         out = dict(
                 base_estimators=None, bagging_base=None, stacking='xgb',
                 features_stack=None, bagging_stack=None, hunting=False
-        )
+                )
         return out
 
     def _transform(self, X, fit=False):
@@ -486,7 +488,7 @@ if __name__ == '__main__':
                               7., 8., 7., 8., 8., 7., 8.]),
             'dwa': np.array([2.2, 2.1, 2.2, 2.3, 3.1, 3.1, 2.1, 3.2, 8.1,
                              7.5, 8.2, 7.1, 8.5, 8.2, 7.6, 8.1])
-        })
+            })
         y = np.array([0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1])
         w = np.ones(16)
         branch_names = ['odin', 'dwa']

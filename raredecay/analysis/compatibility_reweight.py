@@ -92,7 +92,6 @@ def reweight(apply_data=None, real_data=None, mc_data=None, columns=None,
         else:
             new_reweighter_list = new_reweighter
 
-
         if apply_data:
             tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
                                                                        reweighter_trained=new_reweighter,

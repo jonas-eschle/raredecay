@@ -21,7 +21,8 @@ import sys  # noqa
 import warnings  # noqa
 
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip)  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 
 import numpy as np  # noqa
 from matplotlib import pyplot as plt  # noqa
@@ -32,7 +33,8 @@ from raredecay.tools import dev_tool, data_tools, data_storage  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa

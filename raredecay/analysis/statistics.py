@@ -12,7 +12,8 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip)  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 import raredecay.meta_config  # noqa
@@ -20,7 +21,8 @@ import raredecay.config as cfg  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -45,6 +47,7 @@ import numpy as np
 
 import raredecay.meta_config as meta_cfg
 from raredecay.tools import dev_tool
+
 
 # import matplotlib.pyplot as plt
 
@@ -80,7 +83,6 @@ def ks_2samp_ds(data1, data2, column):
     ks_score = ks_2samp(data1=data1, data2=data2,
                         weights1=weights1, weights2=weights2)
     return ks_score
-
 
 
 def ks_2samp(data1, data2, weights1=None, weights2=None):
@@ -637,17 +639,17 @@ if __name__ == '__main__':
     from root_numpy import array2tree
     from ROOT import RooCategory, RooUnblindPrecision
 
-#    data = RooDataSet("data", )
+    #    data = RooDataSet("data", )
     from raredecay.tools.data_storage import HEPDataStorage
     import pandas as pd
     import matplotlib.pyplot as plt
 
-#    np.random.seed(40)
+    #    np.random.seed(40)
 
     mode = "fit"
-#    mode = 'fit_metric'
-#    mode = "sPlot"
-#    mode = 'ks'
+    #    mode = 'fit_metric'
+    #    mode = "sPlot"
+    #    mode = 'ks'
 
     # create signal pdf BEGIN
     lower_bound = 4800
@@ -697,7 +699,7 @@ if __name__ == '__main__':
     if mode == 'fit':
         fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
                               bkg_pdf=bkg_pdf,
-#                              blind=False,
+                              #                              blind=False,
                               blind=(5100, 5380),
                               plot_importance=4,  # bkg_in_region=(5100, 5380)
                               )

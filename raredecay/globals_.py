@@ -51,14 +51,16 @@ free_cpus
 # Python 2 backwards compatibility overhead START
 from __future__ import division, absolute_import, print_function, unicode_literals
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip)  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError)  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
