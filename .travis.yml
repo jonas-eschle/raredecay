@@ -76,8 +76,6 @@ install:
 #- pip install rootpy root_numpy
 #- conda install py-xgboost -y
 - pip install xgboost > tmp.txt && echo "alive"
-- pip uninstall theano
-- conda install theano -y
 #- pip install root_pandas
 #- pip install -U xgboost
 
@@ -89,6 +87,8 @@ install:
 - pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies || pip install -U git+https://github.com/yandex/rep/archive/stratifiedkfold.zip --no-dependencies  # sometimes failes for the first time
 - pip install -U git+https://github.com/arogozhnikov/hep_ml.git
 - pip install -U xgboost
+- pip uninstall theano || echo theano not installed
+- conda install theano -y
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
