@@ -89,6 +89,8 @@ install:
 #- pip install -U xgboost
 - pip uninstall theano -y || echo theano not installed
 - conda install theano -y
+- pip uninstall pandas -y || echo pandas not installed
+- conda install pandas -y
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
