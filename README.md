@@ -45,13 +45,13 @@ All you need to do is to have a look at every "TODO" task and probably change th
 ## Documentation and API ##
 
 The API as well as the documentation:
-[Documentation](https://mayou36.bitbucket.io/raredecay/docs/)
+[Documentation](https://mayou36.github.io/raredecay/)
 
 ## Setup and installation ##
 
-The package, in its current state, requires root_numpy as well as rootpy (and therefore a ROOT installation with python-bindings) to be installed on your system. If that is not the case, some functions won't work and you should install it with the --no-dependencies flag and install the other requirements by hand.
+The package with all extras requires root_numpy as well as rootpy (and therefore a ROOT installation with python-bindings) to be installed on your system. If that is not the case, some functions won't work.
 
-First install the very newest version of REP
+If you want to install all the extrax, first install the very newest version of REP
 (the -U can be omitted, but is recommended to have the newest dependencies, on the other hand may crashes REPs reproducibility):
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
@@ -70,7 +70,9 @@ To make sure you can convert ROOT-NTuples, use
 pip install raredecay[root]  # *use raredecay\[root\] in a zsh-console*
 ```
 
-or, to have all functionalities
+or, instead of root/additionally (comma separated) `reweight` or `reweight` for the specific functionalities.
+
+In order to have all functionalities, use
 
 ```
 pip install raredecay[all]
