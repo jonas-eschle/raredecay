@@ -33,7 +33,10 @@ except ImportError as err:  # noqa
 
 # Python 2 backwards compatibility overhead END
 
-from raredecay.analysis.reweight import reweight, reweight_kfold
+try:
+    from raredecay.analysis.reweight import reweight, reweight_kfold
+except Exception as err:
+    print("could not import reweighting algorithms  (missing deps?)", str(err))
 
 __modules = ['reweight', 'reweight_kfold']
 try:
