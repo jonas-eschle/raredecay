@@ -48,11 +48,21 @@ The API as well as the documentation:
 [Documentation](https://mayou36.github.io/raredecay/)
 
 ## Setup and installation ##
+ 
+
+### Anaconda ###
+Easiest way: use conda to install everything (except of the rep, which has to be upgraded with pip for some functionalities)
+
+```
+conda install raredecay -c mayou36
+```
+
+### PyPI ###
 
 The package with all extras requires root_numpy as well as rootpy (and therefore a ROOT installation with python-bindings) to be installed on your system. If that is not the case, some functions won't work.
 
-If you want to install all the extrax, first install the very newest version of REP
-(the -U can be omitted, but is recommended to have the newest dependencies, on the other hand may crashes REPs reproducibility):
+If you want to install all the extra, first install the very newest version of REP (may also needed with conda install)
+(the -U can be omitted, but is recommended to have the newest dependencies):
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
