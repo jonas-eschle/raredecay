@@ -8,11 +8,9 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>raredecay.tools.data_tools &mdash; Raredecay 1.3.1 documentation</title>
+  <title>raredecay.tools.data_tools &mdash; Raredecay 2.0.0 documentation</title>
   
 
-  
-  
   
   
 
@@ -35,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="Raredecay 1.3.1 documentation" href="../../../index.html"/>
+    <link rel="top" title="Raredecay 2.0.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -45,7 +43,6 @@
 
 <body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
@@ -65,7 +62,7 @@
             
             
               <div class="version">
-                1.3.1
+                2.0.0
               </div>
             
           
@@ -86,10 +83,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../raredecay.data.html">data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../raredecay.ml.html">ml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../raredecay.reweight.html">reweight</a></li>
@@ -109,10 +103,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">Raredecay</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">Raredecay</a>
       </nav>
 
 
@@ -125,36 +117,19 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
-        
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-        
-      <li>raredecay.tools.data_tools</li>
-    
-    
+      
+    <li>raredecay.tools.data_tools</li>
       <li class="wy-breadcrumbs-aside">
         
-            
+          
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -235,7 +210,7 @@
 <span class="kn">import</span> <span class="nn">raredecay.meta_config</span> <span class="k">as</span> <span class="nn">meta_cfg</span>
 
 
-<div class="viewcode-block" id="apply_cuts"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.apply_cuts">[docs]</a><span class="k">def</span> <span class="nf">apply_cuts</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">,</span> <span class="n">percent_sig_to_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bkg_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="apply_cuts"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.apply_cuts">[docs]</a><span class="k">def</span> <span class="nf">apply_cuts</span><span class="p">(</span><span class="n">signal_data</span><span class="p">,</span> <span class="n">bkg_data</span><span class="p">,</span> <span class="n">percent_sig_to_keep</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">bkg_length</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Search for best cut on value to still keep percent_sig_to_keep of signal</span>
 
 
@@ -261,7 +236,7 @@
     <span class="k">return</span> <span class="p">[</span><span class="n">lower_cut</span><span class="p">,</span> <span class="n">upper_cut</span><span class="p">],</span> <span class="n">rejected_bkg</span></div>
 
 
-<div class="viewcode-block" id="make_root_dict"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.make_root_dict">[docs]</a><span class="k">def</span> <span class="nf">make_root_dict</span><span class="p">(</span><span class="n">path_to_rootfile</span><span class="p">,</span> <span class="n">tree_name</span><span class="p">,</span> <span class="n">branches</span><span class="p">):</span>
+<div class="viewcode-block" id="make_root_dict"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.make_root_dict">[docs]</a><span class="k">def</span> <span class="nf">make_root_dict</span><span class="p">(</span><span class="n">path_to_rootfile</span><span class="p">,</span> <span class="n">tree_name</span><span class="p">,</span> <span class="n">branches</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Returns a root_numpy compatible &quot;root-dict&quot; of a root-tree.</span>
 
 <span class="sd">    Parameters</span>
@@ -281,7 +256,7 @@
     <span class="k">return</span> <span class="n">output</span></div>
 
 
-<div class="viewcode-block" id="add_to_rootfile"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.add_to_rootfile">[docs]</a><span class="k">def</span> <span class="nf">add_to_rootfile</span><span class="p">(</span><span class="n">rootfile</span><span class="p">,</span> <span class="n">new_branch</span><span class="p">,</span> <span class="n">branch_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="add_to_rootfile"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.add_to_rootfile">[docs]</a><span class="k">def</span> <span class="nf">add_to_rootfile</span><span class="p">(</span><span class="n">rootfile</span><span class="p">,</span> <span class="n">new_branch</span><span class="p">,</span> <span class="n">branch_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Adds a new branch to a given root file.</span>
 
 <span class="sd">    .. warning:: Overwrite not working currently!</span>
@@ -337,7 +312,7 @@
 
 
 <span class="c1"># TODO: remove? outdated</span>
-<div class="viewcode-block" id="format_data_weights"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.format_data_weights">[docs]</a><span class="k">def</span> <span class="nf">format_data_weights</span><span class="p">(</span><span class="n">data_to_shape</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
+<div class="viewcode-block" id="format_data_weights"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.format_data_weights">[docs]</a><span class="k">def</span> <span class="nf">format_data_weights</span><span class="p">(</span><span class="n">data_to_shape</span><span class="p">,</span> <span class="n">weights</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Format the data and the weights perfectly. Same length and more.</span>
 
 <span class="sd">    Change the data to pandas.DataFrame and fill the weights with ones where</span>
@@ -387,7 +362,7 @@
     <span class="k">return</span> <span class="n">data_to_shape</span><span class="p">,</span> <span class="n">weights</span></div>
 
 
-<div class="viewcode-block" id="obj_to_string"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.obj_to_string">[docs]</a><span class="k">def</span> <span class="nf">obj_to_string</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="obj_to_string"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.obj_to_string">[docs]</a><span class="k">def</span> <span class="nf">obj_to_string</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">separator</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Return a string containing all objects as strings, separated by the separator.</span>
 
 <span class="sd">    Useful for automatic conversion for different types. The following objects</span>
@@ -418,7 +393,7 @@
     <span class="k">return</span> <span class="n">string_out</span></div>
 
 
-<div class="viewcode-block" id="is_root"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_root">[docs]</a><span class="k">def</span> <span class="nf">is_root</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
+<div class="viewcode-block" id="is_root"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.is_root">[docs]</a><span class="k">def</span> <span class="nf">is_root</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check whether a given data is a root file. Needs dicts to be True.&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">data_to_check</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">)</span>
@@ -431,7 +406,7 @@
     <span class="k">return</span> <span class="n">flag</span></div>
 
 
-<div class="viewcode-block" id="is_list"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_list">[docs]</a><span class="k">def</span> <span class="nf">is_list</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
+<div class="viewcode-block" id="is_list"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.is_list">[docs]</a><span class="k">def</span> <span class="nf">is_list</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Check whether the given data is a list.&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
@@ -439,7 +414,7 @@
     <span class="k">return</span> <span class="n">flag</span></div>
 
 
-<div class="viewcode-block" id="is_ndarray"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_ndarray">[docs]</a><span class="k">def</span> <span class="nf">is_ndarray</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
+<div class="viewcode-block" id="is_ndarray"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.is_ndarray">[docs]</a><span class="k">def</span> <span class="nf">is_ndarray</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check whether a given data is an ndarray.&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
@@ -447,7 +422,7 @@
     <span class="k">return</span> <span class="n">flag</span></div>
 
 
-<div class="viewcode-block" id="is_pickle"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.is_pickle">[docs]</a><span class="k">def</span> <span class="nf">is_pickle</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
+<div class="viewcode-block" id="is_pickle"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.is_pickle">[docs]</a><span class="k">def</span> <span class="nf">is_pickle</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Check if the file is a pickled file (checks the ending).&quot;&quot;&quot;</span>
     <span class="n">flag</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="n">data_to_check</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">data_to_check</span><span class="p">)</span>
@@ -457,7 +432,7 @@
     <span class="k">return</span> <span class="n">flag</span></div>
 
 
-<div class="viewcode-block" id="to_list"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_list">[docs]</a><span class="k">def</span> <span class="nf">to_list</span><span class="p">(</span><span class="n">data_in</span><span class="p">):</span>
+<div class="viewcode-block" id="to_list"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.to_list">[docs]</a><span class="k">def</span> <span class="nf">to_list</span><span class="p">(</span><span class="n">data_in</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert the data into a list. Does not pack lists into a new one.</span>
 
 <span class="sd">    If your input is, for example, a string or a list of strings, or a</span>
@@ -490,7 +465,7 @@
     <span class="k">return</span> <span class="n">data_in</span></div>
 
 
-<div class="viewcode-block" id="to_ndarray"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_ndarray">[docs]</a><span class="k">def</span> <span class="nf">to_ndarray</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">float_array</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+<div class="viewcode-block" id="to_ndarray"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.to_ndarray">[docs]</a><span class="k">def</span> <span class="nf">to_ndarray</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">float_array</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert data to numpy array (containing only floats).</span>
 
 <span class="sd">    Parameters</span>
@@ -534,7 +509,7 @@
     <span class="k">return</span> <span class="n">data_in</span></div>
 
 
-<div class="viewcode-block" id="to_pandas_old"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_pandas_old">[docs]</a><span class="k">def</span> <span class="nf">to_pandas_old</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="to_pandas_old"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.to_pandas_old">[docs]</a><span class="k">def</span> <span class="nf">to_pandas_old</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert data from numpy or root to pandas dataframe.</span>
 
 <span class="sd">    Convert data safely to pandas, whatever the format is.</span>
@@ -572,7 +547,7 @@
     <span class="k">return</span> <span class="n">data_in</span></div>
 
 
-<div class="viewcode-block" id="to_pandas"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.to_pandas">[docs]</a><span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="to_pandas"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.to_pandas">[docs]</a><span class="k">def</span> <span class="nf">to_pandas</span><span class="p">(</span><span class="n">data_in</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert data from numpy or root to pandas dataframe.</span>
 
 <span class="sd">    Convert data safely to pandas, whatever the format is.</span>
@@ -618,7 +593,7 @@
     <span class="c1"># return data_in</span>
 
 
-<div class="viewcode-block" id="adv_return"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.adv_return">[docs]</a><span class="k">def</span> <span class="nf">adv_return</span><span class="p">(</span><span class="n">return_value</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<div class="viewcode-block" id="adv_return"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.adv_return">[docs]</a><span class="k">def</span> <span class="nf">adv_return</span><span class="p">(</span><span class="n">return_value</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Save the value if save_name specified, otherwise just return input.</span>
 
 <span class="sd">    Can be wrapped around the return value. Without any arguments, the return</span>
@@ -675,7 +650,7 @@
     <span class="k">return</span> <span class="n">return_value</span></div>
 
 
-<div class="viewcode-block" id="try_unpickle"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.tools.data_tools.try_unpickle">[docs]</a><span class="k">def</span> <span class="nf">try_unpickle</span><span class="p">(</span><span class="n">file_to_unpickle</span><span class="p">,</span> <span class="n">use_metapath_bkwcomp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+<div class="viewcode-block" id="try_unpickle"><a class="viewcode-back" href="../../../raredecay.tools.data_tools.html#raredecay.data.try_unpickle">[docs]</a><span class="k">def</span> <span class="nf">try_unpickle</span><span class="p">(</span><span class="n">file_to_unpickle</span><span class="p">,</span> <span class="n">use_metapath_bkwcomp</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Try to unpickle a file and return, otherwise just return input.&quot;&quot;&quot;</span>
     <span class="n">file_to_unpickle</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">file_to_unpickle</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">is_pickle</span><span class="p">(</span><span class="n">file_to_unpickle</span><span class="p">):</span>
@@ -685,9 +660,6 @@
     <span class="k">return</span> <span class="n">file_to_unpickle</span></div>
 </pre></div>
 
-           </div>
-           <div class="articleComments">
-            
            </div>
           </div>
           <footer>
@@ -719,17 +691,16 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.3.1',
+            VERSION:'2.0.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 

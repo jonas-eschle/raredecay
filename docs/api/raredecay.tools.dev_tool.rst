@@ -1,5 +1,5 @@
-dev\_tool
-=========
+dev_tool
+========
 
 .. automodule:: raredecay.tools.dev_tool
     :members:

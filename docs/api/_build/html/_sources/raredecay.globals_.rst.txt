@@ -1,5 +1,5 @@
-globals\_
-=========
+globals_
+========
 
 .. automodule:: raredecay.globals_
     :members:

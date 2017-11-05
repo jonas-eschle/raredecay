@@ -1,5 +1,5 @@
-ml\_analysis
-============
+ml_analysis
+===========
 
 .. automodule:: raredecay.analysis.ml_analysis
     :members:

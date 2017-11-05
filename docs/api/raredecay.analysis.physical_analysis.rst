@@ -1,5 +1,5 @@
-physical\_analysis
-==================
+physical_analysis
+=================
 
 .. automodule:: raredecay.analysis.physical_analysis
     :members:

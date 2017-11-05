@@ -8,11 +8,9 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>raredecay.analysis.statistics_tmp &mdash; Raredecay 1.3.1 documentation</title>
+  <title>raredecay.analysis.statistics_tmp &mdash; Raredecay 2.0.0 documentation</title>
   
 
-  
-  
   
   
 
@@ -35,7 +33,7 @@
         <link rel="index" title="Index"
               href="../../../genindex.html"/>
         <link rel="search" title="Search" href="../../../search.html"/>
-    <link rel="top" title="Raredecay 1.3.1 documentation" href="../../../index.html"/>
+    <link rel="top" title="Raredecay 2.0.0 documentation" href="../../../index.html"/>
         <link rel="up" title="Module code" href="../../index.html"/> 
 
   
@@ -45,7 +43,6 @@
 
 <body class="wy-body-for-nav" role="document">
 
-   
   <div class="wy-grid-for-nav">
 
     
@@ -65,7 +62,7 @@
             
             
               <div class="version">
-                1.3.1
+                2.0.0
               </div>
             
           
@@ -86,10 +83,7 @@
           
             
             
-              
-            
-            
-              <ul>
+                <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../raredecay.data.html">data</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../raredecay.ml.html">ml</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../raredecay.reweight.html">reweight</a></li>
@@ -109,10 +103,8 @@
 
       
       <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
-        
-          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
-          <a href="../../../index.html">Raredecay</a>
-        
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">Raredecay</a>
       </nav>
 
 
@@ -125,36 +117,19 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
 <div role="navigation" aria-label="breadcrumbs navigation">
-
   <ul class="wy-breadcrumbs">
-    
-      <li><a href="../../../index.html">Docs</a> &raquo;</li>
-        
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
           <li><a href="../../index.html">Module code</a> &raquo;</li>
-        
-      <li>raredecay.analysis.statistics_tmp</li>
-    
-    
+      
+    <li>raredecay.analysis.statistics_tmp</li>
       <li class="wy-breadcrumbs-aside">
         
-            
+          
         
       </li>
-    
   </ul>
-
-  
   <hr/>
 </div>
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
@@ -213,7 +188,7 @@
 
 
 <div class="viewcode-block" id="ks_2samp_ds"><a class="viewcode-back" href="../../../raredecay.analysis.statistics_tmp.html#raredecay.analysis.statistics_tmp.ks_2samp_ds">[docs]</a><span class="k">def</span> <span class="nf">ks_2samp_ds</span><span class="p">(</span><span class="n">data1</span><span class="p">,</span> <span class="n">data2</span><span class="p">,</span> <span class="n">column</span><span class="p">):</span>
-    <span class="n">ks_2samp_ds</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">ks_2samp</span><span class="o">.</span><span class="vm">__doc__</span>
+    <span class="n">ks_2samp_ds</span><span class="o">.</span><span class="n">__doc__</span> <span class="o">=</span> <span class="n">ks_2samp</span><span class="o">.</span><span class="n">__doc__</span>
 
     <span class="c1"># Python 2/3 compatibility, str</span>
     <span class="n">column</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">column</span><span class="p">)</span>
@@ -487,7 +462,7 @@
     <span class="c1">#    data.plotOn(x_frame1)</span>
     <span class="c1">#    comb_pdf.pdfList()[1].plotOn(x_frame1)</span>
 
-    <span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
         <span class="n">n_cpu</span> <span class="o">=</span> <span class="mi">8</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">n_cpu</span> <span class="o">=</span> <span class="n">meta_cfg</span><span class="o">.</span><span class="n">get_n_cpu</span><span class="p">()</span>
@@ -592,7 +567,7 @@
 
             <span class="c1">#            frame_tmp.SetTitle(&quot;significance&quot;)</span>
 
-            <span class="n">frame_tmp</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;Roofit\ pulls\ &quot;</span> <span class="o">+</span> <span class="n">data_name</span><span class="p">)</span>
+            <span class="n">frame_tmp</span><span class="o">.</span><span class="n">SetTitle</span><span class="p">(</span><span class="s2">r&quot;Roofit\ pulls\ &quot;</span> <span class="o">+</span> <span class="n">data_name</span><span class="p">)</span>
             <span class="n">frame_tmp</span><span class="o">.</span><span class="n">addObject</span><span class="p">(</span><span class="n">x_frame_pullhist</span><span class="p">)</span>
 
             <span class="n">frame_tmp</span><span class="o">.</span><span class="n">SetMinimum</span><span class="p">(</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
@@ -773,7 +748,7 @@
     <span class="k">return</span> <span class="n">cuts</span><span class="p">,</span> <span class="n">scores</span></div>
 
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
 
     <span class="kn">import</span> <span class="nn">ROOT</span>
     <span class="kn">from</span> <span class="nn">ROOT</span> <span class="k">import</span> <span class="n">RooRealVar</span><span class="p">,</span> <span class="n">RooArgList</span><span class="p">,</span> <span class="n">RooArgSet</span><span class="p">,</span> <span class="n">RooAddPdf</span><span class="p">,</span> <span class="n">RooDataSet</span><span class="p">,</span> <span class="n">RooAbsReal</span>
@@ -887,9 +862,6 @@
 </pre></div>
 
            </div>
-           <div class="articleComments">
-            
-           </div>
           </div>
           <footer>
   
@@ -920,17 +892,16 @@
     <script type="text/javascript">
         var DOCUMENTATION_OPTIONS = {
             URL_ROOT:'../../../',
-            VERSION:'1.3.1',
+            VERSION:'2.0.0',
             COLLAPSE_INDEX:false,
             FILE_SUFFIX:'.html',
-            HAS_SOURCE:  true,
-            SOURCELINK_SUFFIX: '.txt'
+            HAS_SOURCE:  true
         };
     </script>
       <script type="text/javascript" src="../../../_static/jquery.js"></script>
       <script type="text/javascript" src="../../../_static/underscore.js"></script>
       <script type="text/javascript" src="../../../_static/doctools.js"></script>
-      <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
 
   
 
