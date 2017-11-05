@@ -34,13 +34,12 @@ Want to test whether your reweighting did overfit? Use train\_similar:
 
 .. code:: python
 
-    from raredecay.data import HEPDataStorage
-    from raredecay.score import train_similar
+    import raredecay as rd  
 
-    mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)
-    real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)
+    mc_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
+    real_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
 
-    score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
+    score = rd.score.train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
 
 Getting started right now
 -------------------------
@@ -55,49 +54,35 @@ Documentation and API
 ---------------------
 
 The API as well as the documentation:
-`Documentation <https://mayou36.bitbucket.io/raredecay/docs/>`__
+`Documentation <https://mayou36.github.io/raredecay/>`__
 
 Setup and installation
 ----------------------
 
-Depending on which functionality you want to use, you may consider different installations.
+Anaconda
+~~~~~~~~
 
-
-
-Everything (reweighting incl. scoring, machine learning, ROOT bindings)
-#######################################################################
-Follow the instructions for each dependency separately and then install
-raredecay via
+Easiest way: use conda to install everything (except of the rep, which
+has to be upgraded with pip for some functionalities)
 
 ::
 
-    pip install raredecay[all]
+    conda install raredecay -c mayou36
 
-Machine learning, advanced scores
-#################################
-First install the following version of REP (the -U can be omitted, but
-is recommended to have the newest dependencies, on the other hand may
-crashes REPs reproducibility):
+PyPI
+~~~~
+
+The package with all extras requires root\_numpy as well as rootpy (and
+therefore a ROOT installation with python-bindings) to be installed on
+your system. If that is not the case, some functions won't work.
+
+If you want to install all the extra, first install the very newest
+version of REP (may also needed with conda install) (the -U can be
+omitted, but is recommended to have the newest dependencies):
 
 ::
 
     pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
-
-Then install the package via
-
-::
-
-    pip install -U raredecay[ml]
-
-Reweighting (without scoring)
-#############################
-
-To install the newest version of hep\_ml containing the
-loss-regularization (recommended, but optional).
-
-::
-
-    pip install -U git+https://github.com/arogozhnikov/hep_ml.git
 
 Then, install the raredecay package (without ROOT-support) via
 
@@ -110,6 +95,15 @@ To make sure you can convert ROOT-NTuples, use
 ::
 
     pip install raredecay[root]  # *use raredecay\[root\] in a zsh-console*
+
+or, instead of root/additionally (comma separated) ``reweight`` or
+``reweight`` for the specific functionalities.
+
+In order to have all functionalities, use
+
+::
+
+    pip install raredecay[all]
 
 As it is a young package still under developement, it may receive
 regular updates and improvements and it is probably a good idea to
