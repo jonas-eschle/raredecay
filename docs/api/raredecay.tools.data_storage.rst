@@ -1,5 +1,5 @@
-data\_storage
-=============
+data_storage
+============
 
 .. automodule:: raredecay.tools.data_storage
     :members:

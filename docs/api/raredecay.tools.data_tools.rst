@@ -1,5 +1,5 @@
-data\_tools
-===========
+data_tools
+==========
 
 .. automodule:: raredecay.tools.data_tools
     :members:

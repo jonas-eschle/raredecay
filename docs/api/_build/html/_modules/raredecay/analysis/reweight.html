@@ -1,0 +1,733 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.analysis.reweight &mdash; Raredecay 2.0.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="Raredecay 2.0.0 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.ml.html">ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.score.html">score</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.stat.html">stat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.settings.html">settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">DEPREC: Full (legacy) API raredecay</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">Raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.analysis.reweight</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.analysis.reweight</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="sd">@author: Jonas Eschle &quot;Mayou36&quot;</span>
+
+
+<span class="sd">DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat</span>
+
+<span class="sd">DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!</span>
+
+
+
+<span class="sd">The reweighting module consists of function to reweight a distribution by learning from</span>
+<span class="sd">two other distributions as well as reweighting a distribution by itself in a k-fold way.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="c1"># Python 2 backwards compatibility overhead START</span>
+<span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">division</span><span class="p">,</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span><span class="p">,</span> <span class="n">unicode_literals</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>  <span class="c1"># noqa</span>
+<span class="kn">import</span> <span class="nn">warnings</span>  <span class="c1"># noqa</span>
+
+<span class="kn">from</span> <span class="nn">builtins</span> <span class="k">import</span> <span class="p">(</span><span class="n">ascii</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">,</span> <span class="nb">chr</span><span class="p">,</span> <span class="nb">dict</span><span class="p">,</span> <span class="nb">filter</span><span class="p">,</span> <span class="nb">hex</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">map</span><span class="p">,</span> <span class="nb">next</span><span class="p">,</span> <span class="nb">oct</span><span class="p">,</span>  <span class="c1"># noqa</span>
+                      <span class="nb">open</span><span class="p">,</span> <span class="nb">pow</span><span class="p">,</span> <span class="nb">range</span><span class="p">,</span> <span class="nb">round</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">super</span><span class="p">,</span> <span class="nb">zip</span><span class="p">,</span>
+                      <span class="p">)</span>  <span class="c1"># noqa</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>  <span class="c1"># noqa</span>
+
+<span class="kn">import</span> <span class="nn">raredecay.meta_config</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">raredecay.globals_</span> <span class="k">import</span> <span class="n">out</span>  <span class="c1"># noqa</span>
+<span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">dev_tool</span><span class="p">,</span> <span class="n">data_tools</span><span class="p">,</span> <span class="n">data_storage</span>  <span class="c1"># noqa</span>
+
+<span class="k">try</span><span class="p">:</span>  <span class="c1"># noqa</span>
+    <span class="kn">from</span> <span class="nn">future.builtins.disabled</span> <span class="k">import</span> <span class="p">(</span><span class="n">apply</span><span class="p">,</span> <span class="nb">cmp</span><span class="p">,</span> <span class="n">coerce</span><span class="p">,</span> <span class="n">execfile</span><span class="p">,</span> <span class="n">file</span><span class="p">,</span> <span class="n">long</span><span class="p">,</span> <span class="n">raw_input</span><span class="p">,</span>  <span class="c1"># noqa</span>
+                                          <span class="n">reduce</span><span class="p">,</span> <span class="n">reload</span><span class="p">,</span> <span class="n">unicode</span><span class="p">,</span> <span class="n">xrange</span><span class="p">,</span> <span class="n">StandardError</span><span class="p">,</span>
+                                          <span class="p">)</span>  <span class="c1"># noqa</span>
+    <span class="kn">from</span> <span class="nn">future.standard_library</span> <span class="k">import</span> <span class="n">install_aliases</span>  <span class="c1"># noqa</span>
+
+    <span class="n">install_aliases</span><span class="p">()</span>  <span class="c1"># noqa</span>
+    <span class="kn">from</span> <span class="nn">past.builtins</span> <span class="k">import</span> <span class="n">basestring</span>  <span class="c1"># noqa</span>
+<span class="k">except</span> <span class="ne">ImportError</span> <span class="k">as</span> <span class="n">err</span><span class="p">:</span>  <span class="c1"># noqa</span>
+    <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">version_info</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mi">3</span><span class="p">:</span>  <span class="c1"># noqa</span>
+        <span class="k">if</span> <span class="n">raredecay</span><span class="o">.</span><span class="n">meta_config</span><span class="o">.</span><span class="n">SUPPRESS_FUTURE_IMPORT_ERROR</span><span class="p">:</span>  <span class="c1"># noqa</span>
+            <span class="n">raredecay</span><span class="o">.</span><span class="n">meta_config</span><span class="o">.</span><span class="n">warning_occured</span><span class="p">()</span>  <span class="c1"># noqa</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Module future is not imported, error is suppressed. This means &quot;</span>  <span class="c1"># noqa</span>
+                          <span class="s2">&quot;Python 3 code is run under 2.7, which can cause unpredictable&quot;</span>  <span class="c1"># noqa</span>
+                          <span class="s2">&quot;errors. Best install the future package.&quot;</span><span class="p">,</span> <span class="ne">RuntimeWarning</span><span class="p">)</span>  <span class="c1"># noqa</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># noqa</span>
+            <span class="k">raise</span> <span class="n">err</span>  <span class="c1"># noqa</span>
+    <span class="k">else</span><span class="p">:</span>  <span class="c1"># noqa</span>
+        <span class="n">basestring</span> <span class="o">=</span> <span class="nb">str</span>  <span class="c1"># noqa</span>
+<span class="c1"># Python 2 backwards compatibility overhead END</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">hep_ml.reweight</span>
+<span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
+
+<span class="c1"># import configuration</span>
+<span class="kn">import</span> <span class="nn">raredecay.meta_config</span> <span class="k">as</span> <span class="nn">meta_cfg</span>
+<span class="kn">import</span> <span class="nn">raredecay.config</span> <span class="k">as</span> <span class="nn">cfg</span>
+
+<span class="c1"># HACK as reweight also uses meta_cfg for reweight_cfg</span>
+<span class="n">meta_cfg_module</span> <span class="o">=</span> <span class="n">meta_cfg</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">make_logger</span><span class="p">(</span><span class="n">__name__</span><span class="p">,</span> <span class="o">**</span><span class="n">cfg</span><span class="o">.</span><span class="n">logger_cfg</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="reweight_train"><a class="viewcode-back" href="../../../raredecay.analysis.reweight.html#raredecay.analysis.reweight.reweight_train">[docs]</a><span class="k">def</span> <span class="nf">reweight_train</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">real</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reweight_saveas</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                   <span class="n">weights_ratio</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">weights_mc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">weights_real</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return a trained reweighter from a (mc/real) distribution comparison.</span>
+
+<span class="sd">    | Reweighting a distribution is a &quot;making them the same&quot; by changing the</span>
+<span class="sd">      weights of the bins (instead of 1) for each event. Mostly, and therefore</span>
+<span class="sd">      the naming, you want to change the mc-distribution towards the real one.</span>
+<span class="sd">    | There are two possibilities</span>
+
+<span class="sd">    * normal bins reweighting:</span>
+<span class="sd">       divides the bins from one distribution by the bins of the other</span>
+<span class="sd">       distribution. Easy and fast, but unstable and inaccurat for higher</span>
+<span class="sd">       dimensions.</span>
+<span class="sd">    * Gradient Boosted reweighting:</span>
+<span class="sd">       uses several decision trees to reweight the bins. Slower, but more</span>
+<span class="sd">       accurat. Very useful in higher dimensions.</span>
+<span class="sd">       But be aware, that you can easily screw up things by overfitting.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mc : |hepds_type|</span>
+<span class="sd">        The Monte-Carlo data to compare with the real data.</span>
+<span class="sd">    real : |hepds_type|</span>
+<span class="sd">        Same as *mc_data* but for the real data.</span>
+<span class="sd">    columns : list of strings</span>
+<span class="sd">        The columns/features/branches you want to use for the reweighting.</span>
+<span class="sd">    reweighter : {&#39;gb&#39;, &#39;bins&#39;}</span>
+<span class="sd">        Specify which reweighter to be used.</span>
+
+<span class="sd">        - **gb**: The GradientBoosted Reweighter from REP,</span>
+<span class="sd">          :func:`~hep_ml.reweight.GBReweighter`</span>
+<span class="sd">        - **bins**: The simple bins reweighter from REP,</span>
+<span class="sd">          :func:`~hep_ml.reweight.BinsReweighter`</span>
+<span class="sd">    reweight_saveas : string</span>
+<span class="sd">        To save a trained reweighter in addition to return it. The value</span>
+<span class="sd">        is the filepath + name.</span>
+<span class="sd">    reweight_cfg : dict</span>
+<span class="sd">        Contains the parameters for the bins/gb-reweighter. See also</span>
+<span class="sd">        :func:`~hep_ml.reweight.BinsReweighter` and</span>
+<span class="sd">        :func:`~hep_ml.reweight.GBReweighter`.</span>
+<span class="sd">    weights_ratio : numeric or None, False</span>
+<span class="sd">        The ratio of the sum of mc weights / sum of real weights. If set to</span>
+<span class="sd">        one, the reweighter will learn from nicely normalized distributions.</span>
+<span class="sd">        A value greater than 1 means there are in total more mc events</span>
+<span class="sd">        than data points.</span>
+<span class="sd">    weights_mc : numpy.array [n_samples]</span>
+<span class="sd">        Explicit weights for the Monte-Carlo data. Only specify if you don&#39;t</span>
+<span class="sd">        want to use the weights in the |hepds_type|.</span>
+<span class="sd">    weights_real : numpy.array [n_samples]</span>
+<span class="sd">        Explicit weights for the real data. Only specify if you don&#39;t</span>
+<span class="sd">        want to use the weights in the |hepds_type|.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    out : object of type reweighter</span>
+<span class="sd">        Reweighter is trained to the data. Can, for example,</span>
+<span class="sd">        be used with :func:`~hep_ml.reweight.GBReweighter.predict_weights`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">__REWEIGHT_MODE</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;gb&#39;</span><span class="p">:</span> <span class="s1">&#39;GB&#39;</span><span class="p">,</span> <span class="s1">&#39;bins&#39;</span><span class="p">:</span> <span class="s1">&#39;Bins&#39;</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">:</span> <span class="s1">&#39;Bins&#39;</span><span class="p">}</span>
+
+    <span class="c1"># HACK</span>
+    <span class="kn">from</span> <span class="nn">raredecay.analysis.compatibility_tools</span> <span class="k">import</span> <span class="n">_make_data</span>
+
+    <span class="c1"># Python 2/3 compatibility, str</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">reweighter</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+    <span class="n">reweight_saveas</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">reweight_saveas</span><span class="p">)</span>
+    <span class="n">reweight_cfg</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">reweight_cfg</span><span class="p">)</span>
+
+    <span class="c1"># check for valid user input</span>
+    <span class="k">if</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">is_pickle</span><span class="p">(</span><span class="n">reweighter</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">adv_return</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="n">reweight_saveas</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">reweighter</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">__REWEIGHT_MODE</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Reweighter invalid: &quot;</span> <span class="o">+</span> <span class="n">reweighter</span><span class="p">)</span>
+
+    <span class="n">reweighter</span> <span class="o">=</span> <span class="n">__REWEIGHT_MODE</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">reweighter</span><span class="o">.</span><span class="n">lower</span><span class="p">())</span>
+    <span class="n">reweighter</span> <span class="o">+=</span> <span class="s1">&#39;Reweighter&#39;</span>
+
+    <span class="c1"># logging and writing output</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;Reweighter:&quot;</span><span class="p">,</span> <span class="n">reweighter</span><span class="p">,</span> <span class="s2">&quot;with config:&quot;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">(</span><span class="n">msg</span> <span class="o">+</span> <span class="p">[</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Data used:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot; and &quot;</span><span class="p">,</span>
+                          <span class="n">real</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">columns used for the reweighter training:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span>
+                          <span class="n">columns</span><span class="p">],</span> <span class="n">section</span><span class="o">=</span><span class="s2">&quot;Training the reweighter&quot;</span><span class="p">,</span> <span class="n">obj_separator</span><span class="o">=</span><span class="s2">&quot; &quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="c1"># use the intesection of both colomns</span>
+        <span class="n">common_cols</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">common_cols</span><span class="o">.</span><span class="n">intersection_update</span><span class="p">(</span><span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="p">)</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">common_cols</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">columns</span> <span class="o">!=</span> <span class="n">mc</span><span class="o">.</span><span class="n">columns</span> <span class="ow">or</span> <span class="n">columns</span> <span class="o">!=</span> <span class="n">real</span><span class="o">.</span><span class="n">columns</span><span class="p">:</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No columns specified for reweighting, took intersection&quot;</span> <span class="o">+</span>
+                           <span class="s2">&quot; of both dataset, as it&#39;s columns are not equal.&quot;</span> <span class="o">+</span>
+                           <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Therefore some columns were not used!&quot;</span><span class="p">)</span>
+            <span class="n">reweight_cfg</span><span class="o">.</span><span class="n">warning_occured</span><span class="p">()</span>
+
+    <span class="c1"># create data</span>
+    <span class="n">normalize_real</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">weights_ratio</span> <span class="k">else</span> <span class="kc">None</span>
+    <span class="n">mc</span><span class="p">,</span> <span class="n">_t</span><span class="p">,</span> <span class="n">mc_weights</span> <span class="o">=</span> <span class="n">_make_data</span><span class="p">(</span><span class="n">original_data</span><span class="o">=</span><span class="n">mc</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                    <span class="n">weights_original</span><span class="o">=</span><span class="n">weights_mc</span><span class="p">,</span> <span class="n">weights_ratio</span><span class="o">=</span><span class="n">weights_ratio</span><span class="p">)</span>
+    <span class="n">real</span><span class="p">,</span> <span class="n">_t</span><span class="p">,</span> <span class="n">real_weights</span> <span class="o">=</span> <span class="n">_make_data</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">features</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                        <span class="n">weights_original</span><span class="o">=</span><span class="n">weights_real</span><span class="p">,</span> <span class="n">weights_ratio</span><span class="o">=</span><span class="n">normalize_real</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">_t</span>
+
+    <span class="c1"># train the reweighter</span>
+    <span class="n">reweight_cfg</span> <span class="o">=</span> <span class="p">{}</span> <span class="k">if</span> <span class="n">reweight_cfg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">reweight_cfg</span>
+
+    <span class="k">if</span> <span class="n">reweighter</span> <span class="o">==</span> <span class="s2">&quot;GBReweighter&quot;</span><span class="p">:</span>
+        <span class="n">reweighter</span> <span class="o">=</span> <span class="n">hep_ml</span><span class="o">.</span><span class="n">reweight</span><span class="o">.</span><span class="n">GBReweighter</span><span class="p">(</span><span class="o">**</span><span class="n">reweight_cfg</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">reweighter</span> <span class="o">==</span> <span class="s2">&quot;BinsReweighter&quot;</span><span class="p">:</span>
+        <span class="n">reweighter</span> <span class="o">=</span> <span class="n">hep_ml</span><span class="o">.</span><span class="n">reweight</span><span class="o">.</span><span class="n">BinsReweighter</span><span class="p">(</span><span class="o">**</span><span class="n">reweight_cfg</span><span class="p">)</span>
+    <span class="n">reweighter</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">original</span><span class="o">=</span><span class="n">mc</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">real</span><span class="p">,</span>
+                   <span class="n">original_weight</span><span class="o">=</span><span class="n">mc_weights</span><span class="p">,</span> <span class="n">target_weight</span><span class="o">=</span><span class="n">real_weights</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">adv_return</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="n">save_name</span><span class="o">=</span><span class="n">reweight_saveas</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="reweight_weights"><a class="viewcode-back" href="../../../raredecay.analysis.reweight.html#raredecay.analysis.reweight.reweight_weights">[docs]</a><span class="k">def</span> <span class="nf">reweight_weights</span><span class="p">(</span><span class="n">apply_data</span><span class="p">,</span> <span class="n">reweighter_trained</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">add_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Apply reweighter to the data and (add +) return the weights.</span>
+
+<span class="sd">    Can be seen as a wrapper for the</span>
+<span class="sd">    :py:func:`~hep_ml.reweight.GBReweighter.predict_weights` method.</span>
+<span class="sd">    Additional functionality:</span>
+
+<span class="sd">    * Takes a trained reweighter as argument, but can also unpickle one</span>
+<span class="sd">       from a file.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    apply_data : |hepds_type|</span>
+<span class="sd">        The data for which the weights are predicted.</span>
+<span class="sd">    reweighter_trained : (pickled) reweighter (*from hep_ml*)</span>
+<span class="sd">        The trained reweighter, which predicts the new weights.</span>
+<span class="sd">    columns : list(str, str, str,...)</span>
+<span class="sd">        The columns to use for the reweighting.</span>
+<span class="sd">    normalize : boolean or int</span>
+<span class="sd">        If True, the weights will be normalized (scaled) to the value of</span>
+<span class="sd">        normalize.</span>
+<span class="sd">    add_weights : boolean</span>
+<span class="sd">        If set to False, the weights will only be returned and not updated in</span>
+<span class="sd">        the data (|hepds_type|). If you want to use the data later on</span>
+<span class="sd">        in the script with the new weights, set this value to True.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : :py:class:`~pd.Series`</span>
+<span class="sd">        Return an instance of pandas Series of shape [n_samples] containing the</span>
+<span class="sd">        new weights.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># HACK</span>
+    <span class="kn">from</span> <span class="nn">raredecay.analysis.compatibility_tools</span> <span class="k">import</span> <span class="n">_make_data</span>
+
+    <span class="c1"># Python 2/3 compatibility, str</span>
+    <span class="n">reweighter_trained</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">reweighter_trained</span><span class="p">)</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+
+    <span class="n">normalize</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">normalize</span>
+
+    <span class="n">reweighter_trained</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter_trained</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">columns</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">columns</span> <span class="o">=</span> <span class="n">reweighter_trained</span><span class="o">.</span><span class="n">columns</span>
+    <span class="c1"># new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),</span>
+    <span class="n">new_weights</span> <span class="o">=</span> <span class="n">reweighter_trained</span><span class="o">.</span><span class="n">predict_weights</span><span class="p">(</span><span class="n">apply_data</span><span class="o">.</span><span class="n">pandasDF</span><span class="p">(</span><span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">),</span>
+                                                     <span class="n">original_weight</span><span class="o">=</span><span class="n">apply_data</span><span class="o">.</span><span class="n">weights</span><span class="p">)</span>
+
+    <span class="c1"># write to output</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;Using the reweighter:</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">reweighter_trained</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> to reweight &quot;</span><span class="p">,</span>
+                    <span class="n">apply_data</span><span class="o">.</span><span class="n">name</span><span class="p">],</span> <span class="n">obj_separator</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalize</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalize</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="n">new_weights</span> <span class="o">*=</span> <span class="n">new_weights</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">new_weights</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">normalize</span>
+
+    <span class="n">new_weights</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">new_weights</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">apply_data</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">add_weights</span><span class="p">:</span>
+        <span class="n">apply_data</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">new_weights</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">new_weights</span></div>
+
+
+<span class="c1"># NEW</span>
+<div class="viewcode-block" id="reweight"><a class="viewcode-back" href="../../../raredecay.reweight.html#raredecay.analysis.reweight.reweight">[docs]</a><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span><span class="n">apply_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">real</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">n_reweights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">add_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(Train a reweighter and) apply the reweighter to get new weights.</span>
+
+<span class="sd">    Train a reweighter from the real data and the corresponding MC differences.</span>
+<span class="sd">    Then, try to correct the apply data (MC as well) the same as the first</span>
+<span class="sd">    MC would have been corrected to look like its real counterpart.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    apply_data : |hepds_type|</span>
+<span class="sd">        The data which shall be corrected</span>
+<span class="sd">    real : |hepds_type|</span>
+<span class="sd">        The real data to train the reweighter on</span>
+<span class="sd">    mc : |hepds_type|</span>
+<span class="sd">        The MC data to train the reweighter on</span>
+<span class="sd">    columns : list(str, str, str,...)</span>
+<span class="sd">        The branches to use for the reweighting process.</span>
+<span class="sd">    reweighter : {&#39;gb&#39;, &#39;bins&#39;} or trained hep_ml-reweighter (also pickled)</span>
+<span class="sd">        Either a string specifying which reweighter to use or an already</span>
+<span class="sd">        trained reweighter from the hep_ml-package. The reweighter can also</span>
+<span class="sd">        be a file-path (str) to a pickled reweighter.</span>
+<span class="sd">    reweight_cfg : dict</span>
+<span class="sd">        A dict containing all the keywords and values you want to specify as</span>
+<span class="sd">        parameters to the reweighter.</span>
+<span class="sd">    n_reweights : int</span>
+<span class="sd">        To get more stable weights, the mean of each weight over many</span>
+<span class="sd">        reweighting runs (training and predicting) can be used. The</span>
+<span class="sd">        n_reweights specifies how many runs to do.</span>
+<span class="sd">    add_weights : boolean</span>
+<span class="sd">        If True, the weights will be added to the data directly, therefore</span>
+<span class="sd">        the data-storage will be modified.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        Return a dict containing the weights as well as the reweighter.</span>
+<span class="sd">        The keywords are:</span>
+
+<span class="sd">        - *reweighter* : The trained reweighter</span>
+<span class="sd">        - *weights* : pandas Series containing the new weights of the data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+
+    <span class="c1">#    from raredecay.globals_ import out</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">reweighter_list</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">new_reweighter_list</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">n_reweights</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="n">reweighter</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">n_reweights</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+        <span class="n">reweighter_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_reweights</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">reweighter_list</span><span class="p">:</span>
+            <span class="n">reweighter</span> <span class="o">=</span> <span class="n">reweighter_list</span><span class="p">[</span><span class="n">run</span><span class="p">]</span>
+        <span class="n">reweighter</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reweighter</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="s1">&#39;bins&#39;</span><span class="p">):</span>
+            <span class="n">new_reweighter</span> <span class="o">=</span> <span class="n">raredecay</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">reweight</span><span class="o">.</span><span class="n">reweight_train</span><span class="p">(</span><span class="n">mc</span><span class="o">=</span><span class="n">mc</span><span class="p">,</span>
+                                                                        <span class="n">real</span><span class="o">=</span><span class="n">real</span><span class="p">,</span>
+                                                                        <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                                                        <span class="n">reweight_cfg</span><span class="o">=</span><span class="n">reweight_cfg</span><span class="p">,</span>
+                                                                        <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">)</span>
+            <span class="c1"># TODO: hack which adds columns, good idea?</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_reweighter</span><span class="p">,</span>
+                               <span class="s1">&#39;columns&#39;</span><span class="p">),</span> <span class="s2">&quot;Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?&quot;</span>
+            <span class="n">new_reweighter</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_reweighter</span> <span class="o">=</span> <span class="n">reweighter</span>
+
+        <span class="k">if</span> <span class="n">n_reweights</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">new_reweighter_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_reweighter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_reweighter_list</span> <span class="o">=</span> <span class="n">new_reweighter</span>
+
+        <span class="k">if</span> <span class="n">apply_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">tmp_weights</span> <span class="o">=</span> <span class="n">raredecay</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">reweight</span><span class="o">.</span><span class="n">reweight_weights</span><span class="p">(</span><span class="n">apply_data</span><span class="o">=</span><span class="n">apply_data</span><span class="p">,</span>
+                                                                       <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                                                       <span class="n">reweighter_trained</span><span class="o">=</span><span class="n">new_reweighter</span><span class="p">,</span>
+                                                                       <span class="n">add_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">run</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_weights</span> <span class="o">=</span> <span class="n">tmp_weights</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_weights</span> <span class="o">+=</span> <span class="n">tmp_weights</span>
+
+    <span class="k">if</span> <span class="n">apply_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">new_weights</span> <span class="o">/=</span> <span class="n">n_reweights</span>
+        <span class="n">new_weights</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">add_weights</span><span class="p">:</span>
+            <span class="n">apply_data</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">new_weights</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_weights</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;reweighter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_reweighter_list</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+
+
+<div class="viewcode-block" id="reweight_kfold"><a class="viewcode-back" href="../../../raredecay.reweight.html#raredecay.analysis.reweight.reweight_kfold">[docs]</a><span class="k">def</span> <span class="nf">reweight_kfold</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">real</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_folds</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweighter_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_reweights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                   <span class="n">add_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">normalize</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Kfold reweight the data by &quot;itself&quot; for *scoring* and hyper-parameters.</span>
+
+<span class="sd">    .. warning::</span>
+<span class="sd">       Do NOT use for the real reweighting process! (except if you really want</span>
+<span class="sd">       to reweight the data &quot;by itself&quot;)</span>
+
+
+<span class="sd">    If you want to figure out the hyper-parameters for a reweighting process</span>
+<span class="sd">    or just want to find out how good the reweighter works, you may want to</span>
+<span class="sd">    apply this to the data itself. This means:</span>
+
+<span class="sd">    - train a reweighter on mc/real</span>
+<span class="sd">    - apply it to get new weights for mc</span>
+<span class="sd">    - compare the mc/real distribution</span>
+
+<span class="sd">    The problem arises with biasing your reweighter. As in classification</span>
+<span class="sd">    tasks, where you split your data into train/test sets for Kfolds, you</span>
+<span class="sd">    want to do the same here. Therefore:</span>
+
+<span class="sd">    - split the mc data into (n_folds-1)/n_folds (training)</span>
+<span class="sd">    - train the reweighter on the training mc/complete real (if</span>
+<span class="sd">      mcreweighted_as_real_score is True, the real data will be folded too</span>
+<span class="sd">      for unbiasing the score)</span>
+<span class="sd">    - reweight the leftout mc test-fold</span>
+<span class="sd">    - do this n_folds times</span>
+<span class="sd">    - getting unbiased weights</span>
+
+<span class="sd">    The parameters are more or less the same as for the</span>
+<span class="sd">    :py:func:`~raredecay.analysis.ml_analysis.reweight_train` and</span>
+<span class="sd">    :py:func:`~raredecay.analysis.ml_analysis.reweight_weights`</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    mc : |hepds_type|</span>
+<span class="sd">        The Monte-Carlo data, which has to be &quot;fitted&quot; to the real data.</span>
+<span class="sd">    real : |hepds_type|</span>
+<span class="sd">        Same as *mc_data* but for the real data.</span>
+<span class="sd">    columns : list of strings</span>
+<span class="sd">        The columns/features/branches you want to use for the reweighting.</span>
+<span class="sd">    n_folds : int &gt;= 1</span>
+<span class="sd">        The number of folds to split the data. Usually, the more folds the</span>
+<span class="sd">        &quot;better&quot; the reweighting (especially for small datasets).</span>
+<span class="sd">        If n_folds = 1, the data will be reweighted directly and the benefit</span>
+<span class="sd">        of Kfolds and the unbiasing *disappears*</span>
+
+<span class="sd">    reweighter : {&#39;gb&#39;, &#39;bins&#39;}</span>
+<span class="sd">        Specify which reweighter to use.</span>
+<span class="sd">        - **gb**: GradientBoosted Reweighter from REP</span>
+<span class="sd">        - **bins**: Binned Reweighter from REP</span>
+<span class="sd">    reweighter_cfg : dict</span>
+<span class="sd">        Contains the parameters for the bins/gb-reweighter. See also</span>
+<span class="sd">        :func:`~hep_ml.reweight.BinsReweighter` and</span>
+<span class="sd">        :func:`~hep_ml.reweight.GBReweighter`.</span>
+<span class="sd">    n_reweights : int</span>
+<span class="sd">        As the reweighting often yields different weights depending on random</span>
+<span class="sd">        parameters like the splitting of the data, the new weights can be</span>
+<span class="sd">        produced by taking the average of the weights over many reweighting</span>
+<span class="sd">        runs. n_reweights is the number of reweight runs to average over.</span>
+<span class="sd">    add_weights : boolean</span>
+<span class="sd">        If True, the new weights will be added (in place) to the mc data and</span>
+<span class="sd">        returned. Otherwise, the weights will only be returned.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : :py:class:`~pd.Series`</span>
+<span class="sd">        Return the new weights.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Python 2/3 compatibility, str</span>
+    <span class="n">columns</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+    <span class="n">reweighter</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+    <span class="n">reweighter_cfg</span> <span class="o">=</span> <span class="n">dev_tool</span><span class="o">.</span><span class="n">entries_to_str</span><span class="p">(</span><span class="n">reweighter_cfg</span><span class="p">)</span>
+
+    <span class="n">normalize</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">normalize</span> <span class="ow">is</span> <span class="kc">True</span> <span class="k">else</span> <span class="n">normalize</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">add_output</span><span class="p">([</span><span class="s2">&quot;Doing reweighting_Kfold with &quot;</span><span class="p">,</span> <span class="n">n_folds</span><span class="p">,</span> <span class="s2">&quot; folds&quot;</span><span class="p">],</span>
+                   <span class="n">title</span><span class="o">=</span><span class="s2">&quot;Reweighting Kfold&quot;</span><span class="p">,</span> <span class="n">obj_separator</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+    <span class="c1"># create variables</span>
+    <span class="k">assert</span> <span class="n">n_folds</span> <span class="o">&gt;=</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">n_folds</span><span class="p">,</span> <span class="nb">int</span><span class="p">),</span> \
+        <span class="s2">&quot;n_folds has to be &gt;= 1, its currently&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">n_folds</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">mc</span><span class="p">,</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">),</span> \
+        <span class="s2">&quot;wrong data type. Has to be HEPDataStorage, is currently&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">mc</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">real</span><span class="p">,</span> <span class="n">data_storage</span><span class="o">.</span><span class="n">HEPDataStorage</span><span class="p">),</span> \
+        <span class="s2">&quot;wrong data type. Has to be HEPDataStorage, is currently&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">real</span><span class="p">))</span>
+
+    <span class="n">new_weights_tot</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">mc</span><span class="p">)),</span> <span class="n">index</span><span class="o">=</span><span class="n">mc</span><span class="o">.</span><span class="n">index</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">add_weights</span><span class="p">:</span>
+        <span class="n">old_mc_tot_weights</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">weights</span>
+
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_reweights</span><span class="p">):</span>
+        <span class="n">new_weights_all</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">new_weights_index</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># split data to folds and loop over them</span>
+        <span class="n">mc</span><span class="o">.</span><span class="n">make_folds</span><span class="p">(</span><span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">)</span>
+        <span class="n">real</span><span class="o">.</span><span class="n">make_folds</span><span class="p">(</span><span class="n">n_folds</span><span class="o">=</span><span class="n">n_folds</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">do_reweighting</span><span class="p">(</span><span class="n">fold</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Inline loop for parallelization</span>
+<span class="sd">            Parameters</span>
+<span class="sd">            ----------</span>
+<span class="sd">            fold : int</span>
+<span class="sd">                Which fold</span>
+
+<span class="sd">            Returns</span>
+<span class="sd">            -------</span>
+
+<span class="sd">            &quot;&quot;&quot;</span>
+            <span class="c1"># create train/test data</span>
+            <span class="k">if</span> <span class="n">n_folds</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="n">train_real</span><span class="p">,</span> <span class="n">test_real</span> <span class="o">=</span> <span class="n">real</span><span class="o">.</span><span class="n">get_fold</span><span class="p">(</span><span class="n">fold</span><span class="p">)</span>
+                <span class="n">train_mc</span><span class="p">,</span> <span class="n">test_mc</span> <span class="o">=</span> <span class="n">mc</span><span class="o">.</span><span class="n">get_fold</span><span class="p">(</span><span class="n">fold</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">train_real</span> <span class="o">=</span> <span class="n">test_real</span> <span class="o">=</span> <span class="n">real</span>
+                <span class="n">train_mc</span> <span class="o">=</span> <span class="n">test_mc</span> <span class="o">=</span> <span class="n">mc</span>
+
+            <span class="c1"># if mcreweighted_as_real_score:</span>
+            <span class="c1">#     old_mc_weights = test_mc.get_weights()</span>
+
+            <span class="c1"># plot the first fold as example (the first one surely exists)</span>
+            <span class="n">plot_importance1</span> <span class="o">=</span> <span class="mi">2</span> <span class="k">if</span> <span class="n">fold</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">else</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">n_folds</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">plot_importance1</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">run</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">train_real</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Reweighter trainer, example, fold &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fold</span><span class="p">),</span>
+                                <span class="n">importance</span><span class="o">=</span><span class="n">plot_importance1</span><span class="p">)</span>
+                <span class="n">train_mc</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;Reweighter trainer, example, fold &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fold</span><span class="p">),</span>
+                              <span class="n">importance</span><span class="o">=</span><span class="n">plot_importance1</span><span class="p">)</span>
+
+            <span class="c1"># train reweighter on training data</span>
+            <span class="n">reweighter_trained</span> <span class="o">=</span> <span class="n">reweight_train</span><span class="p">(</span><span class="n">mc</span><span class="o">=</span><span class="n">train_mc</span><span class="p">,</span> <span class="n">real</span><span class="o">=</span><span class="n">train_real</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                                <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="n">reweighter_cfg</span><span class="p">)</span>
+
+            <span class="n">new_weights</span> <span class="o">=</span> <span class="n">reweight_weights</span><span class="p">(</span><span class="n">apply_data</span><span class="o">=</span><span class="n">test_mc</span><span class="p">,</span> <span class="n">reweighter_trained</span><span class="o">=</span><span class="n">reweighter_trained</span><span class="p">,</span>
+                                           <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">add_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>  <span class="c1"># fold only, not full data</span>
+            <span class="c1"># plot one for example of the new weights</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">n_folds</span> <span class="o">&gt;</span> <span class="mi">1</span> <span class="ow">and</span> <span class="n">plot_importance1</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">max</span><span class="p">(</span><span class="n">new_weights</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">50</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">save_fig</span><span class="p">(</span><span class="s2">&quot;new weights of fold &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">fold</span><span class="p">),</span> <span class="n">importance</span><span class="o">=</span><span class="n">plot_importance1</span><span class="p">)</span>
+                <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">new_weights</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">40</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="p">(</span><span class="n">new_weights</span><span class="p">,</span> <span class="n">test_mc</span><span class="o">.</span><span class="n">get_index</span><span class="p">())</span>
+
+        <span class="n">weights_and_indexes</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">do_reweighting</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_folds</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">w</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">weights_and_indexes</span><span class="p">:</span>
+            <span class="n">new_weights_all</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">w</span><span class="p">)</span>
+            <span class="n">new_weights_index</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">n_folds</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">new_weights_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_weights_all</span><span class="p">)</span>
+            <span class="n">new_weights_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_weights_index</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_weights_all</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">new_weights_all</span><span class="p">)</span>
+            <span class="n">new_weights_index</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(</span><span class="n">new_weights_index</span><span class="p">)</span>
+        <span class="n">new_weights_tot</span> <span class="o">+=</span> <span class="n">pd</span><span class="o">.</span><span class="n">Series</span><span class="p">(</span><span class="n">new_weights_all</span><span class="p">,</span> <span class="n">index</span><span class="o">=</span><span class="n">new_weights_index</span><span class="p">)</span>
+
+        <span class="n">out</span><span class="o">.</span><span class="n">save_fig</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;New weights of run &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">run</span><span class="p">),</span> <span class="n">importance</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+        <span class="n">hack_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">new_weights_all</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">hack_array</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;New weights of reweighting at end of run &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">run</span><span class="p">))</span>
+
+    <span class="c1"># after for loop for weights creation</span>
+    <span class="n">new_weights_tot</span> <span class="o">/=</span> <span class="n">n_reweights</span>
+
+    <span class="k">if</span> <span class="n">add_weights</span><span class="p">:</span>
+        <span class="n">mc</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">new_weights_tot</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">mc</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">old_mc_tot_weights</span><span class="p">)</span>
+
+    <span class="n">out</span><span class="o">.</span><span class="n">save_fig</span><span class="p">(</span><span class="n">figure</span><span class="o">=</span><span class="s2">&quot;New weights of total mc&quot;</span><span class="p">,</span> <span class="n">importance</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">hist</span><span class="p">(</span><span class="n">new_weights_tot</span><span class="p">,</span> <span class="n">bins</span><span class="o">=</span><span class="mi">30</span><span class="p">,</span> <span class="n">log</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="s2">&quot;New weights of reweighting with Kfold&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalize</span><span class="p">,</span> <span class="p">(</span><span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">))</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">normalize</span><span class="p">,</span> <span class="nb">bool</span><span class="p">):</span>
+        <span class="n">new_weights_tot</span> <span class="o">*=</span> <span class="n">new_weights_tot</span><span class="o">.</span><span class="n">size</span> <span class="o">/</span> <span class="n">new_weights_tot</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">*</span> <span class="n">normalize</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_weights_tot</span>
+    <span class="k">return</span> <span class="n">output</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

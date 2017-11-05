@@ -1,5 +1,5 @@
-meta\_config
-============
+meta_config
+===========
 
 .. automodule:: raredecay.meta_config
     :members:

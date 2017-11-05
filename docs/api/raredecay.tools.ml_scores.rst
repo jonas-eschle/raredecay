@@ -1,5 +1,5 @@
-ml\_scores
-==========
+ml_scores
+=========
 
 .. automodule:: raredecay.tools.ml_scores
     :members:

@@ -1,5 +1,5 @@
-compatibility\_tools
-====================
+compatibility_tools
+===================
 
 .. automodule:: raredecay.analysis.compatibility_tools
     :members:
