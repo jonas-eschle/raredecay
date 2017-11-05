@@ -56,7 +56,7 @@ before_install:
 #- conda update anaconda -y
 
 - conda info -a
-
+- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
 - conda config --add channels https://conda.anaconda.org/NLeSC
 #- conda config --add channels https://conda.anaconda.org/nlesc/label/dev
 
