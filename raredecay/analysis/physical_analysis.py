@@ -4,182 +4,61 @@ Created on Sat Mar 26 16:49:45 2016
 
 @author: Jonas Eschle "Mayou36"
 
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
+
 This module provides high-level function, which often contain an essential
 part of a complete MVA. The functions are sometimes quite verbous, both
 in plotting as well as in printing, but always also return the important
 values.
 """
-from __future__ import division, absolute_import
+# Python 2 backwards compatibility overhead START
+from __future__ import absolute_import, division, print_function, unicode_literals
+
+import sys  # noqa
+import warnings  # noqa
+from builtins import (int,  # noqa
+                      range, str, zip,
+                      )  # noqa
+
+import raredecay.meta_config  # noqa
+import raredecay.tools.ml_scores
+
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
+    from future.standard_library import install_aliases  # noqa
+
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
+# Python 2 backwards compatibility overhead END
 
 import copy
 
-import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
 
+from raredecay.tools import dev_tool
 
-def test():
-    """just a test-function."""
-    print "empty test function"
-
-
-# @profile
-def clf_mayou(data1, data2, n_folds=3, n_base_clf=5):
-    """DEVELOPEMENT, WIP. Test a setup of clf involving bagging and stacking."""
-    # import raredecay.analysis.ml_analysis as ml_ana
-    # import pandas as pd
-    import copy
-
-    from rep.estimators import SklearnClassifier, XGBoostClassifier
-    from rep.metaml.folding import FoldingClassifier
-    from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier
-    from sklearn.ensemble import BaggingClassifier  # , VotingClassifier, AdaBoostClassifier
-    from rep.estimators.theanets import TheanetsClassifier
-    from sklearn.linear_model import LogisticRegression
-    from rep.metaml.cache import CacheClassifier
-
-    from rep.report.metrics import RocAuc
-
-    import rep.metaml.cache
-    from rep.metaml._cache import CacheHelper
-    rep.metaml.cache.cache_helper = CacheHelper('/home/mayou/cache', 100000)
-
-
-#    data1.make_folds(n_folds)
-#    data2.make_folds(n_folds)
-    output = {}
-
-    # for i in range(n_folds):
-    xgb_clf = XGBoostClassifier(n_estimators=350, eta=0.1, max_depth=4, nthreads=3)
-    xgb_folded = FoldingClassifier(base_estimator=xgb_clf, stratified=True,
-                                   parallel_profile='threads-2')
-    xgb_bagged = BaggingClassifier(base_estimator=xgb_folded, n_estimators=n_base_clf,
-                                   bootstrap=False)
-    xgb_bagged = SklearnClassifier(xgb_bagged)
-    xgb_big_stacker = copy.deepcopy(xgb_bagged)
-    xgb_bagged = CacheClassifier(name='xgb_bagged1', clf=xgb_bagged)
-
-    xgb_single = XGBoostClassifier(n_estimators=350, eta=0.1, max_depth=4, nthreads=3)
-    xgb_single = FoldingClassifier(base_estimator=xgb_single, stratified=True,
-                                   n_folds=10, parallel_profile='threads-2')
-    xgb_single = CacheClassifier(name='xgb_singled1', clf=xgb_single)
-
-    rdf_clf = SklearnClassifier(RandomForestClassifier(n_estimators=300, n_jobs=3))
-    rdf_folded = FoldingClassifier(base_estimator=rdf_clf, stratified=True,
-                                   parallel_profile='threads-2')
-    rdf_bagged = BaggingClassifier(base_estimator=rdf_folded, n_estimators=n_base_clf,
-                                   bootstrap=False)
-    rdf_bagged = SklearnClassifier(rdf_bagged)
-    rdf_bagged = CacheClassifier(name='rdf_bagged1', clf=rdf_bagged)
-
-    gb_clf = SklearnClassifier(GradientBoostingClassifier(n_estimators=50))
-    gb_folded = FoldingClassifier(base_estimator=gb_clf, stratified=True,
-                                  parallel_profile='threads-6')
-    gb_bagged = BaggingClassifier(base_estimator=gb_folded, n_estimators=n_base_clf,
-                                  bootstrap=False, n_jobs=5)
-    gb_bagged = SklearnClassifier(gb_bagged)
-    gb_bagged = CacheClassifier(name='gb_bagged1', clf=gb_bagged)
-
-    nn_clf = TheanetsClassifier(layers=[300, 300], hidden_dropout=0.03,
-                                trainers=[{'optimize': 'adagrad', 'patience': 5,
-                                           'learning_rate': 0.2, 'min_improvement': 0.1,
-                                           'momentum': 0.4, 'nesterov': True, 'loss': 'xe'}])
-    nn_folded = FoldingClassifier(base_estimator=nn_clf, stratified=True,
-                                  parallel_profile=None)  # 'threads-6')
-    nn_bagged = BaggingClassifier(base_estimator=nn_folded, n_estimators=n_base_clf,
-                                  bootstrap=False, n_jobs=1)
-    nn_bagged = CacheClassifier(name='nn_bagged1', clf=nn_bagged)
-
-    nn_single_clf = TheanetsClassifier(layers=[300, 300, 300], hidden_dropout=0.03,
-                                       trainers=[{'optimize': 'adagrad', 'patience': 5,
-                                                  'learning_rate': 0.2, 'min_improvement': 0.1,
-                                                  'momentum': 0.4, 'nesterov': True,
-                                                  'loss': 'xe'}])
-    nn_single = FoldingClassifier(base_estimator=nn_single_clf, n_folds=3, stratified=True)
-    nn_single = CacheClassifier(name='nn_single1', clf=nn_single)
-
-    logit_stacker = SklearnClassifier(LogisticRegression(penalty='l2', solver='sag'))
-    logit_stacker = FoldingClassifier(base_estimator=logit_stacker, n_folds=n_folds,
-                                      stratified=True, parallel_profile='threads-6')
-    logit_stacker = CacheClassifier(name='logit_stacker1', clf=logit_stacker)
-
-    xgb_stacker = XGBoostClassifier(n_estimators=400, eta=0.1, max_depth=4, nthreads=8)
-    # HACK
-    xgb_stacker = xgb_big_stacker
-    xgb_stacker = FoldingClassifier(base_estimator=xgb_stacker, n_folds=n_folds, random_state=42,
-                                    stratified=True, parallel_profile='threads-6')
-    xgb_stacker = CacheClassifier(name='xgb_stacker1', clf=xgb_stacker)
-
-
-#        train1, test1 = data1.get_fold(i)
-#        train2, test2 = data1.get_fold(i)
-#
-#        t_data, t_targets, t_weights =
-    data, targets, weights = data1.make_dataset(data2, weights_ratio=1)
-
-#    xgb_bagged.fit(data, targets, weights)
-#    xgb_report = xgb_bagged.test_on(data, targets, weights)
-#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_base classifier")
-#    output['xgb_base'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
-#    xgb_proba = xgb_report.prediction['clf'][:, 1]
-#    del xgb_bagged, xgb_folded, xgb_clf, xgb_report
-#
-#    xgb_single.fit(data, targets, weights)
-#    xgb_report = xgb_single.test_on(data, targets, weights)
-#    xgb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC xgb_single classifier")
-#    output['xgb_single'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
-#    xgb_proba = xgb_report.prediction['clf'][:, 1]
-#    del xgb_single, xgb_report
-
-    nn_single.fit(data, targets, weights)
-    nn_report = nn_single.test_on(data, targets, weights)
-    nn_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC nn_single classifier")
-    output['nn_single'] = "roc auc:" + str(nn_report.compute_metric(metric=RocAuc()))
-    # nn_proba = nn_report.prediction['clf'][:, 1]
-    del nn_single, nn_report
-
-#    rdf_bagged.fit(data, targets, weights)
-#    rdf_report = rdf_bagged.test_on(data, targets, weights)
-#    rdf_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC rdf_base classifier")
-#    output['rdf_base'] = "roc auc:" + str(rdf_report.compute_metric(metric=RocAuc()))
-#    rdf_proba = rdf_report.prediction['clf'][:, 1]
-#    del rdf_bagged, rdf_clf, rdf_folded, rdf_report
-
-#    gb_bagged.fit(data, targets, weights)
-#    gb_report = gb_bagged.test_on(data, targets, weights)
-#    gb_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC gb_base classifier")
-#    output['gb_base'] = "roc auc:" + str(gb_report.compute_metric(metric=RocAuc()))
-#    gb_proba = gb_report.prediction['clf'][:, 1]
-#    del gb_bagged, gb_clf, gb_folded, gb_report
-
-#    nn_bagged.fit(data, targets, weights)
-#    nn_report = nn_bagged.test_on(data, targets, weights)
-#    nn_report.roc(physics_notion=True).plot(new_plot=True, title="ROC AUC nn_base classifier")
-#    output['nn_base'] = "roc auc:" + str(nn_report.compute_metric(metric=RocAuc()))
-#    nn_proba = nn_report.prediction['clf'][:, 1]
-#    del nn_bagged, nn_clf, nn_folded, nn_report
-#
-#    base_predict = pd.DataFrame({'xgb': xgb_proba,
-#                                 #'rdf': rdf_proba,
-#                                 #'gb': gb_proba,
-#                                 'nn': nn_proba
-#                                 })
-#
-#
-#    xgb_stacker.fit(base_predict, targets, weights)
-#    xgb_report = xgb_stacker.test_on(base_predict, targets, weights)
-#    xgb_report.roc(physics_notion=True).plot(new_plot=True,
-#    title="ROC AUC xgb_stacked classifier")
-#    output['stacker_xgb'] = "roc auc:" + str(xgb_report.compute_metric(metric=RocAuc()))
-#    del xgb_stacker, xgb_report
-#
-#    logit_stacker.fit(base_predict, targets, weights)
-#    logit_report = logit_stacker.test_on(base_predict, targets, weights)
-#    logit_report.roc(physics_notion=True).plot(new_plot=True,
-#    title="ROC AUC logit_stacked classifier")
-#    output['stacker_logit'] = "roc auc:" + str(logit_report.compute_metric(metric=RocAuc()))
-#    del logit_stacker, logit_report
-
-    print output
+# legacy
+from raredecay.analysis.compatibility_reweight import reweight
 
 
 def _cut(data):
@@ -191,13 +70,10 @@ def _cut(data):
 def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
     """Cut the bkg while maintaining a certain percent of the signal. WIP."""
 
-    # from raredecay import meta_config
+    # import raredecay.meta_config as meta_cfg
     from raredecay.tools import data_tools
     from raredecay.globals_ import out
     # from raredecay.tools.data_storage import HEPDataStorage
-
-    import numpy as np
-    import copy
 
     columns = signal_data.columns
     signal_data.plot(figure="Before cut", title="Data comparison before cut")
@@ -220,22 +96,22 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
     while True:
 
-        #        pool = multiprocessing.Pool(meta_config.n_cpu_max)
+        #        pool = multiprocessing.Pool(meta_cfg.n_cpu_max)
         sig = np.array([signal_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
         sig = copy.deepcopy(sig)
         bkg = np.array([bkg_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
         bkg = copy.deepcopy(bkg)
-        data = zip(sig, bkg, [percent_sig_to_keep] * len(columns))
+        data = list(zip(sig, bkg, [percent_sig_to_keep] * len(columns)))
         limits, rejection = [], []
         for sig, bkg, per in data:
             temp = data_tools.apply_cuts(sig, bkg, per, bkg_length=bkg_length)
             limits.append(temp[0])
             rejection.append(temp[1])
-#        limits, rejection = pool.map(_cut, data)
+        # limits, rejection = pool.map(_cut, data)
         i_max_rej = np.argmax(rejection)
         max_rejection = np.max(rejection)
         column, limits = columns[i_max_rej], limits[i_max_rej]
-        print percent_sig_to_keep, percent_end
+        print(percent_sig_to_keep, percent_end)
         if max_rejection < 0.001 and percent_sig_to_keep == 100:
             if percent_end < 100:
                 percent_sig_to_keep -= stepsize
@@ -256,10 +132,10 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
         cuts = np.logical_and(bkg_data[column] > limits[0], bkg_data[column] < limits[1])
         bkg_data = bkg_data[cuts]
-        print "We used " + column
+        print("We used " + column)
 
-#    signal_data.hist(bins=30)
-#    bkg_data.hist(bins=30)
+    # signal_data.hist(bins=30)
+    #    bkg_data.hist(bins=30)
 
     signal_len_cut = len(np.array(signal_data.as_matrix()[:, 0]))
     bkg_len_cut = len(np.array(bkg_data.as_matrix()[:, 0]))
@@ -273,14 +149,14 @@ def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
 
     out.add_output(applied_cuts, section="Preselection cuts report")
     out.add_output(keep, section="All limits")
-    bkg_rejection = sum([i['reduction'] for i in applied_cuts.itervalues()])
+    bkg_rejection = sum([i['reduction'] for i in list(applied_cuts.values())])
     out.add_output(["summed up Bkg rejection: ", bkg_rejection, "True rejection: ",
                     100.0 - (bkg_len_cut / bkg_length), " True remaining signal: ",
                     signal_len_cut / signal_length], section="Total bkg rejection")
-    print signal_len_cut
-    print signal_length
-    print bkg_len_cut
-    print bkg_length
+    print(signal_len_cut)
+    print(signal_length)
+    print(bkg_len_cut)
+    print(bkg_length)
 
     return applied_cuts
 
@@ -318,7 +194,9 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         and more.
 
     """
-    import raredecay.analysis.ml_analysis as ml_ana
+    features = dev_tool.entries_to_str(features)
+    clf = dev_tool.entries_to_str(clf)
+    roc_auc = dev_tool.entries_to_str(roc_auc)
 
     roc_auc_all = True if roc_auc in ('all', 'both') else False
     roc_auc_single = True if roc_auc in ('single', 'both') else False
@@ -409,15 +287,20 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     out : float, float
         If a metric_vs_cut is specified, the best cut and metric is returned
     """
-    import numpy as np
-    import pandas as pd
-    import matplotlib.pyplot as plt
-
     from raredecay.globals_ import out
     from raredecay.analysis.ml_analysis import classify
     from raredecay.tools.metrics import punzi_fom, precision_measure
 
+    # Python 2/3 compatibility
+    bkg_sel = dev_tool.entries_to_str(bkg_sel)
+    clf = dev_tool.entries_to_str(clf)
+    columns = dev_tool.entries_to_str(columns)
+    metric_vs_cut = dev_tool.entries_to_str(metric_vs_cut)
+    save_mc_pred = dev_tool.entries_to_str(save_mc_pred)
+    save_real_pred = dev_tool.entries_to_str(save_real_pred)
+
     # check if predictions can be saved: need to be root-file and no selection applied
+
     output = {}
     if save_real_pred:
         if real_data.data_type != 'root':
@@ -434,7 +317,14 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             raise ValueError("MC pred set to be saved, but has selection " +
                              mc_data.data['selection'] + " applied")
 
+    # backwards compatibility
+
+
     bkg_sel = [bkg_sel] if not isinstance(bkg_sel, list) else bkg_sel
+    if bkg_sel[0].startswith('noexpand:'):
+        bkg_sel = bkg_sel[0][9:]
+    else:
+        bkg_sel = bkg_sel[0]
 
     pred_real = []
     pred_mc = []
@@ -442,7 +332,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     predict = not performance_only
     if performance_only:
         bkg_df = real_data.pandasDF()
-        bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
+        bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T) == 1]
         bkg_data = real_data.copy_storage()
         bkg_data.set_data(bkg_df)
         del bkg_df
@@ -473,7 +363,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                                            sample_weight=pred_tmp['weights'])
             best_index = np.argmax(best_metric)
             output = {'best_threshold_cut': best_cut[best_index],
-                      'best_metric': best_metric[best_index]}
+                      'best_metric': best_metric[best_index]
+                      }
 
     # predict to all data
     if predict:
@@ -488,7 +379,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             real_test.data_name_addition = "test"
             bkg_df = real_train.pandasDF()
 
-            bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T)[0] == 1]
+            bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T) == 1]
             real_train.set_data(bkg_df)
             real_train.data_name_addition = "train bkg"
 
@@ -517,22 +408,24 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         pred_mc.sort_index(inplace=True)
 
         # save predictions
-        if isinstance(save_real_pred, (str, int)) and not isinstance(save_real_pred, bool) and predict:
+        if isinstance(save_real_pred, (basestring, int)) and not isinstance(save_real_pred, bool) and predict:
             import copy
             root_dict = copy.deepcopy(real_data.data)
 
             if root_dict['selection'] is not None:
-                raise ValueError("Cannot save predictions to root as selections have been applied in the script")
+                raise ValueError(
+                        "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
                                    new_branch=pred_real, branch_name=save_real_pred)
 
-        if isinstance(save_mc_pred, (str, int)) and not isinstance(save_mc_pred, bool) and predict:
+        if isinstance(save_mc_pred, (basestring, int)) and not isinstance(save_mc_pred, bool) and predict:
             root_dict = copy.deepcopy(mc_data.data)
 
             if root_dict['selection'] is not None:
-                raise ValueError("Cannot save predictions to root as selections have been applied in the script")
+                raise ValueError(
+                        "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
                                    treename=root_dict.get('treename'),
@@ -589,106 +482,7 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
                        obj_separator=" ")
 
 
-def reweight(apply_data, real_data=None, mc_data=None, columns=None,
-             reweighter='gb', reweight_cfg=None, n_reweights=1,
-             apply_weights=True):
-    """(Train a reweighter and) apply the reweighter to get new weights.
-
-    Train a reweighter from the real data and the corresponding MC differences.
-    Then, try to correct the apply data (MC as well) the same as the first
-    MC would have been corrected to look like its real counterpart.
-
-    Parameters
-    ----------
-    apply_data : |hepds_type|
-        The data which shall be corrected
-    real_data : |hepds_type|
-        The real data to train the reweighter on
-    mc_data : |hepds_type|
-        The MC data to train the reweighter on
-    columns : list(str, str, str,...)
-        The branches to use for the reweighting process.
-    reweighter : {'gb', 'bins'} or trained hep_ml-reweighter (also pickled)
-        Either a string specifying which reweighter to use or an already
-        trained reweighter from the hep_ml-package. The reweighter can also
-        be a file-path (str) to a pickled reweighter.
-    reweight_cfg : dict
-        A dict containing all the keywords and values you want to specify as
-        parameters to the reweighter.
-    n_reweights : int
-        To get more stable weights, the mean of each weight over many
-        reweighting runs (training and predicting) can be used. The
-        n_reweights specifies how many runs to do.
-    apply_weights : boolean
-        If True, the weights will be added to the data directly, therefore
-        the data-storage will be modified.
-
-    Return
-    ------
-    out : dict
-        Return a dict containing the weights as well as the reweighter.
-        The keywords are:
-
-        - *reweighter* : The trained reweighter
-        - *weights* : pandas Series containing the new weights of the data.
-
-    """
-    import raredecay.analysis.ml_analysis as ml_ana
-
-#    from raredecay.globals_ import out
-    from raredecay.tools import data_tools
-
-    output = {}
-    reweighter_list = False
-    new_reweighter_list = []
-
-    reweighter = data_tools.try_unpickle(reweighter)
-
-    if isinstance(reweighter, list):
-        n_reweights = len(reweighter)
-        reweighter_list = copy.deepcopy(reweighter)
-
-    for run in range(n_reweights):
-        if reweighter_list:
-            reweighter = reweighter_list[run]
-        reweighter = data_tools.try_unpickle(reweighter)
-        if reweighter in ('gb', 'bins'):
-            new_reweighter = ml_ana.reweight_train(mc_data=mc_data,
-                                                   real_data=real_data,
-                                                   columns=columns,
-                                                   meta_cfg=reweight_cfg,
-                                                   reweighter=reweighter)
-            # TODO: hack which adds columns, good idea?
-            assert not hasattr(new_reweighter, 'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
-            new_reweighter.columns = data_tools.to_list(columns)
-
-        else:
-            new_reweighter = reweighter
-
-        if n_reweights > 1:
-            new_reweighter_list.append(new_reweighter)
-        else:
-            new_reweighter_list = new_reweighter
-
-        tmp_weights = ml_ana.reweight_weights(reweight_data=apply_data,
-                                              columns=columns,
-                                              reweighter_trained=new_reweighter,
-                                              add_weights_to_data=False)
-        if run == 0:
-            new_weights = tmp_weights
-        else:
-            new_weights += tmp_weights
-
-    new_weights /= n_reweights
-    # TODO: remove below?
-    new_weights.sort_index()
-
-    if apply_weights:
-        apply_data.set_weights(new_weights)
-    output['weights'] = new_weights
-    output['reweighter'] = new_reweighter_list
-
-    return output
+# OLD
 
 
 def reweightCV(real_data, mc_data, columns=None, n_folds=10,
@@ -703,12 +497,12 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     similar the reweighted to the real one is). In order to get an unbiased
     reweighting, a KFolding procedure is applied:
 
-    - the reweighter is trained on n-1/nth of the data and predicts the
-      weights for the 1/n leftover. This is done n times resulting in unbiased
-      weights for the mc data.
+    - the reweighter is trained on n-1/nth of the data and predicts the weights for the 1/n leftover.
+    - This is done n times resulting in unbiased weights for the mc data.
 
     To know, how well the reweighter worked, different stategies can be used
     and are implemented, for further information also see: |reweightingCV_quality_measure_link|
+
     Parameters
     ----------
     real_data : |hepds_type|
@@ -785,7 +579,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         described above.
     score_clf : str or dict or clf
         The classifier to use for the scoring. For an overview of what can be
-        used, see :py:function:`~raredecay.analysis.ml_analysis.make_clf()`.
+        used, see :py:func:`~raredecay.analysis.ml_analysis.make_clf()`.
     mayou_score : boolean
         If True, the experimental *mayou_score* will be generated.
     extended_train_similar : boolean
@@ -808,7 +602,6 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     """
     import numpy as np
 
-    import raredecay.analysis.ml_analysis as ml_ana
     from raredecay.tools import metrics
     from raredecay.globals_ import out
 
@@ -821,12 +614,13 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     # but both labeled with the same target as the real data in training
     # The mc reweighted score should therefore lie in between the mc and the
     # real score.
-#    if not apply_weights:
+    #    if not apply_weights:
     old_weights = mc_data.get_weights()
     # make sure the targets are set the right way TODO
     Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
                                          meta_cfg=reweight_cfg, columns=columns,
-                                         reweighter=reweighter, n_reweights=n_reweights,
+                                         reweighter=reweighter,
+                                         n_reweights=n_reweights,
                                          mcreweighted_as_real_score=scoring,
                                          score_columns=score_columns,
                                          n_folds=n_folds, score_clf=score_clf,
@@ -848,13 +642,20 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # test_predictions is an additional score I tried but so far I is not
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
-        scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
-                                       n_folds=n_folds_scoring, n_checks=n_folds_scoring,
-                                       features=score_columns, old_mc_weights=old_weights,
-                                       test_mc=extended_train_similar,
-                                       test_shuffle=extended_train_similar,
-                                       test_predictions=False, clf=score_clf)
-        out.add_output(['Mayou FoM:', scores['similar_dist']], to_end=True)
+        scores = raredecay.tools.ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
+                                                             n_folds=n_folds_scoring,
+                                                             n_checks=n_folds_scoring,
+                                                             columns=score_columns,
+                                                             old_mc_weights=old_weights,
+                                                             clf=score_clf)
+
+        # scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
+        #                                n_folds=n_folds_scoring, n_checks=n_folds_scoring,
+        #                                features=score_columns, old_mc_weights=old_weights,
+        #                                test_mc=extended_train_similar,
+        #                                test_shuffle=extended_train_similar,
+        #                                test_predictions=False, clf=score_clf)
+        out.add_output(['Mayou FoM:', scores], to_end=True)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
         # but anyway (if not overfitting) a nice measure. You insert two datasets
@@ -866,12 +667,12 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         temp_real_targets = real_data.get_targets()
         real_data.set_targets(1)
         tmp_, roc_auc_score, output = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                              validation=n_folds_scoring, plot_importance=4,
-                                              plot_title="ROC AUC to distinguish data",
-                                              clf=score_clf, weights_ratio=1,
-                                              features=score_columns,
-                                              extended_report=scoring,
-                                              get_predictions=True)
+                                                      validation=n_folds_scoring, plot_importance=4,
+                                                      plot_title="ROC AUC to distinguish data",
+                                                      clf=score_clf, weights_ratio=1,
+                                                      features=score_columns,
+                                                      extended_report=scoring,
+                                                      get_predictions=True)
         del tmp_
         # HACK
         predictions = output['y_proba'][:, 1][output['y_true'] == 0]
@@ -883,36 +684,38 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         plt.ylabel("weights")
         out.figure("Correlation of weights and predictions hexbin")
         plt.hexbin(x=predictions, y=weights_pred, gridsize=150)
-#        sns.jointplot(x=predictions, y=weights_pred, kind="hex")
+        #        sns.jointplot(x=predictions, y=weights_pred, kind="hex")
 
 
 
         if mayou_score:
-            metrics.mayou_score(mc_data=mc_data, real_data=real_data, n_folds=n_folds_scoring,
-                                clf=score_clf, old_mc_weights=old_weights)
-    # an example to add output with the most importand parameters. The first
-    # one can also be a single object instead of a list. do_print means
-    # printing it also to the console instead of only saving it to the output
-    # file. To_end is sometimes quite useful, as it prints (and saves) the
-    # arguments at the end of the file. So the important results are possibly
-    # printed to the end
+            raredecay.tools.ml_scores.mayou_score(mc_data=mc_data, real_data=real_data,
+                                                  n_folds=n_folds_scoring,
+                                                  clf=score_clf, old_mc_weights=old_weights)
+            # an example to add output with the most importand parameters. The first
+            # one can also be a single object instead of a list. do_print means
+            # printing it also to the console instead of only saving it to the output
+            # file. To_end is sometimes quite useful, as it prints (and saves) the
+            # arguments at the end of the file. So the important results are possibly
+            # printed to the end
         out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
                        title='ROC AUC of mc reweighted/real KFold', to_end=True)
-
-        out.add_output(['score:', scores['score'], "+-", scores['score_std']],
-                       importance=5,
-                       title='Train similar report', to_end=True)
-        if extended_train_similar:
-            out.add_output(['\nScore_mc:', scores['score_mc'], "+-", scores['score_mc_std']],
-                           importance=5,
-                           to_end=True)
-        if scores.get('score_max', False):
-            out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
-                           importance=5, to_end=True)
-        if scores.get('score_mc_max', False):
-            out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
-                            scores['score_mc_max_std']],
-                           importance=5, to_end=True)
+        # TODO? NEW SCORES?
+        #
+        # out.add_output(['score:', scores['score'], "+-", scores['score_std']],
+        #                importance=5,
+        #                title='Train similar report', to_end=True)
+        # if extended_train_similar:
+        #     out.add_output(['\nScore_mc:', scores['score_mc'], "+-", scores['score_mc_std']],
+        #                    importance=5,
+        #                    to_end=True)
+        # if scores.get('score_max', False):
+        #     out.add_output(['score max:', scores['score_max'], "+-", scores['score_max_std']],
+        #                    importance=5, to_end=True)
+        # if scores.get('score_mc_max', False):
+        #     out.add_output(['score_mc_max:', scores['score_mc_max'], "+-",
+        #                     scores['score_mc_max_std']],
+        #                    importance=5, to_end=True)
 
         if scores.get('score_shuffled', False):
             out.add_output(['score_shuffled:', scores['score_shuffled'], "+-",
@@ -931,23 +734,23 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
     return output
 
-
 # temporary:
-if __name__ == '__main__':
-    import pandas as pd
-    import numpy as np
-    import matplotlib.pyplot as plt
-
-    from raredecay.tools.data_storage import HEPDataStorage
-    n_cols = 7
-    cols = [str(i) for i in range(n_cols)]
-    a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
-    a = HEPDataStorage(a, target=1,)
-    b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
-    b = HEPDataStorage(b, target=0)
-
-#    feature_exploration(a, b, n_folds=3, roc_auc='all')
-
-
-
-    plt.show()
+# if __name__ == '__main__':
+#     import pandas as pd
+#     import numpy as np
+#     import matplotlib.pyplot as plt
+#
+#     from raredecay.tools.data_storage import HEPDataStorage
+#
+#     n_cols = 7
+#     cols = [str(i) for i in range(n_cols)]
+#     a = pd.DataFrame(np.random.normal(loc=0, scale=1, size=(1000, n_cols)), columns=cols)
+#     a = HEPDataStorage(a, target=1, )
+#     b = pd.DataFrame(np.random.normal(loc=0.2, scale=1.3, size=(1000, n_cols)), columns=cols)
+#     b = HEPDataStorage(b, target=0)
+#
+#     #    feature_exploration(a, b, n_folds=3, roc_auc='all')
+#
+#
+#
+#     plt.show()

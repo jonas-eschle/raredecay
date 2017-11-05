@@ -35,7 +35,7 @@ out : object of class :class:`~raredecay.tools.output.OutputHandler`
     .. note:: To ensure that you import the instance and to not make a copy,
       always import with an alias
 
-Variables:
+Variables
 ---------
 randint : int
     Many methods need random integers for their pseudo-random generator.
@@ -48,11 +48,39 @@ free_cpus
     can be extended if wanted
 """
 
-from __future__ import division, absolute_import
+# Python 2 backwards compatibility overhead START
+from __future__ import division, absolute_import, print_function, unicode_literals
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
+import sys  # noqa
+import warnings  # noqa
+import raredecay.meta_config  # noqa
+
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
+    from future.standard_library import install_aliases  # noqa
+
+    install_aliases()  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
+
+# Python 2 backwards compatibility overhead END
 
 from raredecay.tools import output
-from raredecay import meta_config
-from raredecay.run_config import config
+import raredecay.meta_config as meta_cfg
+import raredecay.config as cfg
 
 # ==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
@@ -60,7 +88,6 @@ from raredecay.run_config import config
 
 out = output.OutputHandler()
 
-cfg = config
 logger_cfg = cfg.logger_cfg  # only if not save_output
 
 # def set_output_handler(internal=True):
@@ -80,10 +107,10 @@ n_cpu_used = 0
 
 def free_cpus():
     """Return the number of free cpus, 1 if no or one are free"""
-    n_out = max([meta_config.n_cpu_max - n_cpu_used, 1])
+    n_out = max([meta_cfg.n_cpu_max - n_cpu_used, 1])
     return n_out
 
 
 if __name__ == '__main__':
-    print "Selftest start"
-    print "Selftest completed"
+    print("Selftest start")
+    print("Selftest completed")

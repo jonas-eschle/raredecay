@@ -1,19 +1,45 @@
 # -*- coding: utf-8 -*-
 """
-Created on Tue Sep 27 16:45:51 2016
-
 Contain methods to change settings in the whole package
 
 @author: Jonas Eschle "Mayou36"
 """
+# Python 2 backwards compatibility overhead START
+from __future__ import division, absolute_import, print_function, unicode_literals
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
+import sys  # noqa
+import warnings  # noqa
+import raredecay.meta_config  # noqa
 
-from __future__ import division, absolute_import
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
+    from future.standard_library import install_aliases  # noqa
 
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
+# Python 2 backwards compatibility overhead END
 
 import copy
 
-from raredecay.run_config import config
-from raredecay import meta_config
+import raredecay.meta_config as meta_cfg
+from raredecay.tools import dev_tool
+import raredecay.config as cfg
+
 
 # TODO: docs??
 def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
@@ -36,7 +62,7 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
         If a string is provided, it is taken as the path to a folder, in which
         a folder containing all the output of the run will be created.
 
-        If None, the output won' be saved.
+        If None, the output won't be saved.
     run_name : str
         The name of the run as well as of the folder that gets created.
     overwrite_existing : boolean
@@ -73,10 +99,21 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     out : instance of :py:class:`~raredecay.tools.output.OutputHandler`
         Return the output-handler currently in use by the script.
     """
+    # Python 2/3 compatibility
+    output_path = dev_tool.entries_to_str(output_path)
+    run_name = dev_tool.entries_to_str(run_name)
+    run_message = dev_tool.entries_to_str(run_message)
+    logger_console_level = dev_tool.entries_to_str(logger_console_level)
+    logger_file_level = dev_tool.entries_to_str(logger_file_level)
 
     if no_interactive_plots:
-        import matplotlib as mpl
-        mpl.use("pdf")
+        # import matplotlib as mpl
+        #
+        # mpl.use("pdf")
+
+        import matplotlib.pyplot as plt
+
+        plt.switch_backend("pdf")
 
     set_verbosity(verbosity=verbosity, plot_verbosity=plot_verbosity)
     _init_user_input(prompt_for_input=prompt_for_input)
@@ -113,16 +150,16 @@ def finalize(show_plots=True, play_sound_at_end=False):
 def set_verbosity(verbosity=3, plot_verbosity=3):
     """Change the verbosity of the package."""
     if verbosity is not None:
-        meta_config.set_verbosity(verbosity)
+        meta_cfg.set_verbosity(verbosity)
     if plot_verbosity is not None:
-        meta_config.set_plot_verbosity(plot_verbosity)
+        meta_cfg.set_plot_verbosity(plot_verbosity)
 
 
 def get_output_handler():
     """Return an output handler, instance of :py:class:`~raredecay.tools.output.OutputHandler()`.
 
     This can be used to add output (text as well as figures) and save them
-    easely. For more information see the docs of the OutputHandler
+    easily. For more information see the docs of the OutputHandler
 
     Return
     ------
@@ -158,7 +195,7 @@ def parallel_profile(n_cpu=-1, gpu_in_use=False):
 
 
     """
-    meta_config.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
+    meta_cfg.set_parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
 
 
 def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
@@ -184,11 +221,13 @@ def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
     dpi : int
         The resolution of the images.
     """
+    file_formats = dev_tool.entries_to_str(file_formats)
+
     # hack for using mutable defaults
     file_formats = copy.deepcopy(file_formats)
-    config.save_fig_cfg['file_formats'] = file_formats
-    config.save_fig_cfg['to_pickle'] = to_pickle
-    config.save_fig_cfg['dpi'] = dpi
+    cfg.save_fig_cfg['file_formats'] = file_formats
+    cfg.save_fig_cfg['to_pickle'] = to_pickle
+    cfg.save_fig_cfg['dpi'] = dpi
 
 
 def set_random_seed(seed=None):
@@ -200,29 +239,32 @@ def set_random_seed(seed=None):
         The seed for the random generator. If None, it won't change anything
     """
     if seed is not None:
-        meta_config.set_seed(seed)
+        meta_cfg.set_seed(seed)
 
 
 def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
                          run_message="This is a test-run to test the package",
                          prompt_for_input=False):
     """Saves output to file,"""
-    assert isinstance(run_name, (str, int)), "run_name has to be a string or int"
-    config.RUN_NAME = str(run_name)
-    config.OUTPUT_CFG['run_name'] = str(run_name)
+    run_name = dev_tool.entries_to_str(run_name)
+    run_message = dev_tool.entries_to_str(run_message)
+    file_path = dev_tool.entries_to_str(file_path)
+    assert isinstance(run_name, (basestring, int)), "run_name has to be a string or int"
+    cfg.RUN_NAME = str(run_name)
+    cfg.OUTPUT_CFG['run_name'] = str(run_name)
 
     if file_path is not None:
-        assert isinstance(file_path, str), "file_path has to be a string"
+        assert isinstance(file_path, basestring), "file_path has to be a string"
 
         file_path = str(file_path) if isinstance(file_path, int) else file_path
         file_path += "" if file_path.endswith("/") else "/"
 
-        config.run_message = str(run_message)
-        config.OUTPUT_CFG['output_path'] = file_path
-        config.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
+        cfg.run_message = str(run_message)
+        cfg.OUTPUT_CFG['output_path'] = file_path
+        cfg.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
 
         out = get_output_handler()
-        out.initialize_save(logger_cfg=config.logger_cfg, **config.OUTPUT_CFG)
+        out.initialize_save(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
         out.make_me_a_logger()
 
     else:
@@ -261,14 +303,14 @@ def _init_configure_logger(console_level='critical', file_level='debug'):
         assert level in (None, 'debug', 'info', 'warning', 'error', 'critical'), \
             "invalid logger level"
 
-    config.logger_cfg['logging_mode'] = logging_mode
-    config.logger_cfg['log_level_file'] = file_level
-    config.logger_cfg['log_level_console'] = console_level
-    config.logger_cfg['overwrite_file'] = True
-    config.logger_cfg['log_file_name'] = 'logfile_'
+    cfg.logger_cfg['logging_mode'] = logging_mode
+    cfg.logger_cfg['log_level_file'] = file_level
+    cfg.logger_cfg['log_level_console'] = console_level
+    cfg.logger_cfg['overwrite_file'] = True
+    cfg.logger_cfg['log_file_name'] = 'logfile_'
 
 
 def _init_user_input(prompt_for_input=True):
     """If called, you will be asked for input to name the specific run."""
-    meta_config.NO_PROMPT_ASSUME_YES = not prompt_for_input
-    meta_config.PROMPT_FOR_COMMENT = prompt_for_input
+    meta_cfg.NO_PROMPT_ASSUME_YES = not prompt_for_input
+    meta_cfg.PROMPT_FOR_COMMENT = prompt_for_input

@@ -1,16 +1,18 @@
-strictness: medium
+strictness: veryhigh
 pylint:
   disable:
     - too-many-arguments
     - too-many-statements
     - too-many-locals
     - too-many-branches
+    - redefined-builtin
 
 ignore-paths:
   - raredecay/tools/estimator.py
   - docs/conf.py
 python-targets:
  - 2
+ - 3
  
 pep8:
   full: true

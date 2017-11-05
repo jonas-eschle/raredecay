@@ -1,44 +1,51 @@
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 21 21:25:26 2016
 
 @author: Jonas Eschle "Mayou36"
 
+
+DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
+
+DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
+
+
 Contains several useful tools for all kind of programs
 """
-from __future__ import division, absolute_import
+# Python 2 backwards compatibility overhead START
+from __future__ import division, absolute_import, print_function, unicode_literals
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
+import sys  # noqa
+import warnings  # noqa
+import raredecay.meta_config  # noqa
+
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
+    from future.standard_library import install_aliases  # noqa
+
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    if sys.version_info[0] < 3:  # noqa
+        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            raredecay.meta_config.warning_occured()  # noqa
+            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
+                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+        else:  # noqa
+            raise err  # noqa
+    else:  # noqa
+        basestring = str  # noqa
+# Python 2 backwards compatibility overhead END
 
 import pandas as pd
 import numpy as np
 import collections
 
-from raredecay import meta_config
-
-
-def syspath_append(verboise=False):
-    """Adds the relevant path to the sys.path variable.
-    options:
-    v for verboise, print sys.paht before and after
-    """
-    import sys
-    import config
-
-    if verboise == 'v':
-        verboise = True
-    if verboise:
-        print sys.path
-    # n_to_remove = 0 #number of elements to remove from sys.path from behind
-    # sys.path = sys.path[:len(sys.path)-n_to_remove]
-    # used to remove unnecessary bindings
-    for path in config.pathes_to_add:
-        # get the sys.path and add pathes if they are not already contained
-        if path not in sys.path:
-            try:
-                sys.path.append(path)
-            except:
-                print "error when adding path \"" + path + "\" to sys.path"
-    if verboise:
-        print sys.path
+import raredecay.meta_config as meta_cfg
 
 
 def make_logger(module_name, logging_mode='both', log_level_file='debug',
@@ -83,10 +90,17 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
     import logging
     from time import strftime
 
+    module_name = entries_to_str(module_name)
+    logging_mode = entries_to_str(logging_mode)
+    log_level_file = entries_to_str(log_level_file)
+    log_level_console = entries_to_str(log_level_console)
+    log_file_name = entries_to_str(log_file_name)
+    log_file_dir = entries_to_str(log_file_dir)
+
     if log_file_dir is None:
         import raredecay.globals_
         log_file_dir = raredecay.globals_.out.get_logger_path()
-        if not isinstance(log_file_dir, str):
+        if not isinstance(log_file_dir, basestring):
             # set logging only to console; if 'file' was selected, no console,
             # set logging to console with level 'critical'
             if logging_mode == 'file':
@@ -102,13 +116,13 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
                                   ": %(levelname)s - %(message)s")
     if logging_mode == 'both' or logging_mode == 'file':
         if overwrite_file:
-            timeStamp = 'logfile'
+            time_stamp = 'logfile'
         else:
-            timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
+            time_stamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
         log_file_dir += '' if log_file_dir.endswith('/') else '/'
         log_file_fullname = log_file_dir + log_file_name + module_name
         fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
-                                                        timeStamp), file_mode)
+                                                        time_stamp), file_mode)
         fh.setLevel(getattr(logging, log_level_file.upper()))
         fh.setFormatter(formatter)
         logger.addHandler(fh)
@@ -119,8 +133,8 @@ def make_logger(module_name, logging_mode='both', log_level_file='debug',
         logger.addHandler(ch)
 
     # add logger to the loggers collection
-    meta_config.loggers[module_name] = logger
-    logger.info('Logger created succesfully, loggers: ' + str(meta_config.loggers))
+    meta_cfg.loggers[module_name] = logger
+    logger.info('Logger created succesfully, loggers: ' + str(meta_cfg.loggers))
     return logger
 
 
@@ -134,9 +148,7 @@ def progress(n, n_tot):
     n_tot : int or float
         The maximum. The bar is the percentage of n / n_tot
     """
-    import sys
-
-    i = float(n)/n_tot
+    i = float(n) / n_tot
     percent = int(i * 100)
     n_signs = 90
     equals = int(n_signs * i) * '='
@@ -151,18 +163,23 @@ def add_file_handler(logger, module_name, log_file_dir, log_level='info',
     from time import strftime
     import logging
 
+    logger = entries_to_str(logger)
+    module_name = entries_to_str(module_name)
+    log_file_dir = entries_to_str(log_file_dir)
+    log_level = entries_to_str(log_level)
+
     file_mode = 'w' if overwrite_file else None
     formatter = logging.Formatter("%(asctime)s - " + module_name +
                                   ": %(levelname)s - %(message)s")
 
     if overwrite_file:
-        timeStamp = 'logfile'
+        time_stamp = 'logfile'
     else:
-        timeStamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
+        time_stamp = strftime("%a-%d-%b-%Y-%H:%M:%S")
     log_file_dir += '' if log_file_dir.endswith('/') else '/'
     log_file_fullname = log_file_dir + module_name
     fh = logging.FileHandler('%s-%s-logfile.txt' % (log_file_fullname,
-                                                    timeStamp), file_mode)
+                                                    time_stamp), file_mode)
     fh.setLevel(getattr(logging, log_level.upper()))
     fh.setFormatter(formatter)
     logger.addHandler(fh)
@@ -174,7 +191,7 @@ def check_var(variable, allowed_range, default=None, logger=None):
     # Dictionary
     if variable not in allowed_range:
         logger.warning(str(variable) + " is not a valid choice of " +
-                       str(allowed_range.keys()) +
+                       str(list(allowed_range.keys())) +
                        ". Instead, the default value was used: " +
                        default)
         variable = default
@@ -197,7 +214,7 @@ def make_list_fill_var(to_check, length=0, var=None):
         to_check = [to_check]
     difference = length - len(to_check)
     if difference > 0:
-        to_check += [var]*difference
+        to_check += [var] * difference
     return to_check
 
 
@@ -229,16 +246,46 @@ def is_in_primitive(test_object, allowed_primitives=None):
         Returns True if test_object is any of the allowed_primitives,
         otherwise False.
     """
+    test_object = entries_to_str(test_object)
     flag = False
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif (isinstance(allowed_primitives, collections.Iterable) and
-            (not isinstance(allowed_primitives, basestring))):
+              (not isinstance(allowed_primitives, basestring))):
         if test_object in allowed_primitives:
             flag = True
     elif test_object is allowed_primitives:
         flag = True
     return flag
+
+
+def entries_to_str(data):
+    """Convert each basestring entry of a basestring/dict/list into a str.
+
+    Parameters
+    ----------
+    data : dict, list
+
+    Returns
+    -------
+    dict, list, str
+        Return the dict with the new entries.
+    """
+    if isinstance(data, basestring):
+        output = str(data)
+    elif isinstance(data, dict):
+        output = {}
+        for key, val in data.items():
+            key = entries_to_str(key)
+            val = entries_to_str(val)
+            output[key] = val
+
+    elif isinstance(data, list):
+        output = [entries_to_str(d) for d in data]
+    else:
+        output = data
+
+    return output
 
 
 def play_sound(duration=0.3, frequency=440):

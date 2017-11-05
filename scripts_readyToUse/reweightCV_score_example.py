@@ -9,6 +9,10 @@ with KFolds and test several scores.
 
 The raredecay package is available at https://github.com/mayou36/raredecay
 """
+from __future__ import print_function
+from __future__ import division
+from __future__ import absolute_import
+from __future__ import unicode_literals
 from raredecay import settings
 # first of all, it is advised to set some run-configurations like logger-level,
 # verbosity, n_cpu and output-path. It is not mandatory to do this, but if you
@@ -22,7 +26,8 @@ settings.initialize(output_path="/home/data/output",  # TODO: valid folder
                     n_cpu=-1)  # TODO: set n cpu
 
 from raredecay.tools.data_storage import HEPDataStorage
-from raredecay.analysis.physical_analysis import reweightCV, reweight, add_branch_to_rootfile
+from raredecay.analysis.physical_analysis import reweightCV, add_branch_to_rootfile
+from raredecay.analysis.compatibility_reweight import reweight
 
 # TODO: set the run mode
 kfolded_reweighting = True  # If True, this is for hyper-parameter testing

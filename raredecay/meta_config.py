@@ -18,7 +18,7 @@ Created on Fri Apr  1 15:32:17 2016
 
 The explanation to the variables is available as a comment behind each.
 
-Variables:
+Variables
 ---------
 run_config:
     It provides the right config module depending on what was chosen
@@ -32,12 +32,30 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
 # ==============================================================================
 # DO NOT IMPORT ANY PACKAGE (run configuration) DEPENDENCY!
 # ==============================================================================
-from __future__ import division, absolute_import
+# Python 2 backwards compatibility overhead START
+from __future__ import division, absolute_import, print_function, unicode_literals
+from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
+                      open, pow, range, round, str, super, zip,
+                      )  # noqa
 
-import cPickle as pickle
+try:  # noqa
+    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
+                                      reduce, reload, unicode, xrange, StandardError,
+                                      )  # noqa
+    from future.standard_library import install_aliases  # noqa
+
+    install_aliases()  # noqa
+    from past.builtins import basestring  # noqa
+except ImportError as err:  # noqa
+    basestring = str  # noqa
+
+# Python 2 backwards compatibility overhead END
+
+import pickle as pickle
 import multiprocessing
 import random
 
+import numpy as np
 
 # ==============================================================================
 # Parameters which can be changed WITHOUT affecting stability of a single run.
@@ -56,6 +74,8 @@ n_cpu_max = 1  # VAGUE ESTIMATION but not a strict limit. If None, number of cor
 use_gpu = False  # If True, optimisation for GPU use is done (e.g. nn not parallel on cpu).
 # This does NOT use the GPU yet, but "not use the cpu" where the GPU will be invoked
 use_stratified_folding = True  # StratifiedKFolding is better, from a statistical point of view,
+
+
 # but also needs more memory, mostly insignificantly but can be large
 
 
@@ -92,6 +112,7 @@ def set_parallel_profile(n_cpu=-1, gpu_in_use=False, stratified_kfolding=True):
 
     use_gpu = gpu_in_use if gpu_in_use is not None else use_gpu
 
+
 # ------------------------------------------------------------------------------
 #  Datatype ending variables
 # ------------------------------------------------------------------------------
@@ -118,6 +139,7 @@ GIT_DIR_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/" + \
 # IF the right environment is used. Don't touch until you have good reasons to do.
 PICKLE_PROTOCOL = pickle.HIGHEST_PROTOCOL  # default: pickle.HIGHEST_PROTOCOL
 SUPPRESS_WRONG_SKLEARN_VERSION = False  # Should NOT BE CHANGED.
+SUPPRESS_FUTURE_IMPORT_ERROR = False
 
 # ==============================================================================
 # Parameters which may affect stability
@@ -136,7 +158,6 @@ MAX_ERROR_COUNT = 1000  # set a maximum number of possible errors (not able to s
 # Criticals will end the run anyway.
 MAX_FIGURES = 1000  # max number of figures to be plotted
 
-
 # ==============================================================================
 # DEFAULT SETTINGS for different things
 # ==============================================================================
@@ -150,35 +171,35 @@ MAX_FIGURES = 1000  # max number of figures to be plotted
 
 # The name of the folders created inside the run-folder
 DEFAULT_OUTPUT_FOLDERS = dict(
-    log="log",  # contains the logger informations
-    plots="plots",  # contains all the plots
-    results="results",  # contains the written output
-    config="config"  # NOT YET IMPLEMENTED, but cound contain the config file used
-)
+        log="log",  # contains the logger informations
+        plots="plots",  # contains all the plots
+        results="results",  # contains the written output
+        config="config"  # NOT YET IMPLEMENTED, but cound contain the config file used
+        )
 
 # The default histogram settings used for some plots
 DEFAULT_HIST_SETTINGS = dict(
-    bins=40,  # default: 40
-    normed=True,  # default: True, useful for shape comparison of distributions
-    alpha=0.5,  # transparency [0.0, 1.0]
-    histtype='stepfilled'
-)
+        bins=40,  # default: 40
+        normed=True,  # default: True, useful for shape comparison of distributions
+        alpha=0.5,  # transparency [0.0, 1.0]
+        histtype='stepfilled'
+        )
 
 # Default configuration for most of the figures for save_fig from OutputHandler()
 DEFAULT_SAVE_FIG = dict(
-    file_format=['png', 'pdf'],  # default: ['png', 'svg'], the file formats
-    dpi=150,                     # to be saved to. For implementations, see OutputHandler()
-    to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
-    # save_cfg=None
-)
+        file_format=['png', 'pdf'],  # default: ['png', 'svg'], the file formats
+        dpi=150,  # to be saved to. For implementations, see OutputHandler()
+        to_pickle=True,  # whether to pickle the plot (and therefore be able to replot)
+        # save_cfg=None
+        )
 
 # Default configuration for additional figures (plots you mostly do not care
 # about but may be happy to have them saved somewhere)
 DEFAULT_EXT_SAVE_FIG = dict(
-    file_format=['png', 'pdf'],
-    to_pickle=True
-    # save_cfg=None
-)
+        file_format=['png', 'pdf'],
+        to_pickle=True
+        # save_cfg=None
+        )
 
 # A logger writes some stuff during the run just for the control of the
 # correct execution. The log will be written to console, to file, or both.
@@ -190,19 +211,19 @@ DEFAULT_EXT_SAVE_FIG = dict(
 # to check if a variable was meaningful) but on the screen you will only see
 # if an error or critical occurs.
 DEFAULT_LOGGER_CFG = dict(
-    logging_mode='console',   # define where the logger is written to
-    # take 'both', 'file', 'console' or 'no'
-    log_level_file='debug',  # 'debug', 'info', warning', 'error', 'critical'
-    # specifies the level to be logged to the file
-    log_level_console='debug',  # 'debug', 'info', warning', 'error', 'critical'
-    # specify the level to be logged to the console
-    overwrite_file=True,
-    # specifies whether it should overwrite the log file each time
-    # or instead make a new one each run
-    log_file_name='AAlastRun',
-    # the beginning ofthe name of the logfile, like 'project1'
-    log_file_dir=DEFAULT_OUTPUT_FOLDERS.get('log')
-)
+        logging_mode='console',  # define where the logger is written to
+        # take 'both', 'file', 'console' or 'no'
+        log_level_file='debug',  # 'debug', 'info', warning', 'error', 'critical'
+        # specifies the level to be logged to the file
+        log_level_console='debug',  # 'debug', 'info', warning', 'error', 'critical'
+        # specify the level to be logged to the console
+        overwrite_file=True,
+        # specifies whether it should overwrite the log file each time
+        # or instead make a new one each run
+        log_file_name='AAlastRun',
+        # the beginning ofthe name of the logfile, like 'project1'
+        log_file_dir=DEFAULT_OUTPUT_FOLDERS.get('log')
+        )
 
 # ------------------------------------------------------------------------------
 #  Classifier configurations
@@ -215,81 +236,82 @@ DEFAULT_LOGGER_CFG = dict(
 # Changing this default values will surely affect your results (over- or
 # underfitting for example), but is mostly not required at all.
 DEFAULT_CLF_XGB = dict(
-    n_estimators=150,  # default 75
-    eta=0.1,  # default 0.1, learning-rate
-    min_child_weight=0,  # #0 stage 2 to optimize
-    max_depth=5,  # #6 stage 2 to optimize
-    gamma=0.1,  # stage 3, minimum loss-reduction required to make a split.
-    # Higher value-> more conservative
-    subsample=0.8,  # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data
-    # for a tree
-    colsample=1
-)
+        n_estimators=150,  # default 75
+        eta=0.1,  # default 0.1, learning-rate
+        min_child_weight=0,  # #0 stage 2 to optimize
+        max_depth=5,  # #6 stage 2 to optimize
+        gamma=0.1,  # stage 3, minimum loss-reduction required to make a split.
+        # Higher value-> more conservative
+        subsample=0.8,  # stage 4, subsample of data. 1 means all data, 0.7 means only 70% of data
+        # for a tree
+        colsample=1
+        )
 
 DEFAULT_CLF_TMVA = dict(
-    method='kBDT'
-)
+        method='kBDT'
+        )
 
 DEFAULT_CLF_RDF = dict(
-    n_estimators=150,
-    max_features=None,
-    # max_depth=100
-)
+        n_estimators=150,
+        max_features=None,
+        # max_depth=100
+        )
 
 DEFAULT_CLF_GB = dict(
-    n_estimators=200,
-    learning_rate=0.15,
-    max_depth=5,
-    subsample=0.9,
-    max_features=None
-)
+        n_estimators=200,
+        learning_rate=0.15,
+        max_depth=5,
+        subsample=0.9,
+        max_features=None
+        )
 
 DEFAULT_CLF_ADA = dict(
-    n_estimators=200,
-    learning_rate=0.2
-)
+        n_estimators=200,
+        learning_rate=0.2
+        )
 
 DEFAULT_CLF_NN = dict(
-    layers=[500, 500, 500],
-    hidden_activation='logistic',
-    output_activation='linear',
-    input_noise=0,  # [0,1,2,3,4,5,10,20],
-    hidden_noise=0,
-    input_dropout=0,
-    hidden_dropout=0.03,
-    decode_from=1,
-    weight_l1=0.01,
-    weight_l2=0.01,
-    scaler='standard',
-    trainers=[{'optimize': 'adagrad', 'patience': 10, 'learning_rate': 0.1,
-               'min_improvement': 0.01, 'momentum': 0.5, 'nesterov': True, 'loss': 'xe'}],
-)
+        layers=[500, 500, 500],
+        hidden_activation='logistic',
+        output_activation='linear',
+        input_noise=0,  # [0,1,2,3,4,5,10,20],
+        hidden_noise=0,
+        input_dropout=0,
+        hidden_dropout=0.03,
+        decode_from=1,
+        weight_l1=0.01,
+        weight_l2=0.01,
+        scaler='standard',
+        trainers=[{'optimize': 'adagrad', 'patience': 10, 'learning_rate': 0.1,
+                   'min_improvement': 0.01, 'momentum': 0.5, 'nesterov': True, 'loss': 'xe'
+                   }],
+        )
 
 DEFAULT_CLF_KNN = dict(
-    n_neigh=5
-    )
+        n_neigh=5
+        )
 
 # default clf config collection
 DEFAULT_CLF_CONFIG = dict(
-    xgb=DEFAULT_CLF_XGB,
-    tmva=DEFAULT_CLF_TMVA,
-    gb=DEFAULT_CLF_GB,
-    ada=DEFAULT_CLF_ADA,
-    nn=DEFAULT_CLF_NN,
-    knn=DEFAULT_CLF_KNN,
-    rdf=DEFAULT_CLF_RDF
-)
+        xgb=DEFAULT_CLF_XGB,
+        tmva=DEFAULT_CLF_TMVA,
+        gb=DEFAULT_CLF_GB,
+        ada=DEFAULT_CLF_ADA,
+        nn=DEFAULT_CLF_NN,
+        knn=DEFAULT_CLF_KNN,
+        rdf=DEFAULT_CLF_RDF
+        )
 
 # default clf names collection
 DEFAULT_CLF_NAME = dict(
-    xgb='XGBoost clf',
-    tmva='TMVA clf',
-    gb='Gradient Boosted Trees clf',
-    ada='AdaBoost over Trees clf',
-    nn='Theanets Neural Network clf',
-    knn='K-Nearest Neighbour clf',
-    rdf='Random Forest clf'
-)
+        xgb='XGBoost clf',
+        tmva='TMVA clf',
+        gb='Gradient Boosted Trees clf',
+        ada='AdaBoost over Trees clf',
+        nn='Theanets Neural Network clf',
+        knn='K-Nearest Neighbour clf',
+        rdf='Random Forest clf'
+        )
 # ------------------------------------------------------------------------------
 #  Hyper parameter optimization
 # ------------------------------------------------------------------------------
@@ -315,7 +337,7 @@ DEFAULT_HYPER_GENERATOR = 'subgrid'  # The default cenerater for the hyperspace 
 # START INTERNAL CONFIGURATION - DO NOT CHANGE
 # ==============================================================================
 
-run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
+# run_config = "raredecay.run_config.config"  # manipulated by OutputHandler()
 
 loggers = {}
 
@@ -338,15 +360,19 @@ def set_plot_verbosity(new_plot_verbosity):
 
 
 def _check_verbosity(verbosity):
-    if verbosity not in range(-1, 7):
+    if verbosity not in list(range(-1, 7)):
         raise ValueError("Verbosity has to be int {0, 1, 2, 3, 4, 5}")
+
 
 # ==============================================================================
 # Random integer generator for pseudo random generator (or other things)
 # ==============================================================================
 
-rand_seed = random.randint(123, 1512412)  # 357422 or 566575
-random.seed(rand_seed)
+rand_seed = 42
+
+
+# random.randint(123, 1512412)  # 357422 or 566575
+# random.seed(rand_seed)
 
 
 def randint():
@@ -364,6 +390,8 @@ def set_seed(seed):
     global rand_seed
     rand_seed = seed
     random.seed(rand_seed)
+    np.random.seed(rand_seed)
+
 
 # ------------------------------------------------------------------------------
 # parallel profile
@@ -389,6 +417,7 @@ def warning_occured():
     """Call this function every time a warning occurs."""
     global _warning_count
     _warning_count += 1
+
 
 if __name__ == '__main__':
     pass

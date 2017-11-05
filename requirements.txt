@@ -1,8 +1,6 @@
-hep_ml
-rep >= 0.6.6
-scikit-learn >= 0.18
-nose_parameterized
 seaborn
-pytest
 pandas
-
+numpy
+matplotlib
+future
+hep_ml>=0.5.0

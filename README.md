@@ -27,13 +27,12 @@ To get an idea of the package, have a look at the howto notebooks:
 Want to test whether your reweighting did overfit? Use train_similar:
 
 ```python
-from raredecay.tools.data_storage import HEPDataStorage  
-from raredecay.tools.metrics import train_similar  
+import raredecay as rd  
 
-mc_data = HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
-real_data = HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
+mc_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
+real_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
 
-score = train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
+score = rd.score.train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
 ```
 
 
@@ -57,10 +56,7 @@ First install the very newest version of REP
 ```
 pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
 ```
-To install the newest version of hep_ml containing the loss-regularization:
-```
-pip install -U https://github.com/arogozhnikov/hep_ml.git
-```
+
 
 Then, install the raredecay package (without ROOT-support) via
 
@@ -72,6 +68,12 @@ To make sure you can convert ROOT-NTuples, use
 
 ```
 pip install raredecay[root]  # *use raredecay\[root\] in a zsh-console*
+```
+
+or, to have all functionalities
+
+```
+pip install raredecay[all]
 ```
 As it is a young package still under developement, it may receive regular updates and improvements and it is probably a good idea to regularly download the newest package.
 
