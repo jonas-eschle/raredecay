@@ -19,13 +19,7 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-# build docs
-try:
-    subprocess.Popen("chmod u+x " + os.path.join(here, 'docs/make_docs.sh'), shell=True)
-    subprocess.Popen("bash " + os.path.join(here, 'docs/make_docs.sh'), shell=True)
-except Exception as err:
-    print("Failed to build docs.")
-    raise err
+
 
 with io.open(os.path.join(here, 'requirements.txt')) as f:
     requirements = f.read().split('\n')
@@ -36,7 +30,7 @@ def readme():
         return f.read()
 
 
-git_version = '1.4.0'
+git_version = '2.0.0'
 
 extras_require = {'all': []}
 extras_require_tmp = {
@@ -88,3 +82,11 @@ if __name__ == '__main__':
           include_package_data=True,
           zip_safe=False
           )
+
+    # build docs
+    try:
+        subprocess.Popen("chmod u+x " + os.path.join(here, 'docs/make_docs.sh'), shell=True)
+        subprocess.Popen("bash " + os.path.join(here, 'docs/make_docs.sh'), shell=True)
+    except Exception as err:
+        print("Failed to build docs.")
+        raise err
