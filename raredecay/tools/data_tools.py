@@ -327,7 +327,7 @@ def to_list(data_in):
     return data_in
 
 
-def to_ndarray(data_in, float_array=True):
+def to_ndarray(data_in, float_array=False):
     """Convert data to numpy array (containing only floats).
 
     Parameters
@@ -357,10 +357,14 @@ def to_ndarray(data_in, float_array=True):
             for i, element in enumerate(iter_data):
                 if not isinstance(element, (int, float, basestring, bool)):
                     # does that work or should we iterate over copy?
-                    if len(element) > 1:
+                    try:
+                        element_len = len(element)
+                    except TypeError:
+                        element_len = 1
+                    if element_len > 1:
                         data_in[i] = to_ndarray(element)
                         float_array = False
-                    elif len(element) == 1:
+                    elif element_len == 1:
                         data_in[i] = float(element)
 
             warnings.warn("Could not force float array")

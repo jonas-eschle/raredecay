@@ -321,7 +321,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     The feature where the auc drops the least is then removed and the next round
     starts from the beginning but with one feature less.
 
-    The function ends either if:
+    The function ends if either one is true:
 
     - no features are left
     - max_feature_elimination features have been eliminated
@@ -393,6 +393,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
                           60 * int(max_feature_elimination[1]))
         start_time = timeit.default_timer()
         assert start_time > 0, "Error, start_time is <= 0, will cause error later"
+        max_feature_elimination = -1
 
     save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     if features is None:
@@ -847,7 +848,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     clf_name = clf_dict.pop('name')
     parallel_profile = clf_dict.get('parallel_profile')
 
-    if isinstance(validation, (float, int, int)) and validation > 1:
+    if isinstance(validation, (float, int)) and validation > 1:
         if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
 
             if 'original_test_weights' in kwargs:

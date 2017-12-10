@@ -6,10 +6,6 @@ Created on Thu Apr 28 16:26:12 2016
 """
 from __future__ import print_function, division, absolute_import, unicode_literals
 
-from builtins import (ascii, bytes, chr, dict, filter, hex, input,
-                      int, map, next, oct, open, pow, range, round,
-                      str, super, zip)
-
 import copy
 from setuptools import setup
 import subprocess

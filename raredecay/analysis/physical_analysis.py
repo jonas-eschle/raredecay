@@ -56,6 +56,7 @@ import numpy as np
 import pandas as pd
 
 from raredecay.tools import dev_tool
+import raredecay.analysis.ml_analysis as ml_ana
 
 # legacy
 from raredecay.analysis.compatibility_reweight import reweight
@@ -235,7 +236,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
 
 
 def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=None,
-                   performance_only=True, metric_vs_cut='punzi',
+                   performance_only=True, metric_vs_cut='punzi', weights_ratio=0,
                    save_real_pred=False, save_mc_pred=False):
     """Train on bkg and MC, test metric, performance and predict probabilities.
 
@@ -284,8 +285,15 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
     Return
     ------
-    out : float, float
-        If a metric_vs_cut is specified, the best cut and metric is returned
+    out : dict
+        Return a dict containing the following keys and values:
+
+        - *best_threshold_cut*: The best cut for the given metric (only if metric_vs_cut is given)
+        - *best_metric*: The highest value of the metric, basically "metric(best_threshold_cut)" (only if
+            metric_vs_cut is given)
+        - *pred_real*: The predicitions of real_data
+        - *pred_mc*: The predicitions of mc_data
+
     """
     from raredecay.globals_ import out
     from raredecay.analysis.ml_analysis import classify
@@ -300,6 +308,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     save_real_pred = dev_tool.entries_to_str(save_real_pred)
 
     # check if predictions can be saved: need to be root-file and no selection applied
+    if performance_only:
+        save_real_pred = save_mc_pred = False
 
     output = {}
     if save_real_pred:
@@ -320,7 +330,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     # backwards compatibility
 
 
-    bkg_sel = [bkg_sel] if not isinstance(bkg_sel, list) else bkg_sel
+    bkg_sel = [bkg_sel] if not isinstance(bkg_sel, (list, tuple)) else bkg_sel
     if bkg_sel[0].startswith('noexpand:'):
         bkg_sel = bkg_sel[0][9:]
     else:
@@ -338,7 +348,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         del bkg_df
         _clf, kfold_score, pred_tmp = classify(bkg_data, mc_data, validation=n_folds, clf=clf,
                                                get_predictions=True, extended_report=True,
-                                               features=columns, weights_ratio=1)
+                                               features=columns, weights_ratio=weights_ratio)
 
         report = pred_tmp['report']
 
@@ -347,17 +357,22 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             title = "Punzi FoM vs threshold cut on " + real_data.name
         elif metric_vs_cut == 'precision':
             metric = precision_measure
+            metric.__name__ = r"precision $\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}$"
             title = "Precision vs threshold cut on " + real_data.name
         elif metric_vs_cut:
             raise ValueError("Invalid metric: " + str(metric_vs_cut))
 
         if metric_vs_cut:
             out.figure(title)
-            report.metrics_vs_cut(metric).plot()
-            plt.title(title)
-            plt.legend()
+            # plt.legend()
             from rep.report.metrics import OptimalMetric
-            metric_optimal = OptimalMetric(metric)
+            metric_optimal = OptimalMetric(metric,
+                                           expected_s=sum(mc_data.get_weights(normalize=False)),
+                                           expected_b=sum(bkg_data.get_weights(normalize=False))
+                                           )
+            metric_optimal.plot_vs_cut(y_true=pred_tmp['y_true'],
+                                       proba=pred_tmp['y_proba'],
+                                       sample_weight=pred_tmp['weights']).plot(fontsize=25)
             best_cut, best_metric = metric_optimal.compute(y_true=pred_tmp['y_true'],
                                                            proba=pred_tmp['y_proba'],
                                                            sample_weight=pred_tmp['weights'])
@@ -389,11 +404,11 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             clf_trained, _, pred_real_tmp = classify(real_train, mc_train, validation=real_test,
                                                      clf=clf, get_predictions=True,
                                                      extended_report=first_example,
-                                                     features=columns)
+                                                     features=columns, weights_ratio=weights_ratio)
             clf_trained, _, pred_mc_tmp = classify(validation=mc_test, clf=clf_trained,
                                                    get_predictions=True,
                                                    extended_report=first_example,
-                                                   features=columns)
+                                                   features=columns, weights_ratio=weights_ratio)
 
             # collect predictions and index
             pred_real_tmp = pred_real_tmp['y_proba']
@@ -406,10 +421,11 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         pred_real.sort_index(inplace=True)
         pred_mc = pd.concat(pred_mc)
         pred_mc.sort_index(inplace=True)
+        output['pred_real'] = pred_real
+        output['pred_mc'] = pred_mc
 
         # save predictions
         if isinstance(save_real_pred, (basestring, int)) and not isinstance(save_real_pred, bool) and predict:
-            import copy
             root_dict = copy.deepcopy(real_data.data)
 
             if root_dict['selection'] is not None:
@@ -417,7 +433,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                         "Cannot save predictions to root as selections have been applied in the script")
 
             add_branch_to_rootfile(filename=root_dict['filenames'],
-                                   treename=root_dict.get('treename'),
+                                   treename=root_dict['treename'],
                                    new_branch=pred_real, branch_name=save_real_pred)
 
         if isinstance(save_mc_pred, (basestring, int)) and not isinstance(save_mc_pred, bool) and predict:
