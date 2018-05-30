@@ -15,8 +15,6 @@ import os
 
 here = os.path.abspath(os.path.dirname(__file__))
 
-
-
 with io.open(os.path.join(here, 'requirements.txt')) as f:
     requirements = f.read().split('\n')
 
@@ -37,14 +35,15 @@ extras_require_tmp = {
         'rep>=0.6.6',
         'scikit-learn>=0.18.1']
 
-}
+    }
 for val in extras_require_tmp.values():
     extras_require['all'] += val
 
 if __name__ == '__main__':
     setup(name='raredecay',
           version=git_version,
-          description='A package for analysis of rare particle decays with machine-learning algorithms',
+          description='A package for analysis of rare particle decays with machine-learning '
+                      'algorithms',
           long_description=readme(),
           classifiers=[
               'Development Status :: 4 - Beta',
@@ -62,7 +61,7 @@ if __name__ == '__main__':
               'Programming Language :: Python :: Implementation :: CPython',
               'Topic :: Scientific/Engineering :: Physics',
               'Topic :: Scientific/Engineering :: Information Analysis',
-          ],
+              ],
           keywords='particle physics, analysis, machine learning, reweight, high energy physics',
           url='https://github.com/mayou36/raredecay',
           author='Jonas Eschle',
@@ -76,6 +75,7 @@ if __name__ == '__main__':
                     'raredecay.tools',
                     ],
           include_package_data=True,
+          python_requires=">=2.7",
           zip_safe=False
           )
 
