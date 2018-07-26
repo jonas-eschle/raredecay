@@ -434,7 +434,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 
     # "loop-initialization", get score for all features
     roc_auc = OrderedDict({})
-    collected_scores = {feature: [] for feature in selected_features}
+    collected_scores = OrderedDict({feature: [] for feature in selected_features})
     if direction == 'backward':
         clf = copy.deepcopy(original_clf)  # required, feature attribute can not be changed somehow
         clf.fit(data[features], label, weights)
@@ -513,6 +513,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = pd.DataFrame(collected_scores)
     out.add_output(["The collected scores:\n"] +
                    [collected_scores[col] for col in collected_scores],
+                   obj_separator='\n',
                    importance=3)
     output['scores'] = collected_scores
 
@@ -520,7 +521,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
         out.add_output(["Removed features and roc auc: ", roc_auc,
                         "\nStopped because difference in roc auc to best was ",
                         "higher then max_difference_to_best",
-                        "\nNext feature would have been: ", temp_dict],
+                        "\n"],
                        subtitle="Feature selection results")
 
     elif len(selected_features) > 1:
