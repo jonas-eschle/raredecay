@@ -15,8 +15,8 @@ matrix:
 cache: pip
 sudo: required
 
-matrix:
-  allow_failures:
+#matrix:
+#  allow_failures:
 #    - python: '2.7'
 #    - python: '3.5'
 #    - python: '3.6'
