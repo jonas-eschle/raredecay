@@ -23,8 +23,8 @@ import raredecay.meta_config  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                      reduce, reload, unicode, xrange, StandardError,
-                                      )  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -56,11 +56,12 @@ except ImportError:
     import pickle
 
 try:
-    from root_numpy import root2array, array2root
+    from root_numpy import array2root
     import root_numpy
 
 except ImportError as err:
     warnings.warn("could not import from root_numpy!")
+
 # from root_numpy import root2array, array2root  # HACK
 
 from raredecay.tools import dev_tool
@@ -133,7 +134,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     branch_name : str
         The name of the branche resp. the name in the dtype of the array.
     """
-    # from root_numpy import root2array, array2tree
+    from root_numpy import root2array, array2tree
 
     from rootpy.io import root_open
 
@@ -336,7 +337,7 @@ def to_ndarray(data_in, float_array=False):
         The data to be converted
     """
     if is_root(data_in):
-        data_in = root2array(**data_in)  # why **? it's a root dict
+        data_in = root_numpy.root2array(**data_in)  # why **? it's a root dict
     # change numpy.void to normal floats
     if isinstance(data_in, (pd.Series, pd.DataFrame)):
         test_sample = data_in.iloc[0]
@@ -392,9 +393,9 @@ def to_pandas_old(data_in, index=None, columns=None):
         root_index = None
         if root_index_name in root_numpy.list_branches(filename=data_in['filenames'],
                                                        treename=data_in.get('treename')):
-            root_index = root2array(filenames=data_in['filenames'], treename=data_in.get('treename'),
-                                    selection=data_in.get('selection'), branches=root_index_name)
-        data_in = root2array(**data_in)  # why **? it's a root dict
+            root_index = root_numpy.root2array(filenames=data_in['filenames'], treename=data_in.get('treename'),
+                                               selection=data_in.get('selection'), branches=root_index_name)
+        data_in = root_numpy.root2array(**data_in)  # why **? it's a root dict
 
     if is_list(data_in):
         data_in = np.array(data_in)
@@ -440,7 +441,8 @@ def to_pandas(data_in, index=None, columns=None):
     #             data_in[root_pandas_numpy_map[key]] = val
     #     data_in['columns'] = to_list(data_in['columns'])
     #     if is_root2array:
-    #         data_in['columns'] = ['noexpand:'+col for col in data_in['columns'] if not col.startswith('noexpand:')]  # remove the noexpand:
+    #         data_in['columns'] = ['noexpand:'+col for col in data_in['columns'] if not col.startswith('noexpand:')]
+    #  remove the noexpand:
     #     data_in = read_root(**data_in)  # why **? it's a root dict
     # if is_list(data_in):
     #     data_in = np.array(data_in)
