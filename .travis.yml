@@ -84,7 +84,7 @@ install:
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
-- pip install git+https://github.com/mayou36/rep
+- pip install git+https://github.com/REPlegacy/rep
 - ls
 - pwd
 - pip install .[all]
