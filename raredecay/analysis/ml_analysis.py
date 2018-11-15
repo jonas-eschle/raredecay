@@ -74,7 +74,7 @@ from sklearn.metrics import accuracy_score, classification_report
 # import Reproducible Experimental Platform
 from rep.data import LabeledDataStorage
 
-from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
+from rep.estimators import SklearnClassifier, XGBoostClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier
@@ -163,7 +163,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
     """
     #: Currently implemented classifiers:
     n_cpu_clf = 1
-    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'ada', 'tmva', 'knn']
+    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'ada', 'knn']
     output = {}
     serial_clf = False
     clf = copy.deepcopy(clf)  # make sure not to change the argument given
@@ -207,9 +207,6 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if isinstance(classifier, XGBoostClassifier):
             n_cpu_clf = classifier.nthreads
             clf_type = 'xgb'
-        elif isinstance(classifier, TMVAClassifier):
-            n_cpu_clf = 1
-            clf_type = 'tmva'
         elif isinstance(classifier, SklearnClassifier):
             sub_clf = classifier.clf
             if isinstance(sub_clf, RandomForestClassifier):
@@ -264,9 +261,6 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             # update config dict with parallel-variables and random state
             clf['config'].update(dict(nthreads=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = XGBoostClassifier(**clf.get('config'))
-        elif clf['clf_type'] == 'tmva':
-            serial_clf = True
-            clf_tmp = TMVAClassifier(**clf.get('config'))
         elif clf['clf_type'] == 'gb':
             serial_clf = True
             clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.get('config')))
