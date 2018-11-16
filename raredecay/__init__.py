@@ -39,5 +39,7 @@ except ImportError as err:  # noqa
 import raredecay.reweight, raredecay.config, raredecay.data, raredecay.ml, raredecay.score
 import raredecay.settings, raredecay.stat
 
+__all__ = ["reweight", "config", "data", "ml", "score", "settings", "stat"]
+
 __author__ = "Jonas Eschle 'Mayou36'"
 __version__ = '2.0.2'
