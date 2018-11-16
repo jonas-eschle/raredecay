@@ -77,14 +77,14 @@ before_install:
 
 install:
 
-- pip install xgboost > tmp.txt && echo "alive"
 
-- pip uninstall pandas -y || echo pandas not installed
 - conda install pandas -y
+#- pip uninstall pandas -y || echo pandas not installed
+- pip install xgboost > tmp.txt && echo "alive"
 #- pip install -U -r requirements.txt
 #- pip install -U rootpy root_numpy
 # - pip install .[root] --no-dependencies
-- pip install git+https://github.com/REPlegacy/rep
+- pip install git+https://github.com/REPlegacy/rep -U
 - ls
 - pwd
 - pip install .[all]
