@@ -1,0 +1,379 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>statistics &mdash; Raredecay 2.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="genindex.html"/>
+        <link rel="search" title="Search" href="search.html"/>
+    <link rel="top" title="Raredecay 2.0.2 documentation" href="index.html"/>
+        <link rel="up" title="analysis" href="raredecay.analysis.html"/>
+        <link rel="next" title="statistics_tmp" href="raredecay.analysis.statistics_tmp.html"/>
+        <link rel="prev" title="reweight" href="raredecay.analysis.reweight.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> Raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="raredecay.data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.score.html">score</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.stat.html">stat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raredecay.settings.html">settings</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="raredecay.html">DEPREC: Full (legacy) API raredecay</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="raredecay.analysis.html">analysis</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.compatibility_reweight.html">compatibility_reweight</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.compatibility_tools.html">compatibility_tools</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.ml_analysis.html">ml_analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.physical_analysis.html">physical_analysis</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.reweight.html">reweight</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">statistics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="raredecay.analysis.statistics_tmp.html">statistics_tmp</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.tools.html">tools</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.config.html">config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.data.html">data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.globals_.html">globals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.meta_config.html">meta_config</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.ml.html">ml</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.score.html">score</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.settings.html">settings</a></li>
+<li class="toctree-l2"><a class="reference internal" href="raredecay.stat.html">stat</a></li>
+</ul>
+</li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">Raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="raredecay.html">DEPREC: Full (legacy) API raredecay</a> &raquo;</li>
+      
+          <li><a href="raredecay.analysis.html">analysis</a> &raquo;</li>
+      
+    <li>statistics</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/raredecay.analysis.statistics.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="module-raredecay.analysis.statistics">
+<span id="statistics"></span><h1>statistics<a class="headerlink" href="#module-raredecay.analysis.statistics" title="Permalink to this headline">¶</a></h1>
+<p>&#64;author: Jonas Eschle &#8216;Mayou36&#8217;</p>
+<p>This modul contains several tools like fits.</p>
+<p>DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat</p>
+<p>DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!</p>
+<dl class="function">
+<dt id="raredecay.analysis.statistics.ad_2samp">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">ad_2samp</code><span class="sig-paren">(</span><em>data1</em>, <em>data2</em>, <em>column</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#ad_2samp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.ad_2samp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.statistics.fit_mass">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">fit_mass</code><span class="sig-paren">(</span><em>data</em>, <em>column</em>, <em>x</em>, <em>sig_pdf=None</em>, <em>bkg_pdf=None</em>, <em>n_sig=None</em>, <em>n_bkg=None</em>, <em>blind=False</em>, <em>nll_profile=False</em>, <em>second_storage=None</em>, <em>log_plot=False</em>, <em>pulls=True</em>, <em>sPlot=False</em>, <em>bkg_in_region=False</em>, <em>importance=3</em>, <em>plot_importance=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#fit_mass"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.fit_mass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fit a given pdf to a variable distribution.</p>
+<p>A quite versatile function doing several things connected to fitting.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; The data containing the variable to fit to</li>
+<li><strong>column</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; The name of the column to fit the pdf to</li>
+<li><strong>x</strong> (<em>RooRealVar</em>) &#8211; The RooRealVar to fit to.</li>
+<li><strong>sig_pdf</strong> (<em>RooFit pdf</em>) &#8211; The signal Probability Density Function. The variable to fit to has
+to be named &#8216;x&#8217;.</li>
+<li><strong>bkg_pdf</strong> (<em>RooFit pdf</em>) &#8211; The background Probability Density Function. The variable to fit to has
+to be named &#8216;x&#8217;.</li>
+<li><strong>n_sig</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a><em> or </em><em>numeric</em>) &#8211; The number of signals in the data. If it should be fitted, use None.</li>
+<li><strong>n_bkg</strong> (<a class="reference external" href="https://docs.python.org/2/library/constants.html#None" title="(in Python v2.7)"><em>None</em></a><em> or </em><em>numeric</em>) &#8211; The number of background events in the data.
+If it should be fitted, use None.</li>
+<li><strong>blind</strong> (<em>boolean</em><em> or </em><a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a><em>(</em><em>numberic</em><em>, </em><em>numberic</em><em>)</em><em></em>) &#8211; If False, the data is fitted. If a tuple is provided, the values are
+used as the lower (the first value) and the upper (the second value)
+limit of a blinding region, which will be omitted in plots.
+Additionally, no true number of signal will be returned but only fake.</li>
+<li><strong>nll_profile</strong> (<em>boolean</em>) &#8211; If True, a Negative Log-Likelihood Profile will be generated. Does not
+work with blind fits.</li>
+<li><strong>second_storage</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; A second data-storage that will be concatenated with the first one.</li>
+<li><strong>importance</strong> (int {0, 1, 2, 3, 4, 5}) &#8211; The higher the importance, the more likely the output will be printed. All output will be saved anyway if an output path was initialized.</li>
+<li><strong>plot_importance</strong> (int {0, 1, 2, 3, 4, 5}) &#8211; The higher the importance, the more likely the plots will be shown. All plots will be saved anyway if an output path was initialized.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Return the number of signals and the number of backgrounds in the
+signal-region. If a blind fit is performed, the signal will be a fake
+number. If no number of background events is required, -999 will be
+returned.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last"><a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)">tuple</a>(numerical, numerical)</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.statistics.ks_2samp">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">ks_2samp</code><span class="sig-paren">(</span><em>data1</em>, <em>data2</em>, <em>weights1=None</em>, <em>weights2=None</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#ks_2samp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.ks_2samp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighted two sample Komlogorov-Smirnov hypothesis test.</p>
+<p>The weighted version of the Kolmogorov-Smirnov test if two samples
+<em>data1</em> and <em>data2</em> with weights <em>weights1</em> and <em>weights2</em> respectively
+are drawn from the same continuos distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data1</strong> (<em>array-like</em>) &#8211; The first distribution.</li>
+<li><strong>data2</strong> (<em>array-like</em>) &#8211; The second distribution.</li>
+<li><strong>weights1</strong> (<em>array-like</em>) &#8211; The weights of the first distribution. The length has to be equal
+to the length of <em>data1</em>.</li>
+<li><strong>weights2</strong> (<em>array-like</em>) &#8211; The weights of the second distribution. The length has to be equal
+to the length of <em>data2</em>.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Return the K-S two sample test hypothesis score.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numeric</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.statistics.ks_2samp_ds">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">ks_2samp_ds</code><span class="sig-paren">(</span><em>data1</em>, <em>data2</em>, <em>column</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#ks_2samp_ds"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.ks_2samp_ds" title="Permalink to this definition">¶</a></dt>
+<dd><p>Weighted two sample Komlogorov-Smirnov hypothesis test.</p>
+<p>The weighted version of the Kolmogorov-Smirnov test if two samples
+<em>data1</em> and <em>data2</em> with weights <em>weights1</em> and <em>weights2</em> respectively
+are drawn from the same continuos distribution.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>data1</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; Data set one for the 2sample test</li>
+<li><strong>data2</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; Data set two for the 2sample test</li>
+<li><strong>column</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; Which column to use. Has to be the same name in both data sets</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><p class="first">Return the K-S two sample test hypothesis score.</p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first last">numeric</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.statistics.metric_vs_cut_fitted">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">metric_vs_cut_fitted</code><span class="sig-paren">(</span><em>data</em>, <em>predict_col</em>, <em>fit_col</em>, <em>sig_pdf</em>, <em>bkg_pdf</em>, <em>x</em>, <em>region</em>, <em>second_storage=None</em>, <em>metric='punzi'</em>, <em>n_sig=None</em>, <em>n_bkg=None</em>, <em>stepsize=0.025</em>, <em>plot_importance=3</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#metric_vs_cut_fitted"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.metric_vs_cut_fitted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculate a metric vs a given cut by estimating the bkg from the fit.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>data</strong> (<a class="reference internal" href="raredecay.data.html#raredecay.data.HEPDataStorage" title="raredecay.data.HEPDataStorage"><code class="xref py py-class docutils literal"><span class="pre">HEPDataStorage</span></code></a>) &#8211; </li>
+<li><strong>predict_col</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; </li>
+<li><strong>fit_col</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#str" title="(in Python v2.7)"><em>str</em></a>) &#8211; </li>
+<li><strong>region</strong> (<a class="reference external" href="https://docs.python.org/2/library/functions.html#tuple" title="(in Python v2.7)"><em>tuple</em></a><em>(</em><em>numerical</em><em>, </em><em>numerical</em><em>)</em><em></em>) &#8211; The lower and upper points to integrate over.</li>
+<li><strong>x</strong> (<em>RooRealVar</em>) &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="raredecay.analysis.statistics.pull_hist">
+<code class="descclassname">raredecay.analysis.statistics.</code><code class="descname">pull_hist</code><span class="sig-paren">(</span><em>pull_frame</em>, <em>pad_data</em>, <em>pad_pulls</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/raredecay/analysis/statistics.html#pull_hist"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#raredecay.analysis.statistics.pull_hist" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add pulls into the current pad.</p>
+</dd></dl>
+
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="raredecay.analysis.statistics_tmp.html" class="btn btn-neutral float-right" title="statistics_tmp" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="raredecay.analysis.reweight.html" class="btn btn-neutral" title="reweight" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'2.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

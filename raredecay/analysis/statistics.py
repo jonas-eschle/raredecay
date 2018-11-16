@@ -247,11 +247,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
     # create data
     data_array = np.array([i[0] for i in data_array.as_matrix()])
-    try:
-        data_array.dtype = [('x', np.float64)]
-    except:
-        data_array.dtype = [('x', np.float64)]
-        print("hack needed")
+    data_array.dtype = [('x', np.float64)]
     tree1 = array2tree(data_array, "x")
     data = RooDataSet("data", "Data", RooArgSet(x), RooFit.Import(tree1))
 
@@ -742,7 +738,6 @@ if __name__ == '__main__':
     elif mode == 'ks':
         pass
 
-    input("Finished, press 'Enter' to close ROOT plots.")
     plt.show()
 
     input("Finished, press 'Enter' to close plots.")

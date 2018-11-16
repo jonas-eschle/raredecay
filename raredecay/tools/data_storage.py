@@ -436,7 +436,6 @@ class HEPDataStorage(object):
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
         normalize = 1 if normalize is True else normalize
-        normalize = 0 if normalize is None else normalize
         second_storage = kwargs.get('second_storage')
 
         normalize_1 = 1
@@ -825,9 +824,8 @@ class HEPDataStorage(object):
         #        else:
         #            normalize_1 = None
 
-        if shuffle:
+        if shuffle is not False:
             index = self.index if index is None else index
-            index = copy.deepcopy(index)
             if isinstance(shuffle, int) and shuffle is not True:
                 rand_seed = shuffle
                 rand_seed_2 = shuffle + 74
@@ -843,7 +841,6 @@ class HEPDataStorage(object):
             assert isinstance(second_storage, HEPDataStorage), "Wrong type, not an HEPDataStorage"
             if shuffle is not False:
                 index_2 = second_storage.index if index_2 is None else index_2
-                index_2 = copy.deepcopy(index_2)
                 random.shuffle(index_2, random=rand_seed_2)
             data_2 = second_storage.pandasDF(columns=columns, index=index_2)
             data = pd.concat((data, data_2), ignore_index=True, copy=False)

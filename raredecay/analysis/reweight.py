@@ -298,6 +298,7 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
     output = {}
     reweighter_list = False
     new_reweighter_list = []
+    n_reweights = 1
 
     reweighter = data_tools.try_unpickle(reweighter)
 
