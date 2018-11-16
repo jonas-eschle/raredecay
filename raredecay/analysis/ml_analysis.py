@@ -74,7 +74,7 @@ from sklearn.metrics import accuracy_score, classification_report
 # import Reproducible Experimental Platform
 from rep.data import LabeledDataStorage
 
-from rep.estimators import SklearnClassifier, XGBoostClassifier
+from rep.estimators import SklearnClassifier, XGBoostClassifier, TMVAClassifier
 from rep.estimators.interface import Classifier
 
 from rep.metaml.folding import FoldingClassifier
@@ -163,7 +163,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
     """
     #: Currently implemented classifiers:
     n_cpu_clf = 1
-    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'ada', 'knn']
+    __IMPLEMENTED_CLFS = ['xgb', 'gb', 'rdf', 'ada', 'tmva', 'knn']
     output = {}
     serial_clf = False
     clf = copy.deepcopy(clf)  # make sure not to change the argument given
@@ -207,6 +207,9 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if isinstance(classifier, XGBoostClassifier):
             n_cpu_clf = classifier.nthreads
             clf_type = 'xgb'
+        elif isinstance(classifier, TMVAClassifier):
+            n_cpu_clf = 1
+            clf_type = 'tmva'
         elif isinstance(classifier, SklearnClassifier):
             sub_clf = classifier.clf
             if isinstance(sub_clf, RandomForestClassifier):
@@ -261,6 +264,9 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             # update config dict with parallel-variables and random state
             clf['config'].update(dict(nthreads=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = XGBoostClassifier(**clf.get('config'))
+        elif clf['clf_type'] == 'tmva':
+            serial_clf = True
+            clf_tmp = TMVAClassifier(**clf.get('config'))
         elif clf['clf_type'] == 'gb':
             serial_clf = True
             clf_tmp = SklearnClassifier(GradientBoostingClassifier(**clf.get('config')))
@@ -315,7 +321,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     The feature where the auc drops the least is then removed and the next round
     starts from the beginning but with one feature less.
 
-    The function ends if either one is true:
+    The function ends either if:
 
     - no features are left
     - max_feature_elimination features have been eliminated
@@ -387,7 +393,6 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
                           60 * int(max_feature_elimination[1]))
         start_time = timeit.default_timer()
         assert start_time > 0, "Error, start_time is <= 0, will cause error later"
-        max_feature_elimination = -1
 
     save_fig_cfg = dict(meta_cfg.DEFAULT_SAVE_FIG, **cfg.save_fig_cfg)
     if features is None:
@@ -428,7 +433,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
 
     # "loop-initialization", get score for all features
     roc_auc = OrderedDict({})
-    collected_scores = OrderedDict({feature: [] for feature in selected_features})
+    collected_scores = {feature: [] for feature in selected_features}
     if direction == 'backward':
         clf = copy.deepcopy(original_clf)  # required, feature attribute can not be changed somehow
         clf.fit(data[features], label, weights)
@@ -507,7 +512,6 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
     collected_scores = pd.DataFrame(collected_scores)
     out.add_output(["The collected scores:\n"] +
                    [collected_scores[col] for col in collected_scores],
-                   obj_separator='\n',
                    importance=3)
     output['scores'] = collected_scores
 
@@ -515,7 +519,7 @@ def backward_feature_elimination(original_data, target_data=None, features=None,
         out.add_output(["Removed features and roc auc: ", roc_auc,
                         "\nStopped because difference in roc auc to best was ",
                         "higher then max_difference_to_best",
-                        "\n"],
+                        "\nNext feature would have been: ", temp_dict],
                        subtitle="Feature selection results")
 
     elif len(selected_features) > 1:
@@ -843,7 +847,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
     clf_name = clf_dict.pop('name')
     parallel_profile = clf_dict.get('parallel_profile')
 
-    if isinstance(validation, (float, int)) and validation > 1:
+    if isinstance(validation, (float, int, int)) and validation > 1:
         if 'original_test_weights' in kwargs or 'target_test_weights' in kwargs:
 
             if 'original_test_weights' in kwargs:

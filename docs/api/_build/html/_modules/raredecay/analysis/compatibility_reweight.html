@@ -1,0 +1,314 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>raredecay.analysis.compatibility_reweight &mdash; Raredecay 2.0.2 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+        <link rel="index" title="Index"
+              href="../../../genindex.html"/>
+        <link rel="search" title="Search" href="../../../search.html"/>
+    <link rel="top" title="Raredecay 2.0.2 documentation" href="../../../index.html"/>
+        <link rel="up" title="Module code" href="../../index.html"/> 
+
+  
+  <script src="../../../_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="../../../index.html" class="icon icon-home"> Raredecay
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                2.0.2
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.data.html">data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.ml.html">ml</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.reweight.html">reweight</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.score.html">score</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.stat.html">stat</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.settings.html">settings</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../raredecay.html">DEPREC: Full (legacy) API raredecay</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="../../../index.html">Raredecay</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="../../../index.html">Docs</a> &raquo;</li>
+      
+          <li><a href="../../index.html">Module code</a> &raquo;</li>
+      
+    <li>raredecay.analysis.compatibility_reweight</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for raredecay.analysis.compatibility_reweight</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat</span>
+
+
+<span class="sd">DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">copy</span>
+
+<span class="kn">import</span> <span class="nn">raredecay.analysis</span>
+
+
+<div class="viewcode-block" id="reweight"><a class="viewcode-back" href="../../../raredecay.analysis.compatibility_reweight.html#raredecay.analysis.compatibility_reweight.reweight">[docs]</a><span class="k">def</span> <span class="nf">reweight</span><span class="p">(</span><span class="n">apply_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">real_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">mc_data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">columns</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+             <span class="n">reweighter</span><span class="o">=</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="n">reweight_cfg</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">n_reweights</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+             <span class="n">apply_weights</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;(Train a reweighter and) apply the reweighter to get new weights.</span>
+
+<span class="sd">    Train a reweighter from the real data and the corresponding MC differences.</span>
+<span class="sd">    Then, try to correct the apply data (MC as well) the same as the first</span>
+<span class="sd">    MC would have been corrected to look like its real counterpart.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    apply_data : |hepds_type|</span>
+<span class="sd">        The data which shall be corrected</span>
+<span class="sd">    real_data : |hepds_type|</span>
+<span class="sd">        The real data to train the reweighter on</span>
+<span class="sd">    mc_data : |hepds_type|</span>
+<span class="sd">        The MC data to train the reweighter on</span>
+<span class="sd">    columns : list(str, str, str,...)</span>
+<span class="sd">        The branches to use for the reweighting process.</span>
+<span class="sd">    reweighter : {&#39;gb&#39;, &#39;bins&#39;} or trained hep_ml-reweighter (also pickled)</span>
+<span class="sd">        Either a string specifying which reweighter to use or an already</span>
+<span class="sd">        trained reweighter from the hep_ml-package. The reweighter can also</span>
+<span class="sd">        be a file-path (str) to a pickled reweighter.</span>
+<span class="sd">    reweight_cfg : dict</span>
+<span class="sd">        A dict containing all the keywords and values you want to specify as</span>
+<span class="sd">        parameters to the reweighter.</span>
+<span class="sd">    n_reweights : int</span>
+<span class="sd">        To get more stable weights, the mean of each weight over many</span>
+<span class="sd">        reweighting runs (training and predicting) can be used. The</span>
+<span class="sd">        n_reweights specifies how many runs to do.</span>
+<span class="sd">    apply_weights : boolean</span>
+<span class="sd">        If True, the weights will be added to the data directly, therefore</span>
+<span class="sd">        the data-storage will be modified.</span>
+
+<span class="sd">    Return</span>
+<span class="sd">    ------</span>
+<span class="sd">    out : dict</span>
+<span class="sd">        Return a dict containing the weights as well as the reweighter.</span>
+<span class="sd">        The keywords are:</span>
+
+<span class="sd">        - *reweighter* : The trained reweighter</span>
+<span class="sd">        - *weights* : pandas Series containing the new weights of the data.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">raredecay.analysis.ml_analysis</span> <span class="k">as</span> <span class="nn">ml_ana</span>
+
+    <span class="c1">#    from raredecay.globals_ import out</span>
+    <span class="kn">from</span> <span class="nn">raredecay.tools</span> <span class="k">import</span> <span class="n">data_tools</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">reweighter_list</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">new_reweighter_list</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">reweighter</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">reweighter</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">n_reweights</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+        <span class="n">reweighter_list</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">run</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_reweights</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">reweighter_list</span><span class="p">:</span>
+            <span class="n">reweighter</span> <span class="o">=</span> <span class="n">reweighter_list</span><span class="p">[</span><span class="n">run</span><span class="p">]</span>
+        <span class="n">reweighter</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">try_unpickle</span><span class="p">(</span><span class="n">reweighter</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">reweighter</span> <span class="ow">in</span> <span class="p">(</span><span class="s1">&#39;gb&#39;</span><span class="p">,</span> <span class="s1">&#39;bins&#39;</span><span class="p">):</span>
+            <span class="n">new_reweighter</span> <span class="o">=</span> <span class="n">raredecay</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">reweight</span><span class="o">.</span><span class="n">reweight_train</span><span class="p">(</span><span class="n">mc</span><span class="o">=</span><span class="n">mc_data</span><span class="p">,</span> <span class="n">real</span><span class="o">=</span><span class="n">real_data</span><span class="p">,</span>
+                                                                        <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span>
+                                                                        <span class="n">reweighter</span><span class="o">=</span><span class="n">reweighter</span><span class="p">,</span>
+                                                                        <span class="n">reweight_cfg</span><span class="o">=</span><span class="n">reweight_cfg</span><span class="p">)</span>
+            <span class="c1"># TODO: hack which adds columns, good idea?</span>
+            <span class="k">assert</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">new_reweighter</span><span class="p">,</span>
+                               <span class="s1">&#39;columns&#39;</span><span class="p">),</span> <span class="s2">&quot;Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?&quot;</span>
+            <span class="n">new_reweighter</span><span class="o">.</span><span class="n">columns</span> <span class="o">=</span> <span class="n">data_tools</span><span class="o">.</span><span class="n">to_list</span><span class="p">(</span><span class="n">columns</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_reweighter</span> <span class="o">=</span> <span class="n">reweighter</span>
+
+        <span class="k">if</span> <span class="n">n_reweights</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="n">new_reweighter_list</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">new_reweighter</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_reweighter_list</span> <span class="o">=</span> <span class="n">new_reweighter</span>
+
+        <span class="k">if</span> <span class="n">apply_data</span><span class="p">:</span>
+            <span class="n">tmp_weights</span> <span class="o">=</span> <span class="n">raredecay</span><span class="o">.</span><span class="n">analysis</span><span class="o">.</span><span class="n">reweight</span><span class="o">.</span><span class="n">reweight_weights</span><span class="p">(</span><span class="n">apply_data</span><span class="o">=</span><span class="n">apply_data</span><span class="p">,</span>
+                                                                       <span class="n">reweighter_trained</span><span class="o">=</span><span class="n">new_reweighter</span><span class="p">,</span>
+                                                                       <span class="n">columns</span><span class="o">=</span><span class="n">columns</span><span class="p">,</span> <span class="n">add_weights</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">run</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">new_weights</span> <span class="o">=</span> <span class="n">tmp_weights</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_weights</span> <span class="o">+=</span> <span class="n">tmp_weights</span>
+
+    <span class="k">if</span> <span class="n">apply_data</span><span class="p">:</span>
+        <span class="n">new_weights</span> <span class="o">/=</span> <span class="n">n_reweights</span>
+        <span class="c1"># TODO: remove below?</span>
+        <span class="n">new_weights</span><span class="o">.</span><span class="n">sort_index</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">apply_weights</span><span class="p">:</span>
+            <span class="n">apply_data</span><span class="o">.</span><span class="n">set_weights</span><span class="p">(</span><span class="n">new_weights</span><span class="p">)</span>
+        <span class="n">output</span><span class="p">[</span><span class="s1">&#39;weights&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_weights</span>
+    <span class="n">output</span><span class="p">[</span><span class="s1">&#39;reweighter&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_reweighter_list</span>
+
+    <span class="k">return</span> <span class="n">output</span></div>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2017, Jonas Eschle.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'../../../',
+            VERSION:'2.0.2',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="../../../_static/jquery.js"></script>
+      <script type="text/javascript" src="../../../_static/underscore.js"></script>
+      <script type="text/javascript" src="../../../_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
