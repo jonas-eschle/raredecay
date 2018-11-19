@@ -61,6 +61,11 @@ Setup and installation
 
 PyPI
 ~~~~
+First install the legacy dependency:
+
+::
+
+   pip install git+https://github.com/REPlegacy/rep.git@0.7.3
 
 The package with all extras requires root\_numpy as well as rootpy (and
 therefore a ROOT installation with python-bindings) to be installed on
