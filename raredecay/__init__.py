@@ -42,4 +42,4 @@ import raredecay.settings, raredecay.stat
 __all__ = ["reweight", "config", "data", "ml", "score", "settings", "stat", "meta_config", "globals_"]
 
 __author__ = "Jonas Eschle 'Mayou36'"
-__version__ = '2.0.2'
+__version__ = '2.1.0'
