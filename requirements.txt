@@ -3,4 +3,5 @@ pandas
 numpy
 matplotlib
 future
+xgboost
 hep_ml>=0.5.0
