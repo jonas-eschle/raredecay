@@ -75,7 +75,7 @@ before_install:
 install:
 
 
-- conda install pandas xgboost -y
+- conda install pandas py-xgboost -y
 #- pip uninstall pandas -y || echo pandas not installed
 #- pip install xgboost > tmp.txt && echo "alive"
 #- pip install -U -r requirements.txt
