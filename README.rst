@@ -1,4 +1,4 @@
-|Code Health| |Build Status| |PyPI version|
+|Code Health| |Build Status| |PyPI version| |DOI badge|
 
 raredecay
 =========
@@ -108,3 +108,5 @@ or, instead of root/additionally (comma separated) ``reweight`` or
    :target: https://badge.fury.io/py/raredecay
 .. |Dependency Status| image:: https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9/badge.svg?style=flat-square
    :target: https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9
+.. |DOI badge| image:: https://zenodo.org/badge/70418004.svg
+   :target: https://zenodo.org/badge/latestdoi/70418004
