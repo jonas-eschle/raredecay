@@ -16,7 +16,7 @@ import os
 here = os.path.abspath(os.path.dirname(__file__))
 
 with io.open(os.path.join(here, 'requirements.txt')) as f:
-    requirements = f.read().split('\n')
+    requirements = f.read().splitlines()
 
 
 def readme():
@@ -24,7 +24,7 @@ def readme():
         return f.read()
 
 
-git_version = '2.0.2'
+git_version = '2.1.0'
 
 extras_require = {'all': []}
 extras_require_tmp = {
@@ -67,7 +67,7 @@ if __name__ == '__main__':
           author='Jonas Eschle',
           author_email='mayou36@jonas.eschle.com',
           license='Apache-2.0 License',
-          #      dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
+          dependency_links=['https://github.com/REPlegacy/rep/tarball/master#egg=rep-0.7.3'],
           install_requires=requirements,
           extras_require=extras_require,
           packages=['raredecay',
