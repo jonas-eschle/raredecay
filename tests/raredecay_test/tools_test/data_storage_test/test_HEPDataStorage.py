@@ -132,26 +132,21 @@ class TestHEPDataStorageMixin(TestCase):
         nptest.assert_almost_equal(self.truth_weights_normalized2,
                                    self.ds2.get_weights())
 
-    def test_get_name(self):
-        pass
+    # def test_get_name(self):
+    #     pass
+    #
+    # def test_name(self):
+    #     pass
 
-    def test_name(self):
-        pass
-
-    def test__get_name(self):
-        pass
-
-    def test__set_name(self):
-        pass
 
     def test_data_name(self):
         self.assertEqual(self.truth_name, self.ds.data_name)
 
-    def test_data_name_addition(self):
-        pass
-
-    def test_fold_name(self):
-        pass
+    # def test_data_name_addition(self):
+    #     pass
+    #
+    # def test_fold_name(self):
+    #     pass
 
     def test_data_type(self):
         self.assertEqual(self.truth_data_type, self.ds.data_type, )
@@ -163,11 +158,6 @@ class TestHEPDataStorageMixin(TestCase):
     def test_index(self):
         nptest.assert_almost_equal(self.truth_index, self.ds.index)
 
-    def test__make_index(self):
-        pass
-
-    def test__set_index(self):
-        pass
 
     def test_columns(self):
         self.assertListEqual(self.truth_columns, self.ds.columns)
@@ -178,14 +168,7 @@ class TestHEPDataStorageMixin(TestCase):
         self.ds.columns = copy.deepcopy(self.truth_columns)
         self.assertListEqual(self.truth_columns, self.ds.columns)
 
-    def test__set_columns(self):
-        pass
 
-    def test__set_length(self):
-        pass
-
-    def test__get_data_type(self):
-        pass
 
     def test_data(self):
         pass
@@ -197,14 +180,11 @@ class TestHEPDataStorageMixin(TestCase):
         self._test_ds()
         self.ds = ds_original
 
-    def test__set_data(self):
-        pass
 
     def test_get_weights(self):
         nptest.assert_almost_equal(self.truth_weights, self.ds.get_weights(normalize=False))
 
-    def test__get_weights(self):
-        pass
+
 
     def test_set_weights(self):
         weights_original = self.ds.get_weights(normalize=False)
@@ -220,8 +200,6 @@ class TestHEPDataStorageMixin(TestCase):
         self.ds.set_weights(weights_original)
         self.truth_weights = weights_truth_original
 
-    def test__set_weights(self):
-        pass
 
     def test_set_root_selection(self):
         pass
@@ -237,8 +215,7 @@ class TestHEPDataStorageMixin(TestCase):
                                    'd': [32, 31, 35]}, index=index)
         pdtest.assert_frame_equal(indexed_df, self.ds.pandasDF(index=index))
 
-    def test__make_df(self):
-        pass
+
 
     def test_get_targets(self):
         indices = [1, 2, 5]
@@ -247,8 +224,7 @@ class TestHEPDataStorageMixin(TestCase):
         nptest.assert_almost_equal(self.truth_targets, self.ds.get_targets())
         nptest.assert_almost_equal(self.truth_targets, self.ds.targets)
 
-    def test__get_targets(self):
-        pass
+
 
     def test_set_targets(self):
         targets_original = self.ds.get_targets()
@@ -264,8 +240,6 @@ class TestHEPDataStorageMixin(TestCase):
         self.ds.set_targets(targets_original)
         self.truth_targets = targets_truth_original
 
-    def test__set_target(self):
-        pass
 
     def test_make_dataset(self):
         data, targets, weights = self.ds.make_dataset(second_storage=self.ds2, weights_ratio=0)
