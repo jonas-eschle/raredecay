@@ -84,8 +84,8 @@ install:
 #- pip uninstall pandas -y || echo pandas not installed
 #- pip install xgboost > tmp.txt && echo "alive"
 #- pip install -U -r requirements.txt
-- pip install git+https://github.com/REPlegacy/rep -U
-- pip install .[all]
+#- pip install git+https://github.com/REPlegacy/rep -U
+- pip install .[all] --process-dependency-links
 script:
 
 #- python -m unittest discover
