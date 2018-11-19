@@ -75,7 +75,10 @@ before_install:
 install:
 
 
-- conda install pandas py-xgboost -y
+- if [[ "MAYOU_PYTHON_VERSION" == 2.7 ]] ; then
+      conda install pandas py-xgboost -y
+  else
+    pip install xgboost > tmp.txt && echo "alive"
 #- pip uninstall pandas -y || echo pandas not installed
 #- pip install xgboost > tmp.txt && echo "alive"
 #- pip install -U -r requirements.txt
