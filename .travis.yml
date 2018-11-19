@@ -58,8 +58,6 @@ before_install:
 - export PATH="$HOME/anaconda/bin:$PATH"
 - hash -r
 - conda config --set always_yes yes --set changeps1 no
-#- conda update conda -y
-#- conda update anaconda -y
 
 - conda info -a
 - conda config --add channels https://conda.anaconda.org/nlesc/label/dev
@@ -73,7 +71,6 @@ before_install:
 - conda install -y coverage > tmp.txt && echo "alive"
 - conda install -y future > tmp.txt && echo "alive"
 - pip install coveralls > tmp.txt && echo "alive"
-#- pip install future
 
 install:
 
@@ -82,11 +79,7 @@ install:
 #- pip uninstall pandas -y || echo pandas not installed
 - pip install xgboost > tmp.txt && echo "alive"
 #- pip install -U -r requirements.txt
-#- pip install -U rootpy root_numpy
-# - pip install .[root] --no-dependencies
 - pip install git+https://github.com/REPlegacy/rep -U
-- ls
-- pwd
 - pip install .[all]
 script:
 
