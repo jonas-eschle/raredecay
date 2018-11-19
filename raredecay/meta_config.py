@@ -40,8 +40,8 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                      reduce, reload, unicode, xrange, StandardError,
-                                      )  # noqa
+                                          reduce, reload, unicode, xrange, StandardError,
+                                          )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -62,6 +62,17 @@ import numpy as np
 # Be aware: certain tasks like loading  a pickled file may fail if the file-
 # endings are changed.
 # ==============================================================================
+
+__all__ = ['PROMPT_FOR_COMMENT', 'MULTITHREAD', 'MULTIPROCESSING', 'n_cpu_max', 'use_gpu', 'use_stratified_folding',
+           'get_n_cpu', 'set_parallel_profile', 'PICKLE_DATATYPE', 'ROOT_DATATYPE',
+           'PICKLE_PATH', 'GIT_DIR_PATH', 'PICKLE_PROTOCOL', 'SUPPRESS_WRONG_SKLEARN_VERSION',
+           'SUPPRESS_FUTURE_IMPORT_ERROR', 'MAX_AUTO_FOLDERS', 'NO_PROMPT_ASSUME_YES',
+           'MAX_ERROR_COUNT', 'MAX_FIGURES', 'DEFAULT_OUTPUT_FOLDERS', 'DEFAULT_HIST_SETTINGS',
+           'DEFAULT_SAVE_FIG', 'DEFAULT_EXT_SAVE_FIG', 'DEFAULT_LOGGER_CFG', 'DEFAULT_CLF_XGB', 'DEFAULT_CLF_TMVA',
+           'DEFAULT_CLF_RDF', 'DEFAULT_CLF_GB', 'DEFAULT_CLF_ADA', 'DEFAULT_CLF_NN', 'DEFAULT_CLF_CONFIG',
+           'DEFAULT_CLF_NAME', 'max_difference_feature_selection', 'DEFAULT_HYPER_GENERATOR', 'loggers', 'verbosity',
+           'plot_verbosity', 'set_verbosity', 'set_plot_verbosity', 'rand_seed', 'randint',
+           'randfloat', 'set_seed', 'error_occured', 'warning_occured']
 
 # ------------------------------------------------------------------------------
 # General run parameters
@@ -287,9 +298,6 @@ DEFAULT_CLF_NN = dict(
                    }],
         )
 
-DEFAULT_CLF_KNN = dict(
-        n_neigh=5
-        )
 
 # default clf config collection
 DEFAULT_CLF_CONFIG = dict(
@@ -298,7 +306,6 @@ DEFAULT_CLF_CONFIG = dict(
         gb=DEFAULT_CLF_GB,
         ada=DEFAULT_CLF_ADA,
         nn=DEFAULT_CLF_NN,
-        knn=DEFAULT_CLF_KNN,
         rdf=DEFAULT_CLF_RDF
         )
 

@@ -34,6 +34,9 @@ except ImportError as err:  # noqa
         basestring = str  # noqa
 # Python 2 backwards compatibility overhead END
 
+__all__ = ['initialize', 'finalize', 'set_verbosity', 'get_output_handler', 'parallel_profile',
+           'figure_save_config', 'set_random_seed']
+
 import copy
 
 import raredecay.meta_config as meta_cfg
