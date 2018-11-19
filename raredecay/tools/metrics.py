@@ -100,9 +100,15 @@ def precision_measure(n_signal, n_background):
         The number of sigmas
 
     """  # pylint:disable=anomalous-backslash-in-string
-    length = 1 if not hasattr(n_signal, "__len__") else len(n_signal)
+    try:
+        length = len(n_signal)
+    except TypeError:  # not an iterable
+        length = 1
     if length > 1:
         sqrt = np.sqrt(np.array(n_signal + n_background))
+        # HACK
+        if sqrt[0] == 0:
+            sqrt[0] = sqrt[1]
     else:
         sqrt = mt.sqrt(n_signal + n_background)
     output = n_signal / sqrt

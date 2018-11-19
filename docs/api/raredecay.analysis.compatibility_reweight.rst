@@ -1,5 +1,5 @@
-compatibility_reweight
-======================
+compatibility\_reweight
+=======================
 
 .. automodule:: raredecay.analysis.compatibility_reweight
     :members:
