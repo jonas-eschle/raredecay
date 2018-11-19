@@ -1,4 +1,4 @@
-|Code Health| |Build Status| |PyPI version| |Dependency Status|
+|Code Health| |Build Status| |PyPI version|
 
 raredecay
 =========
@@ -34,10 +34,10 @@ Want to test whether your reweighting did overfit? Use train\_similar:
 
 .. code:: python
 
-    import raredecay as rd  
+    import raredecay as rd
 
-    mc_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=0)  
-    real_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=1)  
+    mc_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=0)
+    real_data = rd.data.HEPDataStorage(df, weights=*pd.Series weights*, target=1)
 
     score = rd.score.train_similar(mc_data, real_data, old_mc_weights=1 *or whatever weights the mc had before*)
 
@@ -59,6 +59,20 @@ The API as well as the documentation:
 Setup and installation
 ----------------------
 
+PyPI
+~~~~
+
+The package with all extras requires root\_numpy as well as rootpy (and
+therefore a ROOT installation with python-bindings) to be installed on
+your system. If that is not the case, some functions won't work.
+
+Recommended installation (requires ROOT):
+
+
+::
+
+    pip install raredecay[all] --process-dependency-links
+
 Anaconda
 ~~~~~~~~
 
@@ -69,26 +83,7 @@ has to be upgraded with pip for some functionalities)
 
     conda install raredecay -c mayou36
 
-PyPI
-~~~~
 
-The package with all extras requires root\_numpy as well as rootpy (and
-therefore a ROOT installation with python-bindings) to be installed on
-your system. If that is not the case, some functions won't work.
-
-If you want to install all the extra, first install the very newest
-version of REP (may also needed with conda install) (the -U can be
-omitted, but is recommended to have the newest dependencies):
-
-::
-
-    pip install -U https://github.com/yandex/rep/archive/stratifiedkfold.zip
-
-Then, install the raredecay package (without ROOT-support) via
-
-::
-
-    pip install raredecay
 
 To make sure you can convert ROOT-NTuples, use
 
@@ -99,15 +94,6 @@ To make sure you can convert ROOT-NTuples, use
 or, instead of root/additionally (comma separated) ``reweight`` or
 ``reweight`` for the specific functionalities.
 
-In order to have all functionalities, use
-
-::
-
-    pip install raredecay[all]
-
-As it is a young package still under developement, it may receive
-regular updates and improvements and it is probably a good idea to
-regularly download the newest package.
 
 .. |Code Health| image:: https://landscape.io/github/mayou36/raredecay/master/landscape.svg?style=flat
    :target: https://landscape.io/github/mayou36/raredecay/master
