@@ -68,98 +68,98 @@ def _cut(data):
     return data_tools.apply_cuts(*data)
 
 
-def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
-    """Cut the bkg while maintaining a certain percent of the signal. WIP."""
-
-    # import raredecay.meta_config as meta_cfg
-    from raredecay.tools import data_tools
-    from raredecay.globals_ import out
-    # from raredecay.tools.data_storage import HEPDataStorage
-
-    columns = signal_data.columns
-    signal_data.plot(figure="Before cut", title="Data comparison before cut")
-    signal_data.plot(figure="Signal comparison", title="Data comparison before cut vs after")
-    bkg_data.plot(figure="Background comparison", title="Data comparison before cut vs after")
-    bkg_data.plot(figure="Before cut")
-    bkg_length = len(bkg_data)
-    signal_length = len(signal_data)
-    signal_cp = signal_data.copy_storage()
-    bkg_cp = bkg_data.copy_storage()
-    signal_data = signal_data.pandasDF()
-    bkg_data = bkg_data.pandasDF()
-
-    applied_cuts = {}
-
-    percent_end = percent_sig_to_keep
-    percent_sig_to_keep = 100
-    stepsize = 0.1
-    keep = {}
-
-    while True:
-
-        #        pool = multiprocessing.Pool(meta_cfg.n_cpu_max)
-        sig = np.array([signal_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
-        sig = copy.deepcopy(sig)
-        bkg = np.array([bkg_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
-        bkg = copy.deepcopy(bkg)
-        data = list(zip(sig, bkg, [percent_sig_to_keep] * len(columns)))
-        limits, rejection = [], []
-        for sig, bkg, per in data:
-            temp = data_tools.apply_cuts(sig, bkg, per, bkg_length=bkg_length)
-            limits.append(temp[0])
-            rejection.append(temp[1])
-        # limits, rejection = pool.map(_cut, data)
-        i_max_rej = np.argmax(rejection)
-        max_rejection = np.max(rejection)
-        column, limits = columns[i_max_rej], limits[i_max_rej]
-        print(percent_sig_to_keep, percent_end)
-        if max_rejection < 0.001 and percent_sig_to_keep == 100:
-            if percent_end < 100:
-                percent_sig_to_keep -= stepsize
-            else:
-                break
-        elif percent_end <= percent_sig_to_keep < 100:
-            percent_end += stepsize
-            stepsize *= (100 - stepsize) / 100
-        elif percent_sig_to_keep < percent_end:
-            break
-
-        if column in applied_cuts:
-            max_rejection += applied_cuts[column]['reduction']
-        applied_cuts[column] = {"limits": limits, "reduction": max_rejection}
-
-        cuts = np.logical_and(signal_data[column] > limits[0], signal_data[column] < limits[1])
-        signal_data = signal_data[cuts]
-
-        cuts = np.logical_and(bkg_data[column] > limits[0], bkg_data[column] < limits[1])
-        bkg_data = bkg_data[cuts]
-        print("We used " + column)
-
-    # signal_data.hist(bins=30)
-    #    bkg_data.hist(bins=30)
-
-    signal_len_cut = len(np.array(signal_data.as_matrix()[:, 0]))
-    bkg_len_cut = len(np.array(bkg_data.as_matrix()[:, 0]))
-    signal_cp.set_data(signal_data)
-    signal_cp.plot(figure="Signal comparison")
-    signal_cp.plot(figure="Data cut plt", title="Data with cuts applied", log_y_axes=True)
-
-    bkg_cp.set_data(bkg_data)
-    bkg_cp.plot(figure="Background comparison")
-    bkg_cp.plot(figure="Data cut plt", log_y_axes=True)
-
-    out.add_output(applied_cuts, section="Preselection cuts report")
-    out.add_output(keep, section="All limits")
-    bkg_rejection = sum([i['reduction'] for i in list(applied_cuts.values())])
-    out.add_output(["summed up Bkg rejection: ", bkg_rejection, "True rejection: ",
-                    100.0 - (bkg_len_cut / bkg_length), " True remaining signal: ",
-                    signal_len_cut / signal_length], section="Total bkg rejection")
-    print(signal_len_cut)
-    print(signal_length)
-    print(bkg_len_cut)
-    print(bkg_length)
-
-    return applied_cuts
+# def preselection_cut(signal_data, bkg_data, percent_sig_to_keep=100):
+#     """Cut the bkg while maintaining a certain percent of the signal. WIP."""
+#
+#     # import raredecay.meta_config as meta_cfg
+#     from raredecay.tools import data_tools
+#     from raredecay.globals_ import out
+#     # from raredecay.tools.data_storage import HEPDataStorage
+#
+#     columns = signal_data.columns
+#     signal_data.plot(figure="Before cut", title="Data comparison before cut")
+#     signal_data.plot(figure="Signal comparison", title="Data comparison before cut vs after")
+#     bkg_data.plot(figure="Background comparison", title="Data comparison before cut vs after")
+#     bkg_data.plot(figure="Before cut")
+#     bkg_length = len(bkg_data)
+#     signal_length = len(signal_data)
+#     signal_cp = signal_data.copy_storage()
+#     bkg_cp = bkg_data.copy_storage()
+#     signal_data = signal_data.pandasDF()
+#     bkg_data = bkg_data.pandasDF()
+#
+#     applied_cuts = {}
+#
+#     percent_end = percent_sig_to_keep
+#     percent_sig_to_keep = 100
+#     stepsize = 0.1
+#     keep = {}
+#
+#     while True:
+#
+#         #        pool = multiprocessing.Pool(meta_cfg.n_cpu_max)
+#         sig = np.array([signal_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
+#         sig = copy.deepcopy(sig)
+#         bkg = np.array([bkg_data.as_matrix()[:, i] for i, _t in enumerate(columns)])
+#         bkg = copy.deepcopy(bkg)
+#         data = list(zip(sig, bkg, [percent_sig_to_keep] * len(columns)))
+#         limits, rejection = [], []
+#         for sig, bkg, per in data:
+#             temp = data_tools.apply_cuts(sig, bkg, per, bkg_length=bkg_length)
+#             limits.append(temp[0])
+#             rejection.append(temp[1])
+#         # limits, rejection = pool.map(_cut, data)
+#         i_max_rej = np.argmax(rejection)
+#         max_rejection = np.max(rejection)
+#         column, limits = columns[i_max_rej], limits[i_max_rej]
+#         print(percent_sig_to_keep, percent_end)
+#         if max_rejection < 0.001 and percent_sig_to_keep == 100:
+#             if percent_end < 100:
+#                 percent_sig_to_keep -= stepsize
+#             else:
+#                 break
+#         elif percent_end <= percent_sig_to_keep < 100:
+#             percent_end += stepsize
+#             stepsize *= (100 - stepsize) / 100
+#         elif percent_sig_to_keep < percent_end:
+#             break
+#
+#         if column in applied_cuts:
+#             max_rejection += applied_cuts[column]['reduction']
+#         applied_cuts[column] = {"limits": limits, "reduction": max_rejection}
+#
+#         cuts = np.logical_and(signal_data[column] > limits[0], signal_data[column] < limits[1])
+#         signal_data = signal_data[cuts]
+#
+#         cuts = np.logical_and(bkg_data[column] > limits[0], bkg_data[column] < limits[1])
+#         bkg_data = bkg_data[cuts]
+#         print("We used " + column)
+#
+#     # signal_data.hist(bins=30)
+#     #    bkg_data.hist(bins=30)
+#
+#     signal_len_cut = len(np.array(signal_data.as_matrix()[:, 0]))
+#     bkg_len_cut = len(np.array(bkg_data.as_matrix()[:, 0]))
+#     signal_cp.set_data(signal_data)
+#     signal_cp.plot(figure="Signal comparison")
+#     signal_cp.plot(figure="Data cut plt", title="Data with cuts applied", log_y_axes=True)
+#
+#     bkg_cp.set_data(bkg_data)
+#     bkg_cp.plot(figure="Background comparison")
+#     bkg_cp.plot(figure="Data cut plt", log_y_axes=True)
+#
+#     out.add_output(applied_cuts, section="Preselection cuts report")
+#     out.add_output(keep, section="All limits")
+#     bkg_rejection = sum([i['reduction'] for i in list(applied_cuts.values())])
+#     out.add_output(["summed up Bkg rejection: ", bkg_rejection, "True rejection: ",
+#                     100.0 - (bkg_len_cut / bkg_length), " True remaining signal: ",
+#                     signal_len_cut / signal_length], section="Total bkg rejection")
+#     print(signal_len_cut)
+#     print(signal_length)
+#     print(bkg_len_cut)
+#     print(bkg_length)
+#
+#     return applied_cuts
 
 
 def feature_exploration(original_data, target_data, features=None, n_folds=10,

@@ -82,6 +82,8 @@ from raredecay.tools import output
 import raredecay.meta_config as meta_cfg
 import raredecay.config as cfg
 
+__all__ = ['out', 'logger_cfg', 'n_cpu_used', 'free_cpus']
+
 # ==============================================================================
 # Output handler. Contains methods "initialize" and "finalize"
 # ==============================================================================
@@ -110,7 +112,3 @@ def free_cpus():
     n_out = max([meta_cfg.n_cpu_max - n_cpu_used, 1])
     return n_out
 
-
-if __name__ == '__main__':
-    print("Selftest start")
-    print("Selftest completed")

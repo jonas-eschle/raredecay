@@ -36,6 +36,8 @@ except ImportError as err:  # noqa
 
 # Python 2 backwards compatibility overhead END
 
+__all__ = ['RUN_NAME', 'run_message', 'OUTPUT_CFG', 'save_fig_cfg', 'logger_cfg']
+
 RUN_NAME = 'Default run name'
 run_message = str("Default run message")
 
