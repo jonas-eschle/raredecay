@@ -67,7 +67,7 @@ if __name__ == '__main__':
           author='Jonas Eschle',
           author_email='mayou36@jonas.eschle.com',
           license='Apache-2.0 License',
-          #      dependency_links=['https://github.com/yandex/rep/archive/stratifiedkfold.zip'],
+          dependency_links=['https://github.com/REPlegacy/rep/tarball/master'],
           install_requires=requirements,
           extras_require=extras_require,
           packages=['raredecay',

@@ -4,5 +4,4 @@ numpy
 matplotlib
 future
 xgboost
-git+git://github.com/REPlegacy/rep#egg=rep
 hep_ml>=0.5.0
