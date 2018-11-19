@@ -6,7 +6,7 @@ python:
  - '3.4'
  - '3.5'
  - '3.6'
- - '3.7-dev'
+ - '3.7'
 matrix:
  include:
   - os: osx
@@ -50,9 +50,9 @@ before_install:
   fi
 #        wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O anaconda.sh;
 #        wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O anaconda.sh;
-- if [[ "MAYOU_PYTHON_VERSION" == "3.7-dev" ]]; then
-        MAYOU_PYTHON_VERSION="3.7";
-  fi
+#- if [[ "MAYOU_PYTHON_VERSION" == "3.7-dev" ]]; then
+#        MAYOU_PYTHON_VERSION="3.7";
+#  fi
 
 - bash anaconda.sh -b -p $HOME/anaconda > tmp.txt && echo "alive"
 - export PATH="$HOME/anaconda/bin:$PATH"
@@ -76,9 +76,10 @@ install:
 
 
 - if [[ "MAYOU_PYTHON_VERSION" == 2.7 ]] ; then
-      conda install pandas py-xgboost -y
+      conda install pandas py-xgboost -y;
   else
-    pip install xgboost > tmp.txt && echo "alive"
+    pip install xgboost > tmp.txt && echo "alive";
+  fi
 #- pip uninstall pandas -y || echo pandas not installed
 #- pip install xgboost > tmp.txt && echo "alive"
 #- pip install -U -r requirements.txt
