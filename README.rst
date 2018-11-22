@@ -77,10 +77,19 @@ Recommended installation (requires ROOT):
 ::
 
     pip install raredecay[all] --process-dependency-links
+    
+(probably you have to downgrade scikit-learn)
+
+::
+
+    pip install scikit-learn~=0.18.0
+    OR
+    pip install scikit-learn~=0.19.0  # probably not working
 
 Anaconda
 ~~~~~~~~
 
+ONLY OLD VERSION, UNFORTUNATELY!
 Easiest way: use conda to install everything (except of the rep, which
 has to be upgraded with pip for some functionalities)
 
