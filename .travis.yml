@@ -104,6 +104,7 @@ deploy:
   distributions: sdist bdist_wheel
   on:
     branch: master
+    tags: true
     condition: $TRAVIS_PYTHON_VERSION = "3.4" && $TRAVIS_OS_NAME = "linux"
 
 

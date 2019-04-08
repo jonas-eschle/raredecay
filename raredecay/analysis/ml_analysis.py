@@ -250,10 +250,10 @@ def make_clf(clf, n_cpu=None, dict_only=False):
         if 'name' not in clf:
             clf['name'] = clf['clf_type']
         default_clf = dict(
-                clf_type=clf['clf_type'],
-                name=meta_cfg.DEFAULT_CLF_NAME[clf['clf_type']],
-                config=meta_cfg.DEFAULT_CLF_CONFIG[clf['clf_type']],
-                )
+            clf_type=clf['clf_type'],
+            name=meta_cfg.DEFAULT_CLF_NAME[clf['clf_type']],
+            config=meta_cfg.DEFAULT_CLF_CONFIG[clf['clf_type']],
+        )
 
         clf = dict(default_clf, **clf)
 
@@ -271,7 +271,7 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             serial_clf = True
             clf['config'].update(dict(random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(AdaBoostClassifier(base_estimator=DecisionTreeClassifier(
-                    random_state=meta_cfg.randint()), **clf.get('config')))
+                random_state=meta_cfg.randint()), **clf.get('config')))
         elif clf['clf_type'] == 'knn':
             clf['config'].update(dict(random_state=meta_cfg.randint(), n_jobs=n_cpu))
             clf_tmp = SklearnClassifier(KNeighborsClassifier(**clf.get('config')))
@@ -279,7 +279,6 @@ def make_clf(clf, n_cpu=None, dict_only=False):
             clf['config'].update(dict(n_jobs=n_cpu, random_state=meta_cfg.randint()))
             clf_tmp = SklearnClassifier(RandomForestClassifier(**clf.get('config')))
         # elif clf['clf_type'] == 'nn':
-
 
         # assign classifier to output dict
         output['clf'] = clf_tmp
@@ -977,7 +976,7 @@ def classify(original_data=None, target_data=None, features=None, validation=10,
             label_dict = None if binary_test else {test_classes[0]: "validation data"}
             out.save_fig(figure="Predictions of " + plot_name, importance=plot_importance)
             report.prediction_pdf(plot_type='bar', labels_dict=label_dict).plot(
-                    title="Predictions of " + plot_name)
+                title="Predictions of " + plot_name)
 
     if clf_score is None:
         return clf
@@ -1049,7 +1048,7 @@ def best_metric_cut(mc_data, real_data, prediction_branch, metric='precision',
     output = {
         'best_threshold_cut': best_cut[best_index],
         'best_metric': best_metric[best_index]
-        }
+    }
 
     return output
 
@@ -1299,8 +1298,8 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
     score_columns = dev_tool.entries_to_str(score_columns)
     score_clf = dev_tool.entries_to_str(score_clf)
 
-    warnings.warn(DeprecationWarning, "Do not use this function anymore."
-                                      "Rather use reweighting_kfold (small 'k') from rd.reweight.")
+    warnings.warn("Do not use this function anymore."
+                  "Rather use reweighting_kfold (small 'k') from rd.reweight.", DeprecationWarning)
 
     output = {}
     out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
