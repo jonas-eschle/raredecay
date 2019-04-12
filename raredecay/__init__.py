@@ -36,7 +36,7 @@ except ImportError as err:  # noqa
 
 # Python 2 backwards compatibility overhead END
 
-from . import reweight, config, data, ml, score
+from . import reweight, config, data, ml, score, meta_config
 import raredecay.settings, raredecay.stat
 
 __all__ = ["reweight", "config", "data", "ml", "score", "settings", "stat", "meta_config", "globals_"]
