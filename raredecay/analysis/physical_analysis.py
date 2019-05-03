@@ -25,8 +25,8 @@ from builtins import (int,  # noqa
                       range, str, zip,
                       )  # noqa
 
-import raredecay.meta_config  # noqa
-import raredecay.tools.ml_scores
+from .. import meta_config  # noqa
+from ..tools import ml_scores
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
@@ -38,8 +38,8 @@ try:  # noqa
     from past.builtins import basestring  # noqa
 except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
-            raredecay.meta_config.warning_occured()  # noqa
+        if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            meta_config.warning_occured()  # noqa
             warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
                           "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
                           "errors. Best install the future package.", RuntimeWarning)  # noqa
@@ -55,8 +55,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from raredecay.tools import dev_tool
-import raredecay.analysis.ml_analysis as ml_ana
+from ..tools import dev_tool
+from . import ml_analysis as ml_ana
 
 # legacy
 from raredecay.analysis.compatibility_reweight import reweight
@@ -658,7 +658,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # test_predictions is an additional score I tried but so far I is not
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
-        scores = raredecay.tools.ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
+        scores = ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
                                                              n_folds=n_folds_scoring,
                                                              n_checks=n_folds_scoring,
                                                              columns=score_columns,
@@ -705,7 +705,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
 
 
         if mayou_score:
-            raredecay.tools.ml_scores.mayou_score(mc_data=mc_data, real_data=real_data,
+            ml_scores.mayou_score(mc_data=mc_data, real_data=real_data,
                                                   n_folds=n_folds_scoring,
                                                   clf=score_clf, old_mc_weights=old_weights)
             # an example to add output with the most importand parameters. The first

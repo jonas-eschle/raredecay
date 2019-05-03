@@ -6,3 +6,4 @@ future
 xgboost
 rep>0.7.0
 hep_ml>=0.5.0
+scikit-learn~=0.19.0

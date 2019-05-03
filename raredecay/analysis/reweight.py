@@ -27,8 +27,8 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
 import numpy as np  # noqa
 from matplotlib import pyplot as plt  # noqa
 
-import raredecay.meta_config  # noqa
-from raredecay.globals_ import out  # noqa
+from .. import meta_config  # noqa
+from ..globals_ import out  # noqa
 from raredecay.tools import dev_tool, data_tools, data_storage  # noqa
 
 try:  # noqa
@@ -41,8 +41,8 @@ try:  # noqa
     from past.builtins import basestring  # noqa
 except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
-        if raredecay.meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
-            raredecay.meta_config.warning_occured()  # noqa
+        if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
+            meta_config.warning_occured()  # noqa
             warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
                           "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
                           "errors. Best install the future package.", RuntimeWarning)  # noqa
@@ -58,8 +58,8 @@ import hep_ml.reweight
 import pandas as pd
 
 # import configuration
-import raredecay.meta_config as meta_cfg
-import raredecay.config as cfg
+from .. import meta_config as meta_cfg
+from .. import config as cfg
 
 # HACK as reweight also uses meta_cfg for reweight_cfg
 meta_cfg_module = meta_cfg
