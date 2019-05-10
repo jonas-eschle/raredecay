@@ -310,11 +310,11 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
             reweighter = reweighter_list[run]
         reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
-            new_reweighter = ana_reweight.reweight_train(mc=mc,
-                                                                        real=real,
-                                                                        columns=columns,
-                                                                        reweight_cfg=reweight_cfg,
-                                                                        reweighter=reweighter)
+            new_reweighter = reweight_train(mc=mc,
+                                            real=real,
+                                            columns=columns,
+                                            reweight_cfg=reweight_cfg,
+                                            reweighter=reweighter)
             # TODO: hack which adds columns, good idea?
             assert not hasattr(new_reweighter,
                                'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
@@ -329,10 +329,10 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
             new_reweighter_list = new_reweighter
 
         if apply_data is not None:
-            tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
-                                                                       columns=columns,
-                                                                       reweighter_trained=new_reweighter,
-                                                                       add_weights=False)
+            tmp_weights = reweight_weights(apply_data=apply_data,
+                                           columns=columns,
+                                           reweighter_trained=new_reweighter,
+                                           add_weights=False)
             if run == 0:
                 new_weights = tmp_weights
             else:

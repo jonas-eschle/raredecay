@@ -60,7 +60,8 @@ try:
     import root_numpy
 
 except ImportError as err:
-    warnings.warn("could not import from root_numpy!")
+    message = "could not import from root_numpy! Error message: {}".format(err)
+    warnings.warn(message)
 
 # from root_numpy import root2array, array2root  # HACK
 
