@@ -13,7 +13,7 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
                       )  # noqa
 import sys  # noqa
 import warnings  # noqa
-from .. import meta_config as meta_cfg
+from . import meta_config as meta_cfg
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
