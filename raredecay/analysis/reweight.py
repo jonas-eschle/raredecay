@@ -310,7 +310,7 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
             reweighter = reweighter_list[run]
         reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
-            new_reweighter = raredecay.analysis.reweight.reweight_train(mc=mc,
+            new_reweighter = ana_reweight.reweight_train(mc=mc,
                                                                         real=real,
                                                                         columns=columns,
                                                                         reweight_cfg=reweight_cfg,

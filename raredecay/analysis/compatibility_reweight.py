@@ -8,8 +8,7 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 import copy
 
-import raredecay.analysis
-
+from . import reweight as ana_reweight
 
 def reweight(apply_data=None, real_data=None, mc_data=None, columns=None,
              reweighter='gb', reweight_cfg=None, n_reweights=1,
@@ -55,7 +54,6 @@ def reweight(apply_data=None, real_data=None, mc_data=None, columns=None,
         - *weights* : pandas Series containing the new weights of the data.
 
     """
-    import raredecay.analysis.ml_analysis as ml_ana
 
     #    from raredecay.globals_ import out
     from raredecay.tools import data_tools
@@ -75,7 +73,7 @@ def reweight(apply_data=None, real_data=None, mc_data=None, columns=None,
             reweighter = reweighter_list[run]
         reweighter = data_tools.try_unpickle(reweighter)
         if reweighter in ('gb', 'bins'):
-            new_reweighter = raredecay.analysis.reweight.reweight_train(mc=mc_data, real=real_data,
+            new_reweighter = ana_reweight.reweight_train(mc=mc_data, real=real_data,
                                                                         columns=columns,
                                                                         reweighter=reweighter,
                                                                         reweight_cfg=reweight_cfg)
@@ -93,7 +91,7 @@ def reweight(apply_data=None, real_data=None, mc_data=None, columns=None,
             new_reweighter_list = new_reweighter
 
         if apply_data:
-            tmp_weights = raredecay.analysis.reweight.reweight_weights(apply_data=apply_data,
+            tmp_weights = ana_reweight.reweight_weights(apply_data=apply_data,
                                                                        reweighter_trained=new_reweighter,
                                                                        columns=columns, add_weights=False)
             if run == 0:
