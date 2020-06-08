@@ -544,9 +544,9 @@ def train_similar_new(mc, real, columns=None, n_checks=10, n_folds=10, clf='xgb'
     import matplotlib.pyplot as plt
     n_bins = 20
     plt.figure("comparing the predictions")
-    plt.hist(predictions, alpha=0.3, label="predictions", bins=n_bins, normed=1)
-    plt.hist(predictions_min, alpha=0.3, label="predictions_min", bins=n_bins, normed=1)
-    plt.hist(predictions_max, alpha=0.3, label="predictions_max", bins=n_bins, normed=1)
+    plt.hist(predictions, alpha=0.3, label="predictions", bins=n_bins, density=1)
+    plt.hist(predictions_min, alpha=0.3, label="predictions_min", bins=n_bins, density=1)
+    plt.hist(predictions_max, alpha=0.3, label="predictions_max", bins=n_bins, density=1)
     plt.legend()
     # plt.autoscale()
 

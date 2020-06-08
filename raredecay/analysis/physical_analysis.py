@@ -455,8 +455,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         out.figure("predictions total normalized")
         plt.legend()
         plt.title("Predictions of MC vs all real data normalized")
-        plt.hist(pred_real, bins=30, normed=True, alpha=0.5, range=(0, 1))
-        plt.hist(pred_mc, bins=30, normed=True, alpha=0.5, range=(0, 1))
+        plt.hist(pred_real, bins=30, density=True, alpha=0.5, range=(0, 1))
+        plt.hist(pred_mc, bins=30, density=True, alpha=0.5, range=(0, 1))
 
     return output
 

@@ -337,6 +337,8 @@ def to_ndarray(data_in, float_array=False):
     data_in : any reasonable data
         The data to be converted
     """
+    from root_numpy import root2array, array2tree
+
     if is_root(data_in):
         data_in = root_numpy.root2array(**data_in)  # why **? it's a root dict
     # change numpy.void to normal floats
