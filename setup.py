@@ -24,7 +24,7 @@ def readme():
         return f.read()
 
 
-git_version = '2.1.0'
+git_version = '2.2.0'
 
 extras_require = {'all': []}
 extras_require_tmp = {

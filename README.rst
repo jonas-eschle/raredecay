@@ -1,4 +1,4 @@
-|Code Health| |Build Status| |PyPI version|
+|Code Health| |Build Status| |PyPI version| |DOI badge|
 
 raredecay
 =========
@@ -79,6 +79,11 @@ and switch into the environment with
 
 PyPI
 ~~~~
+First install the legacy dependency:
+
+::
+
+   pip install git+https://github.com/REPlegacy/rep.git@0.7.3
 
 
 To install raredecay with all options, use
@@ -100,3 +105,5 @@ ROOT or ROOT I/O related).
    :target: https://badge.fury.io/py/raredecay
 .. |Dependency Status| image:: https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9/badge.svg?style=flat-square
    :target: https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9
+.. |DOI badge| image:: https://zenodo.org/badge/70418004.svg
+   :target: https://zenodo.org/badge/latestdoi/70418004
