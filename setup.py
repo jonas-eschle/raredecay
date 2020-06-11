@@ -42,7 +42,7 @@ for val in extras_require_tmp.values():
 if __name__ == '__main__':
     setup(name='raredecay',
           version=git_version,
-          description='A package for analysis of rare particle decays with machine-learning '
+          description='A package with multivariate analysis and reweighting '
                       'algorithms',
           long_description=readme(),
           classifiers=[
@@ -67,7 +67,6 @@ if __name__ == '__main__':
           author='Jonas Eschle',
           author_email='mayou36@jonas.eschle.com',
           license='Apache-2.0 License',
-          dependency_links=['https://github.com/REPlegacy/rep/tarball/master#egg=rep-0.7.3'],
           install_requires=requirements,
           extras_require=extras_require,
           packages=['raredecay',
@@ -75,7 +74,7 @@ if __name__ == '__main__':
                     'raredecay.tools',
                     ],
           include_package_data=True,
-          python_requires=">=2.7",
+          python_requires=">2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
           zip_safe=False
           )
 
