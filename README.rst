@@ -79,22 +79,15 @@ and switch into the environment with
 
 PyPI
 ~~~~
-First install the legacy dependency:
-
-::
-
-   pip install git+https://github.com/REPlegacy/rep.git@0.7.3
 
 
-To install raredecay with all options, use
+To install raredecay, use
 
 
 ::
 
-    pip install raredecay[all]
+    pip install git+https://github.com/mayou36/raredecay
 
-The [all] can be omitted but not all functionality will be available (e.g. nothing
-ROOT or ROOT I/O related).
 
 
 .. |Code Health| image:: https://landscape.io/github/mayou36/raredecay/master/landscape.svg?style=flat
