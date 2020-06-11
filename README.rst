@@ -59,6 +59,24 @@ The API as well as the documentation:
 Setup and installation
 ----------------------
 
+It is highly recommended to perform the installation inside a conda environment. This
+allows to shield the installation against other packages _and_ provides an easy way
+to install ROOT.
+
+(Download and install anaconda/miniconda first)
+
+::
+
+    conda create -n env_name python=3.8 root -c conda-forge
+
+and switch into the environment with
+
+::
+
+    conda activate env_name
+
+
+
 PyPI
 ~~~~
 First install the legacy dependency:
@@ -67,46 +85,16 @@ First install the legacy dependency:
 
    pip install git+https://github.com/REPlegacy/rep.git@0.7.3
 
-The package with all extras requires root\_numpy as well as rootpy (and
-therefore a ROOT installation with python-bindings) to be installed on
-your system. If that is not the case, some functions won't work.
 
-Recommended installation (requires ROOT):
+To install raredecay with all options, use
 
 
 ::
 
-    pip install raredecay[all] --process-dependency-links
-    
-(probably you have to downgrade scikit-learn)
+    pip install raredecay[all]
 
-::
-
-    pip install scikit-learn~=0.18.0
-    OR
-    pip install scikit-learn~=0.19.0  # probably not working
-
-Anaconda
-~~~~~~~~
-
-ONLY OLD VERSION, UNFORTUNATELY!
-Easiest way: use conda to install everything (except of the rep, which
-has to be upgraded with pip for some functionalities)
-
-::
-
-    conda install raredecay -c mayou36
-
-
-
-To make sure you can convert ROOT-NTuples, use
-
-::
-
-    pip install raredecay[root]  # *use raredecay\[root\] in a zsh-console*
-
-or, instead of root/additionally (comma separated) ``reweight`` or
-``reweight`` for the specific functionalities.
+The [all] can be omitted but not all functionality will be available (e.g. nothing
+ROOT or ROOT I/O related).
 
 
 .. |Code Health| image:: https://landscape.io/github/mayou36/raredecay/master/landscape.svg?style=flat

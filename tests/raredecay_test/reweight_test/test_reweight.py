@@ -3,8 +3,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,
                       open, pow, range, round, str, super, zip, )
 import sys
-import warnings
-import raredecay.meta_config
 
 try:
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,

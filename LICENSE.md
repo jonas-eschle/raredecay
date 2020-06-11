@@ -1,5 +1,5 @@
                                 
-Copyright 2016 Jonas Eschle
+Copyright 2020 Jonas Eschle
 
 The source code of the "raredecay" package available at
 https://github.com/mayou36/raredecay is subject to the terms of the Apache License, Version 2.0
