@@ -60,7 +60,7 @@ Setup and installation
 ----------------------
 
 It is highly recommended to perform the installation inside a conda environment. This
-allows to shield the installation against other packages _and_ provides an easy way
+allows to shield the installation against other packages *and* provides an easy way
 to install ROOT.
 
 (Download and install anaconda/miniconda first)
@@ -87,6 +87,11 @@ To install raredecay, use
 ::
 
     pip install git+https://github.com/mayou36/raredecay
+
+*why is there no pip package?*: unfortunately, a dependency, `REP <https://github.com/yandex/rep>`_ is
+unfortunately not actively maintained anymore and an `updated fork <https://github.com/REPlegacy/rep>`_ has
+to be used, which is not deployed to PyPI. Therefore, `raredecay` also can't be deployed to PyPI since
+depencencies are only allowed to contain other PyPI packages but no github repositories.
 
 
 
