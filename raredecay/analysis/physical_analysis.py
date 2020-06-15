@@ -342,7 +342,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
     predict = not performance_only
     if performance_only:
         bkg_df = real_data.pandasDF()
-        bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T) == 1]
+        bkg_df = bkg_df.iloc[np.array(bkg_df[bkg_sel].T) == 1]
         bkg_data = real_data.copy_storage()
         bkg_data.set_data(bkg_df)
         del bkg_df
@@ -394,7 +394,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             real_test.data_name_addition = "test"
             bkg_df = real_train.pandasDF()
 
-            bkg_df = bkg_df.ix[np.array(bkg_df[bkg_sel].T) == 1]
+            bkg_df = bkg_df.iloc[np.array(bkg_df[bkg_sel].T) == 1]
             real_train.set_data(bkg_df)
             real_train.data_name_addition = "train bkg"
 
