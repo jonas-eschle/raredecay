@@ -235,7 +235,7 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     return output
 
 
-def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=None,
+def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds=10, columns=None,
                    performance_only=True, metric_vs_cut='punzi', weights_ratio=0,
                    save_real_pred=False, save_mc_pred=False):
     """Train on bkg and MC, test metric, performance and predict probabilities.
@@ -301,6 +301,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
 
     # Python 2/3 compatibility
     bkg_sel = dev_tool.entries_to_str(bkg_sel)
+    sig_sel = dev_tool.entries_to_str(sig_sel)
     clf = dev_tool.entries_to_str(clf)
     columns = dev_tool.entries_to_str(columns)
     metric_vs_cut = dev_tool.entries_to_str(metric_vs_cut)
@@ -316,25 +317,21 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         if real_data.data_type != 'root':
             raise TypeError("Real predictions should be saved but data is not a root-file but " +
                             real_data.data_type)
-        elif not (real_data.data['selection'] is None):
+        elif not (real_data.data.get('selection') is None):
             raise ValueError("Real pred set to be saved, but has selection " +
                              real_data.data['selection'] + " applied")
     if save_mc_pred:
         if mc_data.data_type != 'root':
             raise TypeError("MC predictions should be saved but data is not a root-file but " +
                             mc_data.data_type)
-        elif not (mc_data.data['selection'] is None):
+        elif not (mc_data.data.get('selection') is None):
             raise ValueError("MC pred set to be saved, but has selection " +
                              mc_data.data['selection'] + " applied")
 
     # backwards compatibility
 
-
-    bkg_sel = [bkg_sel] if not isinstance(bkg_sel, (list, tuple)) else bkg_sel
-    if bkg_sel[0].startswith('noexpand:'):
-        bkg_sel = bkg_sel[0][9:]
-    else:
-        bkg_sel = bkg_sel[0]
+    bkg_sel = sanitize_selection(bkg_sel)
+    sig_sel = sanitize_selection(sig_sel)
 
     pred_real = []
     pred_mc = []
@@ -346,7 +343,13 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         bkg_data = real_data.copy_storage()
         bkg_data.set_data(bkg_df)
         del bkg_df
-        _clf, kfold_score, pred_tmp = classify(bkg_data, mc_data, validation=n_folds, clf=clf,
+
+        sig_df = mc_data.pandasDF()
+        sig_df = sig_df.iloc[np.array(sig_df[sig_sel].T) == 1]
+        sig_data = mc_data.copy_storage()
+        sig_data.set_data(sig_df)
+        del sig_df
+        _clf, kfold_score, pred_tmp = classify(bkg_data, sig_data, validation=n_folds, clf=clf,
                                                get_predictions=True, extended_report=True,
                                                features=columns, weights_ratio=weights_ratio)
 
@@ -378,13 +381,15 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
                                                            sample_weight=pred_tmp['weights'])
             best_index = np.argmax(best_metric)
             output = {'best_threshold_cut': best_cut[best_index],
-                      'best_metric': best_metric[best_index]
+                      'best_metric': best_metric[best_index],
+                      'classifiers': [_clf]
                       }
 
     # predict to all data
     if predict:
 
         # make folds and loop through
+        classifiers = []
         real_data.make_folds(n_folds=n_folds)
         mc_data.make_folds(n_folds=n_folds)
         for i in range(n_folds):
@@ -393,10 +398,15 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             real_train.data_name_addition = "train"
             real_test.data_name_addition = "test"
             bkg_df = real_train.pandasDF()
+            sig_df = mc_train.pandasDF()
 
             bkg_df = bkg_df.iloc[np.array(bkg_df[bkg_sel].T) == 1]
             real_train.set_data(bkg_df)
             real_train.data_name_addition = "train bkg"
+
+            sig_df = sig_df.iloc[np.array(sig_df[sig_sel].T) == 1]
+            mc_train.set_data(sig_df)
+            mc_train.data_name_addition = "train sig"
 
             real_test_index = real_test.index
             mc_test_index = mc_test.index
@@ -416,6 +426,8 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
             pred_mc_tmp = pred_mc_tmp['y_proba']
             pred_mc.append(pd.Series(pred_mc_tmp[:, 1], index=mc_test_index))
 
+            classifiers.append(clf_trained)
+
         # concatenate predictions and index
         pred_real = pd.concat(pred_real)
         pred_real.sort_index(inplace=True)
@@ -424,11 +436,13 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         output['pred_real'] = pred_real
         output['pred_mc'] = pred_mc
 
+        output['classifiers'] = classifiers
+
         # save predictions
         if isinstance(save_real_pred, (basestring, int)) and not isinstance(save_real_pred, bool) and predict:
             root_dict = copy.deepcopy(real_data.data)
 
-            if root_dict['selection'] is not None:
+            if root_dict.get('selection') is not None:
                 raise ValueError(
                         "Cannot save predictions to root as selections have been applied in the script")
 
@@ -439,7 +453,7 @@ def final_training(real_data, mc_data, bkg_sel, clf='xgb', n_folds=10, columns=N
         if isinstance(save_mc_pred, (basestring, int)) and not isinstance(save_mc_pred, bool) and predict:
             root_dict = copy.deepcopy(mc_data.data)
 
-            if root_dict['selection'] is not None:
+            if root_dict.get('selection') is not None:
                 raise ValueError(
                         "Cannot save predictions to root as selections have been applied in the script")
 
