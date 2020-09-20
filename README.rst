@@ -105,3 +105,8 @@ depencencies are only allowed to contain other PyPI packages but no github repos
    :target: https://www.versioneye.com/user/projects/58273f1df09d22004f5914f9
 .. |DOI badge| image:: https://zenodo.org/badge/70418004.svg
    :target: https://zenodo.org/badge/latestdoi/70418004
+   
+Citation
+~~~~~~~~
+
+If you use the package in research, please consider `citing <https://zenodo.org/record/1491924#.X2fCUXUzZhE>_
