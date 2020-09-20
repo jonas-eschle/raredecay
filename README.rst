@@ -109,4 +109,4 @@ depencencies are only allowed to contain other PyPI packages but no github repos
 Citation
 ~~~~~~~~
 
-If you use the package in research, please consider `citing <https://zenodo.org/record/1491924#.X2fCUXUzZhE>_
+If you use the package in research, please consider `citing <https://zenodo.org/record/1491924#.X2fCUXUzZhE>`_
