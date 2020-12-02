@@ -186,7 +186,7 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
 
 
 def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=True, add_weights=True):
-    """Apply reweighter to the data and (add +) return the weights.
+    """Apply reweighter to the data and (add +) return the weights (multiplied by already existing weights).
 
     Can be seen as a wrapper for the
     :py:func:`~hep_ml.reweight.GBReweighter.predict_weights` method.
@@ -249,7 +249,7 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
 # NEW
 def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb', reweight_cfg=None,
              n_reweights=1, add_weights=True):
-    """(Train a reweighter and) apply the reweighter to get new weights.
+    """(Train a reweighter and) apply the reweighter to get new weights (multiplied by already existing weights).
 
     Train a reweighter from the real data and the corresponding MC differences.
     Then, try to correct the apply data (MC as well) the same as the first
@@ -287,7 +287,8 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
         The keywords are:
 
         - *reweighter* : The trained reweighter
-        - *weights* : pandas Series containing the new weights of the data.
+        - *weights* : pandas Series containing the new weights of the data. The weights are multiplied with the
+          already existing weights in `apply_data`
 
     """
     import raredecay.analysis.ml_analysis as ml_ana
@@ -417,7 +418,8 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
     Return
     ------
     out : :py:class:`~pd.Series`
-        Return the new weights.
+        Return the new weights obtained from the reweighting _multiplied_ by the
+          already existing weights in `mc`.
 
     """
 

@@ -1288,7 +1288,8 @@ def reweight_Kfold(mc_data, real_data, columns=None, n_folds=10,
     Return
     ------
     out : :py:class:`~pd.Series`
-        Return the new weights.
+        Return the new weights obtained from the reweighting _multiplied_ by the
+        already existing weights in `mc`.
 
     """
     # Python 2/3 compatibility, str
