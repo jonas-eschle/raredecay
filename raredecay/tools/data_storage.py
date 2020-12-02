@@ -434,7 +434,7 @@ class HEPDataStorage(object):
         index = self._index if index is None else list(index)
         length = len(self) if index is None else len(index)
         normalize = 1 if normalize is True else normalize
-        normalize = 0 if normalize is None else normalize
+        normalize = 0 if normalize is None or normalize is False else normalize
         second_storage = kwargs.get('second_storage')
 
         normalize_1 = 1
