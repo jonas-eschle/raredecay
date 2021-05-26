@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 
 
@@ -15,13 +14,9 @@ The reweighting module consists of function to reweight a distribution by learni
 two other distributions as well as reweighting a distribution by itself in a k-fold way.
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
 
 import sys  # noqa
 import warnings  # noqa
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip,
-                      )  # noqa
 
 import numpy as np  # noqa
 from matplotlib import pyplot as plt  # noqa
@@ -31,9 +26,20 @@ from .. import meta_config  # noqa
 from ..globals_ import out  # noqa
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError,
-                                          )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -42,9 +48,12 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
@@ -66,8 +75,17 @@ meta_cfg_module = meta_cfg
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
-def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, reweight_saveas=None,
-                   weights_ratio=1, weights_mc=None, weights_real=None):
+def reweight_train(
+        mc,
+        real,
+        columns=None,
+        reweighter="gb",
+        reweight_cfg=None,
+        reweight_saveas=None,
+        weights_ratio=1,
+        weights_mc=None,
+        weights_real=None,
+):
     """Return a trained reweighter from a (mc/real) distribution comparison.
 
     | Reweighting a distribution is a "making them the same" by changing the
@@ -124,7 +142,7 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
         Reweighter is trained to the data. Can, for example,
         be used with :func:`~hep_ml.reweight.GBReweighter.predict_weights`
     """
-    __REWEIGHT_MODE = {'gb': 'GB', 'bins': 'Bins', 'bin': 'Bins'}
+    __REWEIGHT_MODE = {"gb": "GB", "bins": "Bins", "bin": "Bins"}
 
     # HACK
     from raredecay.analysis.compatibility_tools import _make_data
@@ -143,15 +161,25 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
         raise ValueError("Reweighter invalid: " + reweighter)
 
     reweighter = __REWEIGHT_MODE.get(reweighter.lower())
-    reweighter += 'Reweighter'
+    reweighter += "Reweighter"
 
     # logging and writing output
     msg = ["Reweighter:", reweighter, "with config:", reweight_cfg]
     logger.info(msg)
 
-    out.add_output(msg + ["\nData used:\n", mc.name, " and ",
-                          real.name, "\ncolumns used for the reweighter training:\n",
-                          columns], section="Training the reweighter", obj_separator=" ")
+    out.add_output(
+        msg
+        + [
+            "\nData used:\n",
+            mc.name,
+            " and ",
+            real.name,
+            "\ncolumns used for the reweighter training:\n",
+            columns,
+        ],
+        section="Training the reweighter",
+        obj_separator=" ",
+    )
 
     if columns is None:
         # use the intesection of both colomns
@@ -159,17 +187,27 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
         common_cols.intersection_update(real.columns)
         columns = list(common_cols)
         if columns != mc.columns or columns != real.columns:
-            logger.warning("No columns specified for reweighting, took intersection" +
-                           " of both dataset, as it's columns are not equal." +
-                           "\nTherefore some columns were not used!")
+            logger.warning(
+                "No columns specified for reweighting, took intersection"
+                + " of both dataset, as it's columns are not equal."
+                + "\nTherefore some columns were not used!"
+            )
             reweight_cfg.warning_occured()
 
     # create data
     normalize_real = 1 if weights_ratio else None
-    mc, _t, mc_weights = _make_data(original_data=mc, features=columns,
-                                    weights_original=weights_mc, weights_ratio=weights_ratio)
-    real, _t, real_weights = _make_data(real, features=columns,
-                                        weights_original=weights_real, weights_ratio=normalize_real)
+    mc, _t, mc_weights = _make_data(
+        original_data=mc,
+        features=columns,
+        weights_original=weights_mc,
+        weights_ratio=weights_ratio,
+    )
+    real, _t, real_weights = _make_data(
+        real,
+        features=columns,
+        weights_original=weights_real,
+        weights_ratio=normalize_real,
+    )
     del _t
 
     # train the reweighter
@@ -179,12 +217,15 @@ def reweight_train(mc, real, columns=None, reweighter='gb', reweight_cfg=None, r
         reweighter = hep_ml.reweight.GBReweighter(**reweight_cfg)
     elif reweighter == "BinsReweighter":
         reweighter = hep_ml.reweight.BinsReweighter(**reweight_cfg)
-    reweighter.fit(original=mc, target=real,
-                   original_weight=mc_weights, target_weight=real_weights)
+    reweighter.fit(
+        original=mc, target=real, original_weight=mc_weights, target_weight=real_weights
+    )
     return data_tools.adv_return(reweighter, save_name=reweight_saveas)
 
 
-def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=True, add_weights=True):
+def reweight_weights(
+        apply_data, reweighter_trained, columns=None, normalize=True, add_weights=True
+):
     """Apply reweighter to the data and (add +) return the weights (multiplied by already existing weights).
 
     Can be seen as a wrapper for the
@@ -228,12 +269,20 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
     if columns is None:
         columns = reweighter_trained.columns
     # new_weights = reweighter_trained.predict_weights(reweight_data.pandasDF(),
-    new_weights = reweighter_trained.predict_weights(apply_data.pandasDF(columns=columns),
-                                                     original_weight=apply_data.weights)
+    new_weights = reweighter_trained.predict_weights(
+        apply_data.pandasDF(columns=columns), original_weight=apply_data.weights
+    )
 
     # write to output
-    out.add_output(["Using the reweighter:\n", reweighter_trained, "\n to reweight ",
-                    apply_data.name], obj_separator="")
+    out.add_output(
+        [
+            "Using the reweighter:\n",
+            reweighter_trained,
+            "\n to reweight ",
+            apply_data.name,
+        ],
+        obj_separator="",
+    )
 
     if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
         new_weights *= new_weights.size / new_weights.sum() * normalize
@@ -245,8 +294,17 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
 
 
 # NEW
-def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb', reweight_cfg=None,
-             n_reweights=1, add_weights=True, normalize=True):
+def reweight(
+        apply_data=None,
+        mc=None,
+        real=None,
+        columns=None,
+        reweighter="gb",
+        reweight_cfg=None,
+        n_reweights=1,
+        add_weights=True,
+        normalize=True,
+):
     """(Train a reweighter and) apply the reweighter to get new weights (multiplied by already existing weights).
 
     Train a reweighter from the real data and the corresponding MC differences.
@@ -310,15 +368,18 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
         if reweighter_list:
             reweighter = reweighter_list[run]
         reweighter = data_tools.try_unpickle(reweighter)
-        if reweighter in ('gb', 'bins'):
-            new_reweighter = reweight_train(mc=mc,
-                                            real=real,
-                                            columns=columns,
-                                            reweight_cfg=reweight_cfg,
-                                            reweighter=reweighter)
+        if reweighter in ("gb", "bins"):
+            new_reweighter = reweight_train(
+                mc=mc,
+                real=real,
+                columns=columns,
+                reweight_cfg=reweight_cfg,
+                reweighter=reweighter,
+            )
             # TODO: hack which adds columns, good idea?
-            assert not hasattr(new_reweighter,
-                               'columns'), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
+            assert not hasattr(
+                new_reweighter, "columns"
+            ), "Newly created reweighter has column attribute, which should be set on the fly now. Changed object reweighter?"
             new_reweighter.columns = data_tools.to_list(columns)
 
         else:
@@ -330,11 +391,13 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
             new_reweighter_list = new_reweighter
 
         if apply_data is not None:
-            tmp_weights = reweight_weights(apply_data=apply_data,
-                                           columns=columns,
-                                           reweighter_trained=new_reweighter,
-                                           add_weights=False,
-                                           normalize=normalize)
+            tmp_weights = reweight_weights(
+                apply_data=apply_data,
+                columns=columns,
+                reweighter_trained=new_reweighter,
+                add_weights=False,
+                normalize=normalize,
+            )
             if run == 0:
                 new_weights = tmp_weights
             else:
@@ -346,14 +409,23 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
 
         if add_weights:
             apply_data.set_weights(new_weights)
-        output['weights'] = new_weights
-    output['reweighter'] = new_reweighter_list
+        output["weights"] = new_weights
+    output["reweighter"] = new_reweighter_list
 
     return output
 
 
-def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweighter_cfg=None, n_reweights=1,
-                   add_weights=True, normalize=True):
+def reweight_kfold(
+        mc,
+        real,
+        columns=None,
+        n_folds=10,
+        reweighter="gb",
+        reweighter_cfg=None,
+        n_reweights=1,
+        add_weights=True,
+        normalize=True,
+):
     """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
 
     .. warning::
@@ -435,15 +507,21 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
 
     normalize = 1 if normalize is True else normalize
     output = {}
-    out.add_output(["Doing reweighting_Kfold with ", n_folds, " folds"],
-                   title="Reweighting Kfold", obj_separator="")
+    out.add_output(
+        ["Doing reweighting_Kfold with ", n_folds, " folds"],
+        title="Reweighting Kfold",
+        obj_separator="",
+    )
     # create variables
-    assert n_folds >= 1 and isinstance(n_folds, int), \
-        "n_folds has to be >= 1, its currently" + str(n_folds)
-    assert isinstance(mc, data_storage.HEPDataStorage), \
-        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(mc))
-    assert isinstance(real, data_storage.HEPDataStorage), \
-        "wrong data type. Has to be HEPDataStorage, is currently" + str(type(real))
+    assert n_folds >= 1 and isinstance(
+        n_folds, int
+    ), "n_folds has to be >= 1, its currently" + str(n_folds)
+    assert isinstance(
+        mc, data_storage.HEPDataStorage
+    ), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(mc))
+    assert isinstance(
+        real, data_storage.HEPDataStorage
+    ), "wrong data type. Has to be HEPDataStorage, is currently" + str(type(real))
 
     new_weights_tot = pd.Series(np.zeros(len(mc)), index=mc.index)
 
@@ -484,20 +562,35 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
             # plot the first fold as example (the first one surely exists)
             plot_importance1 = 2 if fold == 0 else 1
             if n_folds > 1 and plot_importance1 > 1 and run == 0:
-                train_real.plot(figure="Reweighter trainer, example, fold " + str(fold),
-                                importance=plot_importance1)
-                train_mc.plot(figure="Reweighter trainer, example, fold " + str(fold),
-                              importance=plot_importance1)
+                train_real.plot(
+                    figure="Reweighter trainer, example, fold " + str(fold),
+                    importance=plot_importance1,
+                )
+                train_mc.plot(
+                    figure="Reweighter trainer, example, fold " + str(fold),
+                    importance=plot_importance1,
+                )
 
             # train reweighter on training data
-            reweighter_trained = reweight_train(mc=train_mc, real=train_real, columns=columns,
-                                                reweighter=reweighter, reweight_cfg=reweighter_cfg)
+            reweighter_trained = reweight_train(
+                mc=train_mc,
+                real=train_real,
+                columns=columns,
+                reweighter=reweighter,
+                reweight_cfg=reweighter_cfg,
+            )
 
-            new_weights = reweight_weights(apply_data=test_mc, reweighter_trained=reweighter_trained,
-                                           columns=columns, add_weights=True)  # fold only, not full data
+            new_weights = reweight_weights(
+                apply_data=test_mc,
+                reweighter_trained=reweighter_trained,
+                columns=columns,
+                add_weights=True,
+            )  # fold only, not full data
             # plot one for example of the new weights
             if (n_folds > 1 and plot_importance1 > 1) or max(new_weights) > 50:
-                out.save_fig("new weights of fold " + str(fold), importance=plot_importance1)
+                out.save_fig(
+                    "new weights of fold " + str(fold), importance=plot_importance1
+                )
                 plt.hist(new_weights, bins=40, log=True)
 
             return (new_weights, test_mc.get_index())
@@ -535,5 +628,5 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
 
     if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
         new_weights_tot *= new_weights_tot.size / new_weights_tot.sum() * normalize
-    output['weights'] = new_weights_tot
+    output["weights"] = new_weights_tot
     return output

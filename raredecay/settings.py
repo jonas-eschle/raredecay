@@ -1,22 +1,28 @@
-# -*- coding: utf-8 -*-
 """
 Contain methods to change settings in the whole package
 
 @author: Jonas Eschle "Mayou36"
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip,
-                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 from . import meta_config  # noqa
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                      reduce, reload, unicode, xrange, StandardError,
-                                      )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -25,17 +31,27 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
         basestring = str  # noqa
 # Python 2 backwards compatibility overhead END
 
-__all__ = ['initialize', 'finalize', 'set_verbosity', 'get_output_handler', 'parallel_profile',
-           'figure_save_config', 'set_random_seed']
+__all__ = [
+    "initialize",
+    "finalize",
+    "set_verbosity",
+    "get_output_handler",
+    "parallel_profile",
+    "figure_save_config",
+    "set_random_seed",
+]
 
 import copy
 
@@ -45,11 +61,20 @@ from . import config as cfg
 
 
 # TODO: docs??
-def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
-               run_message="This is a test-run to test the package", verbosity=3,
-               plot_verbosity=3, prompt_for_input=False, no_interactive_plots=False,
-               logger_console_level='warning', logger_file_level='debug',
-               n_cpu=1, gpu_in_use=False):
+def initialize(
+        output_path=None,
+        run_name="Test run",
+        overwrite_existing=False,
+        run_message="This is a test-run to test the package",
+        verbosity=3,
+        plot_verbosity=3,
+        prompt_for_input=False,
+        no_interactive_plots=False,
+        logger_console_level="warning",
+        logger_file_level="debug",
+        n_cpu=1,
+        gpu_in_use=False,
+):
     """Place before Imports! Initialize/change several parameters for the package.
 
     Initialize a run and return an output handler. Most of the implemented
@@ -122,15 +147,20 @@ def initialize(output_path=None, run_name="Test run", overwrite_existing=False,
     _init_user_input(prompt_for_input=prompt_for_input)
     parallel_profile(n_cpu=n_cpu, gpu_in_use=gpu_in_use)
     logger_file_level = None if output_path is None else logger_file_level
-    _init_configure_logger(console_level=logger_console_level,
-                           file_level=logger_file_level)
+    _init_configure_logger(
+        console_level=logger_console_level, file_level=logger_file_level
+    )
     if output_path is not None:
-        out = _init_output_to_file(file_path=output_path, run_name=run_name,
-                                   overwrite_existing=overwrite_existing,
-                                   run_message=run_message)
+        out = _init_output_to_file(
+            file_path=output_path,
+            run_name=run_name,
+            overwrite_existing=overwrite_existing,
+            run_message=run_message,
+        )
     else:
-        out = _init_output_to_file(file_path=None, run_name=run_name,
-                                   prompt_for_input=prompt_for_input)
+        out = _init_output_to_file(
+            file_path=None, run_name=run_name, prompt_for_input=prompt_for_input
+        )
     return out
 
 
@@ -170,6 +200,7 @@ def get_output_handler():
         Return the output-handler currently in use by the script.
     """
     from raredecay.globals_ import out
+
     return out
 
 
@@ -228,9 +259,9 @@ def figure_save_config(file_formats=None, to_pickle=True, dpi=150):
 
     # hack for using mutable defaults
     file_formats = copy.deepcopy(file_formats)
-    cfg.save_fig_cfg['file_formats'] = file_formats
-    cfg.save_fig_cfg['to_pickle'] = to_pickle
-    cfg.save_fig_cfg['dpi'] = dpi
+    cfg.save_fig_cfg["file_formats"] = file_formats
+    cfg.save_fig_cfg["to_pickle"] = to_pickle
+    cfg.save_fig_cfg["dpi"] = dpi
 
 
 def set_random_seed(seed=None):
@@ -245,16 +276,20 @@ def set_random_seed(seed=None):
         meta_cfg.set_seed(seed)
 
 
-def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=False,
-                         run_message="This is a test-run to test the package",
-                         prompt_for_input=False):
+def _init_output_to_file(
+        file_path,
+        run_name="Test run",
+        overwrite_existing=False,
+        run_message="This is a test-run to test the package",
+        prompt_for_input=False,
+):
     """Saves output to file,"""
     run_name = dev_tool.entries_to_str(run_name)
     run_message = dev_tool.entries_to_str(run_message)
     file_path = dev_tool.entries_to_str(file_path)
     assert isinstance(run_name, (basestring, int)), "run_name has to be a string or int"
     cfg.RUN_NAME = str(run_name)
-    cfg.OUTPUT_CFG['run_name'] = str(run_name)
+    cfg.OUTPUT_CFG["run_name"] = str(run_name)
 
     if file_path is not None:
         assert isinstance(file_path, basestring), "file_path has to be a string"
@@ -263,8 +298,8 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
         file_path += "" if file_path.endswith("/") else "/"
 
         cfg.run_message = str(run_message)
-        cfg.OUTPUT_CFG['output_path'] = file_path
-        cfg.OUTPUT_CFG['del_existing_folders'] = overwrite_existing
+        cfg.OUTPUT_CFG["output_path"] = file_path
+        cfg.OUTPUT_CFG["del_existing_folders"] = overwrite_existing
 
         out = get_output_handler()
         out.initialize_save(logger_cfg=cfg.logger_cfg, **cfg.OUTPUT_CFG)
@@ -276,7 +311,7 @@ def _init_output_to_file(file_path, run_name="Test run", overwrite_existing=Fals
     return out
 
 
-def _init_configure_logger(console_level='critical', file_level='debug'):
+def _init_configure_logger(console_level="critical", file_level="debug"):
     """Call before imports! Set the logger-level.
 
     The package contains several loggers which will print/save to file some
@@ -293,24 +328,30 @@ def _init_configure_logger(console_level='critical', file_level='debug'):
         at all.
     """
     if console_level is None and file_level is None:
-        logging_mode = 'file'
-        console_level = 'critical'
+        logging_mode = "file"
+        console_level = "critical"
     elif console_level is None:
-        logging_mode = 'file'
+        logging_mode = "file"
     elif file_level is None:
-        logging_mode = 'console'
+        logging_mode = "console"
     else:
-        logging_mode = 'both'
+        logging_mode = "both"
 
     for level in (console_level, file_level):
-        assert level in (None, 'debug', 'info', 'warning', 'error', 'critical'), \
-            "invalid logger level"
+        assert level in (
+            None,
+            "debug",
+            "info",
+            "warning",
+            "error",
+            "critical",
+        ), "invalid logger level"
 
-    cfg.logger_cfg['logging_mode'] = logging_mode
-    cfg.logger_cfg['log_level_file'] = file_level
-    cfg.logger_cfg['log_level_console'] = console_level
-    cfg.logger_cfg['overwrite_file'] = True
-    cfg.logger_cfg['log_file_name'] = 'logfile_'
+    cfg.logger_cfg["logging_mode"] = logging_mode
+    cfg.logger_cfg["log_level_file"] = file_level
+    cfg.logger_cfg["log_level_console"] = console_level
+    cfg.logger_cfg["overwrite_file"] = True
+    cfg.logger_cfg["log_file_name"] = "logfile_"
 
 
 def _init_user_input(prompt_for_input=True):

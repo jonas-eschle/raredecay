@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 
 @author: Jonas Eschle "Mayou36"
@@ -12,19 +11,26 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 Contains several tools to convert, load, save and plot data
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
 
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip,
-                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 from .. import meta_config  # noqa
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError,
-                                          )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -33,9 +39,12 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
@@ -60,7 +69,7 @@ try:
     import root_numpy
 
 except ImportError as err:
-    message = "could not import from root_numpy! Error message: {}".format(err)
+    message = f"could not import from root_numpy! Error message: {err}"
     warnings.warn(message)
 
 # from root_numpy import root2array, array2root  # HACK
@@ -94,7 +103,9 @@ def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):
     bkg_length = len(bkg_data) if bkg_length in (None, 0) else bkg_length
 
     lower_cut, upper_cut = np.percentile(signal_data, percentile)
-    cut_bkg = np.count_nonzero(np.logical_or(bkg_data < lower_cut, bkg_data > upper_cut))
+    cut_bkg = np.count_nonzero(
+        np.logical_or(bkg_data < lower_cut, bkg_data > upper_cut)
+    )
     rejected_bkg = (bkg_length_before - cut_bkg) / bkg_length
 
     return [lower_cut, upper_cut], rejected_bkg
@@ -113,9 +124,7 @@ def make_root_dict(path_to_rootfile, tree_name, branches):
     branches : str or list[str, str, str,... ]
         The branches of the tree to use
     """
-    output = dict(filenames=path_to_rootfile,
-                  treename=tree_name,
-                  branches=branches)
+    output = dict(filenames=path_to_rootfile, treename=tree_name, branches=branches)
     output = dev_tool.entries_to_str(output)
     return output
 
@@ -145,12 +154,12 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
 
     # get the right parameters
     # TODO: what does that if there? an assertion maybe?
-    write_mode = 'update'
-    branch_name = 'new_branch1' if branch_name is None else branch_name
+    write_mode = "update"
+    branch_name = "new_branch1" if branch_name is None else branch_name
 
     if isinstance(rootfile, dict):
-        filename = rootfile.get('filenames')
-    treename = rootfile.get('treename')
+        filename = rootfile.get("filenames")
+    treename = rootfile.get("treename")
     new_branch = to_ndarray(new_branch)
     #    new_branch.dtype = [(branch_name, 'f8')]
 
@@ -158,14 +167,14 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     write_to_root = False
 
     if os.path.isfile(filename):
-        with root_open(filename, mode='a') as root_file:
+        with root_open(filename, mode="a") as root_file:
             tree = getattr(root_file, treename)  # test
             if not tree.has_branch(branch_name):
                 write_to_root = True
     # array2tree(new_branch, tree=tree)
     #            f.write("", TObject.kOverwrite)  # overwrite, does not create friends
     else:
-        write_mode = 'recreate'
+        write_mode = "recreate"
         write_to_root = True
     if write_to_root:
         arr = np.core.records.fromarrays([new_branch], names=branch_name)
@@ -262,7 +271,7 @@ def is_root(data_to_check):
     flag = False
     data_to_check = dev_tool.entries_to_str(data_to_check)
     if isinstance(data_to_check, dict):
-        path_name = data_to_check.get('filenames')
+        path_name = data_to_check.get("filenames")
         #        assert isinstance(path_name, str), ("'filenames' of the dictionary " +
         #                                            str(data_to_check) + "is not a string")
         if path_name.endswith(meta_cfg.ROOT_DATATYPE):
@@ -271,7 +280,7 @@ def is_root(data_to_check):
 
 
 def is_list(data_to_check):
-    """ Check whether the given data is a list."""
+    """Check whether the given data is a list."""
     flag = False
     if isinstance(data_to_check, list):
         flag = True
@@ -389,23 +398,28 @@ def to_pandas_old(data_in, index=None, columns=None):
         The data to be converted
     """
     # TODO: generalize
-    root_index_name = '__index__'
+    root_index_name = "__index__"
 
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
         root_index = None
-        if root_index_name in root_numpy.list_branches(filename=data_in['filenames'],
-                                                       treename=data_in.get('treename')):
-            root_index = root_numpy.root2array(filenames=data_in['filenames'], treename=data_in.get('treename'),
-                                               selection=data_in.get('selection'), branches=root_index_name)
+        if root_index_name in root_numpy.list_branches(
+                filename=data_in["filenames"], treename=data_in.get("treename")
+        ):
+            root_index = root_numpy.root2array(
+                filenames=data_in["filenames"],
+                treename=data_in.get("treename"),
+                selection=data_in.get("selection"),
+                branches=root_index_name,
+            )
         data_in = root_numpy.root2array(**data_in)  # why **? it's a root dict
 
     if is_list(data_in):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
-        if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
-                isinstance(columns, basestring)):
-
+        if (isinstance(columns, (list, tuple)) and len(columns) == 1) or isinstance(
+                columns, basestring
+        ):
             data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, columns=columns, index=root_index)
         if index is not None:
@@ -508,7 +522,7 @@ def adv_return(return_value, save_name=None):
             save_name = meta_cfg.PICKLE_PATH + save_name
             if not is_pickle(save_name):
                 save_name += "." + meta_cfg.PICKLE_DATATYPE
-            with open(str(save_name), 'wb') as f:
+            with open(str(save_name), "wb") as f:
                 pickle.dump(return_value, f, meta_cfg.PICKLE_PROTOCOL)
                 print(str(return_value) + " pickled to " + save_name)
         else:
@@ -525,7 +539,7 @@ def try_unpickle(file_to_unpickle, use_metapath_bkwcomp=False):
     """Try to unpickle a file and return, otherwise just return input."""
     file_to_unpickle = dev_tool.entries_to_str(file_to_unpickle)
     if is_pickle(file_to_unpickle):
-        extra_path = meta_cfg.PICKLE_PATH if use_metapath_bkwcomp else ''
-        with open(extra_path + file_to_unpickle, 'rb') as f:
+        extra_path = meta_cfg.PICKLE_PATH if use_metapath_bkwcomp else ""
+        with open(extra_path + file_to_unpickle, "rb") as f:
             file_to_unpickle = pickle.load(f)
     return file_to_unpickle

@@ -56,5 +56,3 @@ deploy:
     branch: master
     tags: true
     condition: $TRAVIS_PYTHON_VERSION = "3.8" && $TRAVIS_OS_NAME = "linux"
-
-

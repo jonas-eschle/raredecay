@@ -1,4 +1,4 @@
-                                
+
 Copyright 2020 Jonas Eschle
 
 The source code of the "raredecay" package available at
@@ -6,8 +6,7 @@ https://github.com/mayou36/raredecay is subject to the terms of the Apache Licen
 (hereinafter referred to as the "License"). The text of the License is the following:
 
 -------------------------------------------------------------------------
-                                
-                                
+
                                 Apache License
                            Version 2.0, January 2004
                         http://www.apache.org/licenses/

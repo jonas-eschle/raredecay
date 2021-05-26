@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 @author: Jonas Eschle 'Mayou36'
 
@@ -10,19 +9,26 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip,
-                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 from .. import meta_config  # noqa
 from .. import config as cfg  # noqa
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError,
-                                          )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -31,9 +37,12 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
@@ -80,8 +89,7 @@ def ks_2samp_ds(data1, data2, column):
     data2 = np.array(data2[column].values)
 
     # call ks_test
-    ks_score = ks_2samp(data1=data1, data2=data2,
-                        weights1=weights1, weights2=weights2)
+    ks_score = ks_2samp(data1=data1, data2=data2, weights1=weights1, weights2=weights2)
     return ks_score
 
 
@@ -112,8 +120,16 @@ def ks_2samp(data1, data2, weights1=None, weights2=None):
     """
 
     # check and set input
-    weights1 = np.ones(len(data1)) if dev_tool.is_in_primitive(weights1) else np.array(weights1)
-    weights2 = np.ones(len(data2)) if dev_tool.is_in_primitive(weights2) else np.array(weights2)
+    weights1 = (
+        np.ones(len(data1))
+        if dev_tool.is_in_primitive(weights1)
+        else np.array(weights1)
+    )
+    weights2 = (
+        np.ones(len(data2))
+        if dev_tool.is_in_primitive(weights2)
+        else np.array(weights2)
+    )
     data1 = np.array(data1)
     data2 = np.array(data2)
 
@@ -127,8 +143,8 @@ def ks_2samp(data1, data2, weights1=None, weights2=None):
     data = np.concatenate([data1, data2])
     cwei1 = np.hstack([0, np.cumsum(weights1) / sum(weights1)])
     cwei2 = np.hstack([0, np.cumsum(weights2) / sum(weights2)])
-    cdf1we = cwei1[[np.searchsorted(data1, data, side='right')]]
-    cdf2we = cwei2[[np.searchsorted(data2, data, side='right')]]
+    cdf1we = cwei1[[np.searchsorted(data1, data, side="right")]]
+    cdf2we = cwei2[[np.searchsorted(data2, data, side="right")]]
 
     return np.max(np.abs(cdf1we - cdf2we))
 
@@ -164,10 +180,24 @@ def _anderson_2samp_right(samples, data_sorted, data_unique_sorted, n_events):
     n_tot = sum(n_events)
 
 
-def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None,
-             blind=False, nll_profile=False, second_storage=None, log_plot=False,
-             pulls=True, sPlot=False,
-             bkg_in_region=False, importance=3, plot_importance=3):
+def fit_mass(
+        data,
+        column,
+        x,
+        sig_pdf=None,
+        bkg_pdf=None,
+        n_sig=None,
+        n_bkg=None,
+        blind=False,
+        nll_profile=False,
+        second_storage=None,
+        log_plot=False,
+        pulls=True,
+        sPlot=False,
+        bkg_in_region=False,
+        importance=3,
+        plot_importance=3,
+):
     """Fit a given pdf to a variable distribution.
 
     A quite versatile function doing several things connected to fitting.
@@ -216,10 +246,19 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     """
 
     import ROOT
-    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    from ROOT import (
+        RooRealVar,
+        RooArgList,
+        RooArgSet,
+        RooAddPdf,
+        RooDataSet,
+        RooAbsReal,
+    )
     from ROOT import RooFit, RooCBShape, RooExponential
     from ROOT import RooGaussian, RooMinuit
-    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    from ROOT import (
+        TCanvas,
+    )  # HACK to prevent not plotting canvas by root_numpy import. BUG.
     from root_numpy import array2tree
     from ROOT import RooCategory, RooUnblindPrecision
 
@@ -227,7 +266,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     column = dev_tool.entries_to_str(column)
 
     if not (isinstance(column, basestring) or len(column) == 1):
-        raise ValueError("Fitting to several columns " + str(column) + " not supported.")
+        raise ValueError(
+            "Fitting to several columns " + str(column) + " not supported."
+        )
     if type(sig_pdf) == type(bkg_pdf) == None:
         raise ValueError("sig_pdf and bkg_pdf are both None-> no fit possible")
     if blind is not False:
@@ -248,9 +289,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     # create data
     data_array = np.array([i[0] for i in data_array.as_matrix()])
     try:
-        data_array.dtype = [('x', np.float64)]
+        data_array.dtype = [("x", np.float64)]
     except:
-        data_array.dtype = [('x', np.float64)]
+        data_array.dtype = [("x", np.float64)]
         print("hack needed")
     tree1 = array2tree(data_array, "x")
     data = RooDataSet("data", "Data", RooArgSet(x), RooFit.Import(tree1))
@@ -295,8 +336,15 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         blind_cat.defineType("blind", 1)
         if blind:
             blind_cat.setLabel("blind")
-            blind_n_sig = RooUnblindPrecision("blind_n_sig", "blind number of signals",
-                                              "wasistdas", n_sig.getVal(), 10000, n_sig, blind_cat)
+            blind_n_sig = RooUnblindPrecision(
+                "blind_n_sig",
+                "blind number of signals",
+                "wasistdas",
+                n_sig.getVal(),
+                10000,
+                n_sig,
+                blind_cat,
+            )
         else:
             #            blind_cat.setLabel("unblind")
             blind_n_sig = n_sig
@@ -318,11 +366,19 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     #    bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
 
     if blind:
-        comb_pdf = RooAddPdf("comb_pdf", "Combined DoubleCB and bkg PDF",
-                             RooArgList(sig_pdf, bkg_pdf), RooArgList(blind_n_sig, n_bkg))
+        comb_pdf = RooAddPdf(
+            "comb_pdf",
+            "Combined DoubleCB and bkg PDF",
+            RooArgList(sig_pdf, bkg_pdf),
+            RooArgList(blind_n_sig, n_bkg),
+        )
     else:
-        comb_pdf = RooAddPdf("comb_pdf", "Combined DoubleCB and bkg PDF",
-                             RooArgList(sig_pdf, bkg_pdf), RooArgList(n_sig, n_bkg))
+        comb_pdf = RooAddPdf(
+            "comb_pdf",
+            "Combined DoubleCB and bkg PDF",
+            RooArgList(sig_pdf, bkg_pdf),
+            RooArgList(n_sig, n_bkg),
+        )
 
         # create test dataset
     #    mean_gauss = RooRealVar("mean_gauss", "Mean of Gaussian", 5553, -10000, 10000)
@@ -334,7 +390,6 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     #
     #    data_pdf = RooAddPdf("data_pdf", "Data PDF", gauss1, exp_data, frac_data)
     #    data = data_pdf.generate(RooArgSet(x), 30000)
-
 
     #    data.printValue()
     #    xframe = x.frame()
@@ -356,9 +411,12 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         print("n_cpu = ", n_cpu)
         # HACK
     #        n_cpu = 8
-    result_fit = comb_pdf.fitTo(data, RooFit.Minos(ROOT.kTRUE),
-                                RooFit.Extended(ROOT.kTRUE),
-                                RooFit.NumCPU(n_cpu))
+    result_fit = comb_pdf.fitTo(
+        data,
+        RooFit.Minos(ROOT.kTRUE),
+        RooFit.Extended(ROOT.kTRUE),
+        RooFit.NumCPU(n_cpu),
+    )
     # HACK end
     if bkg_in_region:
         x.setRange("signal", bkg_in_region[0], bkg_in_region[1])
@@ -366,9 +424,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
         int_argset = RooArgSet(x)
         #        int_argset = x
         #        int_argset.setRange("signal", bkg_in_region[0], bkg_in_region[1])
-        integral = bkg_pdf_fitted.createIntegral(int_argset,
-                                                 RooFit.NormSet(int_argset),
-                                                 RooFit.Range("signal"))
+        integral = bkg_pdf_fitted.createIntegral(
+            int_argset, RooFit.NormSet(int_argset), RooFit.Range("signal")
+        )
         bkg_cdf = bkg_pdf_fitted.createCdf(int_argset, RooFit.Range("signal"))
         bkg_cdf.plotOn(x_frame1)
 
@@ -402,22 +460,31 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
                 c2.SetLogy()
     if blind:
         # HACK
-        column = 'x'
+        column = "x"
         # END HACK
         x.setRange("lower", min_x, lower_blind)
         x.setRange("upper", upper_blind, max_x)
         range_str = "lower,upper"
-        lower_cut_str = str(min_x) + "<=" + column + "&&" + column + "<=" + str(lower_blind)
-        upper_cut_str = str(upper_blind) + "<=" + column + "&&" + column + "<=" + str(max_x)
+        lower_cut_str = (
+                str(min_x) + "<=" + column + "&&" + column + "<=" + str(lower_blind)
+        )
+        upper_cut_str = (
+                str(upper_blind) + "<=" + column + "&&" + column + "<=" + str(max_x)
+        )
         sideband_cut_str = "(" + lower_cut_str + ")" + "||" + "(" + upper_cut_str + ")"
 
         n_entries = data.reduce(sideband_cut_str).numEntries() / data.numEntries()
         #        raw_input("n_entries: " + str(n_entries))
         if plot_importance >= 3:
-            data.plotOn(x_frame, RooFit.CutRange(range_str), RooFit.NormRange(range_str))
-            comb_pdf.plotOn(x_frame, RooFit.Range(range_str),
-                            RooFit.Normalization(n_entries, RooAbsReal.Relative),
-                            RooFit.NormRange(range_str))
+            data.plotOn(
+                x_frame, RooFit.CutRange(range_str), RooFit.NormRange(range_str)
+            )
+            comb_pdf.plotOn(
+                x_frame,
+                RooFit.Range(range_str),
+                RooFit.Normalization(n_entries, RooAbsReal.Relative),
+                RooFit.NormRange(range_str),
+            )
             if pulls:
                 #                pull_hist(pull_frame=x_frame, pad_data=pad_data, pad_pulls=pad_pulls)
                 x_frame_pullhist = x_frame.pullHist()
@@ -430,12 +497,16 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
                 x_frame_pullhist = x_frame.pullHist()
                 pad_data.cd()
 
-            comb_pdf.plotOn(x_frame,
-                            RooFit.Components(sig_pdf.namePtr().GetName()),
-                            RooFit.LineStyle(ROOT.kDashed))
-            comb_pdf.plotOn(x_frame,
-                            RooFit.Components(bkg_pdf.namePtr().GetName()),
-                            RooFit.LineStyle(ROOT.kDotted))
+            comb_pdf.plotOn(
+                x_frame,
+                RooFit.Components(sig_pdf.namePtr().GetName()),
+                RooFit.LineStyle(ROOT.kDashed),
+            )
+            comb_pdf.plotOn(
+                x_frame,
+                RooFit.Components(bkg_pdf.namePtr().GetName()),
+                RooFit.LineStyle(ROOT.kDotted),
+            )
             #            comb_pdf.plotPull(n_sig)
 
     if plot_importance >= 3:
@@ -443,9 +514,9 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
         if pulls:
             pad_pulls.cd()
-            x_frame.SetTitleSize(0.05, 'Y')
-            x_frame.SetTitleOffset(0.7, 'Y')
-            x_frame.SetLabelSize(0.04, 'Y')
+            x_frame.SetTitleSize(0.05, "Y")
+            x_frame.SetTitleOffset(0.7, "Y")
+            x_frame.SetLabelSize(0.04, "Y")
 
             #            c11 = TCanvas("c11", "RooFit\ pulls" + data_name)
             #            c11.cd()
@@ -462,15 +533,14 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
             #            frame_tmp.GetYaxis().SetTitle("significance")
             frame_tmp.GetYaxis().SetNdivisions(5)
-            frame_tmp.SetTitleSize(0.1, 'X')
-            frame_tmp.SetTitleOffset(1, 'X')
-            frame_tmp.SetLabelSize(0.1, 'X')
-            frame_tmp.SetTitleSize(0.1, 'Y')
-            frame_tmp.SetTitleOffset(0.5, 'Y')
-            frame_tmp.SetLabelSize(0.1, 'Y')
+            frame_tmp.SetTitleSize(0.1, "X")
+            frame_tmp.SetTitleOffset(1, "X")
+            frame_tmp.SetLabelSize(0.1, "X")
+            frame_tmp.SetTitleSize(0.1, "Y")
+            frame_tmp.SetTitleOffset(0.5, "Y")
+            frame_tmp.SetLabelSize(0.1, "Y")
 
             frame_tmp.Draw()
-
 
             #    raw_input("")
 
@@ -499,14 +569,20 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
     #    print bkg_cdf.getVal()
 
     if sPlot:
-        sPlotData = ROOT.RooStats.SPlot("sPlotData", "sPlotData",
-                                        data,  # variable fitted to, RooDataSet
-                                        comb_pdf,  # fitted pdf
-                                        ROOT.RooArgList(n_sig,
-                                                        n_bkg,
-                                                        #                                                NSigB0s
-                                                        ))
-        sweights = np.array([sPlotData.GetSWeight(i, 'n_sig') for i in range(data.numEntries())])
+        sPlotData = ROOT.RooStats.SPlot(
+            "sPlotData",
+            "sPlotData",
+            data,  # variable fitted to, RooDataSet
+            comb_pdf,  # fitted pdf
+            ROOT.RooArgList(
+                n_sig,
+                n_bkg,
+                #                                                NSigB0s
+            ),
+        )
+        sweights = np.array(
+            [sPlotData.GetSWeight(i, "n_sig") for i in range(data.numEntries())]
+        )
         return n_sig.getVal(), n_bkg_below_sig, sweights
 
     if blind:
@@ -527,6 +603,7 @@ def fit_mass(data, column, x, sig_pdf=None, bkg_pdf=None, n_sig=None, n_bkg=None
 
 #    return xframe
 
+
 def pull_hist(pull_frame, pad_data, pad_pulls):
     """Add pulls into the current pad."""
 
@@ -541,7 +618,8 @@ def pull_hist(pull_frame, pad_data, pad_pulls):
     pad_data.cd()
     dataHist = pull_frame.getHist("datahistogram")
     curve1 = pull_frame.getObject(
-            1)  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
+        1
+    )  # 1 is index in the list of RooPlot items (see printout from massplot->Print("V")
     curve2 = pull_frame.getObject(2)
     hresid1 = dataHist.makePullHist(curve1, True)
     hresid2 = dataHist.makePullHist(curve2, True)
@@ -558,12 +636,21 @@ def pull_hist(pull_frame, pad_data, pad_pulls):
 #    gStyle->SetPadLeftMargin(0.1)
 
 
-
-
-def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region,
-                         second_storage=None, metric='punzi',
-                         n_sig=None, n_bkg=None, stepsize=0.025,
-                         plot_importance=3):
+def metric_vs_cut_fitted(
+        data,
+        predict_col,
+        fit_col,
+        sig_pdf,
+        bkg_pdf,
+        x,
+        region,
+        second_storage=None,
+        metric="punzi",
+        n_sig=None,
+        n_bkg=None,
+        stepsize=0.025,
+        plot_importance=3,
+):
     """Calculate a metric vs a given cut by estimating the bkg from the fit.
 
     Parameters
@@ -585,9 +672,9 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
     fit_col = dev_tool.entries_to_str(fit_col)
 
     metric_name = metric
-    if metric == 'punzi':
+    if metric == "punzi":
         metric = punzi_fom
-    elif metric == 'precision':
+    elif metric == "precision":
         metric = precision_measure
     # TODO: convert meric strings to metric
     n_steps = int(np.floor_divide(1, stepsize))
@@ -614,33 +701,56 @@ def metric_vs_cut_fitted(data, predict_col, fit_col, sig_pdf, bkg_pdf, x, region
         n_sig_weighted = sum(temp_data.get_weights()[temp_data.get_targets() == 1])
         if second_storage is not None:
 
-            temp_second_storage = second_storage.copy_storage(columns=[predict_col, fit_col],
-                                                              add_to_name="")
+            temp_second_storage = second_storage.copy_storage(
+                columns=[predict_col, fit_col], add_to_name=""
+            )
             temp_df = temp_second_storage.pandasDF()
             temp_df = temp_df[cut < temp_df[predict_col]]
             temp_second_storage.set_data(temp_df)
-            n_sig_weighted += sum(temp_second_storage.get_weights()[temp_second_storage.get_targets() == 1])
+            n_sig_weighted += sum(
+                temp_second_storage.get_weights()[
+                    temp_second_storage.get_targets() == 1
+                    ]
+            )
         else:
             temp_second_storage = second_storage
 
-        n_sig_fit, n_bkg_fit = fit_mass(data=temp_data, column=fit_col, x=x, sig_pdf=sig_pdf,
-                                        bkg_pdf=bkg_pdf, n_sig=n_sig, n_bkg=n_bkg, blind=False,
-                                        nll_profile=False, second_storage=temp_second_storage,
-                                        plot_importance=temp_plot_importance,
-                                        bkg_in_region=region)
+        n_sig_fit, n_bkg_fit = fit_mass(
+            data=temp_data,
+            column=fit_col,
+            x=x,
+            sig_pdf=sig_pdf,
+            bkg_pdf=bkg_pdf,
+            n_sig=n_sig,
+            n_bkg=n_bkg,
+            blind=False,
+            nll_profile=False,
+            second_storage=temp_second_storage,
+            plot_importance=temp_plot_importance,
+            bkg_in_region=region,
+        )
 
         scores.append(metric(n_signal=n_sig_weighted, n_background=n_bkg_fit))
 
     return cuts, scores
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
 
     import ROOT
-    from ROOT import RooRealVar, RooArgList, RooArgSet, RooAddPdf, RooDataSet, RooAbsReal
+    from ROOT import (
+        RooRealVar,
+        RooArgList,
+        RooArgSet,
+        RooAddPdf,
+        RooDataSet,
+        RooAbsReal,
+    )
     from ROOT import RooFit, RooCBShape, RooExponential
     from ROOT import RooGaussian, RooMinuit
-    from ROOT import TCanvas  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    from ROOT import (
+        TCanvas,
+    )  # HACK to prevent not plotting canvas by root_numpy import. BUG.
     from root_numpy import array2tree
     from ROOT import RooCategory, RooUnblindPrecision
 
@@ -664,69 +774,105 @@ if __name__ == '__main__':
     #    x = RooRealVar("x", "x variable", 4800, 6000)
 
     # TODO: export somewhere? does not need to be defined inside...
-    mean = RooRealVar("mean", "Mean of Double CB PDF", 5280, 5270, 5290)  # , 5300, 5500)
+    mean = RooRealVar(
+        "mean", "Mean of Double CB PDF", 5280, 5270, 5290
+    )  # , 5300, 5500)
     sigma = RooRealVar("sigma", "Sigma of Double CB PDF", 40, 0, 45)
     alpha_0 = RooRealVar("alpha_0", "alpha_0 of one side", 40, 30, 50)
-    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -40, -50, -30.)
+    alpha_1 = RooRealVar("alpha_1", "alpha_1 of other side", -40, -50, -30.0)
     lambda_0 = RooRealVar("lambda_0", "Exponent of one side", 40, 30, 50)
     lambda_1 = RooRealVar("lambda_1", "Exponent of other side", 40, 30, 50)
 
     # TODO: export somewhere? pdf construction
     frac = RooRealVar("frac", "Fraction of crystal ball pdfs", 0.479, 0.01, 0.99)
 
-    crystalball1 = RooCBShape("crystallball1", "First CrystalBall PDF", x,
-                              mean, sigma, alpha_0, lambda_0)
-    crystalball2 = RooCBShape("crystallball2", "Second CrystalBall PDF", x,
-                              mean, sigma, alpha_1, lambda_1)
-    doubleCB = RooAddPdf("doubleCB", "Double CrystalBall PDF",
-                         crystalball1, crystalball2, frac)
+    crystalball1 = RooCBShape(
+        "crystallball1", "First CrystalBall PDF", x, mean, sigma, alpha_0, lambda_0
+    )
+    crystalball2 = RooCBShape(
+        "crystallball2", "Second CrystalBall PDF", x, mean, sigma, alpha_1, lambda_1
+    )
+    doubleCB = RooAddPdf(
+        "doubleCB", "Double CrystalBall PDF", crystalball1, crystalball2, frac
+    )
     # create signal pdf END
 
     # create bkg-pdf BEGIN
-    lambda_exp = RooRealVar("lambda_exp", "lambda exp pdf bkg", -0.002, -10., -0.000001)
+    lambda_exp = RooRealVar(
+        "lambda_exp", "lambda exp pdf bkg", -0.002, -10.0, -0.000001
+    )
     bkg_pdf = RooExponential("bkg_pdf", "Background PDF exp", x, lambda_exp)
     # create bkg-pdf END
 
     n_sig = 25000
 
-    data = pd.DataFrame(np.random.normal(loc=5280, scale=37, size=(n_sig, 3)), columns=['x', 'y', 'pred'])
+    data = pd.DataFrame(
+        np.random.normal(loc=5280, scale=37, size=(n_sig, 3)),
+        columns=["x", "y", "pred"],
+    )
     #    data['pred'] = np.array([min((abs(y), 0.99)) for y in np.random.normal(loc=0.6, scale=0.25, size=n_sig)])
-    bkg_data = np.array([i for i in (np.random.exponential(scale=300,
-                                                           size=(7500, 3)) + 4800) if i[0] < 6000])
-    bkg_data[:, 2] = np.array([min((abs(y), 0.96)) for y in np.random.normal(loc=0.4,
-                                                                             scale=0.4, size=len(bkg_data))])
-    data = pd.concat([data, pd.DataFrame(bkg_data, columns=['x', 'y', 'pred'])], ignore_index=True)
+    bkg_data = np.array(
+        [
+            i
+            for i in (np.random.exponential(scale=300, size=(7500, 3)) + 4800)
+            if i[0] < 6000
+        ]
+    )
+    bkg_data[:, 2] = np.array(
+        [
+            min((abs(y), 0.96))
+            for y in np.random.normal(loc=0.4, scale=0.4, size=len(bkg_data))
+        ]
+    )
+    data = pd.concat(
+        [data, pd.DataFrame(bkg_data, columns=["x", "y", "pred"])], ignore_index=True
+    )
 
-    data = HEPDataStorage(data, target=np.concatenate((np.ones(n_sig),
-                                                       np.zeros(len(bkg_data)))))
+    data = HEPDataStorage(
+        data, target=np.concatenate((np.ones(n_sig), np.zeros(len(bkg_data))))
+    )
     data_copy = data.copy_storage()
 
-    if mode == 'fit':
-        fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-                              bkg_pdf=bkg_pdf,
-                              #                              blind=False,
-                              blind=(5100, 5380),
-                              plot_importance=4,  # bkg_in_region=(5100, 5380)
-                              )
+    if mode == "fit":
+        fit_result = fit_mass(
+            data=data,
+            column="x",
+            sig_pdf=doubleCB,
+            x=x,
+            bkg_pdf=bkg_pdf,
+            #                              blind=False,
+            blind=(5100, 5380),
+            plot_importance=4,  # bkg_in_region=(5100, 5380)
+        )
         print(fit_result)
         print("True values: nsig =", n_sig, " n_bkg =", len(bkg_data))
 
-    elif mode == 'fit_metric':
-        result = metric_vs_cut_fitted(data=data, predict_col='pred', fit_col='x',
-                                      sig_pdf=doubleCB, bkg_pdf=bkg_pdf, x=x,
-                                      region=(5100, 5380), stepsize=0.01)
+    elif mode == "fit_metric":
+        result = metric_vs_cut_fitted(
+            data=data,
+            predict_col="pred",
+            fit_col="x",
+            sig_pdf=doubleCB,
+            bkg_pdf=bkg_pdf,
+            x=x,
+            region=(5100, 5380),
+            stepsize=0.01,
+        )
         print(result)
 
         plt.plot(*result)
 
-
-    elif mode == 'sPlot':
-        fit_result = fit_mass(data=data, column='x', sig_pdf=doubleCB, x=x,
-                              bkg_pdf=bkg_pdf,
-                              blind=False,
-                              plot_importance=1,  # bkg_in_region=(5100, 5380)
-                              sPlot=True
-                              )
+    elif mode == "sPlot":
+        fit_result = fit_mass(
+            data=data,
+            column="x",
+            sig_pdf=doubleCB,
+            x=x,
+            bkg_pdf=bkg_pdf,
+            blind=False,
+            plot_importance=1,  # bkg_in_region=(5100, 5380)
+            sPlot=True,
+        )
         n_sig, n_bkg, sweights = fit_result
         import copy
 
@@ -739,7 +885,7 @@ if __name__ == '__main__':
         data_copy.set_weights(sweights)
         data_copy.plot()
 
-    elif mode == 'ks':
+    elif mode == "ks":
         pass
 
     input("Finished, press 'Enter' to close ROOT plots.")

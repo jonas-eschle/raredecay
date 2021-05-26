@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 
 @author: Jonas Eschle "Mayou36"
@@ -10,18 +9,25 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip,
-                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 from .. import meta_config  # noqa
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                      reduce, reload, unicode, xrange, StandardError,
-                                      )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -30,9 +36,12 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
@@ -55,13 +64,13 @@ from .. import meta_config as meta_cfg
 from ..tools import dev_tool  # , data_tools
 
 
-class OutputHandler(object):
+class OutputHandler:
     """Class for output handling."""
 
     __SAVE_STDOUT = sys.stdout
-    _IMPLEMENTED_FORMATS = set(['png', 'jpg', 'pdf', 'svg'])
-    _MOST_REPLACE_CHAR = [' ', '-', '<', '>', '&', '!', '?', '=', '*', '%', '.']
-    _REPLACE_CHAR = _MOST_REPLACE_CHAR + ['/']
+    _IMPLEMENTED_FORMATS = {"png", "jpg", "pdf", "svg"}
+    _MOST_REPLACE_CHAR = [" ", "-", "<", ">", "&", "!", "?", "=", "*", "%", "."]
+    _REPLACE_CHAR = _MOST_REPLACE_CHAR + ["/"]
 
     def __init__(self):
         """Initialize an output handler"""
@@ -80,7 +89,7 @@ class OutputHandler(object):
         self._output_folders = None
         self._path_to_be_overriden = None
         self._figures = {}
-        self._formats_used = set([])
+        self._formats_used = set()
         self._pickle_folder = False
 
         # start timer and log current time
@@ -89,18 +98,27 @@ class OutputHandler(object):
 
         # set plotting style
         sns.set_context("poster")
-        plt.rc('figure', figsize=(20, 20))
+        plt.rc("figure", figsize=(20, 20))
 
-        setattr(self, 'print', self._print)
+        setattr(self, "print", self._print)
 
     def _check_initialization(self, return_error=False):
         if not self._is_initialized and not return_error:
             self.initialize()
         elif not self._is_initialized and return_error:
-            raise Exception("OutputHandler not initialized! You have to initialize it first")
+            raise Exception(
+                "OutputHandler not initialized! You have to initialize it first"
+            )
 
-    def initialize_save(self, output_path, run_name="", run_message="", output_folders=None,
-                        del_existing_folders=False, logger_cfg=None):
+    def initialize_save(
+            self,
+            output_path,
+            run_name="",
+            run_message="",
+            output_folders=None,
+            del_existing_folders=False,
+            logger_cfg=None,
+    ):
         output_path = dev_tool.entries_to_str(output_path)
         """Initialize the run. Create the neccesary folders.
 
@@ -150,7 +168,9 @@ class OutputHandler(object):
 
         # ask if you want to add something to the run_name (and folder name)
         if meta_cfg.PROMPT_FOR_COMMENT:
-            prompt_message = "Enter an (optional) extension to the run-name and press 'enter':\n"
+            prompt_message = (
+                "Enter an (optional) extension to the run-name and press 'enter':\n"
+            )
             temp_add = str(input(prompt_message))
             run_name += " " + temp_add if temp_add != "" else ""
             # del temp_add
@@ -160,34 +180,44 @@ class OutputHandler(object):
         # "clean" and correct the path-name
         for char in self._REPLACE_CHAR:
             run_name = run_name.replace(char, "_")
-        output_path += run_name if output_path.endswith('/') else '/' + run_name
-        self._output_path = os.path.expanduser(output_path)  # replaces ~ with /home/myUser
+        output_path += run_name if output_path.endswith("/") else "/" + run_name
+        self._output_path = os.path.expanduser(
+            output_path
+        )  # replaces ~ with /home/myUser
 
         # find a non-existing folder
         temp_i = 1
         while os.path.isdir(self._output_path):
             if del_existing_folders:
                 self._path_to_be_overriden = output_path
-                if not self._path_to_be_overriden.endswith('/'):
-                    self._path_to_be_overriden += '/'
+                if not self._path_to_be_overriden.endswith("/"):
+                    self._path_to_be_overriden += "/"
             self._output_path = output_path + "_" + str(temp_i)
             temp_i += 1
-            assert temp_i < meta_cfg.MAX_AUTO_FOLDERS, \
-                "possible endless loop when trying to create a non-existing folder"
-        self._output_path += '' if output_path.endswith('/') else '/'
+            assert (
+                    temp_i < meta_cfg.MAX_AUTO_FOLDERS
+            ), "possible endless loop when trying to create a non-existing folder"
+        self._output_path += "" if output_path.endswith("/") else "/"
 
         # create subfolders
         for value in list(self._output_folders.values()):
-            subprocess.call(['mkdir', '-p', self._output_path + value])
-        subprocess.call(['touch', self._output_path + 'run_NOT_finished'])  # show that ongoing run
+            subprocess.call(["mkdir", "-p", self._output_path + value])
+        subprocess.call(
+            ["touch", self._output_path + "run_NOT_finished"]
+        )  # show that ongoing run
 
         # set meta-config variables
-        meta_cfg.set_parallel_profile(n_cpu=meta_cfg.n_cpu_max,
-                                      gpu_in_use=meta_cfg.use_gpu)
+        meta_cfg.set_parallel_profile(
+            n_cpu=meta_cfg.n_cpu_max, gpu_in_use=meta_cfg.use_gpu
+        )
 
         self._is_initialized = True
-        self.add_output(run_message, title="Run: " + self._run_name, importance=0,
-                        subtitle="Comments about the run")
+        self.add_output(
+            run_message,
+            title="Run: " + self._run_name,
+            importance=0,
+            subtitle="Comments about the run",
+        )
 
     def initialize(self, run_name="", prompt_for_comment=False):
         """Initialization for external use, no folders created, config.py logger."""
@@ -201,7 +231,9 @@ class OutputHandler(object):
         self.make_me_a_logger()
         # ask if you want to add something to the run_name (and folder name)
         if prompt_for_comment:
-            prompt_message = "Enter an (optional) extension to the run-name and press 'enter':\n"
+            prompt_message = (
+                "Enter an (optional) extension to the run-name and press 'enter':\n"
+            )
             temp_add = str(input(prompt_message))
             run_name += " " + temp_add if temp_add != "" else ""
         self._run_name = str(run_name)
@@ -209,8 +241,8 @@ class OutputHandler(object):
     def get_logger_path(self):
         """Return the path for the log folder."""
         if self._save_output:
-            path_out = self._output_path + self._output_folders.get('log')
-            path_out += '' if path_out.endswith('/') else '/'
+            path_out = self._output_path + self._output_folders.get("log")
+            path_out += "" if path_out.endswith("/") else "/"
         else:
             path_out = None
         return path_out
@@ -218,8 +250,8 @@ class OutputHandler(object):
     def get_plots_path(self):
         """Return the path for the log folder."""
         if self._save_output:
-            path_out = self._output_path + self._output_folders.get('plots')
-            path_out += '' if path_out.endswith('/') else '/'
+            path_out = self._output_path + self._output_folders.get("plots")
+            path_out += "" if path_out.endswith("/") else "/"
         else:
             path_out = None
         return path_out
@@ -259,15 +291,24 @@ class OutputHandler(object):
         """
         sys.stdout = self.__SAVE_STDOUT
         add_output_kwarg = dev_tool.entries_to_str(add_output_kwarg)
-        self.add_output(self._IO_string.getvalue(), importance=importance, **add_output_kwarg)
+        self.add_output(
+            self._IO_string.getvalue(), importance=importance, **add_output_kwarg
+        )
         return self._IO_string.getvalue()
 
     def figure(self, *args, **kwargs):
         """FUTURE: Wrapper around save_fig()."""
         return self.save_fig(*args, **kwargs)
 
-    def save_fig(self, figure, importance=3, file_format=None, to_pickle=True,
-                 figure_kwargs=None, **save_cfg):
+    def save_fig(
+            self,
+            figure,
+            importance=3,
+            file_format=None,
+            to_pickle=True,
+            figure_kwargs=None,
+            **save_cfg
+    ):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
         certain figure at the end of the run.
 
@@ -318,7 +359,11 @@ class OutputHandler(object):
             if isinstance(figure, (int, basestring)):
                 figure = plt.figure(figure, **figure_kwargs)  # TODO: changeable?
 
-            file_format = meta_cfg.DEFAULT_SAVE_FIG['file_format'] if file_format is None else file_format
+            file_format = (
+                meta_cfg.DEFAULT_SAVE_FIG["file_format"]
+                if file_format is None
+                else file_format
+            )
             if isinstance(file_format, basestring):
                 file_format = [file_format]
             file_format = set(file_format)
@@ -331,9 +376,13 @@ class OutputHandler(object):
             #            figure.set_figwidth(20)
 
             # add figure to dict for later output to file
-            figure_dict = {'figure': figure, 'file_format': file_format,
-                           'to_pickle': to_pickle, 'plot': plot, 'save_cfg': save_cfg
-                           }
+            figure_dict = {
+                "figure": figure,
+                "file_format": file_format,
+                "to_pickle": to_pickle,
+                "plot": plot,
+                "save_cfg": save_cfg,
+            }
             self._figures[figure.get_label()] = figure_dict
         else:
             self._check_initialization()
@@ -353,41 +402,53 @@ class OutputHandler(object):
         # create folders if they don't exist already
         path = self.get_plots_path()
         for format_ in self._formats_used:
-            assert isinstance(format_, basestring), "Format is not a string: " + str(format_)
-            subprocess.call(['mkdir', '-p', path + format_])
+            assert isinstance(format_, basestring), "Format is not a string: " + str(
+                format_
+            )
+            subprocess.call(["mkdir", "-p", path + format_])
         if self._pickle_folder:
-            subprocess.call(['mkdir', '-p', path + meta_cfg.PICKLE_DATATYPE])
+            subprocess.call(["mkdir", "-p", path + meta_cfg.PICKLE_DATATYPE])
 
         # save figures to file
         for fig_name, fig_dict in list(self._figures.items()):
             for char in self._REPLACE_CHAR:
                 fig_name = fig_name.replace(char, "_")
-            for extension in fig_dict.get('file_format'):
-                file_path = path + extension + '/'
+            for extension in fig_dict.get("file_format"):
+                file_path = path + extension + "/"
                 file_name = file_path + fig_name + "." + extension
                 try:
-                    figure_tmp = fig_dict['figure']
+                    figure_tmp = fig_dict["figure"]
                     #                    figure_tmp.tight_layout()
-                    figure_tmp.savefig(file_name, format=extension,
-                                       **fig_dict.get('save_cfg'))
+                    figure_tmp.savefig(
+                        file_name, format=extension, **fig_dict.get("save_cfg")
+                    )
                 except:
                     self.logger.error("Could not save figure" + str(figure_tmp))
                     meta_cfg.error_occured()
 
-            if fig_dict.get('to_pickle'):
-                file_name = (path + meta_cfg.PICKLE_DATATYPE + '/' +
-                             fig_name + "." + meta_cfg.PICKLE_DATATYPE)
+            if fig_dict.get("to_pickle"):
+                file_name = (
+                        path
+                        + meta_cfg.PICKLE_DATATYPE
+                        + "/"
+                        + fig_name
+                        + "."
+                        + meta_cfg.PICKLE_DATATYPE
+                )
                 try:
-                    with open(str(file_name), 'wb') as f:
-                        pickle.dump(fig_dict.get('figure'), f, meta_cfg.PICKLE_PROTOCOL)
+                    with open(str(file_name), "wb") as f:
+                        pickle.dump(fig_dict.get("figure"), f, meta_cfg.PICKLE_PROTOCOL)
                 except:
-                    self.logger.error("Could not open file" + str(file_name) +
-                                      " OR pickle the figure to it")
+                    self.logger.error(
+                        "Could not open file"
+                        + str(file_name)
+                        + " OR pickle the figure to it"
+                    )
                     meta_cfg.error_occured()
 
             # delete if it is not intended to be plotted
-            if not fig_dict.get('plot'):
-                plt.close(fig_dict.get('figure'))
+            if not fig_dict.get("plot"):
+                plt.close(fig_dict.get("figure"))
         # clear the _figures dict
         self._figures = {}
 
@@ -415,17 +476,43 @@ class OutputHandler(object):
             out_str += "\n" + title_format[1] * len(title) + "\n"
         return out_str
 
-    def _print(self, data, to_end=False, importance=3, title=None,
-               subtitle=None, section=None, obj_separator=" ",
-               data_separator="\n\n", force_newline=True):
+    def _print(
+            self,
+            data,
+            to_end=False,
+            importance=3,
+            title=None,
+            subtitle=None,
+            section=None,
+            obj_separator=" ",
+            data_separator="\n\n",
+            force_newline=True,
+    ):
 
-        return self.add_output(data_out=data, to_end=to_end, importance=importance, title=title,
-                               subtitle=subtitle, section=section, obj_separator=obj_separator,
-                               data_separator=data_separator, force_newline=force_newline)
+        return self.add_output(
+            data_out=data,
+            to_end=to_end,
+            importance=importance,
+            title=title,
+            subtitle=subtitle,
+            section=section,
+            obj_separator=obj_separator,
+            data_separator=data_separator,
+            force_newline=force_newline,
+        )
 
-    def add_output(self, data_out, to_end=False, importance=3, title=None,
-                   subtitle=None, section=None, obj_separator=" ",
-                   data_separator="\n\n", force_newline=True):
+    def add_output(
+            self,
+            data_out,
+            to_end=False,
+            importance=3,
+            title=None,
+            subtitle=None,
+            section=None,
+            obj_separator=" ",
+            data_separator="\n\n",
+            force_newline=True,
+    ):
         """A method to collect the output and format it nicely.
 
         All the objects in data_out get converted to strings and concatenated
@@ -478,10 +565,18 @@ class OutputHandler(object):
         data_separator = dev_tool.entries_to_str(data_separator)
         data_out = dev_tool.entries_to_str(data_out)
         # initialize defaults
-        assert isinstance(obj_separator, basestring), \
-            (str(obj_separator) + " is of type " + str(type(obj_separator)) + " instead of string")
-        assert isinstance(data_separator, basestring), \
-            (str(data_separator) + " is of type " + str(type(data_separator)) + " instead of string")
+        assert isinstance(obj_separator, basestring), (
+                str(obj_separator)
+                + " is of type "
+                + str(type(obj_separator))
+                + " instead of string"
+        )
+        assert isinstance(data_separator, basestring), (
+                str(data_separator)
+                + " is of type "
+                + str(type(data_separator))
+                + " instead of string"
+        )
         self._check_initialization()
         do_print = 5 - round(importance) < meta_cfg.verbosity
 
@@ -493,10 +588,14 @@ class OutputHandler(object):
             temp_out = "\n" if force_newline else ""
 
         # set title, subtitle and section with title_format, subtitle_format...
-        title_f = ('=', '=')
-        subtitle_f = ('-', '-')
-        section_f = ('', '=')
-        for name, form in ((title, title_f), (subtitle, subtitle_f), (section, section_f)):
+        title_f = ("=", "=")
+        subtitle_f = ("-", "-")
+        section_f = ("", "=")
+        for name, form in (
+                (title, title_f),
+                (subtitle, subtitle_f),
+                (section, section_f),
+        ):
             temp_out += self._make_title(name, form)
 
         # Concatenation of the objects
@@ -506,7 +605,7 @@ class OutputHandler(object):
                 word = dev_tool.entries_to_str(word)
                 for key, val in list(word.items()):
                     if isinstance(val, dict):
-                        temp_out += self._make_title("  " + str(key), ('', '^'))
+                        temp_out += self._make_title("  " + str(key), ("", "^"))
                         for key2, val2 in list(val.items()):
                             temp_out += "    " + str(key2) + " : " + str(val2) + "\n"
                     else:
@@ -542,21 +641,31 @@ class OutputHandler(object):
         # ==============================================================================
 
         self.add_output("\n", title="END OF RUN " + self._run_name, importance=4)
-        self.add_output(["Random generator seed", meta_cfg.rand_seed],
-                        title="Different parameters", obj_separator=" : ", importance=2)
+        self.add_output(
+            ["Random generator seed", meta_cfg.rand_seed],
+            title="Different parameters",
+            obj_separator=" : ",
+            importance=2,
+        )
 
         # print the output which should be printed at the end of the run
-        sys.stdout.write(self._loud_end_output)  # to print even dough the print is redirected
+        sys.stdout.write(
+            self._loud_end_output
+        )  # to print even dough the print is redirected
         self.output += self.end_output
 
         # add current version (if available)
         if self._save_output and os.path.isdir(meta_cfg.GIT_DIR_PATH):
             try:
-                git_version = subprocess.check_output(["git", "-C", meta_cfg.GIT_DIR_PATH,
-                                                       "describe"])
-                self.add_output(["Program version from Git", git_version],
-                                section="Git information",
-                                importance=0, obj_separator=" : ")
+                git_version = subprocess.check_output(
+                    ["git", "-C", meta_cfg.GIT_DIR_PATH, "describe"]
+                )
+                self.add_output(
+                    ["Program version from Git", git_version],
+                    section="Git information",
+                    importance=0,
+                    obj_separator=" : ",
+                )
             except:
                 meta_cfg.error_occured()
                 self.logger.error("Could not get version number from git")
@@ -564,14 +673,21 @@ class OutputHandler(object):
         # time information
         elapsed_time = timeit.default_timer() - self._start_timer
         elapsed_time = time.strftime("%H:%M:%S", time.gmtime(elapsed_time))
-        self.add_output(["Run startet at", self._start_time, "\nand lasted for",
-                         elapsed_time], section="Time information", obj_separator=" ")
+        self.add_output(
+            ["Run startet at", self._start_time, "\nand lasted for", elapsed_time],
+            section="Time information",
+            obj_separator=" ",
+        )
 
         # error information
-        self.add_output(["Errors encountered during run", meta_cfg._error_count],
-                        obj_separator=" : ")
-        self.add_output(["Warnings encountered during run", meta_cfg._warning_count],
-                        obj_separator=" : ")
+        self.add_output(
+            ["Errors encountered during run", meta_cfg._error_count],
+            obj_separator=" : ",
+        )
+        self.add_output(
+            ["Warnings encountered during run", meta_cfg._warning_count],
+            obj_separator=" : ",
+        )
 
         output = copy.deepcopy(self.output)
 
@@ -592,9 +708,11 @@ class OutputHandler(object):
                     self.output = self.output[i - 1:]
                     break
 
-            temp_out_file = self._output_path + self._output_folders.get('results') + '/output.txt'
+            temp_out_file = (
+                    self._output_path + self._output_folders.get("results") + "/output.txt"
+            )
             try:
-                with open(temp_out_file, 'w') as f:
+                with open(temp_out_file, "w") as f:
                     f.write(self.output)
             except:
                 self.logger.error("Could not save output to file")
@@ -603,33 +721,42 @@ class OutputHandler(object):
 
             # if a folder to overwrite exists, delete it and move the temp folder
             if self._path_to_be_overriden is not None:
-                stop_del = ''
+                stop_del = ""
                 if not meta_cfg.NO_PROMPT_ASSUME_YES:
-                    stop_del = str(input("ATTENTION! The folder " + self._path_to_be_overriden +
-                                         " will be deleted and replaced with the output " +
-                                         "of the current run.\nTo DELETE that folder and " +
-                                         "overwrite, press ENTER.\n\nIf you want to keep the " +
-                                         "folder and save the current run under " +
-                                         self._output_path + ", please enter any input " +
-                                         "and press enter.\n\nYour input:"))
-                if stop_del == '':
-                    subprocess.call(['rm', '-r', self._path_to_be_overriden])
-                    subprocess.call(['mv', self._output_path, self._path_to_be_overriden])
+                    stop_del = str(
+                        input(
+                            "ATTENTION! The folder "
+                            + self._path_to_be_overriden
+                            + " will be deleted and replaced with the output "
+                            + "of the current run.\nTo DELETE that folder and "
+                            + "overwrite, press ENTER.\n\nIf you want to keep the "
+                            + "folder and save the current run under "
+                            + self._output_path
+                            + ", please enter any input "
+                            + "and press enter.\n\nYour input:"
+                        )
+                    )
+                if stop_del == "":
+                    subprocess.call(["rm", "-r", self._path_to_be_overriden])
+                    subprocess.call(
+                        ["mv", self._output_path, self._path_to_be_overriden]
+                    )
                     path = self._path_to_be_overriden
                 else:
                     path = self._output_path
             else:
                 path = self._output_path
             print("All output saved under: " + path)
-            subprocess.call(['rm', path + 'run_NOT_finished'])
+            subprocess.call(["rm", path + "run_NOT_finished"])
             # .finished shows if the run finished
-            subprocess.call(['touch', path + 'run_finished_succesfully'])
+            subprocess.call(["touch", path + "run_finished_succesfully"])
 
         self.output = self._loud_end_output = self.end_output = ""
 
         if play_sound_at_end:
             try:
                 from raredecay.tools.dev_tool import play_sound
+
                 play_sound()
             except:
                 print("BEEEEEP, no sound could be played")
@@ -642,9 +769,9 @@ class OutputHandler(object):
         return output
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     out = OutputHandler()
-    out.initialize('test')
-    out.add_output(["test: ", {'a': 1, 'b': 2}], importance=5)
+    out.initialize("test")
+    out.add_output(["test: ", {"a": 1, "b": 2}], importance=5)
     print("hello world")
     out.finalize()

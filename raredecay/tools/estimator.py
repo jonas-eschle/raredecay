@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 
 @author: Jonas Eschle "Mayou36"

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 
 @author: Jonas Eschle "Mayou36"
@@ -13,18 +12,25 @@ This module contains the data handling. The main part is the class which
 takes data, weights, targets, names and converts automatically, plots and more.
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import division, absolute_import, print_function, unicode_literals
-from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
-                      open, pow, range, round, str, super, zip,
-                      )  # noqa
 import sys  # noqa
 import warnings  # noqa
 from .. import meta_config  # noqa
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError,
-                                          )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -33,9 +39,12 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
@@ -62,8 +71,11 @@ try:
 
     out_imported = True
 except ImportError:
-    warnings.warn(ImportWarning, "could not import out. Some functions regarding output" +
-                  "(save figure etc.) won't be available")
+    warnings.warn(
+        ImportWarning,
+        "could not import out. Some functions regarding output"
+        + "(save figure etc.) won't be available",
+    )
     out_imported = False
 
 # TODO: import config not needed?? remove because its from the old structure
@@ -75,7 +87,7 @@ from .. import config as cfg
 modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
-class HEPDataStorage(object):
+class HEPDataStorage:
     """Data-storage for data, weights, targets; conversion; plots and more"""
 
     # define constants for independence
@@ -97,12 +109,19 @@ class HEPDataStorage(object):
         r"_CosTheta": r"\ cos(\theta)",
         r"NDOF": r"/N_{degree of freedom}",
         r"AMAXDOCA": r"\ AMAXDOCA",
-
         #        "_": "\ "
-        }
+    }
 
-    def __init__(self, data, index=None, target=None, sample_weights=None,
-                 data_name=None, data_name_addition=None, column_alias=None):
+    def __init__(
+            self,
+            data,
+            index=None,
+            target=None,
+            sample_weights=None,
+            data_name=None,
+            data_name_addition=None,
+            column_alias=None,
+    ):
         """Initialize instance and load data.
 
         Parameters
@@ -184,7 +203,10 @@ class HEPDataStorage(object):
     # TODO: remove obsolet
     def get_name(self):
         """Return the human-readable name of the data as a string."""
-        warnings.warn("Depreceated, obj.get_name() will be removed. Use obj.name instead.", FutureWarning)
+        warnings.warn(
+            "Depreceated, obj.get_name() will be removed. Use obj.name instead.",
+            FutureWarning,
+        )
         return self._get_name()
 
     @property
@@ -234,12 +256,14 @@ class HEPDataStorage(object):
 
     @property
     def data_type(self):
-        """"Return the data-type like 'root', 'df' etc."""
+        """ "Return the data-type like 'root', 'df' etc."""
         return self._data_type
 
     def get_index(self):
         """Return the index used inside the DataStorage. Advanced feature."""
-        warnings.warn("Will be removed in the future. Use obj.index instead", FutureWarning)
+        warnings.warn(
+            "Will be removed in the future. Use obj.index instead", FutureWarning
+        )
         return self._make_index()
 
     @property
@@ -272,11 +296,11 @@ class HEPDataStorage(object):
         """If index is not None -> assign. Else try to get from data"""
         if index is None:
             self._index = None
-            if self._data_type == 'root':
+            if self._data_type == "root":
                 pass  # no index contained in root-dicts
-            elif self._data_type == 'array':
+            elif self._data_type == "array":
                 pass  # no index information contained in an array
-            elif self._data_type == 'df':
+            elif self._data_type == "df":
                 index_list = self._data.index.tolist()
                 # TODO: remove HACK with length, replace with len(self)
                 if not index_list == list(range(len(self))):  # if special indexing
@@ -300,9 +324,9 @@ class HEPDataStorage(object):
     def _set_columns(self, columns):
 
         if columns is None:
-            if self._data_type == 'root':
-                self._columns = data_tools.to_list(self._data['branches'])
-            elif self._data_type == 'df':
+            if self._data_type == "root":
+                self._columns = data_tools.to_list(self._data["branches"])
+            elif self._data_type == "df":
                 self._columns = data_tools.to_list(self._data.columns.values)
                 # TODO: remove below?
                 # elif self._data_type == 'array':
@@ -317,13 +341,18 @@ class HEPDataStorage(object):
         # determine whether to set length individually from the data or not
         index = self._index
         if index is None:
-            if self._data_type == 'root':
+            if self._data_type == "root":
                 temp_root_dict = copy.deepcopy(self._data)
-                temp_branch = temp_root_dict.pop('branches')  # remove to only use one branch
+                temp_branch = temp_root_dict.pop(
+                    "branches"
+                )  # remove to only use one branch
                 temp_branch = data_tools.to_list(temp_branch)
-                self._length = len(data_tools.to_pandas(dict(branches=temp_branch[0],
-                                                             **temp_root_dict)))
-            elif self._data_type == 'df':
+                self._length = len(
+                    data_tools.to_pandas(
+                        dict(branches=temp_branch[0], **temp_root_dict)
+                    )
+                )
+            elif self._data_type == "df":
                 self._length = len(self._data)
                 # TODO: remove below?
                 # elif self._data_type == 'array':
@@ -342,10 +371,12 @@ class HEPDataStorage(object):
         """
         data_type = None
         if isinstance(data, dict):
-            if 'filenames' in data and data['filenames'].endswith(HEPDataStorage.__ROOT_DATATYPE):
-                data_type = 'root'
+            if "filenames" in data and data["filenames"].endswith(
+                    HEPDataStorage.__ROOT_DATATYPE
+            ):
+                data_type = "root"
         elif isinstance(data, pd.DataFrame):
-            data_type = 'df'
+            data_type = "df"
         # TODO: remove below
         # elif isinstance(data, (np.ndarray, np.array)):
         #     data_type = 'array'
@@ -401,10 +432,10 @@ class HEPDataStorage(object):
         # convert the data (and save it)
 
         # root data
-        if self._data_type == 'root':
+        if self._data_type == "root":
             pass
         # pandas DataFrame
-        elif self._data_type == 'df':
+        elif self._data_type == "df":
 
             self._data = self._make_df(index=self._index)  # No cols, it's set above
         # TODO: remove below?
@@ -435,7 +466,7 @@ class HEPDataStorage(object):
         length = len(self) if index is None else len(index)
         normalize = 1 if normalize is True else normalize
         normalize = 0 if normalize is None or normalize is False else normalize
-        second_storage = kwargs.get('second_storage')
+        second_storage = kwargs.get("second_storage")
 
         normalize_1 = 1
         normalize_2 = 1
@@ -530,13 +561,16 @@ class HEPDataStorage(object):
         """
         index = self._index if index is None else index
 
-        if isinstance(sample_weights, (basestring, dict)) and self._data_type == 'root':
-            assert ((isinstance(sample_weights, list) and (len(sample_weights) == 1)) or
-                    isinstance(sample_weights, basestring)), "Can only be one branche"
-            assert isinstance(self._data, dict), "data should be root-dict but is no more..."
+        if isinstance(sample_weights, (basestring, dict)) and self._data_type == "root":
+            assert (
+                           isinstance(sample_weights, list) and (len(sample_weights) == 1)
+                   ) or isinstance(sample_weights, basestring), "Can only be one branche"
+            assert isinstance(
+                self._data, dict
+            ), "data should be root-dict but is no more..."
             tmp_root = copy.deepcopy(self._data)
             if isinstance(sample_weights, basestring):
-                sample_weights = {'branches': sample_weights}
+                sample_weights = {"branches": sample_weights}
             tmp_root.update(sample_weights)
 
             sample_weights = data_tools.to_ndarray(tmp_root)
@@ -559,7 +593,7 @@ class HEPDataStorage(object):
         elif isinstance(sample_weights, pd.Series):
             sample_weights = sample_weights[index]
         else:
-            sample_weights = pd.Series(sample_weights, index=index, dtype='f8')
+            sample_weights = pd.Series(sample_weights, index=index, dtype="f8")
 
         if len(self) == length and index is None:
             self._weights = sample_weights
@@ -572,8 +606,8 @@ class HEPDataStorage(object):
         """Set the selection in a root-file. Only possible if a root-file is provided."""
         warnings.warn("Method set_root_selection very unsafe currently!")
         meta_cfg.warning_occured()
-        if self._data_type == 'root':
-            self.data['selection'] = selection
+        if self._data_type == "root":
+            self.data["selection"] = selection
             self.set_data(self.data, columns=self.columns)
             self.data_name_addition += "INDEX CRASHED!"
         elif exception_if_failure:
@@ -618,10 +652,10 @@ class HEPDataStorage(object):
         columns = self.columns if columns is None else data_tools.to_list(columns)
         index = self._index if index is None else data_tools.to_list(index)
 
-        if self._data_type == 'root':
+        if self._data_type == "root":
             # update root dictionary
             # TODO: change keyword branches or something, due to incompatibility with root_pandas
-            temp_root_dict = dict(data, **{'branches': columns})
+            temp_root_dict = dict(data, **{"branches": columns})
             for key, val in list(temp_root_dict.items()):
                 if dev_tool.is_in_primitive(val, None):
                     temp_root_dict[key] = self.data.get(key)
@@ -632,7 +666,7 @@ class HEPDataStorage(object):
         # TODO: remove below?
         # elif self._data_type == 'array':
         #     data = pd.DataFrame(data, index=index, columns=columns, copy=copy)
-        elif self._data_type == 'df':
+        elif self._data_type == "df":
             if columns is not None:
                 data = data[columns]
         else:
@@ -751,8 +785,16 @@ class HEPDataStorage(object):
             target.sort_index(inplace=True)
         self._target = target
 
-    def make_dataset(self, second_storage=None, index=None, index_2=None, columns=None,
-                     weights_ratio=0, shuffle=False, targets_from_data=False):
+    def make_dataset(
+            self,
+            second_storage=None,
+            index=None,
+            index_2=None,
+            columns=None,
+            weights_ratio=0,
+            shuffle=False,
+            targets_from_data=False,
+    ):
         """Create data, targets and weights of the instance (and another one).
 
         In machine-learning, it is very often required to have data, it's
@@ -795,7 +837,7 @@ class HEPDataStorage(object):
             generator.
         targets_from_data
             OUTDATED, dont use it. Use two datastorage, one labeled 0, one 1
-         """
+        """
         # initialize values
 
         #        normalize_1 = 1
@@ -838,7 +880,9 @@ class HEPDataStorage(object):
         # weights = self.get_weights(index=index, normalize=normalize_1)
 
         if second_storage is not None:
-            assert isinstance(second_storage, HEPDataStorage), "Wrong type, not an HEPDataStorage"
+            assert isinstance(
+                second_storage, HEPDataStorage
+            ), "Wrong type, not an HEPDataStorage"
             if shuffle is not False:
                 index_2 = second_storage.index if index_2 is None else index_2
                 index_2 = copy.deepcopy(index_2)
@@ -850,12 +894,17 @@ class HEPDataStorage(object):
             targets_2 = second_storage.get_targets()
             targets = np.concatenate((targets_1, targets_2))
 
-            if (max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2)) and weights_ratio > 0:
+            if (
+                    max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2)
+            ) and weights_ratio > 0:
                 raise ValueError(
-                        "Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio" +
-                        " > 0, this case is not yet implemented. Please make an issue!")
+                    "Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio"
+                    + " > 0, this case is not yet implemented. Please make an issue!"
+                )
 
-        weights = self.get_weights(normalize=weights_ratio, second_storage=second_storage)
+        weights = self.get_weights(
+            normalize=weights_ratio, second_storage=second_storage
+        )
 
         return data, targets, weights
 
@@ -883,12 +932,15 @@ class HEPDataStorage(object):
         new_index = copy.deepcopy(index)
         new_column_alias = copy.deepcopy(self.column_alias)
 
-        new_storage = HEPDataStorage(new_data, target=new_targets,
-                                     sample_weights=new_weights,
-                                     index=new_index,
-                                     column_alias=new_column_alias,
-                                     data_name=self.data_name,
-                                     data_name_addition=self.data_name_addition + add_to_name)
+        new_storage = HEPDataStorage(
+            new_data,
+            target=new_targets,
+            sample_weights=new_weights,
+            index=new_index,
+            column_alias=new_column_alias,
+            data_name=self.data_name,
+            data_name_addition=self.data_name_addition + add_to_name,
+        )
         new_storage.columns = columns
         return new_storage
 
@@ -920,10 +972,13 @@ class HEPDataStorage(object):
             columns = dev_tool.entries_to_str(columns)
 
         random_state = meta_cfg.randint()
-        new_lds = LabeledDataStorage(self.pandasDF(columns=columns, index=index),
-                                     target=self.get_targets(index=index),
-                                     sample_weight=self.get_weights(index=index),
-                                     random_state=random_state, shuffle=shuffle)
+        new_lds = LabeledDataStorage(
+            self.pandasDF(columns=columns, index=index),
+            target=self.get_targets(index=index),
+            sample_weight=self.get_weights(index=index),
+            random_state=random_state,
+            shuffle=shuffle,
+        )
         return new_lds
 
     def make_folds(self, n_folds=10, shuffle=True):
@@ -961,7 +1016,7 @@ class HEPDataStorage(object):
         if shuffle is not False:
             random.shuffle(temp_index, random=meta_cfg.randfloat)
         for i in range(n_folds):
-            self._fold_index.append(temp_index[temp_indeces[i]:temp_indeces[i + 1]])
+            self._fold_index.append(temp_index[temp_indeces[i]: temp_indeces[i + 1]])
 
     def get_fold(self, fold):
         """Return the specified fold: train and test data as instance of |hepds_type|.
@@ -976,9 +1031,13 @@ class HEPDataStorage(object):
         out : tuple(|hepds_type|, |hepds_type|)
             Return the *train* and the *test* data in a |hepds_type|
         """
-        assert self._fold_index is not None, "Tried to get a fold but data has no folds." + \
-                                             " First create them (make_folds())"
-        assert isinstance(fold, int) and fold < len(self._fold_index), "Value of fold is invalid"
+        assert self._fold_index is not None, (
+                "Tried to get a fold but data has no folds."
+                + " First create them (make_folds())"
+        )
+        assert isinstance(fold, int) and fold < len(
+            self._fold_index
+        ), "Value of fold is invalid"
         train_index = []
         for i, index_slice in enumerate(self._fold_index):
             if i == fold:
@@ -1005,8 +1064,14 @@ class HEPDataStorage(object):
         """
         return 0 if self._fold_index is None else len(self._fold_index)
 
-    def plot_correlation(self, second_storage=None, figure=None, columns=None,
-                         method='pearson', plot_importance=5):
+    def plot_correlation(
+            self,
+            second_storage=None,
+            figure=None,
+            columns=None,
+            method="pearson",
+            plot_importance=5,
+    ):
         """
         .. warning:: does not support weights. Maybe in the future.
 
@@ -1034,13 +1099,15 @@ class HEPDataStorage(object):
             Return the feature-correlations in a pandas DataFrame
         """
         from statsmodels.stats.weightstats import DescrStatsW
+
         columns = self.columns if columns is None else columns
 
         data_name = self.name
         if second_storage is not None:
             data_name += " and " + second_storage.name
-        data, _tmp, weights = self.make_dataset(second_storage=second_storage,
-                                                shuffle=True, columns=columns)
+        data, _tmp, weights = self.make_dataset(
+            second_storage=second_storage, shuffle=True, columns=columns
+        )
         del _tmp
         out.save_fig(figure, importance=plot_importance)
         ds = DescrStatsW(data.as_matrix(), weights=weights)
@@ -1059,10 +1126,25 @@ class HEPDataStorage(object):
 
         return correlation
 
-    def plot(self, figure=None, columns=None, index=None, title=None, sub_title=None,
-             data_name=None, bins=None, log_y_axes=False, plot_range=None, x_label=None,
-             y_label="probability density", sample_weights=None, importance=3,
-             see_all=False, hist_settings=None, figure_kwargs=None):
+    def plot(
+            self,
+            figure=None,
+            columns=None,
+            index=None,
+            title=None,
+            sub_title=None,
+            data_name=None,
+            bins=None,
+            log_y_axes=False,
+            plot_range=None,
+            x_label=None,
+            y_label="probability density",
+            sample_weights=None,
+            importance=3,
+            see_all=False,
+            hist_settings=None,
+            figure_kwargs=None,
+    ):
         """Draw histograms of the data.
 
         .. warning:: Only 99.98% of the newest plotted data will be shown to focus
@@ -1124,9 +1206,9 @@ class HEPDataStorage(object):
         if isinstance(hist_settings, dict):
             hist_settings = dict(meta_cfg.DEFAULT_HIST_SETTINGS, **hist_settings)
         if bins is not None:
-            hist_settings['bins'] = bins
+            hist_settings["bins"] = bins
         if plot_range is not None:
-            hist_settings['range'] = plot_range
+            hist_settings["range"] = plot_range
 
         # create data
         data_plot = self.pandasDF(columns=columns, index=index)
@@ -1147,19 +1229,29 @@ class HEPDataStorage(object):
                 if figure not in list(self.__figure_dic.keys()):
                     x_limits_col = {}
                     # TODO: improve figure dict with title....
-                    self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
+                    self.__figure_dic.update(
+                        {figure: x_limits_col, str(figure) + "_title": ""}
+                    )
                     break
         elif figure not in list(self.__figure_dic.keys()):
             x_limits_col = {}
-            self.__figure_dic.update({figure: x_limits_col, str(figure) + '_title': ""})
-        out_figure = out.save_fig(figure, importance=importance,
-                                  figure_kwargs=figure_kwargs, **cfg.save_fig_cfg)
+            self.__figure_dic.update({figure: x_limits_col, str(figure) + "_title": ""})
+        out_figure = out.save_fig(
+            figure,
+            importance=importance,
+            figure_kwargs=figure_kwargs,
+            **cfg.save_fig_cfg
+        )
 
         # create a label
-        label_name = data_tools.obj_to_string([self._name[0], self._name[1],
-                                               data_name], separator=" - ")
-        self.__figure_dic[str(figure) + '_title'] += "" if title is None else title
-        plt.suptitle(self.__figure_dic.get(str(figure) + '_title'), fontsize=self.supertitle_fontsize)
+        label_name = data_tools.obj_to_string(
+            [self._name[0], self._name[1], data_name], separator=" - "
+        )
+        self.__figure_dic[str(figure) + "_title"] += "" if title is None else title
+        plt.suptitle(
+            self.__figure_dic.get(str(figure) + "_title"),
+            fontsize=self.supertitle_fontsize,
+        )
 
         # ==============================================================================
         #       Start plotting
@@ -1172,23 +1264,28 @@ class HEPDataStorage(object):
 
             # only plot in range x_limits, otherwise the plot is too big
             x_limits = self.__figure_dic.get(figure).get(column)
-            lower, upper = np.percentile(np.hstack(data_plot[column]),
-                                         [0.01, 99.99])
+            lower, upper = np.percentile(np.hstack(data_plot[column]), [0.01, 99.99])
             if dev_tool.is_in_primitive(x_limits, None):
                 x_limits = (lower, upper)
             elif see_all:  # choose the maximum range. Bins not nicely overlapping.
                 x_limits = (min(x_limits[0], lower), max(x_limits[1], upper))
-            if 'range' in hist_settings:
-                x_limits = hist_settings.pop('range')
+            if "range" in hist_settings:
+                x_limits = hist_settings.pop("range")
             self.__figure_dic[figure].update({column: x_limits})
 
             plt.subplot(subplot_row, subplot_col, col_id)
-            plt.hist(data_plot[column], weights=sample_weights, log=log_y_axes,
-                     range=x_limits, label=label_name, **hist_settings)
+            plt.hist(
+                data_plot[column],
+                weights=sample_weights,
+                log=log_y_axes,
+                range=x_limits,
+                label=label_name,
+                **hist_settings
+            )
 
             # set labels, titles...
             plt.title(self.latex_replacements.get(sub_title_tmp, sub_title_tmp))
-            ha = 'center'
+            ha = "center"
             plt.xlabel(x_label, ha=ha, position=(0.5, 0))
             if y_label is not None:
                 plt.ylabel(y_label, ha=ha, position=(0, 0.5))
@@ -1203,12 +1300,13 @@ class HEPDataStorage(object):
             No weights supported so far!
         """
 
-        data, targets, weights = self.make_dataset(second_storage=second_storage,
-                                                   columns=columns)
-        targets.name = 'targets'
+        data, targets, weights = self.make_dataset(
+            second_storage=second_storage, columns=columns
+        )
+        targets.name = "targets"
         data = pd.concat([data, targets], axis=1)
         out_figure = out.save_fig(figure)
-        pd.tools.plotting.parallel_coordinates(data, 'targets')
+        pd.tools.plotting.parallel_coordinates(data, "targets")
 
         return out_figure
 
@@ -1225,8 +1323,8 @@ class HEPDataStorage(object):
             The y columns to plot agains
         """
 
-        x_columns = self.columns if x_columns == 'all' else x_columns
-        y_columns = self.columns if y_columns == 'all' else y_columns
+        x_columns = self.columns if x_columns == "all" else x_columns
+        y_columns = self.columns if y_columns == "all" else y_columns
         y_columns = x_columns if y_columns is None else y_columns
 
         for x_col in x_columns:
@@ -1234,7 +1332,7 @@ class HEPDataStorage(object):
                 df = self.pandasDF(columns=[x_col, y_col])
                 df.plot.hexbin(x_col, y_col, gridsize=30)
 
-    def plot2Dscatter(self, x_branch, y_branch, dot_scale=20, color='b', figure=None):
+    def plot2Dscatter(self, x_branch, y_branch, dot_scale=20, color="b", figure=None):
         """Plot two columns against each other to see the distribution.
 
         The dots size is proportional to the weights, so you have a good
@@ -1264,9 +1362,14 @@ class HEPDataStorage(object):
         assert len(weights) == len(self), "Wrong length of weigths"
         size = weights * dot_scale
         temp_label = data_tools.obj_to_string([i for i in self._name])
-        plt.scatter(self.pandasDF(columns=x_branch),
-                    self.pandasDF(columns=y_branch), s=size, c=color,
-                    alpha=0.5, label=temp_label)
+        plt.scatter(
+            self.pandasDF(columns=x_branch),
+            self.pandasDF(columns=y_branch),
+            s=size,
+            c=color,
+            alpha=0.5,
+            label=temp_label,
+        )
         plt.xlabel(x_branch)
         plt.ylabel(y_branch)
         plt.legend()

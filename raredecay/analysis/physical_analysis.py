@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Sat Mar 26 16:49:45 2016
 
@@ -17,21 +16,28 @@ in plotting as well as in printing, but always also return the important
 values.
 """
 # Python 2 backwards compatibility overhead START
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import sys  # noqa
 import warnings  # noqa
-from builtins import (int,  # noqa
-                      range, str, zip,
-                      )  # noqa
 
 from .. import meta_config  # noqa
 from ..tools import ml_scores
 
 try:  # noqa
-    from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
-                                          reduce, reload, unicode, xrange, StandardError,
-                                          )  # noqa
+    from future.builtins.disabled import (
+        apply,
+        cmp,
+        coerce,
+        execfile,
+        file,
+        long,
+        raw_input,  # noqa
+        reduce,
+        reload,
+        unicode,
+        xrange,
+        StandardError,
+    )  # noqa
     from future.standard_library import install_aliases  # noqa
 
     install_aliases()  # noqa
@@ -40,9 +46,12 @@ except ImportError as err:  # noqa
     if sys.version_info[0] < 3:  # noqa
         if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
             meta_config.warning_occured()  # noqa
-            warnings.warn("Module future is not imported, error is suppressed. This means "  # noqa
-                          "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                          "errors. Best install the future package.", RuntimeWarning)  # noqa
+            warnings.warn(
+                "Module future is not imported, error is suppressed. This means "  # noqa
+                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
+                "errors. Best install the future package.",
+                RuntimeWarning,
+            )  # noqa
         else:  # noqa
             raise err  # noqa
     else:  # noqa
@@ -162,8 +171,15 @@ def _cut(data):
 #     return applied_cuts
 
 
-def feature_exploration(original_data, target_data, features=None, n_folds=10,
-                        clf='xgb', roc_auc='single', extended_report=True):
+def feature_exploration(
+        original_data,
+        target_data,
+        features=None,
+        n_folds=10,
+        clf="xgb",
+        roc_auc="single",
+        extended_report=True,
+):
     """Explore the features by getting the roc auc and their feature importance.
 
     An essential part is to have a rough idea of how discriminating the
@@ -199,8 +215,8 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     clf = dev_tool.entries_to_str(clf)
     roc_auc = dev_tool.entries_to_str(roc_auc)
 
-    roc_auc_all = True if roc_auc in ('all', 'both') else False
-    roc_auc_single = True if roc_auc in ('single', 'both') else False
+    roc_auc_all = True if roc_auc in ("all", "both") else False
+    roc_auc_single = True if roc_auc in ("single", "both") else False
 
     if features is not None:
         original_data = original_data.copy_storage(columns=features)
@@ -212,9 +228,15 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
         target_data.plot(figure=figure)
 
     if roc_auc_all:
-        ml_ana.classify(original_data, target_data, validation=n_folds,
-                        extended_report=extended_report, clf=clf,
-                        curve_name="all features", plot_title="ROC AUC of")
+        ml_ana.classify(
+            original_data,
+            target_data,
+            validation=n_folds,
+            extended_report=extended_report,
+            clf=clf,
+            curve_name="all features",
+            plot_title="ROC AUC of",
+        )
 
     features = original_data.columns if features is None else features
 
@@ -223,21 +245,40 @@ def feature_exploration(original_data, target_data, features=None, n_folds=10,
     if roc_auc_single:
         for feature in features:
             title = "Feature exploration, ROC AUC only using " + str(feature)
-            tmp_, score = ml_ana.classify(original_data, target_data, features=feature,
-                                          curve_name="only using " + str(feature), clf=clf,
-                                          validation=n_folds, extended_report=extended_report,
-                                          plot_title=title, weights_ratio=1, plot_importance=2)
+            tmp_, score = ml_ana.classify(
+                original_data,
+                target_data,
+                features=feature,
+                curve_name="only using " + str(feature),
+                clf=clf,
+                validation=n_folds,
+                extended_report=extended_report,
+                plot_title=title,
+                weights_ratio=1,
+                plot_importance=2,
+            )
             del tmp_
             out_temp[feature] = score
 
-    output['score'] = out_temp
+    output["score"] = out_temp
 
     return output
 
 
-def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds=10, columns=None,
-                   performance_only=True, metric_vs_cut='punzi', weights_ratio=0,
-                   save_real_pred=False, save_mc_pred=False):
+def final_training(
+        real_data,
+        mc_data,
+        bkg_sel,
+        sig_sel=None,
+        clf="xgb",
+        n_folds=10,
+        columns=None,
+        performance_only=True,
+        metric_vs_cut="punzi",
+        weights_ratio=0,
+        save_real_pred=False,
+        save_mc_pred=False,
+):
     """Train on bkg and MC, test metric, performance and predict probabilities.
 
     The goal of an MVA is to have certain probabilities predicted for each
@@ -314,19 +355,29 @@ def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds
 
     output = {}
     if save_real_pred:
-        if real_data.data_type != 'root':
-            raise TypeError("Real predictions should be saved but data is not a root-file but " +
-                            real_data.data_type)
-        elif not (real_data.data.get('selection') is None):
-            raise ValueError("Real pred set to be saved, but has selection " +
-                             real_data.data['selection'] + " applied")
+        if real_data.data_type != "root":
+            raise TypeError(
+                "Real predictions should be saved but data is not a root-file but "
+                + real_data.data_type
+            )
+        elif not (real_data.data.get("selection") is None):
+            raise ValueError(
+                "Real pred set to be saved, but has selection "
+                + real_data.data["selection"]
+                + " applied"
+            )
     if save_mc_pred:
-        if mc_data.data_type != 'root':
-            raise TypeError("MC predictions should be saved but data is not a root-file but " +
-                            mc_data.data_type)
-        elif not (mc_data.data.get('selection') is None):
-            raise ValueError("MC pred set to be saved, but has selection " +
-                             mc_data.data['selection'] + " applied")
+        if mc_data.data_type != "root":
+            raise TypeError(
+                "MC predictions should be saved but data is not a root-file but "
+                + mc_data.data_type
+            )
+        elif not (mc_data.data.get("selection") is None):
+            raise ValueError(
+                "MC pred set to be saved, but has selection "
+                + mc_data.data["selection"]
+                + " applied"
+            )
 
     # backwards compatibility
 
@@ -349,18 +400,27 @@ def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds
         sig_data = mc_data.copy_storage()
         sig_data.set_data(sig_df)
         del sig_df
-        _clf, kfold_score, pred_tmp = classify(bkg_data, sig_data, validation=n_folds, clf=clf,
-                                               get_predictions=True, extended_report=True,
-                                               features=columns, weights_ratio=weights_ratio)
+        _clf, kfold_score, pred_tmp = classify(
+            bkg_data,
+            sig_data,
+            validation=n_folds,
+            clf=clf,
+            get_predictions=True,
+            extended_report=True,
+            features=columns,
+            weights_ratio=weights_ratio,
+        )
 
-        report = pred_tmp['report']
+        report = pred_tmp["report"]
 
-        if metric_vs_cut == 'punzi':
+        if metric_vs_cut == "punzi":
             metric = punzi_fom
             title = "Punzi FoM vs threshold cut on " + real_data.name
-        elif metric_vs_cut == 'precision':
+        elif metric_vs_cut == "precision":
             metric = precision_measure
-            metric.__name__ = r"precision $\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}$"
+            metric.__name__ = (
+                r"precision $\frac {n_{signal}} {\sqrt{n_{signal} + n_{background}}}$"
+            )
             title = "Precision vs threshold cut on " + real_data.name
         elif metric_vs_cut:
             raise ValueError("Invalid metric: " + str(metric_vs_cut))
@@ -369,21 +429,28 @@ def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds
             out.figure(title)
             # plt.legend()
             from rep.report.metrics import OptimalMetric
-            metric_optimal = OptimalMetric(metric,
-                                           expected_s=sum(mc_data.get_weights(normalize=False)),
-                                           expected_b=sum(bkg_data.get_weights(normalize=False))
-                                           )
-            metric_optimal.plot_vs_cut(y_true=pred_tmp['y_true'],
-                                       proba=pred_tmp['y_proba'],
-                                       sample_weight=pred_tmp['weights']).plot(fontsize=25)
-            best_cut, best_metric = metric_optimal.compute(y_true=pred_tmp['y_true'],
-                                                           proba=pred_tmp['y_proba'],
-                                                           sample_weight=pred_tmp['weights'])
+
+            metric_optimal = OptimalMetric(
+                metric,
+                expected_s=sum(mc_data.get_weights(normalize=False)),
+                expected_b=sum(bkg_data.get_weights(normalize=False)),
+            )
+            metric_optimal.plot_vs_cut(
+                y_true=pred_tmp["y_true"],
+                proba=pred_tmp["y_proba"],
+                sample_weight=pred_tmp["weights"],
+            ).plot(fontsize=25)
+            best_cut, best_metric = metric_optimal.compute(
+                y_true=pred_tmp["y_true"],
+                proba=pred_tmp["y_proba"],
+                sample_weight=pred_tmp["weights"],
+            )
             best_index = np.argmax(best_metric)
-            output = {'best_threshold_cut': best_cut[best_index],
-                      'best_metric': best_metric[best_index],
-                      'classifiers': [_clf]
-                      }
+            output = {
+                "best_threshold_cut": best_cut[best_index],
+                "best_metric": best_metric[best_index],
+                "classifiers": [_clf],
+            }
 
     # predict to all data
     if predict:
@@ -411,19 +478,29 @@ def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds
             real_test_index = real_test.index
             mc_test_index = mc_test.index
             first_example = i == 0  # to plot only the first time
-            clf_trained, _, pred_real_tmp = classify(real_train, mc_train, validation=real_test,
-                                                     clf=clf, get_predictions=True,
-                                                     extended_report=first_example,
-                                                     features=columns, weights_ratio=weights_ratio)
-            clf_trained, _, pred_mc_tmp = classify(validation=mc_test, clf=clf_trained,
-                                                   get_predictions=True,
-                                                   extended_report=first_example,
-                                                   features=columns, weights_ratio=weights_ratio)
+            clf_trained, _, pred_real_tmp = classify(
+                real_train,
+                mc_train,
+                validation=real_test,
+                clf=clf,
+                get_predictions=True,
+                extended_report=first_example,
+                features=columns,
+                weights_ratio=weights_ratio,
+            )
+            clf_trained, _, pred_mc_tmp = classify(
+                validation=mc_test,
+                clf=clf_trained,
+                get_predictions=True,
+                extended_report=first_example,
+                features=columns,
+                weights_ratio=weights_ratio,
+            )
 
             # collect predictions and index
-            pred_real_tmp = pred_real_tmp['y_proba']
+            pred_real_tmp = pred_real_tmp["y_proba"]
             pred_real.append(pd.Series(pred_real_tmp[:, 1], index=real_test_index))
-            pred_mc_tmp = pred_mc_tmp['y_proba']
+            pred_mc_tmp = pred_mc_tmp["y_proba"]
             pred_mc.append(pd.Series(pred_mc_tmp[:, 1], index=mc_test_index))
 
             classifiers.append(clf_trained)
@@ -433,33 +510,49 @@ def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds
         pred_real.sort_index(inplace=True)
         pred_mc = pd.concat(pred_mc)
         pred_mc.sort_index(inplace=True)
-        output['pred_real'] = pred_real
-        output['pred_mc'] = pred_mc
+        output["pred_real"] = pred_real
+        output["pred_mc"] = pred_mc
 
-        output['classifiers'] = classifiers
+        output["classifiers"] = classifiers
 
         # save predictions
-        if isinstance(save_real_pred, (basestring, int)) and not isinstance(save_real_pred, bool) and predict:
+        if (
+                isinstance(save_real_pred, (basestring, int))
+                and not isinstance(save_real_pred, bool)
+                and predict
+        ):
             root_dict = copy.deepcopy(real_data.data)
 
-            if root_dict.get('selection') is not None:
+            if root_dict.get("selection") is not None:
                 raise ValueError(
-                        "Cannot save predictions to root as selections have been applied in the script")
+                    "Cannot save predictions to root as selections have been applied in the script"
+                )
 
-            add_branch_to_rootfile(filename=root_dict['filenames'],
-                                   treename=root_dict['treename'],
-                                   new_branch=pred_real, branch_name=save_real_pred)
+            add_branch_to_rootfile(
+                filename=root_dict["filenames"],
+                treename=root_dict["treename"],
+                new_branch=pred_real,
+                branch_name=save_real_pred,
+            )
 
-        if isinstance(save_mc_pred, (basestring, int)) and not isinstance(save_mc_pred, bool) and predict:
+        if (
+                isinstance(save_mc_pred, (basestring, int))
+                and not isinstance(save_mc_pred, bool)
+                and predict
+        ):
             root_dict = copy.deepcopy(mc_data.data)
 
-            if root_dict.get('selection') is not None:
+            if root_dict.get("selection") is not None:
                 raise ValueError(
-                        "Cannot save predictions to root as selections have been applied in the script")
+                    "Cannot save predictions to root as selections have been applied in the script"
+                )
 
-            add_branch_to_rootfile(filename=root_dict['filenames'],
-                                   treename=root_dict.get('treename'),
-                                   new_branch=pred_mc, branch_name=save_mc_pred)
+            add_branch_to_rootfile(
+                filename=root_dict["filenames"],
+                treename=root_dict.get("treename"),
+                new_branch=pred_mc,
+                branch_name=save_mc_pred,
+            )
         out.figure("predictions total")
         plt.legend()
         plt.title("Predictions of MC vs all real data")
@@ -475,8 +568,7 @@ def final_training(real_data, mc_data, bkg_sel, sig_sel=None, clf='xgb', n_folds
     return output
 
 
-def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
-                           overwrite=True):
+def add_branch_to_rootfile(filename, treename, new_branch, branch_name, overwrite=True):
     """Add a branch to a given ROOT-Tree.
 
     Add some data (*new_branch*) to the ROOT-file (*filename*) into its tree
@@ -500,25 +592,49 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name,
     from raredecay.tools import data_tools
     from raredecay.globals_ import out
 
-    root_data = {'filenames': filename, 'treename': treename}
-    status = data_tools.add_to_rootfile(root_data, new_branch=new_branch,
-                                        branch_name=branch_name, overwrite=overwrite)
+    root_data = {"filenames": filename, "treename": treename}
+    status = data_tools.add_to_rootfile(
+        root_data, new_branch=new_branch, branch_name=branch_name, overwrite=overwrite
+    )
     if status == 0:
-        out.add_output(["Added succesfully", new_branch, "as", branch_name, "to",
-                        filename], obj_separator=" ")
+        out.add_output(
+            ["Added succesfully", new_branch, "as", branch_name, "to", filename],
+            obj_separator=" ",
+        )
     elif status == 1:
-        out.add_output(["Did not add", new_branch, "as", branch_name, "to",
-                        filename, "because it already exists and overwrite is set to false"],
-                       obj_separator=" ")
+        out.add_output(
+            [
+                "Did not add",
+                new_branch,
+                "as",
+                branch_name,
+                "to",
+                filename,
+                "because it already exists and overwrite is set to false",
+            ],
+            obj_separator=" ",
+        )
 
 
 # OLD
 
 
-def reweightCV(real_data, mc_data, columns=None, n_folds=10,
-               reweighter='gb', reweight_cfg=None, n_reweights=1,
-               scoring=True, score_columns=None, n_folds_scoring=10, score_clf='xgb',
-               mayou_score=False, extended_train_similar=False, apply_weights=True):
+def reweightCV(
+        real_data,
+        mc_data,
+        columns=None,
+        n_folds=10,
+        reweighter="gb",
+        reweight_cfg=None,
+        n_reweights=1,
+        scoring=True,
+        score_columns=None,
+        n_folds_scoring=10,
+        score_clf="xgb",
+        mayou_score=False,
+        extended_train_similar=False,
+        apply_weights=True,
+):
     """Reweight data MC/real in a K-Fold way to unbias the reweighting.
 
     Sophisticated reweighting-algorithms can be quite sensitive to its
@@ -647,20 +763,25 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
     #    if not apply_weights:
     old_weights = mc_data.weights
     # make sure the targets are set the right way TODO
-    Kfold_output = ml_ana.reweight_Kfold(mc_data=mc_data, real_data=real_data,
-                                         meta_cfg=reweight_cfg, columns=columns,
-                                         reweighter=reweighter,
-                                         n_reweights=n_reweights,
-                                         mcreweighted_as_real_score=scoring,
-                                         score_columns=score_columns,
-                                         n_folds=n_folds, score_clf=score_clf,
-                                         add_weights_to_data=True)
-    new_weights = Kfold_output.pop('weights')
+    Kfold_output = ml_ana.reweight_Kfold(
+        mc_data=mc_data,
+        real_data=real_data,
+        meta_cfg=reweight_cfg,
+        columns=columns,
+        reweighter=reweighter,
+        n_reweights=n_reweights,
+        mcreweighted_as_real_score=scoring,
+        score_columns=score_columns,
+        n_folds=n_folds,
+        score_clf=score_clf,
+        add_weights_to_data=True,
+    )
+    new_weights = Kfold_output.pop("weights")
     # TODO: needed below?
     new_weights.sort_index()
 
     if scoring:
-        output['mcreweighted_as_real_score'] = Kfold_output
+        output["mcreweighted_as_real_score"] = Kfold_output
 
         # To get a good estimation for the reweighting quality, the
         # train_similar score can be used. Its the one with training on
@@ -672,12 +793,16 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         # test_predictions is an additional score I tried but so far I is not
         # reliable or understandable at all. The output, the scores dictionary,
         # is better described in the docs of the train_similar
-        scores = ml_scores.train_similar_new(mc=mc_data, real=real_data, test_max=True,
-                                                             n_folds=n_folds_scoring,
-                                                             n_checks=n_folds_scoring,
-                                                             columns=score_columns,
-                                                             old_mc_weights=old_weights,
-                                                             clf=score_clf)
+        scores = ml_scores.train_similar_new(
+            mc=mc_data,
+            real=real_data,
+            test_max=True,
+            n_folds=n_folds_scoring,
+            n_checks=n_folds_scoring,
+            columns=score_columns,
+            old_mc_weights=old_weights,
+            clf=score_clf,
+        )
 
         # scores = metrics.train_similar(mc_data=mc_data, real_data=real_data, test_max=True,
         #                                n_folds=n_folds_scoring, n_checks=n_folds_scoring,
@@ -685,7 +810,7 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         #                                test_mc=extended_train_similar,
         #                                test_shuffle=extended_train_similar,
         #                                test_predictions=False, clf=score_clf)
-        out.add_output(['Mayou FoM:', scores], to_end=True)
+        out.add_output(["Mayou FoM:", scores], to_end=True)
 
         # We can of course also test the normal ROC curve. This is weak to overfitting
         # but anyway (if not overfitting) a nice measure. You insert two datasets
@@ -696,18 +821,23 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         mc_data.set_targets(0)
         temp_real_targets = real_data.get_targets()
         real_data.set_targets(1)
-        tmp_, roc_auc_score, output = ml_ana.classify(original_data=mc_data, target_data=real_data,
-                                                      validation=n_folds_scoring, plot_importance=4,
-                                                      plot_title="ROC AUC to distinguish data",
-                                                      clf=score_clf, weights_ratio=1,
-                                                      features=score_columns,
-                                                      extended_report=scoring,
-                                                      get_predictions=True)
+        tmp_, roc_auc_score, output = ml_ana.classify(
+            original_data=mc_data,
+            target_data=real_data,
+            validation=n_folds_scoring,
+            plot_importance=4,
+            plot_title="ROC AUC to distinguish data",
+            clf=score_clf,
+            weights_ratio=1,
+            features=score_columns,
+            extended_report=scoring,
+            get_predictions=True,
+        )
         del tmp_
         # HACK
-        predictions = output['y_proba'][:, 1][output['y_true'] == 0]
-        weights_pred = np.log(output['weights'][output['y_true'] == 0])
-        weights_pred = output['weights'][output['y_true'] == 0]
+        predictions = output["y_proba"][:, 1][output["y_true"] == 0]
+        weights_pred = np.log(output["weights"][output["y_true"] == 0])
+        weights_pred = output["weights"][output["y_true"] == 0]
         out.figure("Correlation of weights and predictions")
         plt.scatter(predictions, weights_pred)
         plt.xlabel("predictions")
@@ -716,20 +846,26 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         plt.hexbin(x=predictions, y=weights_pred, gridsize=150)
         #        sns.jointplot(x=predictions, y=weights_pred, kind="hex")
 
-
-
         if mayou_score:
-            ml_scores.mayou_score(mc_data=mc_data, real_data=real_data,
-                                                  n_folds=n_folds_scoring,
-                                                  clf=score_clf, old_mc_weights=old_weights)
+            ml_scores.mayou_score(
+                mc_data=mc_data,
+                real_data=real_data,
+                n_folds=n_folds_scoring,
+                clf=score_clf,
+                old_mc_weights=old_weights,
+            )
             # an example to add output with the most importand parameters. The first
             # one can also be a single object instead of a list. do_print means
             # printing it also to the console instead of only saving it to the output
             # file. To_end is sometimes quite useful, as it prints (and saves) the
             # arguments at the end of the file. So the important results are possibly
             # printed to the end
-        out.add_output(['ROC AUC score:', roc_auc_score], importance=5,
-                       title='ROC AUC of mc reweighted/real KFold', to_end=True)
+        out.add_output(
+            ["ROC AUC score:", roc_auc_score],
+            importance=5,
+            title="ROC AUC of mc reweighted/real KFold",
+            to_end=True,
+        )
         # TODO? NEW SCORES?
         #
         # out.add_output(['score:', scores['score'], "+-", scores['score_std']],
@@ -747,14 +883,21 @@ def reweightCV(real_data, mc_data, columns=None, n_folds=10,
         #                     scores['score_mc_max_std']],
         #                    importance=5, to_end=True)
 
-        if scores.get('score_shuffled', False):
-            out.add_output(['score_shuffled:', scores['score_shuffled'], "+-",
-                            scores['score_shuffled_std']],
-                           importance=5, to_end=True)
-        output['train_similar'] = scores
-        output['roc_auc'] = roc_auc_score
+        if scores.get("score_shuffled", False):
+            out.add_output(
+                [
+                    "score_shuffled:",
+                    scores["score_shuffled"],
+                    "+-",
+                    scores["score_shuffled_std"],
+                ],
+                importance=5,
+                to_end=True,
+            )
+        output["train_similar"] = scores
+        output["roc_auc"] = roc_auc_score
 
-    output['weights'] = new_weights
+    output["weights"] = new_weights
     if not apply_weights:
         mc_data.set_weights(old_weights)
 
