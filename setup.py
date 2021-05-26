@@ -23,7 +23,7 @@ def readme():
         return f.read()
 
 
-git_version = '2.2.0'
+git_version = '2.3.0'
 
 if __name__ == '__main__':
     setup(name='raredecay',
