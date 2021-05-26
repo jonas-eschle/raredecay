@@ -19,7 +19,6 @@ from __future__ import division, absolute_import, print_function, unicode_litera
 
 import sys  # noqa
 import warnings  # noqa
-
 from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, next, oct,  # noqa
                       open, pow, range, round, str, super, zip,
                       )  # noqa
@@ -27,9 +26,9 @@ from builtins import (ascii, bytes, chr, dict, filter, hex, input, int, map, nex
 import numpy as np  # noqa
 from matplotlib import pyplot as plt  # noqa
 
+from raredecay.tools import dev_tool, data_tools, data_storage  # noqa
 from .. import meta_config  # noqa
 from ..globals_ import out  # noqa
-from raredecay.tools import dev_tool, data_tools, data_storage  # noqa
 
 try:  # noqa
     from future.builtins.disabled import (apply, cmp, coerce, execfile, file, long, raw_input,  # noqa
@@ -218,7 +217,6 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
         new weights.
     """
     # HACK
-    from raredecay.analysis.compatibility_tools import _make_data
 
     # Python 2/3 compatibility, str
     reweighter_trained = dev_tool.entries_to_str(reweighter_trained)
@@ -248,7 +246,7 @@ def reweight_weights(apply_data, reweighter_trained, columns=None, normalize=Tru
 
 # NEW
 def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb', reweight_cfg=None,
-             n_reweights=1, add_weights=True):
+             n_reweights=1, add_weights=True, normalize=True):
     """(Train a reweighter and) apply the reweighter to get new weights (multiplied by already existing weights).
 
     Train a reweighter from the real data and the corresponding MC differences.
@@ -279,6 +277,9 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
     add_weights : boolean
         If True, the weights will be added to the data directly, therefore
         the data-storage will be modified.
+    normalize : bool
+        If True, normalizes the weights to the value given. This is maybe improper handling. Preferably use `False`
+        and normalize on your own.
 
     Return
     ------
@@ -291,7 +292,6 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
           already existing weights in `apply_data`
 
     """
-    import raredecay.analysis.ml_analysis as ml_ana
 
     #    from raredecay.globals_ import out
     from raredecay.tools import data_tools
@@ -333,7 +333,8 @@ def reweight(apply_data=None, mc=None, real=None, columns=None, reweighter='gb',
             tmp_weights = reweight_weights(apply_data=apply_data,
                                            columns=columns,
                                            reweighter_trained=new_reweighter,
-                                           add_weights=False)
+                                           add_weights=False,
+                                           normalize=normalize)
             if run == 0:
                 new_weights = tmp_weights
             else:
@@ -414,6 +415,10 @@ def reweight_kfold(mc, real, columns=None, n_folds=10, reweighter='gb', reweight
     add_weights : boolean
         If True, the new weights will be added (in place) to the mc data and
         returned. Otherwise, the weights will only be returned.
+
+    normalize : bool
+        If True, normalizes the weights to the value given. This is maybe improper handling. Preferably use `False`
+        and normalize on your own.
 
     Return
     ------
