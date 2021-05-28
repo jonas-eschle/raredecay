@@ -28,4 +28,3 @@ Submodules
    raredecay.score
    raredecay.settings
    raredecay.stat
-

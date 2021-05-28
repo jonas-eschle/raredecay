@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 #
 # Raredecay documentation build configuration file, created by
 # sphinx-quickstart on Wed Oct 18 20:51:00 2017.
@@ -35,35 +34,37 @@
 import raredecay as rd
 
 
-extensions = ['sphinx.ext.autodoc',
-    'sphinx.ext.doctest',
-    'sphinx.ext.intersphinx',
-    'sphinx.ext.todo',
-    'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.napoleon']
+extensions = [
+    "sphinx.ext.autodoc",
+    "sphinx.ext.doctest",
+    "sphinx.ext.intersphinx",
+    "sphinx.ext.todo",
+    "sphinx.ext.coverage",
+    "sphinx.ext.mathjax",
+    "sphinx.ext.ifconfig",
+    "sphinx.ext.viewcode",
+    "sphinx.ext.githubpages",
+    "sphinx.ext.napoleon",
+]
 
 # to show content of both __init__ and class.__doc__ in documentation
-autoclass_content = 'both'
+autoclass_content = "both"
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ["_templates"]
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = '.rst'
+source_suffix = ".rst"
 
 # The master toctree document.
-master_doc = 'index'
+master_doc = "index"
 
 # General information about the project.
-project = 'Raredecay'
-copyright = '2017, Jonas Eschle'
+project = "Raredecay"
+copyright = "2017, Jonas Eschle"
 author = rd.__author__
 
 # The version info for the project you're documenting, acts as replacement for
@@ -80,15 +81,15 @@ release = version
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = 'en'
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'api/yourpackage.rst']
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "api/yourpackage.rst"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = 'sphinx'
+pygments_style = "sphinx"
 
 # If true, `todo` and `todoList` produce output, else they produce nothing.
 todo_include_todos = True
@@ -99,7 +100,7 @@ todo_include_todos = True
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 #
-#html_theme = 'alabaster'
+# html_theme = 'alabaster'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -110,15 +111,15 @@ todo_include_todos = True
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ["_static"]
 
 
 # -- Options for HTMLHelp output ------------------------------------------
 
 # Output file base name for HTML help builder.
-htmlhelp_basename = 'Raredecaydoc'
+htmlhelp_basename = "Raredecaydoc"
 
-#html_logo = '/home/jonas/Pictures/Pictures/Old_phone/oldold_phone/16.jpg'
+# html_logo = '/home/jonas/Pictures/Pictures/Old_phone/oldold_phone/16.jpg'
 
 # Napoleon settings
 napoleon_google_docstring = False
@@ -132,7 +133,6 @@ napoleon_use_admonition_for_references = False
 napoleon_use_ivar = False
 napoleon_use_param = True
 napoleon_use_rtype = True
-
 
 
 # Sphinx theme
@@ -149,15 +149,12 @@ latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
     #
     # 'papersize': 'letterpaper',
-
     # The font size ('10pt', '11pt' or '12pt').
     #
     # 'pointsize': '10pt',
-
     # Additional stuff for the LaTeX preamble.
     #
     # 'preamble': '',
-
     # Latex figure (float) alignment
     #
     # 'figure_align': 'htbp',
@@ -167,8 +164,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, 'Raredecay.tex', 'Raredecay Documentation',
-     'Jonas Eschle', 'manual'),
+    (master_doc, "Raredecay.tex", "Raredecay Documentation", "Jonas Eschle", "manual"),
 ]
 
 
@@ -176,10 +172,7 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, 'raredecay', 'Raredecay Documentation',
-     [author], 1)
-]
+man_pages = [(master_doc, "raredecay", "Raredecay Documentation", [author], 1)]
 
 
 # -- Options for Texinfo output -------------------------------------------
@@ -188,18 +181,20 @@ man_pages = [
 # (source start file, target name, title, author,
 #  dir menu entry, description, category)
 texinfo_documents = [
-    (master_doc, 'Raredecay', 'Raredecay Documentation',
-     author, 'Raredecay', 'Reweighting and MVA analysis library.',
-     'Miscellaneous'),
+    (
+        master_doc,
+        "Raredecay",
+        "Raredecay Documentation",
+        author,
+        "Raredecay",
+        "Reweighting and MVA analysis library.",
+        "Miscellaneous",
+    ),
 ]
 
 
-
-
 # Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'https://docs.python.org/': None}
-
-
+intersphinx_mapping = {"https://docs.python.org/": None}
 
 
 # additional links

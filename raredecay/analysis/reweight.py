@@ -285,6 +285,9 @@ def reweight_weights(
     )
 
     if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
+        warnings.warn("Normalizing weights. This does not 'correctly' normalize by using the training"
+                      " weights but just uses the predictet weights. May consider using `normalize=False` and"
+                      " normalize by hand correctly.")
         new_weights *= new_weights.size / new_weights.sum() * normalize
 
     new_weights = pd.Series(new_weights, index=apply_data.index)
