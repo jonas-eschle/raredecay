@@ -18,4 +18,3 @@ Submodules
    raredecay.tools.metrics
    raredecay.tools.ml_scores
    raredecay.tools.output
-

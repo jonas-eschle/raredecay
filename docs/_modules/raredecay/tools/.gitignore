@@ -1,1 +1,5 @@
 *.html
+/metrics.html
+/ml_scores.html
+/output.html
+*.gitignore

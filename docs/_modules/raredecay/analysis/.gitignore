@@ -1,1 +1,7 @@
 *.html
+/ml_analysis.html
+/physical_analysis.html
+/reweight.html
+/statistics.html
+/statistics_tmp.html
+*.gitignore

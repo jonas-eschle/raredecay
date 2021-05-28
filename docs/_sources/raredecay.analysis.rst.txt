@@ -18,4 +18,3 @@ Submodules
    raredecay.analysis.reweight
    raredecay.analysis.statistics
    raredecay.analysis.statistics_tmp
-
