@@ -10,47 +10,7 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 Contains several tools to convert, load, save and plot data
 """
-# Python 2 backwards compatibility overhead START
 
-import sys  # noqa
-import warnings  # noqa
-from .. import meta_config  # noqa
-
-try:  # noqa
-    from future.builtins.disabled import (
-        apply,
-        cmp,
-        coerce,
-        execfile,
-        file,
-        long,
-        raw_input,  # noqa
-        reduce,
-        reload,
-        unicode,
-        xrange,
-        StandardError,
-    )  # noqa
-    from future.standard_library import install_aliases  # noqa
-
-    install_aliases()  # noqa
-    from past.builtins import basestring  # noqa
-except ImportError as err:  # noqa
-    if sys.version_info[0] < 3:  # noqa
-        if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
-            meta_config.warning_occured()  # noqa
-            warnings.warn(
-                "Module future is not imported, error is suppressed. This means "  # noqa
-                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                "errors. Best install the future package.",
-                RuntimeWarning,
-            )  # noqa
-        else:  # noqa
-            raise err  # noqa
-    else:  # noqa
-        basestring = str  # noqa
-
-# Python 2 backwards compatibility overhead END
 
 import warnings
 import os
@@ -252,10 +212,10 @@ def obj_to_string(objects, separator=None):
         The separator between the objects. Default is " - ".
     """
     objects = dev_tool.entries_to_str(objects)
-    if isinstance(objects, basestring):  # no need to change things
+    if isinstance(objects, str):  # no need to change things
         return objects
     separator = " - " if separator is None else separator
-    assert isinstance(separator, basestring), "Separator not a string"
+    assert isinstance(separator, str), "Separator not a str"
 
     objects = to_list(objects)
     objects = [str(obj) for obj in objects if obj not in (None, "")]  # remove Nones
@@ -299,7 +259,7 @@ def is_pickle(data_to_check):
     """Check if the file is a pickled file (checks the ending)."""
     flag = False
     data_to_check = dev_tool.entries_to_str(data_to_check)
-    if isinstance(data_to_check, basestring):
+    if isinstance(data_to_check, str):
         if data_to_check.endswith(meta_cfg.PICKLE_DATATYPE):
             flag = True
     return flag
@@ -332,7 +292,7 @@ def to_list(data_in):
     out : list
         Return a list containing the object or the object converted to a list.
     """
-    if isinstance(data_in, (basestring, int, float)):
+    if isinstance(data_in, (str, int, float)):
         data_in = [data_in]
     data_in = list(data_in)
     return data_in
@@ -361,14 +321,14 @@ def to_ndarray(data_in, float_array=False):
         data_in = data_in.tolist()
     if is_list(data_in) or isinstance(data_in, pd.Series):
         data_in = np.array(data_in)
-    if not isinstance(data_in[0], (int, float, basestring, bool)):
+    if not isinstance(data_in[0], (int, float, str, bool)):
         if float_array:
             iter_data = copy.deepcopy(data_in)
             # HACK
             data_in = np.ndarray(shape=len(data_in), dtype=data_in.dtype)
             # HACK END
             for i, element in enumerate(iter_data):
-                if not isinstance(element, (int, float, basestring, bool)):
+                if not isinstance(element, (int, float, str, bool)):
                     # does that work or should we iterate over copy?
                     try:
                         element_len = len(element)
@@ -418,7 +378,7 @@ def to_pandas_old(data_in, index=None, columns=None):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
         if (isinstance(columns, (list, tuple)) and len(columns) == 1) or isinstance(
-            columns, basestring
+                columns, str
         ):
             data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, columns=columns, index=root_index)
@@ -465,7 +425,7 @@ def to_pandas(data_in, index=None, columns=None):
     #     data_in = np.array(data_in)
     # if is_ndarray(data_in):
     #     if ((isinstance(columns, (list, tuple)) and len(columns) == 1) or
-    #             isinstance(columns, basestring)):
+    #             isinstance(columns, string)):
     #
     #         data_in = to_ndarray(data_in)
     #     data_in = pd.DataFrame(data_in, columns=columns)
@@ -518,7 +478,7 @@ def adv_return(return_value, save_name=None):
     """
     save_name = dev_tool.entries_to_str(save_name)
     if save_name not in (None, False):
-        if isinstance(save_name, basestring):
+        if isinstance(save_name, str):
             save_name = meta_cfg.PICKLE_PATH + save_name
             if not is_pickle(save_name):
                 save_name += "." + meta_cfg.PICKLE_DATATYPE

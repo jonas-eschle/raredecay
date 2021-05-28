@@ -8,49 +8,11 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 
 """
-# Python 2 backwards compatibility overhead START
-import sys  # noqa
-import warnings  # noqa
-from .. import meta_config  # noqa
 
-try:  # noqa
-    from future.builtins.disabled import (
-        apply,
-        cmp,
-        coerce,
-        execfile,
-        file,
-        long,
-        raw_input,  # noqa
-        reduce,
-        reload,
-        unicode,
-        xrange,
-        StandardError,
-    )  # noqa
-    from future.standard_library import install_aliases  # noqa
-
-    install_aliases()  # noqa
-    from past.builtins import basestring  # noqa
-except ImportError as err:  # noqa
-    if sys.version_info[0] < 3:  # noqa
-        if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
-            meta_config.warning_occured()  # noqa
-            warnings.warn(
-                "Module future is not imported, error is suppressed. This means "  # noqa
-                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                "errors. Best install the future package.",
-                RuntimeWarning,
-            )  # noqa
-        else:  # noqa
-            raise err  # noqa
-    else:  # noqa
-        basestring = str  # noqa
-
-# Python 2 backwards compatibility overhead END
 
 import os
 import subprocess
+import sys
 import timeit
 import time
 import io as StringIO
@@ -157,13 +119,13 @@ class OutputHandler:
         logger_cfg = {} if logger_cfg is None else logger_cfg
         self._logger_cfg = dict(meta_cfg.DEFAULT_LOGGER_CFG, **logger_cfg)
 
-        assert isinstance(output_path, basestring), "output_path not a string"
+        assert isinstance(output_path, str), "output_path not a string"
         output_folders = {} if output_folders is None else output_folders
         self._output_folders = dict(meta_cfg.DEFAULT_OUTPUT_FOLDERS, **output_folders)
 
         # make sure no blank spaces are left in the folder names
         for key, value in list(self._output_folders.items()):
-            assert isinstance(value, basestring), "path is not a string: " + str(value)
+            assert isinstance(value, str), "path is not a string: " + str(value)
             self._output_folders[key] = value.replace(" ", "_")
 
         # ask if you want to add something to the run_name (and folder name)
@@ -356,7 +318,7 @@ class OutputHandler:
 
         if self._save_output:
             self._pickle_folder = self._pickle_folder or to_pickle
-            if isinstance(figure, (int, basestring)):
+            if isinstance(figure, (int, str)):
                 figure = plt.figure(figure, **figure_kwargs)  # TODO: changeable?
 
             file_format = (
@@ -364,7 +326,7 @@ class OutputHandler:
                 if file_format is None
                 else file_format
             )
-            if isinstance(file_format, basestring):
+            if isinstance(file_format, str):
                 file_format = [file_format]
             file_format = set(file_format)
             file_format.intersection_update(self._IMPLEMENTED_FORMATS)
@@ -386,7 +348,7 @@ class OutputHandler:
             self._figures[figure.get_label()] = figure_dict
         else:
             self._check_initialization()
-            if plot and isinstance(figure, (int, basestring)):
+            if plot and isinstance(figure, (int, str)):
                 figure = plt.figure(figure, **figure_kwargs)
 
         return figure
@@ -402,9 +364,7 @@ class OutputHandler:
         # create folders if they don't exist already
         path = self.get_plots_path()
         for format_ in self._formats_used:
-            assert isinstance(format_, basestring), "Format is not a string: " + str(
-                format_
-            )
+            assert isinstance(format_, str), "Format is not a str: " + str(format_)
             subprocess.call(["mkdir", "-p", path + format_])
         if self._pickle_folder:
             subprocess.call(["mkdir", "-p", path + meta_cfg.PICKLE_DATATYPE])
@@ -565,17 +525,17 @@ class OutputHandler:
         data_separator = dev_tool.entries_to_str(data_separator)
         data_out = dev_tool.entries_to_str(data_out)
         # initialize defaults
-        assert isinstance(obj_separator, basestring), (
-            str(obj_separator)
-            + " is of type "
-            + str(type(obj_separator))
-            + " instead of string"
+        assert isinstance(obj_separator, str), (
+                str(obj_separator)
+                + " is of type "
+                + str(type(obj_separator))
+                + " instead of string"
         )
-        assert isinstance(data_separator, basestring), (
-            str(data_separator)
-            + " is of type "
-            + str(type(data_separator))
-            + " instead of string"
+        assert isinstance(data_separator, str), (
+                str(data_separator)
+                + " is of type "
+                + str(type(data_separator))
+                + " instead of string"
         )
         self._check_initialization()
         do_print = 5 - round(importance) < meta_cfg.verbosity

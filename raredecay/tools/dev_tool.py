@@ -10,45 +10,7 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 Contains several useful tools for all kind of programs
 """
-# Python 2 backwards compatibility overhead START
-import sys  # noqa
-import warnings  # noqa
-from .. import meta_config  # noqa
 
-try:  # noqa
-    from future.builtins.disabled import (
-        apply,
-        cmp,
-        coerce,
-        execfile,
-        file,
-        long,
-        raw_input,  # noqa
-        reduce,
-        reload,
-        unicode,
-        xrange,
-        StandardError,
-    )  # noqa
-    from future.standard_library import install_aliases  # noqa
-
-    install_aliases()  # noqa
-    from past.builtins import basestring  # noqa
-except ImportError as err:  # noqa
-    if sys.version_info[0] < 3:  # noqa
-        if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
-            meta_config.warning_occured()  # noqa
-            warnings.warn(
-                "Module future is not imported, error is suppressed. This means "  # noqa
-                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                "errors. Best install the future package.",
-                RuntimeWarning,
-            )  # noqa
-        else:  # noqa
-            raise err  # noqa
-    else:  # noqa
-        basestring = str  # noqa
-# Python 2 backwards compatibility overhead END
 
 import pandas as pd
 import numpy as np
@@ -116,7 +78,7 @@ def make_logger(
         import raredecay.globals_
 
         log_file_dir = raredecay.globals_.out.get_logger_path()
-        if not isinstance(log_file_dir, basestring):
+        if not isinstance(log_file_dir, str):
             # set logging only to console; if 'file' was selected, no console,
             # set logging to console with level 'critical'
             if logging_mode == "file":
@@ -273,7 +235,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif isinstance(allowed_primitives, collections.Iterable) and (
-        not isinstance(allowed_primitives, basestring)
+            not isinstance(allowed_primitives, str)
     ):
         if test_object in allowed_primitives:
             flag = True
@@ -283,7 +245,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
 
 
 def entries_to_str(data):
-    """Convert each basestring entry of a basestring/dict/list into a str.
+    """Convert each string entry of a string/dict/list into a str.
 
     Parameters
     ----------
@@ -294,7 +256,7 @@ def entries_to_str(data):
     dict, list, str
         Return the dict with the new entries.
     """
-    if isinstance(data, basestring):
+    if isinstance(data, str):
         output = str(data)
     elif isinstance(data, dict):
         output = {}

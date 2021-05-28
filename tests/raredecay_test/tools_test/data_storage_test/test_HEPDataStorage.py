@@ -1,33 +1,4 @@
-# Python 2 backwards compatibility overhead START
-import sys
-import warnings
-import raredecay.meta_config
-
-try:
-    from future.builtins.disabled import (
-        apply,
-        cmp,
-        coerce,
-        execfile,
-        file,
-        long,
-        raw_input,
-        reduce,
-        reload,
-        unicode,
-        xrange,
-        StandardError,
-    )
-    from future.standard_library import install_aliases
-
-    install_aliases()
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        raise err
-# Python 2 backwards compatibility overhead END
-
 import copy
-
 import unittest
 from unittest import TestCase
 
@@ -338,7 +309,6 @@ class TestHEPDataStorageMixin(TestCase):
         pass
 
     def _test_ds(self):
-
         self.test_set_weights()
         self.test_get_weights()
         self.test_data()
@@ -352,7 +322,6 @@ class TestHEPDataStorageMixin(TestCase):
         self.test_get_LabeledDataStorage()
 
     def tearDown(self):
-
         self._tearDown()
 
     def _tearDown(self):

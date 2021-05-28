@@ -15,48 +15,10 @@ part of a complete MVA. The functions are sometimes quite verbous, both
 in plotting as well as in printing, but always also return the important
 values.
 """
-# Python 2 backwards compatibility overhead START
 
-import sys  # noqa
-import warnings  # noqa
 
-from .. import meta_config  # noqa
 from ..tools import ml_scores
 
-try:  # noqa
-    from future.builtins.disabled import (
-        apply,
-        cmp,
-        coerce,
-        execfile,
-        file,
-        long,
-        raw_input,  # noqa
-        reduce,
-        reload,
-        unicode,
-        xrange,
-        StandardError,
-    )  # noqa
-    from future.standard_library import install_aliases  # noqa
-
-    install_aliases()  # noqa
-    from past.builtins import basestring  # noqa
-except ImportError as err:  # noqa
-    if sys.version_info[0] < 3:  # noqa
-        if meta_config.SUPPRESS_FUTURE_IMPORT_ERROR:  # noqa
-            meta_config.warning_occured()  # noqa
-            warnings.warn(
-                "Module future is not imported, error is suppressed. This means "  # noqa
-                "Python 3 code is run under 2.7, which can cause unpredictable"  # noqa
-                "errors. Best install the future package.",
-                RuntimeWarning,
-            )  # noqa
-        else:  # noqa
-            raise err  # noqa
-    else:  # noqa
-        basestring = str  # noqa
-# Python 2 backwards compatibility overhead END
 
 import copy
 
@@ -517,7 +479,7 @@ def final_training(
 
         # save predictions
         if (
-            isinstance(save_real_pred, (basestring, int))
+            isinstance(save_real_pred, (str, int))
             and not isinstance(save_real_pred, bool)
             and predict
         ):
@@ -536,7 +498,7 @@ def final_training(
             )
 
         if (
-            isinstance(save_mc_pred, (basestring, int))
+                isinstance(save_mc_pred, (str, int))
             and not isinstance(save_mc_pred, bool)
             and predict
         ):
