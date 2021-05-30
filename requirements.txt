@@ -9,5 +9,4 @@ rootpy
 hep_ml>=0.5.0
 scikit-learn~=0.19.0
 rep @ git+https://github.com/REPlegacy/rep
-notebook>=6.1.5 # not directly required, pinned by Snyk to avoid a vulnerability
 pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
