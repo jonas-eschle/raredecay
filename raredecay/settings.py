@@ -62,18 +62,18 @@ from . import config as cfg
 
 # TODO: docs??
 def initialize(
-        output_path=None,
-        run_name="Test run",
-        overwrite_existing=False,
-        run_message="This is a test-run to test the package",
-        verbosity=3,
-        plot_verbosity=3,
-        prompt_for_input=False,
-        no_interactive_plots=False,
-        logger_console_level="warning",
-        logger_file_level="debug",
-        n_cpu=1,
-        gpu_in_use=False,
+    output_path=None,
+    run_name="Test run",
+    overwrite_existing=False,
+    run_message="This is a test-run to test the package",
+    verbosity=3,
+    plot_verbosity=3,
+    prompt_for_input=False,
+    no_interactive_plots=False,
+    logger_console_level="warning",
+    logger_file_level="debug",
+    n_cpu=1,
+    gpu_in_use=False,
 ):
     """Place before Imports! Initialize/change several parameters for the package.
 
@@ -277,11 +277,11 @@ def set_random_seed(seed=None):
 
 
 def _init_output_to_file(
-        file_path,
-        run_name="Test run",
-        overwrite_existing=False,
-        run_message="This is a test-run to test the package",
-        prompt_for_input=False,
+    file_path,
+    run_name="Test run",
+    overwrite_existing=False,
+    run_message="This is a test-run to test the package",
+    prompt_for_input=False,
 ):
     """Saves output to file,"""
     run_name = dev_tool.entries_to_str(run_name)

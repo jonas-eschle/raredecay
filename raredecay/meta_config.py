@@ -191,8 +191,8 @@ ROOT_DATATYPE = "root"  # default 'root'
 PICKLE_PATH = "/home/mayou/Documents/uniphysik/Bachelor_thesis/analysis/pickle/"
 # folder where the git-directory is located. Can be an empty string
 GIT_DIR_PATH = (
-        "/home/mayou/Documents/uniphysik/Bachelor_thesis/"
-        + "python_workspace/raredecay/raredecay"
+    "/home/mayou/Documents/uniphysik/Bachelor_thesis/"
+    + "python_workspace/raredecay/raredecay"
 )
 
 # ------------------------------------------------------------------------------

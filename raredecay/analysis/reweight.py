@@ -76,15 +76,15 @@ logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 
 def reweight_train(
-        mc,
-        real,
-        columns=None,
-        reweighter="gb",
-        reweight_cfg=None,
-        reweight_saveas=None,
-        weights_ratio=1,
-        weights_mc=None,
-        weights_real=None,
+    mc,
+    real,
+    columns=None,
+    reweighter="gb",
+    reweight_cfg=None,
+    reweight_saveas=None,
+    weights_ratio=1,
+    weights_mc=None,
+    weights_real=None,
 ):
     """Return a trained reweighter from a (mc/real) distribution comparison.
 
@@ -224,7 +224,7 @@ def reweight_train(
 
 
 def reweight_weights(
-        apply_data, reweighter_trained, columns=None, normalize=True, add_weights=True
+    apply_data, reweighter_trained, columns=None, normalize=True, add_weights=True
 ):
     """Apply reweighter to the data and (add +) return the weights (multiplied by already existing weights).
 
@@ -285,9 +285,11 @@ def reweight_weights(
     )
 
     if isinstance(normalize, (int, float)) and not isinstance(normalize, bool):
-        warnings.warn("Normalizing weights. This does not 'correctly' normalize by using the training"
-                      " weights but just uses the predictet weights. May consider using `normalize=False` and"
-                      " normalize by hand correctly.")
+        warnings.warn(
+            "Normalizing weights. This does not 'correctly' normalize by using the training"
+            " weights but just uses the predictet weights. May consider using `normalize=False` and"
+            " normalize by hand correctly."
+        )
         new_weights *= new_weights.size / new_weights.sum() * normalize
 
     new_weights = pd.Series(new_weights, index=apply_data.index)
@@ -298,15 +300,15 @@ def reweight_weights(
 
 # NEW
 def reweight(
-        apply_data=None,
-        mc=None,
-        real=None,
-        columns=None,
-        reweighter="gb",
-        reweight_cfg=None,
-        n_reweights=1,
-        add_weights=True,
-        normalize=True,
+    apply_data=None,
+    mc=None,
+    real=None,
+    columns=None,
+    reweighter="gb",
+    reweight_cfg=None,
+    n_reweights=1,
+    add_weights=True,
+    normalize=True,
 ):
     """(Train a reweighter and) apply the reweighter to get new weights (multiplied by already existing weights).
 
@@ -419,15 +421,15 @@ def reweight(
 
 
 def reweight_kfold(
-        mc,
-        real,
-        columns=None,
-        n_folds=10,
-        reweighter="gb",
-        reweighter_cfg=None,
-        n_reweights=1,
-        add_weights=True,
-        normalize=True,
+    mc,
+    real,
+    columns=None,
+    n_folds=10,
+    reweighter="gb",
+    reweighter_cfg=None,
+    n_reweights=1,
+    add_weights=True,
+    normalize=True,
 ):
     """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
 

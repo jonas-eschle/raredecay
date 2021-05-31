@@ -113,14 +113,14 @@ class HEPDataStorage:
     }
 
     def __init__(
-            self,
-            data,
-            index=None,
-            target=None,
-            sample_weights=None,
-            data_name=None,
-            data_name_addition=None,
-            column_alias=None,
+        self,
+        data,
+        index=None,
+        target=None,
+        sample_weights=None,
+        data_name=None,
+        data_name_addition=None,
+        column_alias=None,
     ):
         """Initialize instance and load data.
 
@@ -372,7 +372,7 @@ class HEPDataStorage:
         data_type = None
         if isinstance(data, dict):
             if "filenames" in data and data["filenames"].endswith(
-                    HEPDataStorage.__ROOT_DATATYPE
+                HEPDataStorage.__ROOT_DATATYPE
             ):
                 data_type = "root"
         elif isinstance(data, pd.DataFrame):
@@ -563,8 +563,8 @@ class HEPDataStorage:
 
         if isinstance(sample_weights, (basestring, dict)) and self._data_type == "root":
             assert (
-                           isinstance(sample_weights, list) and (len(sample_weights) == 1)
-                   ) or isinstance(sample_weights, basestring), "Can only be one branche"
+                isinstance(sample_weights, list) and (len(sample_weights) == 1)
+            ) or isinstance(sample_weights, basestring), "Can only be one branche"
             assert isinstance(
                 self._data, dict
             ), "data should be root-dict but is no more..."
@@ -786,14 +786,14 @@ class HEPDataStorage:
         self._target = target
 
     def make_dataset(
-            self,
-            second_storage=None,
-            index=None,
-            index_2=None,
-            columns=None,
-            weights_ratio=0,
-            shuffle=False,
-            targets_from_data=False,
+        self,
+        second_storage=None,
+        index=None,
+        index_2=None,
+        columns=None,
+        weights_ratio=0,
+        shuffle=False,
+        targets_from_data=False,
     ):
         """Create data, targets and weights of the instance (and another one).
 
@@ -895,7 +895,7 @@ class HEPDataStorage:
             targets = np.concatenate((targets_1, targets_2))
 
             if (
-                    max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2)
+                max(targets_1) != min(targets_1) or max(targets_2) != min(targets_2)
             ) and weights_ratio > 0:
                 raise ValueError(
                     "Very unfortunately is the case of mixed targets in a HEPDataStorage and weights_ratio"
@@ -1016,7 +1016,7 @@ class HEPDataStorage:
         if shuffle is not False:
             random.shuffle(temp_index, random=meta_cfg.randfloat)
         for i in range(n_folds):
-            self._fold_index.append(temp_index[temp_indeces[i]: temp_indeces[i + 1]])
+            self._fold_index.append(temp_index[temp_indeces[i] : temp_indeces[i + 1]])
 
     def get_fold(self, fold):
         """Return the specified fold: train and test data as instance of |hepds_type|.
@@ -1032,8 +1032,8 @@ class HEPDataStorage:
             Return the *train* and the *test* data in a |hepds_type|
         """
         assert self._fold_index is not None, (
-                "Tried to get a fold but data has no folds."
-                + " First create them (make_folds())"
+            "Tried to get a fold but data has no folds."
+            + " First create them (make_folds())"
         )
         assert isinstance(fold, int) and fold < len(
             self._fold_index
@@ -1065,12 +1065,12 @@ class HEPDataStorage:
         return 0 if self._fold_index is None else len(self._fold_index)
 
     def plot_correlation(
-            self,
-            second_storage=None,
-            figure=None,
-            columns=None,
-            method="pearson",
-            plot_importance=5,
+        self,
+        second_storage=None,
+        figure=None,
+        columns=None,
+        method="pearson",
+        plot_importance=5,
     ):
         """
         .. warning:: does not support weights. Maybe in the future.
@@ -1127,23 +1127,23 @@ class HEPDataStorage:
         return correlation
 
     def plot(
-            self,
-            figure=None,
-            columns=None,
-            index=None,
-            title=None,
-            sub_title=None,
-            data_name=None,
-            bins=None,
-            log_y_axes=False,
-            plot_range=None,
-            x_label=None,
-            y_label="probability density",
-            sample_weights=None,
-            importance=3,
-            see_all=False,
-            hist_settings=None,
-            figure_kwargs=None,
+        self,
+        figure=None,
+        columns=None,
+        index=None,
+        title=None,
+        sub_title=None,
+        data_name=None,
+        bins=None,
+        log_y_axes=False,
+        plot_range=None,
+        x_label=None,
+        y_label="probability density",
+        sample_weights=None,
+        importance=3,
+        see_all=False,
+        hist_settings=None,
+        figure_kwargs=None,
     ):
         """Draw histograms of the data.
 

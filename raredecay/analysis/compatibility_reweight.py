@@ -12,14 +12,14 @@ from . import reweight as ana_reweight
 
 
 def reweight(
-        apply_data=None,
-        real_data=None,
-        mc_data=None,
-        columns=None,
-        reweighter="gb",
-        reweight_cfg=None,
-        n_reweights=1,
-        apply_weights=True,
+    apply_data=None,
+    real_data=None,
+    mc_data=None,
+    columns=None,
+    reweighter="gb",
+    reweight_cfg=None,
+    n_reweights=1,
+    apply_weights=True,
 ):
     """(Train a reweighter and) apply the reweighter to get new weights.
 

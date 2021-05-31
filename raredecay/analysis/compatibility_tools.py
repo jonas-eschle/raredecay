@@ -55,13 +55,13 @@ from raredecay.tools import dev_tool
 
 
 def _make_data(
-        original_data,
-        target_data=None,
-        features=None,
-        target_from_data=False,
-        weights_ratio=0,
-        weights_original=None,
-        weights_target=None,
+    original_data,
+    target_data=None,
+    features=None,
+    target_from_data=False,
+    weights_ratio=0,
+    weights_original=None,
+    weights_target=None,
 ):
     """Return the concatenated data, weights and labels for classifier training.
 
