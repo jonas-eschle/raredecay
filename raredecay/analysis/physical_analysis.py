@@ -172,13 +172,13 @@ def _cut(data):
 
 
 def feature_exploration(
-        original_data,
-        target_data,
-        features=None,
-        n_folds=10,
-        clf="xgb",
-        roc_auc="single",
-        extended_report=True,
+    original_data,
+    target_data,
+    features=None,
+    n_folds=10,
+    clf="xgb",
+    roc_auc="single",
+    extended_report=True,
 ):
     """Explore the features by getting the roc auc and their feature importance.
 
@@ -266,18 +266,18 @@ def feature_exploration(
 
 
 def final_training(
-        real_data,
-        mc_data,
-        bkg_sel,
-        sig_sel=None,
-        clf="xgb",
-        n_folds=10,
-        columns=None,
-        performance_only=True,
-        metric_vs_cut="punzi",
-        weights_ratio=0,
-        save_real_pred=False,
-        save_mc_pred=False,
+    real_data,
+    mc_data,
+    bkg_sel,
+    sig_sel=None,
+    clf="xgb",
+    n_folds=10,
+    columns=None,
+    performance_only=True,
+    metric_vs_cut="punzi",
+    weights_ratio=0,
+    save_real_pred=False,
+    save_mc_pred=False,
 ):
     """Train on bkg and MC, test metric, performance and predict probabilities.
 
@@ -517,9 +517,9 @@ def final_training(
 
         # save predictions
         if (
-                isinstance(save_real_pred, (basestring, int))
-                and not isinstance(save_real_pred, bool)
-                and predict
+            isinstance(save_real_pred, (basestring, int))
+            and not isinstance(save_real_pred, bool)
+            and predict
         ):
             root_dict = copy.deepcopy(real_data.data)
 
@@ -536,9 +536,9 @@ def final_training(
             )
 
         if (
-                isinstance(save_mc_pred, (basestring, int))
-                and not isinstance(save_mc_pred, bool)
-                and predict
+            isinstance(save_mc_pred, (basestring, int))
+            and not isinstance(save_mc_pred, bool)
+            and predict
         ):
             root_dict = copy.deepcopy(mc_data.data)
 
@@ -620,20 +620,20 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name, overwrit
 
 
 def reweightCV(
-        real_data,
-        mc_data,
-        columns=None,
-        n_folds=10,
-        reweighter="gb",
-        reweight_cfg=None,
-        n_reweights=1,
-        scoring=True,
-        score_columns=None,
-        n_folds_scoring=10,
-        score_clf="xgb",
-        mayou_score=False,
-        extended_train_similar=False,
-        apply_weights=True,
+    real_data,
+    mc_data,
+    columns=None,
+    n_folds=10,
+    reweighter="gb",
+    reweight_cfg=None,
+    n_reweights=1,
+    scoring=True,
+    score_columns=None,
+    n_folds_scoring=10,
+    score_clf="xgb",
+    mayou_score=False,
+    extended_train_similar=False,
+    apply_weights=True,
 ):
     """Reweight data MC/real in a K-Fold way to unbias the reweighting.
 
@@ -906,6 +906,7 @@ def reweightCV(
         real_data.set_targets(temp_real_targets)
 
     return output
+
 
 # temporary:
 # if __name__ == '__main__':

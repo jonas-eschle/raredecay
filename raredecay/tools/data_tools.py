@@ -404,7 +404,7 @@ def to_pandas_old(data_in, index=None, columns=None):
     if is_root(data_in):
         root_index = None
         if root_index_name in root_numpy.list_branches(
-                filename=data_in["filenames"], treename=data_in.get("treename")
+            filename=data_in["filenames"], treename=data_in.get("treename")
         ):
             root_index = root_numpy.root2array(
                 filenames=data_in["filenames"],
@@ -418,7 +418,7 @@ def to_pandas_old(data_in, index=None, columns=None):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
         if (isinstance(columns, (list, tuple)) and len(columns) == 1) or isinstance(
-                columns, basestring
+            columns, basestring
         ):
             data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, columns=columns, index=root_index)

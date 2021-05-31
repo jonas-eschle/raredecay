@@ -181,22 +181,22 @@ def _anderson_2samp_right(samples, data_sorted, data_unique_sorted, n_events):
 
 
 def fit_mass(
-        data,
-        column,
-        x,
-        sig_pdf=None,
-        bkg_pdf=None,
-        n_sig=None,
-        n_bkg=None,
-        blind=False,
-        nll_profile=False,
-        second_storage=None,
-        log_plot=False,
-        pulls=True,
-        sPlot=False,
-        bkg_in_region=False,
-        importance=3,
-        plot_importance=3,
+    data,
+    column,
+    x,
+    sig_pdf=None,
+    bkg_pdf=None,
+    n_sig=None,
+    n_bkg=None,
+    blind=False,
+    nll_profile=False,
+    second_storage=None,
+    log_plot=False,
+    pulls=True,
+    sPlot=False,
+    bkg_in_region=False,
+    importance=3,
+    plot_importance=3,
 ):
     """Fit a given pdf to a variable distribution.
 
@@ -466,10 +466,10 @@ def fit_mass(
         x.setRange("upper", upper_blind, max_x)
         range_str = "lower,upper"
         lower_cut_str = (
-                str(min_x) + "<=" + column + "&&" + column + "<=" + str(lower_blind)
+            str(min_x) + "<=" + column + "&&" + column + "<=" + str(lower_blind)
         )
         upper_cut_str = (
-                str(upper_blind) + "<=" + column + "&&" + column + "<=" + str(max_x)
+            str(upper_blind) + "<=" + column + "&&" + column + "<=" + str(max_x)
         )
         sideband_cut_str = "(" + lower_cut_str + ")" + "||" + "(" + upper_cut_str + ")"
 
@@ -637,19 +637,19 @@ def pull_hist(pull_frame, pad_data, pad_pulls):
 
 
 def metric_vs_cut_fitted(
-        data,
-        predict_col,
-        fit_col,
-        sig_pdf,
-        bkg_pdf,
-        x,
-        region,
-        second_storage=None,
-        metric="punzi",
-        n_sig=None,
-        n_bkg=None,
-        stepsize=0.025,
-        plot_importance=3,
+    data,
+    predict_col,
+    fit_col,
+    sig_pdf,
+    bkg_pdf,
+    x,
+    region,
+    second_storage=None,
+    metric="punzi",
+    n_sig=None,
+    n_bkg=None,
+    stepsize=0.025,
+    plot_importance=3,
 ):
     """Calculate a metric vs a given cut by estimating the bkg from the fit.
 
@@ -710,7 +710,7 @@ def metric_vs_cut_fitted(
             n_sig_weighted += sum(
                 temp_second_storage.get_weights()[
                     temp_second_storage.get_targets() == 1
-                    ]
+                ]
             )
         else:
             temp_second_storage = second_storage

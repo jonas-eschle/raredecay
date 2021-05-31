@@ -28,7 +28,7 @@ if __name__ == "__main__":
         name="raredecay",
         version=git_version,
         description="A package with multivariate analysis and reweighting "
-                    "algorithms",
+        "algorithms",
         long_description=readme(),
         classifiers=[
             "Development Status :: 4 - Beta",

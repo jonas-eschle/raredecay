@@ -58,13 +58,13 @@ from .. import meta_config as meta_cfg
 
 
 def make_logger(
-        module_name,
-        logging_mode="both",
-        log_level_file="debug",
-        log_level_console="debug",
-        overwrite_file=True,
-        log_file_name="AAlast_run",
-        log_file_dir=None,
+    module_name,
+    logging_mode="both",
+    log_level_file="debug",
+    log_level_console="debug",
+    overwrite_file=True,
+    log_file_name="AAlast_run",
+    log_file_dir=None,
 ):
     """Return a logger with a console-/filehandler or both.
 
@@ -176,7 +176,7 @@ def progress(n, n_tot):
 
 
 def add_file_handler(
-        logger, module_name, log_file_dir, log_level="info", overwrite_file=False
+    logger, module_name, log_file_dir, log_level="info", overwrite_file=False
 ):
     """Add a filehandler to a logger to also direct the output to a file."""
     from time import strftime
@@ -273,7 +273,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif isinstance(allowed_primitives, collections.Iterable) and (
-            not isinstance(allowed_primitives, basestring)
+        not isinstance(allowed_primitives, basestring)
     ):
         if test_object in allowed_primitives:
             flag = True

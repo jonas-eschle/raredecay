@@ -55,7 +55,7 @@ from . import dev_tool, data_storage
 
 
 def mayou_score(
-        mc_data, real_data, features=None, old_mc_weights=1, clf="xgb", splits=2, n_folds=10
+    mc_data, real_data, features=None, old_mc_weights=1, clf="xgb", splits=2, n_folds=10
 ):
     """An experimental score using a "loss" function for data-similarity"""
     import raredecay.analysis.ml_analysis as ml_ana
@@ -146,18 +146,18 @@ def mayou_score(
 
 
 def train_similar(
-        mc_data,
-        real_data,
-        features=None,
-        n_checks=10,
-        n_folds=10,
-        clf="xgb",
-        test_max=True,
-        test_shuffle=True,
-        test_mc=False,
-        old_mc_weights=1,
-        test_predictions=False,
-        clf_pred="rdf",
+    mc_data,
+    real_data,
+    features=None,
+    n_checks=10,
+    n_folds=10,
+    clf="xgb",
+    test_max=True,
+    test_shuffle=True,
+    test_mc=False,
+    old_mc_weights=1,
+    test_predictions=False,
+    clf_pred="rdf",
 ):
     """Score for reweighting. Train clf on mc reweighted/real, test on real; minimize score.
 
@@ -248,13 +248,13 @@ def train_similar(
 
     # initialize variables
     assert (
-            1 <= n_checks <= n_folds and n_folds > 1
+        1 <= n_checks <= n_folds and n_folds > 1
     ), "wrong n_checks/n_folds. Check the docs"
     assert isinstance(mc_data, data_storage.HEPDataStorage), (
-            "mc_data wrong type:" + str(type(mc_data)) + ", has to be HEPDataStorage"
+        "mc_data wrong type:" + str(type(mc_data)) + ", has to be HEPDataStorage"
     )
     assert isinstance(real_data, data_storage.HEPDataStorage), (
-            "real_data wrong type:" + str(type(real_data)) + ", has to be HEPDataStorage"
+        "real_data wrong type:" + str(type(real_data)) + ", has to be HEPDataStorage"
     )
     #    assert isinstance(clf, str),\
     #        "clf has to be a string, the name of a valid classifier. Check the docs!"
@@ -460,18 +460,18 @@ def estimate_weights_bias(mc, real, columns=None, n_folds=10, clf="xgb"):
 
 
 def train_similar_new(
-        mc,
-        real,
-        columns=None,
-        n_checks=10,
-        n_folds=10,
-        clf="xgb",
-        test_max=True,
-        test_shuffle=True,
-        test_mc=False,
-        old_mc_weights=1,
-        test_predictions=False,
-        clf_pred="rdf",
+    mc,
+    real,
+    columns=None,
+    n_checks=10,
+    n_folds=10,
+    clf="xgb",
+    test_max=True,
+    test_shuffle=True,
+    test_mc=False,
+    old_mc_weights=1,
+    test_predictions=False,
+    clf_pred="rdf",
 ):
     """Score for reweighting. Train clf on mc reweighted/real, test on real; minimize score.
 
@@ -564,13 +564,13 @@ def train_similar_new(
 
     # initialize variables
     assert (
-            1 <= n_checks <= n_folds and n_folds > 1
+        1 <= n_checks <= n_folds and n_folds > 1
     ), "wrong n_checks/n_folds. Check the docs"
     assert isinstance(mc, data_storage.HEPDataStorage), (
-            "mc_data wrong type:" + str(type(mc)) + ", has to be HEPDataStorage"
+        "mc_data wrong type:" + str(type(mc)) + ", has to be HEPDataStorage"
     )
     assert isinstance(real, data_storage.HEPDataStorage), (
-            "real_data wrong type:" + str(type(real)) + ", has to be HEPDataStorage"
+        "real_data wrong type:" + str(type(real)) + ", has to be HEPDataStorage"
     )
     #    assert isinstance(clf, str),\
     #        "clf has to be a string, the name of a valid classifier. Check the docs!"

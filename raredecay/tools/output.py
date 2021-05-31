@@ -111,13 +111,13 @@ class OutputHandler:
             )
 
     def initialize_save(
-            self,
-            output_path,
-            run_name="",
-            run_message="",
-            output_folders=None,
-            del_existing_folders=False,
-            logger_cfg=None,
+        self,
+        output_path,
+        run_name="",
+        run_message="",
+        output_folders=None,
+        del_existing_folders=False,
+        logger_cfg=None,
     ):
         output_path = dev_tool.entries_to_str(output_path)
         """Initialize the run. Create the neccesary folders.
@@ -195,7 +195,7 @@ class OutputHandler:
             self._output_path = output_path + "_" + str(temp_i)
             temp_i += 1
             assert (
-                    temp_i < meta_cfg.MAX_AUTO_FOLDERS
+                temp_i < meta_cfg.MAX_AUTO_FOLDERS
             ), "possible endless loop when trying to create a non-existing folder"
         self._output_path += "" if output_path.endswith("/") else "/"
 
@@ -301,13 +301,13 @@ class OutputHandler:
         return self.save_fig(*args, **kwargs)
 
     def save_fig(
-            self,
-            figure,
-            importance=3,
-            file_format=None,
-            to_pickle=True,
-            figure_kwargs=None,
-            **save_cfg
+        self,
+        figure,
+        importance=3,
+        file_format=None,
+        to_pickle=True,
+        figure_kwargs=None,
+        **save_cfg
     ):
         """Advanced :py:meth:`matplotlib.pyplot.figure()`. Create and save a
         certain figure at the end of the run.
@@ -428,12 +428,12 @@ class OutputHandler:
 
             if fig_dict.get("to_pickle"):
                 file_name = (
-                        path
-                        + meta_cfg.PICKLE_DATATYPE
-                        + "/"
-                        + fig_name
-                        + "."
-                        + meta_cfg.PICKLE_DATATYPE
+                    path
+                    + meta_cfg.PICKLE_DATATYPE
+                    + "/"
+                    + fig_name
+                    + "."
+                    + meta_cfg.PICKLE_DATATYPE
                 )
                 try:
                     with open(str(file_name), "wb") as f:
@@ -477,16 +477,16 @@ class OutputHandler:
         return out_str
 
     def _print(
-            self,
-            data,
-            to_end=False,
-            importance=3,
-            title=None,
-            subtitle=None,
-            section=None,
-            obj_separator=" ",
-            data_separator="\n\n",
-            force_newline=True,
+        self,
+        data,
+        to_end=False,
+        importance=3,
+        title=None,
+        subtitle=None,
+        section=None,
+        obj_separator=" ",
+        data_separator="\n\n",
+        force_newline=True,
     ):
 
         return self.add_output(
@@ -502,16 +502,16 @@ class OutputHandler:
         )
 
     def add_output(
-            self,
-            data_out,
-            to_end=False,
-            importance=3,
-            title=None,
-            subtitle=None,
-            section=None,
-            obj_separator=" ",
-            data_separator="\n\n",
-            force_newline=True,
+        self,
+        data_out,
+        to_end=False,
+        importance=3,
+        title=None,
+        subtitle=None,
+        section=None,
+        obj_separator=" ",
+        data_separator="\n\n",
+        force_newline=True,
     ):
         """A method to collect the output and format it nicely.
 
@@ -566,16 +566,16 @@ class OutputHandler:
         data_out = dev_tool.entries_to_str(data_out)
         # initialize defaults
         assert isinstance(obj_separator, basestring), (
-                str(obj_separator)
-                + " is of type "
-                + str(type(obj_separator))
-                + " instead of string"
+            str(obj_separator)
+            + " is of type "
+            + str(type(obj_separator))
+            + " instead of string"
         )
         assert isinstance(data_separator, basestring), (
-                str(data_separator)
-                + " is of type "
-                + str(type(data_separator))
-                + " instead of string"
+            str(data_separator)
+            + " is of type "
+            + str(type(data_separator))
+            + " instead of string"
         )
         self._check_initialization()
         do_print = 5 - round(importance) < meta_cfg.verbosity
@@ -592,9 +592,9 @@ class OutputHandler:
         subtitle_f = ("-", "-")
         section_f = ("", "=")
         for name, form in (
-                (title, title_f),
-                (subtitle, subtitle_f),
-                (section, section_f),
+            (title, title_f),
+            (subtitle, subtitle_f),
+            (section, section_f),
         ):
             temp_out += self._make_title(name, form)
 
@@ -705,11 +705,11 @@ class OutputHandler:
             # remove leading blank lines
             for i in range(1, 100):
                 if not self.output.startswith("\n" * i):  # "break" condition
-                    self.output = self.output[i - 1:]
+                    self.output = self.output[i - 1 :]
                     break
 
             temp_out_file = (
-                    self._output_path + self._output_folders.get("results") + "/output.txt"
+                self._output_path + self._output_folders.get("results") + "/output.txt"
             )
             try:
                 with open(temp_out_file, "w") as f:

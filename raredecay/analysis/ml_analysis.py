@@ -326,15 +326,15 @@ def make_clf(clf, n_cpu=None, dict_only=False):
 
 
 def backward_feature_elimination(
-        original_data,
-        target_data=None,
-        features=None,
-        clf="xgb",
-        n_folds=10,
-        max_feature_elimination=None,
-        max_difference_to_best=0.08,
-        keep_features=None,
-        take_target_from_data=False,
+    original_data,
+    target_data=None,
+    features=None,
+    clf="xgb",
+    n_folds=10,
+    max_feature_elimination=None,
+    max_difference_to_best=0.08,
+    keep_features=None,
+    take_target_from_data=False,
 ):
     """Train and score on each feature subset, eliminating features backwards.
 
@@ -415,7 +415,7 @@ def backward_feature_elimination(
     if isinstance(max_feature_elimination, basestring):
         max_feature_elimination = max_feature_elimination.split(":")
         assert (
-                len(max_feature_elimination) == 2
+            len(max_feature_elimination) == 2
         ), "Wrong time-format. Has to be 'hhh...hhh:mm' "
         available_time = 3600 * int(max_feature_elimination[0]) + 60 * int(
             max_feature_elimination[1]
@@ -460,7 +460,7 @@ def backward_feature_elimination(
     ]
 
     assert (
-            len(selected_features) > 1
+        len(selected_features) > 1
     ), "Need more then one feature to perform feature selection"
 
     # starting feature selection
@@ -540,7 +540,7 @@ def backward_feature_elimination(
             collected_scores[feature].append(round(temp_auc, 4))
             # set time condition, extrapolate assuming same time for each iteration
             eet_next = (
-                    (timeit.default_timer() - start_time) * (iterations + 1) / iterations
+                (timeit.default_timer() - start_time) * (iterations + 1) / iterations
             )
             if available_time < eet_next and start_time > 0:
                 n_to_eliminate = 0
@@ -617,16 +617,16 @@ def backward_feature_elimination(
 
 
 def optimize_hyper_parameters(
-        original_data,
-        target_data=None,
-        clf=None,
-        features=None,
-        n_eval=1,
-        n_checks=10,
-        n_folds=10,
-        generator_type="subgrid",
-        take_target_from_data=False,
-        **kwargs,
+    original_data,
+    target_data=None,
+    clf=None,
+    features=None,
+    n_eval=1,
+    n_checks=10,
+    n_folds=10,
+    generator_type="subgrid",
+    take_target_from_data=False,
+    **kwargs,
 ):
     """Optimize the hyperparameters of a classifiers.
 
@@ -726,7 +726,7 @@ def optimize_hyper_parameters(
         start_timer_test = timeit.default_timer()
         elapsed_time = 1
         min_elapsed_time = (
-                15 + 0.005 * available_time
+            15 + 0.005 * available_time
         )  # to get an approximate extrapolation
         n_eval_tmp = meta_cfg.n_cpu_max
         n_checks_tmp = 1  # time will be multiplied by actual n_checks
@@ -758,7 +758,7 @@ def optimize_hyper_parameters(
             if elapsed_time > min_elapsed_time:
                 break
             elif (
-                    n_checks_tmp < n_checks
+                n_checks_tmp < n_checks
             ):  # for small datasets, increase n_checks for testing
                 n_checks_tmp = min(n_checks, np.ceil(min_elapsed_time / elapsed_time))
             else:  # if time to small, increase n_rounds
@@ -845,20 +845,20 @@ def optimize_hyper_parameters(
 
 
 def classify(
-        original_data=None,
-        target_data=None,
-        features=None,
-        validation=10,
-        clf="xgb",
-        extended_report=False,
-        get_predictions=False,
-        plot_title=None,
-        curve_name=None,
-        weights_ratio=0,
-        importance=3,
-        plot_importance=3,
-        target_from_data=False,
-        **kwargs,
+    original_data=None,
+    target_data=None,
+    features=None,
+    validation=10,
+    clf="xgb",
+    extended_report=False,
+    get_predictions=False,
+    plot_title=None,
+    curve_name=None,
+    weights_ratio=0,
+    importance=3,
+    plot_importance=3,
+    target_from_data=False,
+    **kwargs,
 ):
     """Training and/or testing a classifier or kfolded predictions.
 
@@ -1122,12 +1122,12 @@ def classify(
             )
             report.roc(physics_notion=True).plot(
                 title=plot_title
-                      + "\nROC curve of "
-                      + clf_name
-                      + " on data:"
-                      + data_name
-                      + "\nROC AUC = "
-                      + str(clf_score)
+                + "\nROC curve of "
+                + clf_name
+                + " on data:"
+                + data_name
+                + "\nROC AUC = "
+                + str(clf_score)
             )
             plt.plot([0, 1], [1, 0], "k--")  # the fifty-fifty line
 
@@ -1181,7 +1181,7 @@ def classify(
 
 
 def best_metric_cut(
-        mc_data, real_data, prediction_branch, metric="precision", plot_importance=3
+    mc_data, real_data, prediction_branch, metric="precision", plot_importance=3
 ):
     """Find the best threshold cut for a given metric. Does **NOT** integrate.
 
@@ -1251,7 +1251,7 @@ def best_metric_cut(
 
 
 def mcreweighted_as_real(
-        mc, real, old_mc_weights=1, columns=None, n_folds=10, clf="xgb", old_score=False
+    mc, real, old_mc_weights=1, columns=None, n_folds=10, clf="xgb", old_score=False
 ):
     """Train on mc/real, predict mc/mcreweighted/real and compare distributions.
 
@@ -1421,17 +1421,17 @@ def mcreweighted_as_real(
 # COMPATIBILITY LAYER START
 # OLD FUNCTION, DEPRECEATED
 def reweight_Kfold(
-        mc_data,
-        real_data,
-        columns=None,
-        n_folds=10,
-        reweighter="gb",
-        meta_cfg=None,
-        n_reweights=1,
-        score_columns=None,
-        score_clf="xgb",
-        add_weights_to_data=True,
-        mcreweighted_as_real_score=False,
+    mc_data,
+    real_data,
+    columns=None,
+    n_folds=10,
+    reweighter="gb",
+    meta_cfg=None,
+    n_reweights=1,
+    score_columns=None,
+    score_clf="xgb",
+    add_weights_to_data=True,
+    mcreweighted_as_real_score=False,
 ):
     """Kfold reweight the data by "itself" for *scoring* and hyper-parameters.
 
