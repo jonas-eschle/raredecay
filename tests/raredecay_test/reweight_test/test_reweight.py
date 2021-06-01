@@ -1,6 +1,8 @@
 # Python 2 backwards compatibility overhead START
 import sys
 
+import pytest
+
 try:
     from future.builtins.disabled import (
         apply,
@@ -24,11 +26,9 @@ except ImportError as err:
         raise err
 # Python 2 backwards compatibility overhead END
 
-import copy
 import unittest
 
 import numpy as np
-import numpy.testing as nptest
 import pandas as pd
 import pandas.util.testing as pdtest
 
@@ -348,6 +348,48 @@ class TestReweightNew(unittest.TestCase):
         )
         new_weights = scores.pop("weights")
         pdtest.assert_series_equal(self.true_gb_weights, new_weights)
+
+    def test_reweight_new_unnormalized(self):
+        ds1, ds2, ds3 = _create_data()
+        scores = reweight_new(
+            apply_data=ds1,
+            real=ds2,
+            mc=ds3,
+            columns=reweight_branches,
+            reweighter="gb",
+            reweight_cfg=reweight_cfg,
+            n_reweights=3,
+            add_weights=True,
+            normalize=False
+        )
+        new_weights = scores.pop("weights")
+
+        scores = reweight_new(
+            apply_data=ds1,
+            real=ds2,
+            mc=ds3,
+            columns=reweight_branches,
+            reweighter="gb",
+            reweight_cfg=reweight_cfg,
+            n_reweights=3,
+            add_weights=True,
+            normalize=True
+        )
+        new_weights_normed = scores.pop("weights")
+
+        scores = reweight_new(
+            apply_data=ds1,
+            real=ds2,
+            mc=ds3,
+            columns=reweight_branches,
+            reweighter="gb",
+            reweight_cfg=reweight_cfg,
+            n_reweights=3,
+            add_weights=True,
+            normalize=10
+        )
+        new_weights10 = scores.pop("weights")
+        assert pytest.approx(10 * np.mean(new_weights_normed), abs=2) == np.mean(new_weights10)
 
     def test_reweight_train_only(self):
         ds1, ds2, ds3 = _create_data()
