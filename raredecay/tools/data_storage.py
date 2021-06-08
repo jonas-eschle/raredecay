@@ -524,8 +524,8 @@ class HEPDataStorage:
 
         if isinstance(sample_weights, (str, dict)) and self._data_type == "root":
             assert (
-                           isinstance(sample_weights, list) and (len(sample_weights) == 1)
-                   ) or isinstance(sample_weights, str), "Can only be one branche"
+                isinstance(sample_weights, list) and (len(sample_weights) == 1)
+            ) or isinstance(sample_weights, str), "Can only be one branche"
             assert isinstance(
                 self._data, dict
             ), "data should be root-dict but is no more..."

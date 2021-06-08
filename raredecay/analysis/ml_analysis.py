@@ -376,7 +376,7 @@ def backward_feature_elimination(
     if isinstance(max_feature_elimination, str):
         max_feature_elimination = max_feature_elimination.split(":")
         assert (
-                len(max_feature_elimination) == 2
+            len(max_feature_elimination) == 2
         ), "Wrong time-format. Has to be 'hhh...hhh:mm' "
         available_time = 3600 * int(max_feature_elimination[0]) + 60 * int(
             max_feature_elimination[1]
@@ -687,7 +687,7 @@ def optimize_hyper_parameters(
         start_timer_test = timeit.default_timer()
         elapsed_time = 1
         min_elapsed_time = (
-                15 + 0.005 * available_time
+            15 + 0.005 * available_time
         )  # to get an approximate extrapolation
         n_eval_tmp = meta_cfg.n_cpu_max
         n_checks_tmp = 1  # time will be multiplied by actual n_checks

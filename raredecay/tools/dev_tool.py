@@ -235,7 +235,7 @@ def is_in_primitive(test_object, allowed_primitives=None):
     if isinstance(test_object, (list, np.ndarray, pd.Series, pd.DataFrame)):
         flag = False
     elif isinstance(allowed_primitives, collections.Iterable) and (
-            not isinstance(allowed_primitives, str)
+        not isinstance(allowed_primitives, str)
     ):
         if test_object in allowed_primitives:
             flag = True

@@ -526,16 +526,16 @@ class OutputHandler:
         data_out = dev_tool.entries_to_str(data_out)
         # initialize defaults
         assert isinstance(obj_separator, str), (
-                str(obj_separator)
-                + " is of type "
-                + str(type(obj_separator))
-                + " instead of string"
+            str(obj_separator)
+            + " is of type "
+            + str(type(obj_separator))
+            + " instead of string"
         )
         assert isinstance(data_separator, str), (
-                str(data_separator)
-                + " is of type "
-                + str(type(data_separator))
-                + " instead of string"
+            str(data_separator)
+            + " is of type "
+            + str(type(data_separator))
+            + " instead of string"
         )
         self._check_initialization()
         do_print = 5 - round(importance) < meta_cfg.verbosity

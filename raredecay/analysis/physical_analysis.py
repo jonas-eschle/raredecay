@@ -498,7 +498,7 @@ def final_training(
             )
 
         if (
-                isinstance(save_mc_pred, (str, int))
+            isinstance(save_mc_pred, (str, int))
             and not isinstance(save_mc_pred, bool)
             and predict
         ):
