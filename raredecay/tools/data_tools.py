@@ -378,7 +378,7 @@ def to_pandas_old(data_in, index=None, columns=None):
         data_in = np.array(data_in)
     if is_ndarray(data_in):
         if (isinstance(columns, (list, tuple)) and len(columns) == 1) or isinstance(
-                columns, str
+            columns, str
         ):
             data_in = to_ndarray(data_in)
         data_in = pd.DataFrame(data_in, columns=columns, index=root_index)

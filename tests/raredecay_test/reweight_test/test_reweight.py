@@ -360,7 +360,7 @@ class TestReweightNew(unittest.TestCase):
             reweight_cfg=reweight_cfg,
             n_reweights=3,
             add_weights=True,
-            normalize=False
+            normalize=False,
         )
         new_weights = scores.pop("weights")
 
@@ -373,7 +373,7 @@ class TestReweightNew(unittest.TestCase):
             reweight_cfg=reweight_cfg,
             n_reweights=3,
             add_weights=True,
-            normalize=True
+            normalize=True,
         )
         new_weights_normed = scores.pop("weights")
 
@@ -386,10 +386,12 @@ class TestReweightNew(unittest.TestCase):
             reweight_cfg=reweight_cfg,
             n_reweights=3,
             add_weights=True,
-            normalize=10
+            normalize=10,
         )
         new_weights10 = scores.pop("weights")
-        assert pytest.approx(10 * np.mean(new_weights_normed), abs=2) == np.mean(new_weights10)
+        assert pytest.approx(10 * np.mean(new_weights_normed), abs=2) == np.mean(
+            new_weights10
+        )
 
     def test_reweight_train_only(self):
         ds1, ds2, ds3 = _create_data()
