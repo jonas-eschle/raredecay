@@ -21,14 +21,14 @@ repos:
     hooks:
       - id: sign-commit
   - repo: https://github.com/pre-commit/pygrep-hooks
-    rev: v1.8.0
+    rev: v1.9.0
     hooks:
       - id: python-use-type-annotations
       - id: python-check-mock-methods
       - id: rst-directive-colons
 
   - repo: https://github.com/asottile/pyupgrade
-    rev: v2.19.1
+    rev: v2.19.4
     hooks:
       - id: pyupgrade
         args: [ --py36-plus ]
@@ -40,7 +40,7 @@ repos:
 
   # Notebook formatting
   - repo: https://github.com/nbQA-dev/nbQA
-    rev: 0.11.1
+    rev: 0.12.0
     hooks:
 
       - id: nbqa-pyupgrade
@@ -54,6 +54,6 @@ repos:
         stages: [ manual ]
 
   - repo: https://github.com/psf/black
-    rev: 21.5b2
+    rev: 21.6b0
     hooks:
       - id: black
