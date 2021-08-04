@@ -738,6 +738,24 @@ def reweightCV(
         score_clf=score_clf,
         add_weights_to_data=True,
     )
+    # import raredecay as rd
+    # Kfold_output = rd.reweight.reweight_kfold(
+    #     mc=mc_data,
+    #     real=real_data,
+    #     columns=columns,
+    #     n_folds=n_folds,
+    #     reweighter=reweighter,
+    #     reweighter_cfg=reweight_cfg,
+    #     n_reweights=n_reweights,
+    #
+    #     # mcreweighted_as_real_score=scoring,
+    #     # score_columns=score_columns,
+    #     #
+    #     # score_clf=score_clf,
+    #     add_weights=True,
+    # )
+    #
+
     new_weights = Kfold_output.pop("weights")
     # TODO: needed below?
     new_weights.sort_index()
