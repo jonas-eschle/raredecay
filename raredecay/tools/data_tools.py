@@ -306,10 +306,17 @@ def to_ndarray(data_in, float_array=False):
     data_in : any reasonable data
         The data to be converted
     """
-    from root_numpy import root2array, array2tree
+    import uproot
 
     if is_root(data_in):
-        data_in = root_numpy.root2array(**data_in)  # why **? it's a root dict
+        with uproot.open(data_in['filenames']) as file:
+            tree = file[data_in['treename']]
+            branches = to_list(data_in['branches'])
+            loaded = tree.arrays(branches, library="np")
+        loaded = np.stack([loaded[branch] for branch in branches])
+        if len(branches) == 1:
+            loaded = loaded[0]
+        data_in = loaded
     # change numpy.void to normal floats
     if isinstance(data_in, (pd.Series, pd.DataFrame)):
         test_sample = data_in.iloc[0]
