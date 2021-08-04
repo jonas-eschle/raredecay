@@ -25,13 +25,7 @@ try:
 except ImportError:
     import pickle
 
-try:
-    from root_numpy import array2root
-    import root_numpy
 
-except ImportError as err:
-    message = f"could not import from root_numpy! Error message: {err}"
-    warnings.warn(message)
 
 # from root_numpy import root2array, array2root  # HACK
 
@@ -105,6 +99,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     branch_name : str
         The name of the branche resp. the name in the dtype of the array.
     """
+
     from root_numpy import root2array, array2tree
 
     from rootpy.io import root_open
@@ -371,6 +366,7 @@ def to_pandas_old(data_in, index=None, columns=None):
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
         root_index = None
+        import root_numpy
         if root_index_name in root_numpy.list_branches(
             filename=data_in["filenames"], treename=data_in.get("treename")
         ):
@@ -410,6 +406,8 @@ def to_pandas(data_in, index=None, columns=None):
     """
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
+        if columns is None:
+            columns = data_in['branches']
         with uproot.open(data_in['filenames']) as file:
             tree = file[data_in['treename']]
             if "__index__" in tree.keys():  # legacy, we can also convert this
