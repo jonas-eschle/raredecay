@@ -18,6 +18,7 @@ import copy
 
 import pandas as pd
 import numpy as np
+import uproot
 
 try:
     import pickle as pickle
@@ -408,8 +409,19 @@ def to_pandas(data_in, index=None, columns=None):
         The data to be converted
     """
     data_in = dev_tool.entries_to_str(data_in)
-    # HACK START
-    return to_pandas_old(data_in=data_in, index=index, columns=columns)
+    if is_root(data_in):
+        with uproot.open(data_in['filenames']) as file:
+            tree = file[data_in['treename']]
+            if "__index__" in tree.keys():  # legacy, we can also convert this
+                return to_pandas_old(data_in=data_in, index=index, columns=columns)
+            branches = to_list(columns)
+            loaded = tree.arrays(branches, library="pd")
+        if index is not None:
+            loaded = loaded.loc[index]
+        return loaded
+    else:
+        # HACK START
+        return to_pandas_old(data_in=data_in, index=index, columns=columns)
     # HACK END
     # from root_pandas import read_root
     #
