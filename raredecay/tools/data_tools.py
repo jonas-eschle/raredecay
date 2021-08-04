@@ -20,14 +20,7 @@ import pandas as pd
 import numpy as np
 import uproot
 
-try:
-    import pickle as pickle
-except ImportError:
-    import pickle
-
-
-
-# from root_numpy import root2array, array2root  # HACK
+import pickle
 
 from . import dev_tool
 
@@ -100,7 +93,7 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
         The name of the branche resp. the name in the dtype of the array.
     """
 
-    from root_numpy import root2array, array2tree
+    from root_numpy import array2root
 
     from rootpy.io import root_open
 
