@@ -298,9 +298,9 @@ def to_ndarray(data_in, float_array=False):
     import uproot
 
     if is_root(data_in):
-        with uproot.open(data_in['filenames']) as file:
-            tree = file[data_in['treename']]
-            branches = to_list(data_in['branches'])
+        with uproot.open(data_in["filenames"]) as file:
+            tree = file[data_in["treename"]]
+            branches = to_list(data_in["branches"])
             loaded = tree.arrays(branches, library="np")
         loaded = np.stack([loaded[branch] for branch in branches])
         if len(branches) == 1:
@@ -360,6 +360,7 @@ def to_pandas_old(data_in, index=None, columns=None):
     if is_root(data_in):
         root_index = None
         import root_numpy
+
         if root_index_name in root_numpy.list_branches(
             filename=data_in["filenames"], treename=data_in.get("treename")
         ):
@@ -400,9 +401,9 @@ def to_pandas(data_in, index=None, columns=None):
     data_in = dev_tool.entries_to_str(data_in)
     if is_root(data_in):
         if columns is None:
-            columns = data_in['branches']
-        with uproot.open(data_in['filenames']) as file:
-            tree = file[data_in['treename']]
+            columns = data_in["branches"]
+        with uproot.open(data_in["filenames"]) as file:
+            tree = file[data_in["treename"]]
             if "__index__" in tree.keys():  # legacy, we can also convert this
                 return to_pandas_old(data_in=data_in, index=index, columns=columns)
             branches = to_list(columns)
