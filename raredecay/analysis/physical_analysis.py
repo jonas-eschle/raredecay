@@ -342,10 +342,6 @@ def final_training(
             )
 
     # backwards compatibility
-
-    bkg_sel = sanitize_selection(bkg_sel)
-    sig_sel = sanitize_selection(sig_sel)
-
     pred_real = []
     pred_mc = []
 
