@@ -10,3 +10,4 @@ hep_ml>=0.5.0
 scikit-learn~=0.19.0
 rep @ git+https://github.com/REPlegacy/rep
 pygments>=2.7.4 # not directly required, pinned by Snyk to avoid a vulnerability
+mistune>=2.0.1 # not directly required, pinned by Snyk to avoid a vulnerability
