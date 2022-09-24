@@ -14,25 +14,22 @@ The reweighting module consists of function to reweight a distribution by learni
 two other distributions as well as reweighting a distribution by itself in a k-fold way.
 """
 
+import copy
 import sys  # noqa
 import warnings  # noqa
 
+import hep_ml.reweight
 import numpy as np  # noqa
+import pandas as pd
 from matplotlib import pyplot as plt  # noqa
 
-from raredecay.tools import dev_tool, data_tools, data_storage  # noqa
-from .. import meta_config  # noqa
-from ..globals_ import out  # noqa
-
-
-import copy
-
-import hep_ml.reweight
-import pandas as pd
+from raredecay.tools import data_storage, data_tools, dev_tool  # noqa
 
 # import configuration
-from .. import meta_config as meta_cfg
 from .. import config as cfg
+from .. import meta_config  # noqa
+from .. import meta_config as meta_cfg
+from ..globals_ import out  # noqa
 
 # HACK as reweight also uses meta_cfg for reweight_cfg
 meta_cfg_module = meta_cfg

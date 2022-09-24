@@ -14,15 +14,14 @@ takes data, weights, targets, names and converts automatically, plots and more.
 
 
 import copy
-import warnings
 import math
 import random
+import warnings
 
+import matplotlib.pyplot as plt
+import numpy as np
 import pandas as pd
 import seaborn as sns
-import numpy as np
-import matplotlib.pyplot as plt
-
 from rep.data.storage import LabeledDataStorage
 
 from ..tools import data_tools, dev_tool
@@ -42,8 +41,8 @@ except ImportError:
 # TODO: import config not needed?? remove because its from the old structure
 # import configuration
 
-from .. import meta_config as meta_cfg
 from .. import config as cfg
+from .. import meta_config as meta_cfg
 
 modul_logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 

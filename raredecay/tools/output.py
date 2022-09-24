@@ -10,16 +10,16 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 """
 
 
+import copy
+import io as StringIO
 import os
+import pickle as pickle
 import subprocess
 import sys
-import timeit
 import time
-import io as StringIO
-import copy
+import timeit
 
 import matplotlib.pyplot as plt
-import pickle as pickle
 import seaborn as sns
 
 from .. import meta_config as meta_cfg

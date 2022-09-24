@@ -11,15 +11,16 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 
 import math as mt
+
 import numpy as np
 
 try:
     from raredecay.tools.ml_scores import (
+        estimate_weights_bias,
         mayou_score,
+        similar_dist,
         train_similar,
         train_similar_new,
-        similar_dist,
-        estimate_weights_bias,
     )
 except ImportError:
     pass

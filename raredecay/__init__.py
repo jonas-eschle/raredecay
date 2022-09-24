@@ -8,18 +8,7 @@
 import sys  # noqa
 import warnings  # noqa
 
-from . import (
-    meta_config,
-    reweight,
-    reweight,
-    config,
-    data,
-    ml,
-    score,
-    meta_config,
-    settings,
-    stat,
-)  # noqa
+from . import config, data, meta_config, ml, reweight, score, settings, stat  # noqa
 
 if sys.version_info[0] < 3 or sys.version_info[1] < 6:
     warnings.warn(

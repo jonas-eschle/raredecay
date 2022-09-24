@@ -9,15 +9,13 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 """
 
-from .. import config as cfg  # noqa
-
-
 import numpy as np
 
-# from raredecay.globals_ import out
-
+from .. import config as cfg  # noqa
 from .. import meta_config as meta_cfg
 from ..tools import dev_tool
+
+# from raredecay.globals_ import out
 
 
 # import matplotlib.pyplot as plt
@@ -208,21 +206,23 @@ def fit_mass(
     """
 
     import ROOT
-    from ROOT import (
-        RooRealVar,
+    from ROOT import (  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+        RooAbsReal,
+        RooAddPdf,
         RooArgList,
         RooArgSet,
-        RooAddPdf,
+        RooCategory,
+        RooCBShape,
         RooDataSet,
-        RooAbsReal,
-    )
-    from ROOT import RooFit, RooCBShape, RooExponential
-    from ROOT import RooGaussian, RooMinuit
-    from ROOT import (
+        RooExponential,
+        RooFit,
+        RooGaussian,
+        RooMinuit,
+        RooRealVar,
+        RooUnblindPrecision,
         TCanvas,
-    )  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    )
     from root_numpy import array2tree
-    from ROOT import RooCategory, RooUnblindPrecision
 
     # Python 2/3 compatibility, str
     column = dev_tool.entries_to_str(column)
@@ -628,7 +628,7 @@ def metric_vs_cut_fitted(
     x : RooRealVar
 
     """
-    from raredecay.tools.metrics import punzi_fom, precision_measure
+    from raredecay.tools.metrics import precision_measure, punzi_fom
 
     predict_col = dev_tool.entries_to_str(predict_col)
     fit_col = dev_tool.entries_to_str(fit_col)
@@ -699,27 +699,29 @@ def metric_vs_cut_fitted(
 
 if __name__ == "__main__":
 
+    import matplotlib.pyplot as plt
+    import pandas as pd
     import ROOT
-    from ROOT import (
-        RooRealVar,
+    from ROOT import (  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+        RooAbsReal,
+        RooAddPdf,
         RooArgList,
         RooArgSet,
-        RooAddPdf,
+        RooCategory,
+        RooCBShape,
         RooDataSet,
-        RooAbsReal,
-    )
-    from ROOT import RooFit, RooCBShape, RooExponential
-    from ROOT import RooGaussian, RooMinuit
-    from ROOT import (
+        RooExponential,
+        RooFit,
+        RooGaussian,
+        RooMinuit,
+        RooRealVar,
+        RooUnblindPrecision,
         TCanvas,
-    )  # HACK to prevent not plotting canvas by root_numpy import. BUG.
+    )
     from root_numpy import array2tree
-    from ROOT import RooCategory, RooUnblindPrecision
 
     #    data = RooDataSet("data", )
     from raredecay.tools.data_storage import HEPDataStorage
-    import pandas as pd
-    import matplotlib.pyplot as plt
 
     #    np.random.seed(40)
 

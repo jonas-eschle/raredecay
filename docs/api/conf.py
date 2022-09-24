@@ -33,7 +33,6 @@
 
 import raredecay as rd
 
-
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.doctest",

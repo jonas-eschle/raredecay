@@ -12,23 +12,21 @@ Contains several tools to convert, load, save and plot data
 """
 
 
-import warnings
-import os
 import copy
+import os
+import pickle
+import warnings
 
-import pandas as pd
 import numpy as np
+import pandas as pd
 import uproot
 
-import pickle
-
+# from raredecay.tools import dev_tool
+from .. import meta_config as meta_cfg
 from . import dev_tool
 
 # both produce error (27.07.2016) when importing them if run from main.py.
 # No problem when run as main...
-
-# from raredecay.tools import dev_tool
-from .. import meta_config as meta_cfg
 
 
 def apply_cuts(signal_data, bkg_data, percent_sig_to_keep=100, bkg_length=None):
@@ -94,7 +92,6 @@ def add_to_rootfile(rootfile, new_branch, branch_name=None, overwrite=True):
     """
 
     from root_numpy import array2root
-
     from rootpy.io import root_open
 
     rootfile = dev_tool.entries_to_str(rootfile)

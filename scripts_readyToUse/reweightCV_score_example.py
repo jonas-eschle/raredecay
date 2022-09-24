@@ -23,9 +23,9 @@ settings.initialize(
     n_cpu=-1,
 )  # TODO: set n cpu
 
-from raredecay.tools.data_storage import HEPDataStorage
-from raredecay.analysis.physical_analysis import reweightCV, add_branch_to_rootfile
 from raredecay.analysis.compatibility_reweight import reweight
+from raredecay.analysis.physical_analysis import add_branch_to_rootfile, reweightCV
+from raredecay.tools.data_storage import HEPDataStorage
 
 # TODO: set the run mode
 kfolded_reweighting = True  # If True, this is for hyper-parameter testing
