@@ -12,9 +12,10 @@ Contains several useful tools for all kind of programs
 """
 
 
-import pandas as pd
-import numpy as np
 import collections
+
+import numpy as np
+import pandas as pd
 
 from .. import meta_config as meta_cfg
 
@@ -141,8 +142,8 @@ def add_file_handler(
     logger, module_name, log_file_dir, log_level="info", overwrite_file=False
 ):
     """Add a filehandler to a logger to also direct the output to a file."""
-    from time import strftime
     import logging
+    from time import strftime
 
     logger = entries_to_str(logger)
     module_name = entries_to_str(module_name)

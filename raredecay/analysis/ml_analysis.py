@@ -20,64 +20,64 @@ times for the simple tasks.
 
 The functions serve as basic tools, which do already a lot of the work.
 """
-import warnings
-
-from .compatibility_tools import _make_data  # noqa
-
-
 import copy
 import timeit
+import warnings
 from collections import OrderedDict
 
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 
-# hep_ml imports
+# import Reproducible Experimental Platform
+from rep.data import LabeledDataStorage
+from rep.estimators import SklearnClassifier, XGBoostClassifier
+from rep.estimators.interface import Classifier
+from rep.metaml import (
+    FoldingScorer,
+    GridOptimalSearchCV,
+    RandomParameterOptimizer,
+    SubgridParameterOptimizer,
+)
+from rep.metaml.folding import FoldingClassifier
+from rep.metaml.gridsearch import (  # , AnnealingParameterOptimizer
+    RegressionParameterOptimizer,
+)
+from rep.report import metrics
+from rep.report.classification import ClassificationReport
 
 # scikit-learn imports
 from sklearn.base import BaseEstimator
 from sklearn.ensemble import (
+    AdaBoostClassifier,
     GradientBoostingClassifier,
     RandomForestClassifier,
-    AdaBoostClassifier,
 )
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.neighbors import KNeighborsClassifier
-
 from sklearn.metrics import accuracy_score, classification_report
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.tree import DecisionTreeClassifier
 
-# import Reproducible Experimental Platform
-from rep.data import LabeledDataStorage
-
-from rep.estimators import SklearnClassifier, XGBoostClassifier
-from rep.estimators.interface import Classifier
-
-from rep.metaml.folding import FoldingClassifier
-from rep.metaml import GridOptimalSearchCV, FoldingScorer, RandomParameterOptimizer
-from rep.metaml import SubgridParameterOptimizer
-from rep.metaml.gridsearch import (
-    RegressionParameterOptimizer,
-)  # , AnnealingParameterOptimizer
-
-from rep.report import metrics
-from rep.report.classification import ClassificationReport
+from raredecay.globals_ import out
 
 # raredecay imports
-from raredecay.tools import dev_tool, data_tools, data_storage
-from raredecay.globals_ import out
+from raredecay.tools import data_storage, data_tools, dev_tool
+
+# import configuration
+from .. import config as cfg
+from .. import meta_config as meta_cfg
+from . import statistics
+from .compatibility_tools import _make_data  # noqa
+
+# hep_ml imports
+
 
 # from raredecay import globals_
 
-# import configuration
-from .. import meta_config as meta_cfg
-from .. import config as cfg
-from . import statistics
 
 logger = dev_tool.make_logger(__name__, **cfg.logger_cfg)
 
 # raredecay backwards compatibility:
-from .reweight import reweight_train, reweight_weights, reweight
+from .reweight import reweight, reweight_train, reweight_weights
 
 
 def make_clf(clf, n_cpu=None, dict_only=False):
@@ -1175,7 +1175,7 @@ def best_metric_cut(
     """
     from rep.report.metrics import OptimalMetric
 
-    from raredecay.tools.metrics import punzi_fom, precision_measure
+    from raredecay.tools.metrics import precision_measure, punzi_fom
 
     # Python 2/3 compatibility, str
     metric = dev_tool.entries_to_str(metric)

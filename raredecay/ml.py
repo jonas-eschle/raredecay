@@ -7,10 +7,10 @@
 
 try:
     from raredecay.analysis.ml_analysis import (
-        classify,
         backward_feature_elimination,
-        optimize_hyper_parameters,
+        classify,
         make_clf,
+        optimize_hyper_parameters,
     )
     from raredecay.analysis.physical_analysis import feature_exploration
     from raredecay.analysis.physical_analysis import final_training as sideband_training

@@ -11,7 +11,7 @@ import math as mt
 
 import numpy as np
 
-from . import dev_tool, data_storage
+from . import data_storage, dev_tool
 
 
 def mayou_score(
@@ -514,8 +514,8 @@ def train_similar_new(
 
     """
     import raredecay.analysis.ml_analysis as ml_ana
-    from raredecay.tools.data_storage import HEPDataStorage
     from raredecay.analysis import statistics
+    from raredecay.tools.data_storage import HEPDataStorage
 
     # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)

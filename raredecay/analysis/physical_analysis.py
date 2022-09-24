@@ -17,20 +17,17 @@ values.
 """
 
 
-from ..tools import ml_scores
-
-
 import copy
 
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-from ..tools import dev_tool
-from . import ml_analysis as ml_ana
-
 # legacy
 from raredecay.analysis.compatibility_reweight import reweight
+
+from ..tools import dev_tool, ml_scores
+from . import ml_analysis as ml_ana
 
 
 def _cut(data):
@@ -298,9 +295,9 @@ def final_training(
         - *pred_mc*: The predicitions of mc_data
 
     """
-    from raredecay.globals_ import out
     from raredecay.analysis.ml_analysis import classify
-    from raredecay.tools.metrics import punzi_fom, precision_measure
+    from raredecay.globals_ import out
+    from raredecay.tools.metrics import precision_measure, punzi_fom
 
     # Python 2/3 compatibility
     bkg_sel = dev_tool.entries_to_str(bkg_sel)
@@ -547,8 +544,8 @@ def add_branch_to_rootfile(filename, treename, new_branch, branch_name, overwrit
     overwrite : boolean
         NOT IMPLEMENTED!
     """
-    from raredecay.tools import data_tools
     from raredecay.globals_ import out
+    from raredecay.tools import data_tools
 
     root_data = {"filenames": filename, "treename": treename}
     status = data_tools.add_to_rootfile(
@@ -706,8 +703,8 @@ def reweightCV(
     """
     import numpy as np
 
-    from raredecay.tools import metrics
     from raredecay.globals_ import out
+    from raredecay.tools import metrics
 
     output = {}
     # do the Kfold reweighting. This reweights the data with Kfolding and returns

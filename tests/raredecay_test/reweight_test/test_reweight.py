@@ -5,6 +5,7 @@ import pytest
 
 try:
     from future.builtins.disabled import (
+        StandardError,
         apply,
         cmp,
         coerce,
@@ -16,7 +17,6 @@ try:
         reload,
         unicode,
         xrange,
-        StandardError,
     )
     from future.standard_library import install_aliases
 
@@ -32,13 +32,15 @@ import numpy as np
 import pandas as pd
 import pandas.util.testing as pdtest
 
+import raredecay.settings
+from raredecay.analysis.compatibility_reweight import reweight as reweight_old
+from raredecay.analysis.ml_analysis import reweight_Kfold
+from raredecay.analysis.reweight import reweight as reweight_new
+from raredecay.analysis.reweight import reweight_kfold
+from raredecay.tools.data_storage import HEPDataStorage
+
 # import raredecay as rd
 
-from raredecay.tools.data_storage import HEPDataStorage
-from raredecay.analysis.compatibility_reweight import reweight as reweight_old
-from raredecay.analysis.reweight import reweight as reweight_new, reweight_kfold
-from raredecay.analysis.ml_analysis import reweight_Kfold
-import raredecay.settings
 
 raredecay.settings.set_random_seed(42)
 

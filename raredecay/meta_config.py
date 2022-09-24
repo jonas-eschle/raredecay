@@ -34,8 +34,8 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
 # Python 2 backwards compatibility overhead START
 
 
-import pickle as pickle
 import multiprocessing
+import pickle as pickle
 import random
 
 import numpy as np

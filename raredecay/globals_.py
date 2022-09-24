@@ -48,8 +48,8 @@ free_cpus
 """
 
 
-from . import meta_config as meta_cfg
 from . import config as cfg
+from . import meta_config as meta_cfg
 from .tools import output
 
 __all__ = ["out", "logger_cfg", "n_cpu_used", "free_cpus"]

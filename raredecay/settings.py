@@ -17,9 +17,9 @@ __all__ = [
 
 import copy
 
+from . import config as cfg
 from . import meta_config as meta_cfg
 from .tools import dev_tool
-from . import config as cfg
 
 
 # TODO: docs??
