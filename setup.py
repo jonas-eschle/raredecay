@@ -53,7 +53,7 @@ if __name__ == "__main__":
         author_email="Jonas.Eschle@cern.ch",
         license="Apache-2.0 License",
         install_requires=requirements,
-        extras_require={'root': ["root-numpy", "rootpy"]},
+        extras_require={"root": ["root-numpy", "rootpy"]},
         packages=[
             "raredecay",
             "raredecay.analysis",
