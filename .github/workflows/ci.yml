@@ -54,7 +54,7 @@ jobs:
           activate-environment: condaenv
       - shell: bash -el {0}
         run: |
-          mamba install future -y
+          mamba install future git -y
           pip install .[root]
 #          mamba install "root<6.22.0" future -y
       - shell: bash -el {0}
