@@ -32,7 +32,7 @@ jobs:
           - '3.9'
     steps:
       - name: Install dependencies (Ubuntu)
-        run: apt install -y gfortran libatlas-base-dev libatlas-dev liblapack-dev
+        run: sudo apt install -y gfortran libatlas-base-dev libatlas-dev liblapack-dev
       - name: 'Set up Python ${{ matrix.python-version }}'
         uses: actions/setup-python@v2
         with:
