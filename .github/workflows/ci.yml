@@ -53,9 +53,9 @@ jobs:
           activate-environment: condaenv
       - shell: bash -el {0}
         run: |
-#          mamba install "root<6.22.0" future -y
           mamba install future -y
           pip install .[root]
+#          mamba install "root<6.22.0" future -y
       - shell: bash -el {0}
         run: pytest
 #      - run: bash anaconda.sh -b -p $HOME/anaconda > tmp.txt && echo "alive"
