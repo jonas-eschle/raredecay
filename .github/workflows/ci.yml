@@ -33,10 +33,10 @@ jobs:
     steps:
       - name: Install dependencies (Ubuntu)
         run: sudo apt install -y gfortran libatlas-base-dev liblapack-dev
-      - name: 'Set up Python ${{ matrix.python-version }}'
-        uses: actions/setup-python@v2
-        with:
-          python-version: '${{ matrix.python-version }}'
+#      - name: 'Set up Python ${{ matrix.python-version }}'
+#        uses: actions/setup-python@v2
+#        with:
+#          python-version: '${{ matrix.python-version }}'
       - uses: actions/checkout@v2
 #      - run: >-
 #          wget
