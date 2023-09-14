@@ -23,6 +23,7 @@ jobs:
   test:
     runs-on: '${{ matrix.os }}'
     strategy:
+      fail-fast: False
       matrix:
         os: [ ubuntu-latest ]
         python-version:
