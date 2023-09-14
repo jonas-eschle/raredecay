@@ -52,7 +52,7 @@ jobs:
           activate-environment: condaenv
       - shell: bash -el {0}
         run: |
-          mamba install "root<6.24.0" future -y
+          mamba install "root<6.22.0" future -y
           pip install .[root]
       - shell: bash -el {0}
         run: pytest
