@@ -42,6 +42,7 @@ if __name__ == "__main__":
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
+            "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: Implementation :: CPython",
             "Topic :: Scientific/Engineering :: Physics",
             "Topic :: Scientific/Engineering :: Information Analysis",
@@ -52,13 +53,14 @@ if __name__ == "__main__":
         author_email="Jonas.Eschle@cern.ch",
         license="Apache-2.0 License",
         install_requires=requirements,
+        extras_require={'root': ["root-numpy", "rootpy"]},
         packages=[
             "raredecay",
             "raredecay.analysis",
             "raredecay.tools",
         ],
         include_package_data=True,
-        python_requires=">2.7,!=3.0.*, !=3.1.*, !=3.2.*, !=3.3.*",
+        python_requires=">=3.6",
         zip_safe=False,
     )
 

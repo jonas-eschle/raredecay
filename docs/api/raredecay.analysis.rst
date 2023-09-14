@@ -2,14 +2,15 @@ analysis
 ========
 
 .. automodule:: raredecay.analysis
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    raredecay.analysis.compatibility_reweight
    raredecay.analysis.compatibility_tools
@@ -17,4 +18,3 @@ Submodules
    raredecay.analysis.physical_analysis
    raredecay.analysis.reweight
    raredecay.analysis.statistics
-   raredecay.analysis.statistics_tmp

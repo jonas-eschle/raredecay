@@ -2,6 +2,6 @@ reweight
 ========
 
 .. automodule:: raredecay.reweight
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

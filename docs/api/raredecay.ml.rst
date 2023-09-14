@@ -2,6 +2,6 @@ ml
 ==
 
 .. automodule:: raredecay.ml
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:

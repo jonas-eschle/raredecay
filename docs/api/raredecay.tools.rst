@@ -2,14 +2,15 @@ tools
 =====
 
 .. automodule:: raredecay.tools
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
 
 Submodules
 ----------
 
 .. toctree::
+   :maxdepth: 4
 
    raredecay.tools.data_storage
    raredecay.tools.data_tools

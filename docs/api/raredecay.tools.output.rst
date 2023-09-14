@@ -2,6 +2,6 @@ output
 ======
 
 .. automodule:: raredecay.tools.output
-    :members:
-    :undoc-members:
-    :show-inheritance:
+   :members:
+   :undoc-members:
+   :show-inheritance:
