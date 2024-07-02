@@ -6,7 +6,6 @@ The configuration file for external operations.
 @author: Jonas Eschle "Mayou36"
 """
 
-
 __all__ = ["RUN_NAME", "run_message", "OUTPUT_CFG", "save_fig_cfg", "logger_cfg"]
 
 RUN_NAME = "Default run name"

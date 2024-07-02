@@ -11,7 +11,6 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 Contains several useful tools for all kind of programs
 """
 
-
 import collections
 
 import numpy as np

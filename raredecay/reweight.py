@@ -4,7 +4,6 @@
 
 """
 
-
 try:
     from raredecay.analysis.reweight import reweight, reweight_kfold
 except Exception as err:

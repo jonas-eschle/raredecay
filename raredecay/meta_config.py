@@ -242,7 +242,7 @@ DEFAULT_SAVE_FIG = dict(
 # about but may be happy to have them saved somewhere)
 DEFAULT_EXT_SAVE_FIG = dict(
     file_format=["png", "pdf"],
-    to_pickle=True
+    to_pickle=True,
     # save_cfg=None
 )
 
