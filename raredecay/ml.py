@@ -4,7 +4,6 @@
 
 """
 
-
 try:
     from raredecay.analysis.ml_analysis import (
         backward_feature_elimination,

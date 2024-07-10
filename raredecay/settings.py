@@ -4,7 +4,6 @@ Contain methods to change settings in the whole package
 @author: Jonas Eschle "Mayou36"
 """
 
-
 __all__ = [
     "initialize",
     "finalize",

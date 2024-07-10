@@ -12,7 +12,6 @@ This module contains the data handling. The main part is the class which
 takes data, weights, targets, names and converts automatically, plots and more.
 """
 
-
 import copy
 import math
 import random

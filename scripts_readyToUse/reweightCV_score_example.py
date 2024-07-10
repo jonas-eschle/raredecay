@@ -8,6 +8,7 @@ with KFolds and test several scores.
 
 The raredecay package is available at https://github.com/mayou36/raredecay
 """
+
 from raredecay import settings
 
 # first of all, it is advised to set some run-configurations like logger-level,

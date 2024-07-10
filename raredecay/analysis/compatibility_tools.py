@@ -8,7 +8,6 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 """
 
-
 from raredecay.tools import dev_tool
 
 

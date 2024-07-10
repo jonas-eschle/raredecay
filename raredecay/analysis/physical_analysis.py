@@ -16,7 +16,6 @@ in plotting as well as in printing, but always also return the important
 values.
 """
 
-
 import copy
 
 import matplotlib.pyplot as plt

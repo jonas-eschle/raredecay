@@ -11,7 +11,6 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 Contains several tools to convert, load, save and plot data
 """
 
-
 import copy
 import os
 import pickle

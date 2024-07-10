@@ -9,7 +9,6 @@ DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!DEPRECEATED!
 
 """
 
-
 import math as mt
 
 import numpy as np
