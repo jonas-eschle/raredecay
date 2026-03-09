@@ -1178,7 +1178,6 @@ def best_metric_cut(
 
     from raredecay.tools.metrics import precision_measure, punzi_fom
 
-    # Python 2/3 compatibility, str
     metric = dev_tool.entries_to_str(metric)
     prediction_branch = dev_tool.entries_to_str(prediction_branch)
 
@@ -1237,7 +1236,6 @@ def mcreweighted_as_real(
     """
     output = {}
 
-    # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
     clf = dev_tool.entries_to_str(clf)
 
@@ -1497,7 +1495,6 @@ def reweight_Kfold(
         already existing weights in `mc`.
 
     """
-    # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
     reweighter = dev_tool.entries_to_str(reweighter)
     meta_cfg = dev_tool.entries_to_str(meta_cfg)

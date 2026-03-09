@@ -88,7 +88,6 @@ def initialize(
     out : instance of :py:class:`~raredecay.tools.output.OutputHandler`
         Return the output-handler currently in use by the script.
     """
-    # Python 2/3 compatibility
     output_path = dev_tool.entries_to_str(output_path)
     run_name = dev_tool.entries_to_str(run_name)
     run_message = dev_tool.entries_to_str(run_message)

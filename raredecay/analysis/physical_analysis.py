@@ -298,7 +298,6 @@ def final_training(
     from raredecay.globals_ import out
     from raredecay.tools.metrics import precision_measure, punzi_fom
 
-    # Python 2/3 compatibility
     bkg_sel = dev_tool.entries_to_str(bkg_sel)
     sig_sel = dev_tool.entries_to_str(sig_sel)
     clf = dev_tool.entries_to_str(clf)

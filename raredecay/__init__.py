@@ -4,19 +4,7 @@
 
 """
 
-# Python 2 backwards compatibility overhead START
-import sys  # noqa
-import warnings  # noqa
-
 from . import config, data, meta_config, ml, reweight, score, settings, stat  # noqa
-
-if sys.version_info[0] < 3 or sys.version_info[1] < 6:
-    warnings.warn(
-        f"UNSUPPORTED PYTHON VERSION: You are using {sys.version_info}, "
-        + "which is an unsupported Python version < 3.6. "
-        + "This is not tested nor guaranteed"
-        + " to work and provided on an as-is based."
-    )
 
 __all__ = [
     "reweight",
@@ -32,4 +20,4 @@ __all__ = [
 
 __author__ = "Jonas Eschle 'Mayou36'"
 __email__ = "Jonas.Eschle@cern.ch"
-__version__ = "2.2.0"
+__version__ = "3.0.0"
