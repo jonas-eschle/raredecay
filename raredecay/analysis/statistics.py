@@ -37,7 +37,6 @@ def ks_2samp_ds(data1, data2, column):
     numeric
         Return the K-S two sample test hypothesis score.
     """
-    # Python 2/3 compatibility, str
     column = str(column)
 
     # create data from HEPDS
@@ -113,7 +112,6 @@ ks_2samp_ds.__doc__ = ks_2samp.__doc__.split("Parameter", 1)[0] + ks_2samp_ds.__
 
 
 def ad_2samp(data1, data2, column):
-    # Python 2/3 compatibility, str
     column = str(column)
 
     # prepare data
@@ -224,7 +222,6 @@ def fit_mass(
     )
     from root_numpy import array2tree
 
-    # Python 2/3 compatibility, str
     column = dev_tool.entries_to_str(column)
 
     if not (isinstance(column, str) or len(column) == 1):

@@ -1,4 +1,3 @@
-# Python 2 backwards compatibility overhead START
 """
 DEPRECEATED! USE OTHER MODULES LIKE rd.data, rd.ml, rd.reweight, rd.score and rd.stat
 
@@ -517,7 +516,6 @@ def train_similar_new(
     from raredecay.analysis import statistics
     from raredecay.tools.data_storage import HEPDataStorage
 
-    # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
     clf = dev_tool.entries_to_str(clf)
     clf_pred = dev_tool.entries_to_str(clf_pred)

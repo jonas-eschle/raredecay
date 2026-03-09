@@ -109,7 +109,6 @@ def reweight_train(
     # HACK
     from raredecay.analysis.compatibility_tools import _make_data
 
-    # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
     reweighter = dev_tool.entries_to_str(reweighter)
     reweight_saveas = dev_tool.entries_to_str(reweight_saveas)
@@ -221,7 +220,6 @@ def reweight_weights(
     """
     # HACK
 
-    # Python 2/3 compatibility, str
     reweighter_trained = dev_tool.entries_to_str(reweighter_trained)
     columns = dev_tool.entries_to_str(columns)
 
@@ -467,7 +465,6 @@ def reweight_kfold(
 
     """
 
-    # Python 2/3 compatibility, str
     columns = dev_tool.entries_to_str(columns)
     reweighter = dev_tool.entries_to_str(reweighter)
     reweighter_cfg = dev_tool.entries_to_str(reweighter_cfg)

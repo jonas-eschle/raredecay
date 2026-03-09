@@ -1,32 +1,6 @@
-# Python 2 backwards compatibility overhead START
-import sys
+import unittest
 
 import pytest
-
-try:
-    from future.builtins.disabled import (
-        StandardError,
-        apply,
-        cmp,
-        coerce,
-        execfile,
-        file,
-        long,
-        raw_input,
-        reduce,
-        reload,
-        unicode,
-        xrange,
-    )
-    from future.standard_library import install_aliases
-
-    install_aliases()
-except ImportError as err:
-    if sys.version_info[0] < 3:
-        raise err
-# Python 2 backwards compatibility overhead END
-
-import unittest
 
 import numpy as np
 import pandas as pd

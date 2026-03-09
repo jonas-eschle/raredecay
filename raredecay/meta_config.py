@@ -31,7 +31,6 @@ SUPPRESS_WRONG_SKLEARN_VERSION:
 # ==============================================================================
 # DO NOT IMPORT ANY PACKAGE (run configuration) DEPENDENCY!
 # ==============================================================================
-# Python 2 backwards compatibility overhead START
 
 
 import multiprocessing
